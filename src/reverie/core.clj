@@ -20,14 +20,6 @@
       (let [[k v] opt]
         (recur (assoc m k v) options)))))
 
-(defmacro testus [& args]
-  (let [fn-name (keyword (first args))]
-    `(let [~'func (fn [~'x ~'y ~'request] ~(last args))]
-       {~fn-name ~'func})))
-
-((:test (testus test (println (html5 x y request)))) "my x" "my y" {})
-(macroexpand-1 (testus test (println x y request)))
-
 (defmacro deftemplate [template options body]
   (let [template (keyword template)
         options (parse-options options)]
@@ -35,35 +27,32 @@
                                     :fn (fn [~'request] ~body)})))
 
 
-(defmacro object-funcs [schema args]
-  (let [kw? (keyword? (first args))
-        methods (-> args butlast vec)]
-   `(if ~kw?
-      (let [~'func (fn [~'request] ~(last args))]
-         (into {} (map vector ~methods (repeat ~'func))))
-       (let [~'func (fn [~'request] ~(last args))]
-         (into {} (map vector [:get :post] (repeat ~'func)))))))
 
-(macroexpand-1 (object-funcs [] [:get (html5 request "body")]))
-(:get (object-funcs [] [:get (html5 request)]))
-((:get (object-funcs [] (list :get (html5 request)))) {:uri "/"})
-((:get (object-funcs [] (list :get :post (html5 [:div "my body"])) )) {})
 
-(defmacro defobject [object options & args]
+(defmacro object-funcs [attributes methods & body]
+  `(let [~'func (fn [~'request ~@attributes] ~@body)]
+     (into {} (map vector ~methods (repeat ~'func)))))
+
+(macroexpand-1 (object-funcs [] [:get] (html5 request "body")))
+(:get (object-funcs [] [:get] (html5 request)))
+((:get (object-funcs [x y] [:get] (html5 request))) {:uri "/"} "my x" "my y")
+x((:get (object-funcs [] [:get :post] (html5 [:div "my body"]) )) {})
+
+(defmacro defobject [object options methods & args]
   (let [object (keyword object)
         options (parse-options options)
-        `~body `(object-funcs [] ~args)]
+        `~body `(object-funcs [] ~methods ~@args)]
     `(do
        {~object {:options ~options
                  :fns ~body
                  }})))
 
 
-(macroexpand-1 (defobject text [:areas [:a :b] :schema "asdf.clj"] :get "body"))
-(macroexpand-1 (defobject text [:areas [:a :b] :schema "asdf.clj"] :get (html5 "body")))
-(macroexpand-1 (defobject text [:areas [:a :b] :schema "asdf.clj"] "body"))
-(macroexpand-1 (defobject text [:areas [:a :b] :schema "asdf.clj"] (html5 request "body")))
+(macroexpand-1 (defobject text [:areas [:a :b] :schema "asdf.clj"] [:get] "body"))
+(macroexpand-1 (defobject text [:areas [:a :b] :schema "asdf.clj"] [:get] (html5 "body")))
+(macroexpand-1 (defobject text [:areas [:a :b] :schema "asdf.clj"] [:any] "body"))
+(macroexpand-1 (defobject text [:areas [:a :b] :schema "asdf.clj"] [:any] (html5 request "body")))
 
 
-((:get (:fns (:text (defobject text [:areas [:a :b]] :get (html5 request "body"))))) {:uri "/"})
-(-> (defobject text [:areas [:a :b] :schema "asdf.clj"] :get (html5 "body")) :text :fns :get)
+((:get (:fns (:text (defobject text [:areas [:a :b]] [:get] (html5 request "body"))))) {:uri "/"})
+(-> (defobject text [:areas [:a :b] :schema "asdf.clj"] [:get] (html5 "body")) :text :fns :get)
