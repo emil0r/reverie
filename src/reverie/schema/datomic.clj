@@ -49,8 +49,22 @@
       @(d/transact connection [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
                                {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
       @(d/transact connection datomic-schema)))
+  (object-initiate [schema connection id]
+    (let [{:keys [object attributes ks]} (expand-schema schema)
+          initials (into {}  (map (fn [k] [k (-> (attributes k) :initial)]) ks))
+          idents (map (fn [k] [k (-> (attributes k) :schema :db/ident)]) ks)
+          tmpid {:db/id #db/id [:db.part/user -1]}
+          attribs (apply conj [(merge tmpid {:reverie/object object})]
+                        (into []
+                              (map #(merge tmpid %)
+                                   (map (fn [[k attr]] {attr (initials k)})
+                                        idents))))
+          tx @(d/transact connection attribs)]
+      (assoc tx :db/id (-> tx :tempids vals last))))
   (object-get [schema connection id]
-    (let [{:keys [attributes ks]} (expand-schema schema)]
+    (let [{:keys [attributes ks]} (expand-schema schema)
+          idents (map #(-> (attributes %) :schema :db/ident) ks)]
+      true
       ))
   (object-set [schema connection data id]
     (let [{:keys [attributes ks]} (expand-schema schema)

@@ -18,10 +18,18 @@
                         :initial 0
                         :options (fn [] {0 "" 1 "Stockholm" 2 "Harare" 3 "Oslo"})}})
 
+
+;; checks that the object has the schema correctly set up
+;; checks if the object needs to be upgraded
+;; upgrades the object
+;; initiates the object with the initial data
+;; gets the data from the object
+;; sets the data to the object
 (defprotocol reverie-object
   (object-correct? [schema]) ;; true or false
   (object-upgrade? [schema connection]) ;; true or false
   (object-upgrade [schema connection]) ;; returns result
+  (object-initiate [schema connection id]) ;; returns result
   (object-get [schema connection id]) ;; hashmap of all the attributes with associated values
   (object-set [schema connection data id])) ;; set the attributes
 

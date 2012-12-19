@@ -11,9 +11,15 @@
   :db/cardinality :db.cardinality/many
   :db/doc "The keys in an object. Stored away for migrations."
   :db.install/_attribute :db.part/db}
-  {:db/id #db/id [:db.part/db]
-  :db/ident :object/deleted?
+ {:db/id #db/id [:db.part/db]
+  :db/ident :reverie.object/deleted?
   :db/valueType :db.type/boolean
+  :db/cardinality :db.cardinality/one
+  :db/doc "Is the object deleted?"
+  :db.install/_attribute :db.part/db}
+ {:db/id #db/id [:db.part/db]
+  :db/ident :reverie/object
+  :db/valueType :db.type/keyword
   :db/cardinality :db.cardinality/one
   :db/doc "Is the object deleted?"
   :db.install/_attribute :db.part/db}

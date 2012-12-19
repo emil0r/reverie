@@ -42,7 +42,7 @@
                                                        :db/cardinality :db.cardinality/one
                                                        :db/doc "Text of the text object"
                                                        :db.install/_attribute :db.part/db}
-                                              :initial ""
+                                              :initial "object-upgrade?"
                                               :input :text}})
        {:keys [database connection]} (setup)]
    (rev/object-upgrade? d connection)) => true)
@@ -55,11 +55,25 @@
                                                        :db/cardinality :db.cardinality/one
                                                        :db/doc "Text of the text object"
                                                        :db.install/_attribute :db.part/db}
-                                              :initial ""
+                                              :initial "object-upgrade"
                                               :input :text}})
        {:keys [database connection]} (setup)]
-   (not (nil? (:tx-data (rev/object-upgrade d connection))))) => true)
+   (rev/object-upgrade d connection)) => truthy)
 
+
+(fact
+ "reverie-schema protocol/object-initiate"
+ (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+                                                       :db/ident :object.text/text
+                                                       :db/valueType :db.type/string
+                                                       :db/cardinality :db.cardinality/one
+                                                       :db/doc "Text of the text object"
+                                                       :db.install/_attribute :db.part/db}
+                                              :initial "initiate"
+                                              :input :text}})
+       {:keys [database connection]} (setup)
+       tx (rev/object-upgrade d connection)]
+   (rev/object-initiate d connection nil)) => truthy)
 
 (fact
  "reverie-schema protocol/object-set datomic"
@@ -69,7 +83,7 @@
                                                        :db/cardinality :db.cardinality/one
                                                        :db/doc "Text of the text object"
                                                        :db.install/_attribute :db.part/db}
-                                              :initial ""
+                                              :initial "set"
                                               :input :text}})
        {:keys [database connection]} (setup)
        tx (rev/object-upgrade d connection)]
@@ -84,7 +98,7 @@
                                                        :db/cardinality :db.cardinality/one
                                                        :db/doc "Text of the text object"
                                                        :db.install/_attribute :db.part/db}
-                                              :initial ""
+                                              :initial "set with id"
                                               :input :text}})
        {:keys [database connection]} (setup)
        tx (rev/object-upgrade d connection)
