@@ -10,7 +10,7 @@
 
 
 (fact
- "reverie-schema protocol/schema-correct? datomic -> correct"
+ "reverie-schema protocol/object-correct? datomic -> correct"
  (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
@@ -19,24 +19,23 @@
                                                        :db.install/_attribute :db.part/db}
                                               :initial ""
                                               :input :text}})]
-   (rev/schema-correct? d)) => true)
+   (rev/object-correct? d)) => true)
 
 (fact
- "reverie-schema protocol/schema-correct? datomic -> not correct"
+ "reverie-schema protocol/object-correct? datomic -> not correct"
  (let [d (SchemaDatomic. :object/text {:text {:initial ""
                                                    :input :text}})]
-   (rev/schema-correct? d)) => false)
+   (rev/object-correct? d)) => false)
 
 
 (fact
- "reverie-schema protocol/schema-correct? datomic -> not correct"
+ "reverie-schema protocol/object-correct? datomic -> not correct"
  (let [d (SchemaDatomic. :object/text {:text {:initial ""
                                                    :input :text}})]
-   (rev/schema-correct? d)) => false)
-
+   (rev/object-correct? d)) => false)
 
 (fact
- "reverie-schema protocol/schema-initiate datomic"
+ "reverie-schema protocol/object-upgrade? datomic"
  (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
@@ -46,4 +45,48 @@
                                               :initial ""
                                               :input :text}})
        {:keys [database connection]} (setup)]
-   (not (nil? (:tx-data (rev/schema-initiate d connection))))) => true)
+   (rev/object-upgrade? d connection)) => true)
+
+(fact
+ "reverie-schema protocol/object-upgrade datomic"
+ (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+                                                       :db/ident :object.text/text
+                                                       :db/valueType :db.type/string
+                                                       :db/cardinality :db.cardinality/one
+                                                       :db/doc "Text of the text object"
+                                                       :db.install/_attribute :db.part/db}
+                                              :initial ""
+                                              :input :text}})
+       {:keys [database connection]} (setup)]
+   (not (nil? (:tx-data (rev/object-upgrade d connection))))) => true)
+
+
+(fact
+ "reverie-schema protocol/object-set datomic"
+ (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+                                                       :db/ident :object.text/text
+                                                       :db/valueType :db.type/string
+                                                       :db/cardinality :db.cardinality/one
+                                                       :db/doc "Text of the text object"
+                                                       :db.install/_attribute :db.part/db}
+                                              :initial ""
+                                              :input :text}})
+       {:keys [database connection]} (setup)
+       tx (rev/object-upgrade d connection)]
+   (rev/object-set d connection {:text "my text"} nil)) => truthy)
+
+
+(fact
+ "reverie-schema protocol/object-set datomic with id"
+ (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+                                                       :db/ident :object.text/text
+                                                       :db/valueType :db.type/string
+                                                       :db/cardinality :db.cardinality/one
+                                                       :db/doc "Text of the text object"
+                                                       :db.install/_attribute :db.part/db}
+                                              :initial ""
+                                              :input :text}})
+       {:keys [database connection]} (setup)
+       tx (rev/object-upgrade d connection)
+       id (:db/id (rev/object-set d connection {:text "my text"} nil))]
+   (= id (:db/id (rev/object-set d connection {:text "my text 2"} id)))) => true)

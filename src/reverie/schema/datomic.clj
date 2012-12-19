@@ -1,6 +1,6 @@
 (ns reverie.schema.datomic
   (:use [datomic.api :only [q db] :as d]
-        [reverie.core :only [reverie-schema]]))
+        [reverie.core :only [reverie-object]]))
 
 
 ;; defaults are either values or functions that return a value
@@ -22,21 +22,15 @@
          [?c :reverie.object.migrations/keys ?ks]]
        (db connection) object))
 
+(defn- expand-schema [schema]
+  {:object (:object schema)
+   :attributes (:attributes schema)
+   :ks (keys (:attributes schema))})
+
 (extend-type SchemaDatomic
-  reverie-schema
-  (schema-initiate [schema connection]
-    (let [object (:object schema)
-          attributes (:attributes schema)
-          ks (keys attributes)
-          datomic-schema (vec (map :schema (map #(attributes %) ks)))
-          migrations (get-migrations connection object)]
-      @(d/transact connection
-                   (apply conj datomic-schema
-                          [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
-                           {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}]))))
-  (schema-correct? [schema]
-    (let [attributes (:attributes schema)
-          ks (keys attributes)]
+  reverie-object
+  (object-correct? [schema]
+    (let [{:keys [attributes ks]} (expand-schema schema)]
       (loop [[k & ks] ks
              correct? true]
         (if (nil? k)
@@ -45,8 +39,27 @@
             (if (not-any? nil? values)
               (recur ks correct?)
               (recur ks false)))))))
-  (schema-upgrade? [schema connection])
-  (schema-upgrade [schema connection])
-  (schema-get [schema connection])
-  (schema-set [schema connection data]))
+  (object-upgrade? [schema connection]
+    (let [{:keys [object ks]} (expand-schema schema)]
+      (not (migrated? ks (get-migrations connection object)))))
+  (object-upgrade [schema connection]
+    (let [{:keys [object attributes ks]} (expand-schema schema)
+          datomic-schema (vec (map :schema (map #(attributes %) ks)))
+          migrations (get-migrations connection object)]
+      @(d/transact connection [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
+                               {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
+      @(d/transact connection datomic-schema)))
+  (object-get [schema connection id]
+    (let [{:keys [attributes ks]} (expand-schema schema)]
+      ))
+  (object-set [schema connection data id]
+    (let [{:keys [attributes ks]} (expand-schema schema)
+          idents (map (fn [k] [k (-> (attributes k) :schema :db/ident)]) ks)
+          attribs (map (fn [[k attr]] {attr (data k)}) idents)]
+      (if (nil? id)
+        (let [attribs (into [] (map #(merge {:db/id #db/id [:db.part/user] } %) attribs))
+              tx @(d/transact connection attribs)]
+          (assoc tx :db/id (-> tx :tempids vals last)))
+        (let [attribs (into [] (map #(merge {:db/id id} %) attribs))]
+          (-> @(d/transact connection attribs) (assoc :db/id id)))))))
 

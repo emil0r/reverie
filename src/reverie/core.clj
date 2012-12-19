@@ -18,13 +18,12 @@
                         :initial 0
                         :options (fn [] {0 "" 1 "Stockholm" 2 "Harare" 3 "Oslo"})}})
 
-(defprotocol reverie-schema
-  (schema-initiate [schema connection]) ;; returns result
-  (schema-correct? [schema]) ;; true or false
-  (schema-upgrade? [schema connection]) ;; true or false
-  (schema-upgrade [schema connection]) ;; returns result
-  (schema-get [schema connection]) ;; hashmap of all the attributes with associated values
-  (schema-set [schema connection data])) ;; set the attributes
+(defprotocol reverie-object
+  (object-correct? [schema]) ;; true or false
+  (object-upgrade? [schema connection]) ;; true or false
+  (object-upgrade [schema connection]) ;; returns result
+  (object-get [schema connection id]) ;; hashmap of all the attributes with associated values
+  (object-set [schema connection data id])) ;; set the attributes
 
 
 (defn- parse-options [options]
