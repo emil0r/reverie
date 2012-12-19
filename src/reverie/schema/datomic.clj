@@ -17,7 +17,7 @@
           (recur migrations migrated?))))))
 
 (defn- get-migrations [connection object]
-  (d/q '[:find ?ks :in $ ?object :where
+  (d/q '[:find ?ks ?object :in $ ?object :where
          [?c :reverie.object.migrations/name ?object]
          [?c :reverie.object.migrations/keys ?ks]]
        (db connection) object))
@@ -29,12 +29,11 @@
           attributes (:attributes schema)
           ks (keys attributes)
           datomic-schema (vec (map :schema (map #(attributes %) ks)))
-          idents (map :db/ident datomic-schema)
           migrations (get-migrations connection object)]
       @(d/transact connection
                    (apply conj datomic-schema
                           [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
-                           {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user]}]))))
+                           {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}]))))
   (schema-correct? [schema]
     (let [attributes (:attributes schema)
           ks (keys attributes)]

@@ -6,7 +6,7 @@
         [datomic.api :only [q db] :as d]))
 
 
-(def db-uri-mem "datomic:mem://vendo")
+(def db-uri-mem "datomic:mem://reverie")
 
 (defn setup []
   (d/delete-database db-uri-mem)
