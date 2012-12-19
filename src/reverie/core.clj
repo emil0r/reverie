@@ -10,7 +10,22 @@
   (println "html5 hit")
   (str "args->" args))
 
-(def request-methods [:get :post :put :delete :options :head])
+
+(def attributes {:text {:schema {} :initial "" :input :text}
+                 :image {:schema {} :initial "" :input :image}
+                 :city {:schema {}
+                        :input :select
+                        :initial 0
+                        :options (fn [] {0 "" 1 "Stockholm" 2 "Harare" 3 "Oslo"})}})
+
+(defprotocol reverie-schema
+  (schema-initiate [schema connection]) ;; returns result
+  (schema-correct? [schema]) ;; true or false
+  (schema-upgrade? [schema connection]) ;; true or false
+  (schema-upgrade [schema connection]) ;; returns result
+  (schema-get [schema connection]) ;; hashmap of all the attributes with associated values
+  (schema-set [schema connection data])) ;; set the attributes
+
 
 (defn- parse-options [options]
   (loop [m {}
@@ -31,7 +46,7 @@
     (if all-kw?
       `(let [~'func (fn [~'request ~@attributes] ~@body)]
          (into {} (map vector ~methods (repeat ~'func))))
-      (let [paired (into {} (map (fn [[method fn-name]] {(keyword fn-name) method }) (partition 2 methods)))
+      (let [paired (into {} (map (fn [[method fn-name]] {(keyword fn-name) method}) (partition 2 methods)))
             bodies (map (fn [[fn-name & fn-body]] [(keyword fn-name) fn-body]) (filter vector? body))]
         (loop [[func-vector & r] bodies
                m {}]
@@ -46,4 +61,4 @@
   (let [object (keyword object)
         options (parse-options options)
         `~body `(object-funcs [] ~methods ~@args)]
-    `{~object (merge {:options ~options} ~body)}))
+    `(swap! objects assoc ~object (merge {:options ~options} ~body))))

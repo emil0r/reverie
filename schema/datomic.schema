@@ -1,0 +1,14 @@
+[
+ {:db/id #db/id [:db.part/db]
+  :db/ident :reverie.object.migrations/name
+  :db/valueType :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/doc "The name of an object. Stored away for migrations."
+  :db.install/_attribute :db.part/db}
+ {:db/id #db/id [:db.part/db]
+  :db/ident :reverie.object.migrations/keys
+  :db/valueType :db.type/keyword
+  :db/cardinality :db.cardinality/many
+  :db/doc "The keys in an object. Stored away for migrations."
+  :db.install/_attribute :db.part/db}
+ ]
