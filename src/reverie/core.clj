@@ -26,12 +26,20 @@
 ;; gets the data from the object
 ;; sets the data to the object
 (defprotocol reverie-object
-  (object-correct? [schema]) ;; true or false
-  (object-upgrade? [schema connection]) ;; true or false
-  (object-upgrade [schema connection]) ;; returns result
-  (object-initiate [schema connection id]) ;; returns result
-  (object-get [schema connection id]) ;; hashmap of all the attributes with associated values
-  (object-set [schema connection data id])) ;; set the attributes
+  (object-correct? [schema]
+    "Checks that the schema of an object is correct; checks for :schema, :initial and :input. Returns true or false")
+  (object-upgrade? [schema connection]
+    "Does the object need an upgrade? Returns true or false") ;; true or false
+  (object-upgrade [schema connection]
+    "Upgrades an object when a new schema has been added. Returns result of the upgrade")
+  (object-synchronize [schema connection]
+    "Synchronizes all objects after an upgrade has been done")
+  (object-initiate [schema connection]
+    "Initiate a newly created object. Returns the result + the id")
+  (object-get [schema connection id]
+    "Hashmap of all the attributes with associated values")
+  (object-set [schema connection data id]
+    "Set the attributes of an object"))
 
 
 (defn- parse-options [options]

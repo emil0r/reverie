@@ -73,10 +73,10 @@
                                               :input :text}})
        {:keys [database connection]} (setup)
        tx (rev/object-upgrade d connection)]
-   (rev/object-initiate d connection nil)) => truthy)
+   (rev/object-initiate d connection)) => truthy)
 
 (fact
- "reverie-schema protocol/object-set datomic"
+ "reverie-schema protocol/object-initiate datomic"
  (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
@@ -85,13 +85,13 @@
                                                        :db.install/_attribute :db.part/db}
                                               :initial "set"
                                               :input :text}})
-       {:keys [database connection]} (setup)
-       tx (rev/object-upgrade d connection)]
-   (rev/object-set d connection {:text "my text"} nil)) => truthy)
+       {:keys [database connection]} (setup)]
+   (rev/object-upgrade d connection)
+   (not (nil? (:db/id (rev/object-initiate d connection))))) => true)
 
 
 (fact
- "reverie-schema protocol/object-set datomic with id"
+ "reverie-schema protocol/object-set datomic"
  (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
@@ -102,5 +102,41 @@
                                               :input :text}})
        {:keys [database connection]} (setup)
        tx (rev/object-upgrade d connection)
-       id (:db/id (rev/object-set d connection {:text "my text"} nil))]
+       id (:db/id (rev/object-initiate d connection))]
+   (rev/object-set d connection {:text "my text"} id)
    (= id (:db/id (rev/object-set d connection {:text "my text 2"} id)))) => true)
+
+
+(fact
+ "reverie-schema protocol/object-synchronize datomic"
+ (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+                                                       :db/ident :object.text/text
+                                                       :db/valueType :db.type/string
+                                                       :db/cardinality :db.cardinality/one
+                                                       :db/doc "Text of the text object"
+                                                       :db.install/_attribute :db.part/db}
+                                              :initial "set with id"
+                                              :input :text}})
+       {:keys [database connection]} (setup)
+       tx (rev/object-upgrade d connection)
+       tx1 (rev/object-initiate d connection)
+       tx2 (rev/object-initiate d connection)
+       tx3 (rev/object-initiate d connection)
+       d2 (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+                                                        :db/ident :object.text/text
+                                                        :db/valueType :db.type/string
+                                                        :db/cardinality :db.cardinality/one
+                                                        :db/doc "Text of the text object"
+                                                        :db.install/_attribute :db.part/db}
+                                               :initial "set with id"
+                                               :input :text}
+                                        :image {:schema {:db/id #db/id [:db.part/db]
+                                                       :db/ident :object.text/image
+                                                         :db/valueType :db.type/string
+                                                         :db/cardinality :db.cardinality/one
+                                                         :db/doc "Image of the text object"
+                                                         :db.install/_attribute :db.part/db}
+                                                :initial ""
+                                                :input :text}})]
+   (rev/object-upgrade d2 connection)
+   (rev/object-synchronize d2 connection)) => true)

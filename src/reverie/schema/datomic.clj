@@ -6,6 +6,11 @@
 ;; defaults are either values or functions that return a value
 (defrecord SchemaDatomic [object attributes])
 
+(defn- expand-schema [schema]
+  {:object (:object schema)
+   :attributes (:attributes schema)
+   :ks (keys (:attributes schema))})
+
 (defn- migrated? [ks migrations]
   (loop [[migration & migrations] (vec migrations)
          migrated? false]
@@ -22,10 +27,17 @@
          [?c :reverie.object.migrations/keys ?ks]]
        (db connection) object))
 
-(defn- expand-schema [schema]
-  {:object (:object schema)
-   :attributes (:attributes schema)
-   :ks (keys (:attributes schema))})
+(defn- get-initials [schema]
+  (let [{:keys [attributes ks]} (expand-schema schema)]
+    (into {}  (map (fn [k] [k (-> (attributes k) :initial)]) ks))))
+
+(defn- get-idents [schema]
+  (let [{:keys [attributes ks]} (expand-schema schema)]
+    (map (fn [k] [k (-> (attributes k) :schema :db/ident)]) ks)))
+
+(defn- cross-initials-idents [initials idents]
+  (map (fn [[k attr]] {attr (initials k)})
+       idents))
 
 (extend-type SchemaDatomic
   reverie-object
@@ -49,31 +61,32 @@
       @(d/transact connection [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
                                {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
       @(d/transact connection datomic-schema)))
-  (object-initiate [schema connection id]
-    (let [{:keys [object attributes ks]} (expand-schema schema)
-          initials (into {}  (map (fn [k] [k (-> (attributes k) :initial)]) ks))
-          idents (map (fn [k] [k (-> (attributes k) :schema :db/ident)]) ks)
+  (object-synchronize [schema connection]
+    (let [objects (map #(let [entity (d/entity (db connection) (first %))
+                              ks (keys entity)]
+                          [entity ks]) (d/q '[:find ?c :in $ :where [?c :reverie/object ?o]] (db connection)))
+          attribs (cross-initials-idents (get-initials schema) (get-idents schema))]
+      ;;
+      ))
+  (object-initiate [schema connection]
+    (let [{:keys [object]} (expand-schema schema)
+          initials (get-initials schema)
+          idents (get-idents schema)
           tmpid {:db/id #db/id [:db.part/user -1]}
           attribs (apply conj [(merge tmpid {:reverie/object object})]
                         (into []
                               (map #(merge tmpid %)
-                                   (map (fn [[k attr]] {attr (initials k)})
-                                        idents))))
+                                   (cross-initials-idents initials idents))))
           tx @(d/transact connection attribs)]
       (assoc tx :db/id (-> tx :tempids vals last))))
   (object-get [schema connection id]
     (let [{:keys [attributes ks]} (expand-schema schema)
-          idents (map #(-> (attributes %) :schema :db/ident) ks)]
+          idents (get-idents schema)]
       true
       ))
   (object-set [schema connection data id]
-    (let [{:keys [attributes ks]} (expand-schema schema)
-          idents (map (fn [k] [k (-> (attributes k) :schema :db/ident)]) ks)
+    (let [idents (get-idents schema)
           attribs (map (fn [[k attr]] {attr (data k)}) idents)]
-      (if (nil? id)
-        (let [attribs (into [] (map #(merge {:db/id #db/id [:db.part/user] } %) attribs))
-              tx @(d/transact connection attribs)]
-          (assoc tx :db/id (-> tx :tempids vals last)))
-        (let [attribs (into [] (map #(merge {:db/id id} %) attribs))]
-          (-> @(d/transact connection attribs) (assoc :db/id id)))))))
+      (let [attribs (into [] (map #(merge {:db/id id} %) attribs))]
+        (-> @(d/transact connection attribs) (assoc :db/id id))))))
 
