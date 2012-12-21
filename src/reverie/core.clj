@@ -19,12 +19,6 @@
                         :options (fn [] {0 "" 1 "Stockholm" 2 "Harare" 3 "Oslo"})}})
 
 
-;; checks that the object has the schema correctly set up
-;; checks if the object needs to be upgraded
-;; upgrades the object
-;; initiates the object with the initial data
-;; gets the data from the object
-;; sets the data to the object
 (defprotocol reverie-object
   (object-correct? [schema]
     "Checks that the schema of an object is correct; checks for :schema, :initial and :input. Returns true or false")

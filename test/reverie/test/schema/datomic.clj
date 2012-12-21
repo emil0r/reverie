@@ -140,3 +140,22 @@
                                                 :input :text}})]
    (rev/object-upgrade d2 connection)
    (rev/object-synchronize d2 connection)) => truthy)
+
+
+
+(fact
+ "reverie-schema protocol/object-get datomic"
+ (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+                                                       :db/ident :object.text/text
+                                                       :db/valueType :db.type/string
+                                                       :db/cardinality :db.cardinality/one
+                                                       :db/doc "Text of the text object"
+                                                       :db.install/_attribute :db.part/db}
+                                              :initial "set with id"
+                                              :input :text}})
+       {:keys [database connection]} (setup)
+       id (:db/id (rev/object-upgrade d connection))
+       obj1 (rev/object-get d connection id)
+       id (:db/id (rev/object-initiate d connection))]
+   (rev/object-set d connection {:text "my text"} id)
+   (= id (:db/id (rev/object-set d connection {:text "my text 2"} id)))) => true)

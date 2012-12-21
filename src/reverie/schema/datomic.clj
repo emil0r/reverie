@@ -22,10 +22,10 @@
           (recur migrations migrated?))))))
 
 (defn- get-migrations [connection object]
-  (d/q '[:find ?ks ?object :in $ ?object :where
-         [?c :reverie.object.migrations/name ?object]
-         [?c :reverie.object.migrations/keys ?ks]]
-       (db connection) object))
+  (q '[:find ?ks ?object :in $ ?object :where
+       [?c :reverie.object.migrations/name ?object]
+       [?c :reverie.object.migrations/keys ?ks]]
+     (db connection) object))
 
 (defn- get-initials [schema]
   (let [{:keys [attributes ks]} (expand-schema schema)]
@@ -71,7 +71,7 @@
     (let [{:keys [attributes ks]} (expand-schema schema)
           objects (map #(let [entity (d/entity (db connection) (first %))
                               ks (keys entity)]
-                          [entity ks]) (d/q '[:find ?c :in $ :where [?c :reverie/object ?o]] (db connection)))
+                          [entity ks]) (q '[:find ?c :in $ :where [?c :reverie/object ?o]] (db connection)))
           ident-kws (->> (cross-initials-idents schema)
                          (map ffirst)
                          (cons :reverie/object)
@@ -94,16 +94,13 @@
           idents (get-idents schema)
           tmpid {:db/id #db/id [:db.part/user -1]}
           attribs (apply conj [(merge tmpid {:reverie/object object})]
-                        (into []
-                              (map #(merge tmpid %)
-                                   (cross-initials-idents initials idents))))
+                         (into []
+                               (map #(merge tmpid %)
+                                    (cross-initials-idents initials idents))))
           tx @(d/transact connection attribs)]
       (assoc tx :db/id (-> tx :tempids vals last))))
   (object-get [schema connection id]
-    (let [{:keys [attributes ks]} (expand-schema schema)
-          idents (get-idents schema)]
-      true
-      ))
+    (q '[:find ?c :in $ ?o :where [?c :reverie/object]] (db connection) id))
   (object-set [schema connection data id]
     (let [idents (get-idents schema)
           attribs (map (fn [[k attr]] {attr (data k)}) idents)]
