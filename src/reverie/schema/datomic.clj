@@ -35,9 +35,15 @@
   (let [{:keys [attributes ks]} (expand-schema schema)]
     (map (fn [k] [k (-> (attributes k) :schema :db/ident)]) ks)))
 
-(defn- cross-initials-idents [initials idents]
-  (map (fn [[k attr]] {attr (initials k)})
-       idents))
+(defn- cross-initials-idents
+  ([schema]
+     (let [initials (get-initials schema)
+           idents (get-idents schema)]
+       (map (fn [[k attr]] {attr (initials k)})
+            idents)))
+  ([initials idents]
+     (map (fn [[k attr]] {attr (initials k)})
+          idents)))
 
 (extend-type SchemaDatomic
   reverie-object
@@ -62,12 +68,26 @@
                                {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
       @(d/transact connection datomic-schema)))
   (object-synchronize [schema connection]
-    (let [objects (map #(let [entity (d/entity (db connection) (first %))
+    (let [{:keys [attributes ks]} (expand-schema schema)
+          objects (map #(let [entity (d/entity (db connection) (first %))
                               ks (keys entity)]
                           [entity ks]) (d/q '[:find ?c :in $ :where [?c :reverie/object ?o]] (db connection)))
-          attribs (cross-initials-idents (get-initials schema) (get-idents schema))]
-      ;;
-      ))
+          ident-kws (->> (cross-initials-idents schema)
+                         (map ffirst)
+                         (cons :reverie/object)
+                         sort)
+          mismatched-objects (filter #(not (= ident-kws (sort (second %)))) objects)
+          attribs (into {}  (cross-initials-idents schema))
+          transactions (vec
+                        (map (fn [[o i]]
+                               (merge {:db/id (:db/id o)}
+                                      (into {}
+                                            (map (fn [k] {k (get attribs k)})
+                                                 (clojure.set/difference
+                                                  (set ident-kws)
+                                                  (set i))))))
+                             mismatched-objects))]
+      @(d/transact connection transactions)))
   (object-initiate [schema connection]
     (let [{:keys [object]} (expand-schema schema)
           initials (get-initials schema)

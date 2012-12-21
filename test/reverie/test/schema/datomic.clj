@@ -139,4 +139,4 @@
                                                 :initial ""
                                                 :input :text}})]
    (rev/object-upgrade d2 connection)
-   (rev/object-synchronize d2 connection)) => true)
+   (rev/object-synchronize d2 connection)) => truthy)
