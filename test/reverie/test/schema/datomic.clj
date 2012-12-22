@@ -18,7 +18,9 @@
                                                        :db/doc "Text of the text object"
                                                        :db.install/_attribute :db.part/db}
                                               :initial ""
-                                              :input :text}})]
+                                              :input :text
+                                              :name "Text"
+                                              :description ""}})]
    (rev/object-correct? d)) => true)
 
 (fact
@@ -154,8 +156,8 @@
                                               :initial "set with id"
                                               :input :text}})
        {:keys [database connection]} (setup)
-       id (:db/id (rev/object-upgrade d connection))
-       obj1 (rev/object-get d connection id)
-       id (:db/id (rev/object-initiate d connection))]
-   (rev/object-set d connection {:text "my text"} id)
-   (= id (:db/id (rev/object-set d connection {:text "my text 2"} id)))) => true)
+       tx (rev/object-upgrade d connection)
+       id (:db/id (rev/object-initiate d connection))
+       tx2 (rev/object-set d connection {:text "my text"} id)
+       obj1 (rev/object-get d connection id)]
+   (:object.text/text obj1)) => "my text")

@@ -53,7 +53,7 @@
              correct? true]
         (if (nil? k)
           correct?
-          (let [values (map #(get (attributes k) %) [:schema :initial :input])]
+          (let [values (map #(get (attributes k) %) [:schema :initial :input :name])]
             (if (not-any? nil? values)
               (recur ks correct?)
               (recur ks false)))))))
@@ -100,7 +100,8 @@
           tx @(d/transact connection attribs)]
       (assoc tx :db/id (-> tx :tempids vals last))))
   (object-get [schema connection id]
-    (q '[:find ?c :in $ ?o :where [?c :reverie/object]] (db connection) id))
+    (let [dbc (db connection)]
+      (d/entity dbc id)))
   (object-set [schema connection data id]
     (let [idents (get-idents schema)
           attribs (map (fn [[k attr]] {attr (data k)}) idents)]
