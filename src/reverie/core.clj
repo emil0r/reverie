@@ -32,6 +32,8 @@
     "Initiate a newly created object. Returns the result + the id")
   (object-get [schema connection id]
     "Hashmap of all the attributes with associated values")
+  (object-transform [schema entity]
+    "Returns a hashmap of the entity's attributes mapped to the attributes of the schema ")
   (object-set [schema connection data id]
     "Set the attributes of an object"))
 

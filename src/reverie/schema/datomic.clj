@@ -100,8 +100,10 @@
           tx @(d/transact connection attribs)]
       (assoc tx :db/id (-> tx :tempids vals last))))
   (object-get [schema connection id]
-    (let [dbc (db connection)]
-      (d/entity dbc id)))
+    (d/entity (db connection) id))
+  (object-transform [schema entity]
+    (let [idents (get-idents schema)]
+      (into {} (map (fn [[attribute ident]] {attribute (get entity ident)}) idents))))
   (object-set [schema connection data id]
     (let [idents (get-idents schema)
           attribs (map (fn [[k attr]] {attr (data k)}) idents)]

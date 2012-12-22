@@ -161,3 +161,21 @@
        tx2 (rev/object-set d connection {:text "my text"} id)
        obj1 (rev/object-get d connection id)]
    (:object.text/text obj1)) => "my text")
+
+
+(fact
+ "reverie-schema protocol/object-transform datomic"
+ (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+                                                       :db/ident :object.text/text
+                                                       :db/valueType :db.type/string
+                                                       :db/cardinality :db.cardinality/one
+                                                       :db/doc "Text of the text object"
+                                                       :db.install/_attribute :db.part/db}
+                                              :initial "set with id"
+                                              :input :text}})
+       {:keys [database connection]} (setup)
+       tx (rev/object-upgrade d connection)
+       id (:db/id (rev/object-initiate d connection))
+       tx2 (rev/object-set d connection {:text "my text"} id)
+       obj1 (rev/object-get d connection id)]
+   (->> obj1 (rev/object-transform d) :text)) => "my text")
