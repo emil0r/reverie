@@ -55,7 +55,9 @@
           correct?
           (let [values (map #(get (attributes k) %) [:schema :initial :input :name])]
             (if (not-any? nil? values)
-              (recur ks correct?)
+              (if (= k (-> k attributes :schema :db/ident))
+                (recur ks correct?)
+                (recur ks false))
               (recur ks false)))))))
   (object-upgrade? [schema connection]
     (let [{:keys [object ks]} (expand-schema schema)]

@@ -11,22 +11,22 @@
 
 (fact
  "reverie-schema protocol/object-correct? datomic -> correct"
- (let [d (SchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
-                                                       :db/ident :object.text/text
-                                                       :db/valueType :db.type/string
-                                                       :db/cardinality :db.cardinality/one
-                                                       :db/doc "Text of the text object"
-                                                       :db.install/_attribute :db.part/db}
-                                              :initial ""
-                                              :input :text
-                                              :name "Text"
-                                              :description ""}})]
+ (let [d (SchemaDatomic. :object/text {:object.text/text {:schema {:db/id #db/id [:db.part/db]
+                                                                   :db/ident :object.text/text
+                                                                   :db/valueType :db.type/string
+                                                                   :db/cardinality :db.cardinality/one
+                                                                   :db/doc "Text of the text object"
+                                                                   :db.install/_attribute :db.part/db}
+                                                   :initial ""
+                                                   :input :text
+                                                   :name "Text"
+                                                   :description ""}})]
    (rev/object-correct? d)) => true)
 
 (fact
  "reverie-schema protocol/object-correct? datomic -> not correct"
  (let [d (SchemaDatomic. :object/text {:text {:initial ""
-                                                   :input :text}})]
+                                              :input :text}})]
    (rev/object-correct? d)) => false)
 
 
