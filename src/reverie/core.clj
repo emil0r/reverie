@@ -11,12 +11,7 @@
   (str "args->" args))
 
 
-(def attributes {:text {:schema {} :initial "" :input :text}
-                 :image {:schema {} :initial "" :input :image}
-                 :city {:schema {}
-                        :input :select
-                        :initial 0
-                        :options (fn [] {0 "" 1 "Stockholm" 2 "Harare" 3 "Oslo"})}})
+
 
 
 (defprotocol reverie-object
@@ -37,6 +32,9 @@
   (object-set [schema connection data id]
     "Set the attributes of an object"))
 
+(defmulti get-schema :schema)
+(defmethod get-schema :default [settings]
+  (import reverie.schema.datomic.SchemaDatomic))
 
 (defn- parse-options [options]
   (loop [m {}
