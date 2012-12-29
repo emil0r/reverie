@@ -6,7 +6,7 @@
   (:use midje.sweet
         [datomic.api :only [q db] :as d]
         [reverie.test.core :only [setup]])
-  (:import reverie.schema.datomic.SchemaDatomic))
+  (:import reverie.core.SchemaDatomic))
 
 
 (fact
@@ -133,7 +133,7 @@
                                                :initial "set with id"
                                                :input :text}
                                         :image {:schema {:db/id #db/id [:db.part/db]
-                                                       :db/ident :object.text/image
+                                                         :db/ident :object.text/image
                                                          :db/valueType :db.type/string
                                                          :db/cardinality :db.cardinality/one
                                                          :db/doc "Image of the text object"

@@ -1,4 +1,5 @@
-(ns reverie.core)
+(ns reverie.core
+  (:use [datomic.api :only [db]]))
 
 (defonce routes (atom {}))
 (defonce templates (atom {}))
@@ -9,9 +10,6 @@
 (defn html5 [& args]
   (println "html5 hit")
   (str "args->" args))
-
-
-
 
 
 (defprotocol reverie-object
@@ -32,9 +30,7 @@
   (object-set [schema connection data id]
     "Set the attributes of an object"))
 
-(defmulti get-schema :schema)
-(defmethod get-schema :default [settings]
-  (import reverie.schema.datomic.SchemaDatomic))
+(defrecord SchemaDatomic [object attributes])
 
 (defn- parse-options [options]
   (loop [m {}
@@ -43,6 +39,26 @@
       m
       (let [[k v] opt]
         (recur (assoc m k v) options)))))
+
+(defmulti parse-schemas (fn [object options {:keys [schema]}] schema))
+(defmethod parse-schemas :default [object {:keys [attributes] :as options} settings]
+  (let [schemas-data (map (fn [m]
+                            (let [k (first
+                                     (filter
+                                      #(not (nil? (:db/ident (m %))))
+                                      (keys m)))
+                                  schema (merge (m k) {:db/id #db/id [:db.part/user]})]
+                              (merge m {k schema}))) attributes)]
+    (map #(SchemaDatomic. object %) schemas-data)))
+
+(defn run-schemas! [connection]
+  (let [schemas nil]
+   (doseq [s schemas]
+     (if (object-correct? s)
+       (if (object-upgrade? s connection)
+         (do
+           (object-upgrade s connection)
+           (object-synchronize s connection)))))))
 
 (defmacro deftemplate [template options body]
   (let [template (keyword template)
@@ -67,7 +83,9 @@
                (recur r m)))))))))
 
 (defmacro defobject [object options methods & args]
-  (let [object (keyword object)
-        options (parse-options options)
-        `~body `(object-funcs [] ~methods ~@args)]
-    `(swap! objects assoc ~object (merge {:options ~options} ~body))))
+   (let [object (keyword object)
+         options (parse-options options)
+         settings {}
+         schemas (parse-schemas object options settings)
+         `~body `(object-funcs [] ~methods ~@args)]
+     `(swap! objects assoc ~object (merge {:options ~options :schemas [~@schemas]} ~body))))

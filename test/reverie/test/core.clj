@@ -26,6 +26,9 @@
 (defn reset-routes! []
   (reset! rev/routes {}))
 
+(defn reset-objects! []
+  (reset! rev/objects {}))
+
 (defn request []
   {:uri "/"})
 
@@ -64,3 +67,18 @@
    ((:get obj) request "text")) => "<div>this is my text</div>")
 
 
+(fact
+ "defobject"
+ (do
+   (reset-objects!)
+   (rev/defobject object/text [:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/type :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text"}]] [:get] "")
+   (-> @rev/objects :object/text nil?)) => false)
+
+
+
+(fact
+ "defobject and run-schemas!"
+ (do
+   (reset-objects!)
+   (rev/defobject object/text [:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/type :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text"}]] [:get] "")
+   (-> @rev/objects :object/text nil?)) => false)

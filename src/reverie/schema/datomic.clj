@@ -1,10 +1,10 @@
 (ns reverie.schema.datomic
   (:use [datomic.api :only [q db] :as d]
-        [reverie.core :only [reverie-object]]))
+        [reverie.core :only [reverie-object]])
+  (:import reverie.core.SchemaDatomic))
 
 
 ;; defaults are either values or functions that return a value
-(defrecord SchemaDatomic [object attributes])
 
 (defn- expand-schema [schema]
   {:object (:object schema)
@@ -50,13 +50,13 @@
   (object-correct? [schema]
     (let [{:keys [attributes ks]} (expand-schema schema)]
       (loop [[k & ks] ks
-             correct? true]
+             correct? false]
         (if (nil? k)
           correct?
           (let [values (map #(get (attributes k) %) [:schema :initial :input :name])]
             (if (not-any? nil? values)
-              (recur ks correct?)
-              (recur ks false)))))))
+              (recur ks true)
+              (recur ks correct?)))))))
   (object-upgrade? [schema connection]
     (let [{:keys [object ks]} (expand-schema schema)]
       (not (migrated? ks (get-migrations connection object)))))
