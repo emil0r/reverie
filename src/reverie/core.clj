@@ -48,7 +48,7 @@
                                            (filter
                                             #(not (nil? (:db/ident (m %))))
                                             (keys m)))
-                                        schema {:schema (merge (m k) {:db/id #db/id [:db.part/user]
+                                        schema {:schema (merge (m k) {:db/id #db/id [:db.part/db]
                                                                       :db.install/_attribute :db.part/db})}]
                                     {k (merge m schema)})) attributes))]
     (SchemaDatomic. object schemas-data)))
@@ -59,12 +59,8 @@
       (if (object-correct? s)
         (if (object-upgrade? s connection)
           (do
-            (println "upgrade? yes")
             (object-upgrade s connection)
-            (println "upgraded!")
-            
-            (object-synchronize s connection)
-            ))))))
+            (object-synchronize s connection)))))))
 
 (defmacro deftemplate [template options body]
   (let [template (keyword template)
