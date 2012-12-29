@@ -78,7 +78,10 @@
 
 (fact
  "defobject and run-schemas!"
- (do
+ (let [{:keys [database connection]} (setup)]
    (reset-objects!)
-   (rev/defobject object/text [:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/type :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text"}]] [:get] "")
+   (rev/defobject object/text [:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]] [:get] "")
+   (rev/run-schemas! connection)
+   (println (q '[:find ?c :where [?c :db/ident :object.text/text]] (db connection)))
    (-> @rev/objects :object/text nil?)) => false)
+

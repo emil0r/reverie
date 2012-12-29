@@ -66,6 +66,7 @@
           migrations (get-migrations connection object)]
       @(d/transact connection [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
                                {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
+      (println datomic-schema)
       @(d/transact connection datomic-schema)))
   (object-synchronize [schema connection]
     (let [{:keys [attributes ks]} (expand-schema schema)

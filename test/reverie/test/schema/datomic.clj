@@ -17,10 +17,10 @@
                                                                    :db/cardinality :db.cardinality/one
                                                                    :db/doc "Text of the text object"
                                                                    :db.install/_attribute :db.part/db}
-                                                   :initial ""
-                                                   :input :text
-                                                   :name "Text"
-                                                   :description ""}})]
+                                                          :initial ""
+                                                          :input :text
+                                                          :name "Text"
+                                                          :description ""}})]
    (rev/object-correct? d)) => true)
 
 (fact

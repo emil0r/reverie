@@ -42,23 +42,29 @@
 
 (defmulti parse-schemas (fn [object options {:keys [schema]}] schema))
 (defmethod parse-schemas :default [object {:keys [attributes] :as options} settings]
-  (let [schemas-data (map (fn [m]
-                            (let [k (first
-                                     (filter
-                                      #(not (nil? (:db/ident (m %))))
-                                      (keys m)))
-                                  schema (merge (m k) {:db/id #db/id [:db.part/user]})]
-                              (merge m {k schema}))) attributes)]
-    (map #(SchemaDatomic. object %) schemas-data)))
+  (let [schemas-data (into {}
+                           (map (fn [m]
+                                  (let [k (first
+                                           (filter
+                                            #(not (nil? (:db/ident (m %))))
+                                            (keys m)))
+                                        schema {:schema (merge (m k) {:db/id #db/id [:db.part/user]
+                                                                      :db.install/_attribute :db.part/db})}]
+                                    {k (merge m schema)})) attributes))]
+    (SchemaDatomic. object schemas-data)))
 
 (defn run-schemas! [connection]
-  (let [schemas nil]
-   (doseq [s schemas]
-     (if (object-correct? s)
-       (if (object-upgrade? s connection)
-         (do
-           (object-upgrade s connection)
-           (object-synchronize s connection)))))))
+  (let [schemas (map #(:schemas (@objects %)) (keys @objects))]
+    (doseq [s schemas]
+      (if (object-correct? s)
+        (if (object-upgrade? s connection)
+          (do
+            (println "upgrade? yes")
+            (object-upgrade s connection)
+            (println "upgraded!")
+            
+            (object-synchronize s connection)
+            ))))))
 
 (defmacro deftemplate [template options body]
   (let [template (keyword template)
@@ -88,4 +94,4 @@
          settings {}
          schemas (parse-schemas object options settings)
          `~body `(object-funcs [] ~methods ~@args)]
-     `(swap! objects assoc ~object (merge {:options ~options :schemas [~@schemas]} ~body))))
+     `(swap! objects assoc ~object (merge {:options ~options :schemas ~schemas} ~body))))
