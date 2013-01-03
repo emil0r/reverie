@@ -85,3 +85,11 @@
    (number? (ffirst (q '[:find ?c :where [?c :db/ident :object.text/text]] (db connection))))) => true)
 
 
+(fact
+ "defobject and atttributes"
+ (let [{:keys [database connection]} (setup)]
+   (reset-objects!)
+   (rev/defobject object/text [:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]] [:get] text)
+   (rev/run-schemas! connection)
+   (let [f (-> @rev/objects :object/text :get)]
+     (f {:uri "/"} "my text"))) => "my text")
