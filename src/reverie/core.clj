@@ -53,6 +53,9 @@
                                     {k (merge m schema)})) attributes))]
     (SchemaDatomic. object schemas-data)))
 
+(defn- get-attributes [schemas]
+  (map #(-> % name symbol) (keys (:attributes schemas))))
+
 (defn run-schemas! [connection]
   (let [schemas (map #(:schemas (@objects %)) (keys @objects))]
     (doseq [s schemas]
@@ -89,5 +92,6 @@
          options (parse-options options)
          settings {}
          schemas (parse-schemas object options settings)
-         `~body `(object-funcs [] ~methods ~@args)]
+         attributes (get-attributes schemas)
+         `~body `(object-funcs ~attributes ~methods ~@args)]
      `(swap! objects assoc ~object (merge {:options ~options :schemas ~schemas} ~body))))
