@@ -19,6 +19,12 @@
   :db/cardinality :db.cardinality/one
   :db/doc "Is the reference deleted?"
   :db.install/_attribute :db.part/db}
+ {:db/id #db/id [:db.part/db]
+  :db/ident :reverie/order
+  :db/valueType :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc "Order of objects, pages, etc"
+  :db.install/_attribute :db.part/db}
  ;; objects
  {:db/id #db/id [:db.part/db]
   :db/ident :reverie/object
