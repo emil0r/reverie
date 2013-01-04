@@ -6,12 +6,6 @@
 (defonce objects (atom {}))
 (defonce apps (atom {}))
 
-
-(defn html5 [& args]
-  (println "html5 hit")
-  (str "args->" args))
-
-
 (defprotocol reverie-object
   (object-correct? [schema]
     "Checks that the schema of an object is correct; checks for :schema, :initial and :input. Returns true or false")
@@ -30,7 +24,12 @@
   (object-set [schema connection data id]
     "Set the attributes of an object"))
 
-(defrecord SchemaDatomic [object attributes])
+(defprotocol reverie-page
+  (page-objects [page-id area]
+    "Returns all the object ids for the page for the area"))
+
+(defrecord ObjectDatomic [object attributes])
+(defrecord PageDatomic [page-id])
 
 (defn- parse-options [options]
   (loop [m {}
@@ -51,7 +50,7 @@
                                         schema {:schema (merge (m k) {:db/id #db/id [:db.part/db]
                                                                       :db.install/_attribute :db.part/db})}]
                                     {k (merge m schema)})) attributes))]
-    (SchemaDatomic. object schemas-data)))
+    (ObjectDatomic. object schemas-data)))
 
 (defn- get-attributes [schemas]
   (map #(-> % name symbol) (keys (:attributes schemas))))
@@ -65,11 +64,24 @@
             (object-upgrade s connection)
             (object-synchronize s connection)))))))
 
-(defmacro deftemplate [template options body]
+(defn- get-objects [request connection page-id])
+
+(defmacro area [name]
+  (let [name (keyword name)]
+    `(if (= ~'mode :edit)
+       [:div.reverie-area {:id ~name :name ~name :class ~name}
+        (get-objects ~'request ~'connection ~'page-id)]
+       (get-objects ~'request ~'connection ~'page-id))))
+
+(defn tempus [request connection page-id mode]
+  (area a))
+(tempus {} nil nil :public)
+
+(defmacro deftemplate [template options & body]
   (let [template (keyword template)
         options (parse-options options)]
     `(swap! routes assoc ~template {:options ~options
-                                    :fn (fn [~'request] ~body)})))
+                                    :fn (fn [~'request ~'connection ~'page-id ~'mode] ~@body)})))
 
 (defmacro object-funcs [attributes methods & body]
   (let [all-kw? (zero? (count (filter #(not (keyword? %)) methods)))]
@@ -93,5 +105,5 @@
          settings {}
          schemas (parse-schemas object options settings)
          attributes (get-attributes schemas)
-         `~body `(object-funcs ~attributes ~methods ~@args)]
+         body `(object-funcs ~attributes ~methods ~@args)]
      `(swap! objects assoc ~object (merge {:options ~options :schemas ~schemas} ~body))))

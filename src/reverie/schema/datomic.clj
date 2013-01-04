@@ -1,7 +1,7 @@
 (ns reverie.schema.datomic
   (:use [datomic.api :only [q db] :as d]
         [reverie.core :only [reverie-object]])
-  (:import reverie.core.SchemaDatomic))
+  (:import reverie.core.ObjectDatomic))
 
 
 ;; defaults are either values or functions that return a value
@@ -45,7 +45,7 @@
      (map (fn [[k attr]] {attr (initials k)})
           idents)))
 
-(extend-type SchemaDatomic
+(extend-type ObjectDatomic
   reverie-object
   (object-correct? [schema]
     (let [{:keys [attributes ks]} (expand-schema schema)]
