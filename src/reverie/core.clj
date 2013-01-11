@@ -22,14 +22,11 @@
   (object-transform [schema entity]
     "Returns a hashmap of the entity's attributes mapped to the attributes of the schema ")
   (object-set [schema connection data id]
-    "Set the attributes of an object"))
-
-(defprotocol reverie-page
-  (page-objects [page-id area]
-    "Returns all the object ids for the page for the area"))
+    "Set the attributes of an object")
+  (object-add-page [schema connection page-id area]
+    "Add object to the area for the page"))
 
 (defrecord ObjectDatomic [object attributes])
-(defrecord PageDatomic [page-id])
 
 (defn- parse-options [options]
   (loop [m {}
@@ -64,24 +61,28 @@
             (object-upgrade s connection)
             (object-synchronize s connection)))))))
 
-(defn- get-objects [request connection page-id])
+(defn- page-objects [rdata]
+  "Get objects for the page"
+  (let [{:keys [connection page-id area request]} rdata]
+    ))
 
 (defmacro area [name]
   (let [name (keyword name)]
-    `(if (= ~'mode :edit)
-       [:div.reverie-area {:id ~name :name ~name :class ~name}
-        (get-objects ~'request ~'connection ~'page-id)]
-       (get-objects ~'request ~'connection ~'page-id))))
+    `(let [{:keys [~'mode]} ~'rdata]
+       (if (= ~'mode :edit)
+         [:div.reverie-area {:id ~name :name ~name :class ~name}
+          (page-objects (assoc ~'rdata :area ~name))]
+         (page-objects (assoc ~'rdata :area ~name))))))
 
-(defn tempus [request connection page-id mode]
+(defn tempus [rdata]
   (area a))
-(tempus {} nil nil :public)
+(tempus {:request {} :connection nil :page-id nil :mode :public})
 
 (defmacro deftemplate [template options & body]
   (let [template (keyword template)
         options (parse-options options)]
     `(swap! routes assoc ~template {:options ~options
-                                    :fn (fn [~'request ~'connection ~'page-id ~'mode] ~@body)})))
+                                    :fn (fn [~'rdata] ~@body)})))
 
 (defmacro object-funcs [attributes methods & body]
   (let [all-kw? (zero? (count (filter #(not (keyword? %)) methods)))]

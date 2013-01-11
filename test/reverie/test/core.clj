@@ -42,11 +42,14 @@
          k (first (keys m))
          options (:options (m k))
          func (:fn (m k))]
-     [k options (func (request) nil nil :edit)])) => [:main
-                                                      {:areas [:a :b :c]
-                                                       :pre [pre-test]
-                                                       :post [post-test]}
-                                                      "body"])
+     [k options (func {:request (request)
+                       :connection nil
+                       :page-id nil
+                       :mode :edit})])) => [:main
+                                            {:areas [:a :b :c]
+                                             :pre [pre-test]
+                                             :post [post-test]}
+                                            "body"])
 
 
 (fact

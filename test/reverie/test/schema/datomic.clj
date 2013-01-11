@@ -1,4 +1,3 @@
-
 (ns reverie.test.schema.datomic
   (:require [reverie.core :as rev]
             [reverie.schema.datomic :as _] ;; for reloads in midje
