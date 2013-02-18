@@ -22,9 +22,17 @@
   (object-transform [schema entity]
     "Returns a hashmap of the entity's attributes mapped to the attributes of the schema ")
   (object-set [schema connection data id]
-    "Set the attributes of an object")
-  (object-add-page [schema connection page-id area]
-    "Add object to the area for the page"))
+    "Set the attributes of an object"))
+
+(defprotocol reverie-page
+  (page-render [connection page-id]
+    "Render the entire page. Return a data structure to pass onto ring.")
+  (page-get-objects [connection page-id]
+    "Return hashmap of all objects with associated areas")
+  (page-get-meta [connection page-id]
+    "Return all meta info about the page -> areas + template")
+  (page-set-object [connection page-id object-id area position]
+    "Add/move an object to the page"))
 
 (defrecord ObjectDatomic [object attributes])
 
