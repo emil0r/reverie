@@ -25,16 +25,17 @@
     "Set the attributes of an object"))
 
 (defprotocol reverie-page
-  (page-render [connection page-id]
+  (page-render [rdata]
     "Render the entire page. Return a data structure to pass onto ring.")
-  (page-get-objects [connection page-id]
-    "Return hashmap of all objects with associated areas")
-  (page-get-meta [connection page-id]
+  (page-objects [rdata]
+    "Returns a vector of all objects with the associated area/page")
+  (page-get-meta [rdata]
     "Return all meta info about the page -> areas + template")
-  (page-set-object [connection page-id object-id area position]
+  (page-set-object [rdata]
     "Add/move an object to the page"))
 
 (defrecord ObjectDatomic [object attributes])
+(defrecord ReverieDataDatomic [connection request page-id attributes])
 
 (defn- parse-options [options]
   (loop [m {}
@@ -69,11 +70,6 @@
             (object-upgrade s connection)
             (object-synchronize s connection)))))))
 
-(defn- page-objects [rdata]
-  "Get objects for the page"
-  (let [{:keys [connection page-id area request]} rdata]
-    ))
-
 (defmacro area [name]
   (let [name (keyword name)]
     `(let [{:keys [~'mode]} ~'rdata]
@@ -81,10 +77,6 @@
          [:div.reverie-area {:id ~name :name ~name :class ~name}
           (page-objects (assoc ~'rdata :area ~name))]
          (page-objects (assoc ~'rdata :area ~name))))))
-
-(defn tempus [rdata]
-  (area a))
-(tempus {:request {} :connection nil :page-id nil :mode :public})
 
 (defmacro deftemplate [template options & body]
   (let [template (keyword template)

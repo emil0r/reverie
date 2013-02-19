@@ -1,7 +1,7 @@
 (ns reverie.schema.datomic
   (:use [datomic.api :only [q db] :as d]
-        [reverie.core :only [reverie-object]])
-  (:import reverie.core.ObjectDatomic))
+        [reverie.core :only [reverie-object reverie-page]])
+  (:import reverie.core.ObjectDatomic reverie.core.ReverieDataDatomic))
 
 
 ;; defaults are either values or functions that return a value
@@ -110,3 +110,11 @@
       (let [attribs (into [] (map #(merge {:db/id id} %) attribs))]
         (-> @(d/transact connection attribs) (assoc :db/id id))))))
 
+
+(extend-type ReverieDataDatomic
+  reverie-page
+  (page-render [rdata])
+  (page-objects [rdata]
+    (println rdata))
+  (page-get-meta [rdata])
+  (page-set-object [rdata]))
