@@ -8,6 +8,21 @@
   (:import reverie.core.ObjectDatomic reverie.core.ReverieDataDatomic))
 
 
+
+(fact
+ "add page"
+ (let [{:keys [database connection]} (setup)
+       request {:command :page-new
+                :data {:parent nil
+                       :name "my test page"
+                       :template :main
+                       :control :?}}
+       page-id nil
+       attributes {}
+       rdata (ReverieDataDatomic. connection request page-id attributes)]
+   (rev/page-new rdata))
+ => truthy)
+
 (defn tempus [rdata]
   (rev/area a))
 (tempus (ReverieDataDatomic. nil {} nil {:mode :public}))

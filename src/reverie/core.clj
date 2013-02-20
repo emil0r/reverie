@@ -31,8 +31,22 @@
     "Returns a vector of all objects with the associated area/page")
   (page-get-meta [rdata]
     "Return all meta info about the page -> areas + template")
-  (page-set-object [rdata]
-    "Add/move an object to the page"))
+  (page-update-object [rdata object-data]
+    "Update an object")
+  (page-new-object [rdata object-data]
+    "Add an object to the page")
+  (page-delete-object [rdata object-data]
+    "Delete an object from the page")
+  (page-restore-object [rdata object-data]
+    "Restore a deleted object")
+  (page-new [rdata]
+    "Create a new page")
+  (page-update [rdata]
+    "Update the page with the new data")
+  (page-delete [rdata]
+    "Delete the page")
+  (page-restore [rdata]
+    "Restore a deleted page"))
 
 (defrecord ObjectDatomic [object attributes])
 (defrecord ReverieDataDatomic [connection request page-id attributes])

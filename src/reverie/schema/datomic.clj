@@ -114,7 +114,14 @@
 (extend-type ReverieDataDatomic
   reverie-page
   (page-render [rdata])
-  (page-objects [rdata]
-    (println rdata))
+  (page-objects [rdata])
   (page-get-meta [rdata])
-  (page-set-object [rdata]))
+  (page-new-object [rdata object-data])
+  (page-update-object [rdata object-data])
+  (page-delete-object [rdata object-data])
+  (page-new [{:keys [connection request] :as rdata}]
+    (println connection request))
+  (page-update [rdata])
+  (page-delete [rdata])
+  (page-restore [rdata])
+  )
