@@ -8,31 +8,29 @@
   (:import reverie.core.ObjectDatomic reverie.core.ReverieDataDatomic))
 
 
-(defn- init-request [command data]
-  {:command command
-   :data (merge {:parent nil
-                 :name "my test page"
-                 :uri "my-test-page"
-                 :template :main
-                 :rights :?} data)})
+(defn- init-data [command data]
+  (merge {:command command
+          :parent nil
+          :name "my test page"
+          :uri "my-test-page"
+          :template :main
+          :rights :?} data))
 
 (fact
  "add page"
  (let [{:keys [connection]} (setup)
-       request (init-request :page-new nil)
-       page-id nil
-       attributes {}
-       rdata (ReverieDataDatomic. connection request page-id attributes)]
+       request {}
+       data (init-data :page-new nil)
+       rdata (ReverieDataDatomic. connection request data)]
    (-> rdata rev/page-new! :db/id pos?))
  => true)
 
 (fact
  "get page"
  (let [{:keys [connection]} (setup)
-       request (init-request :page-new nil)
-       page-id nil
-       attributes {}
-       rdata (ReverieDataDatomic. connection request page-id attributes)
+       request {}
+       data (init-data :page-new nil)
+       rdata (ReverieDataDatomic. connection request data)
        new-page-id (-> rdata rev/page-new! :db/id)]
    (= new-page-id (:db/id (rev/page-get rdata new-page-id))))
  => true)
@@ -40,10 +38,9 @@
 (fact
  "update page, delete page & restore page"
  (let [{:keys [connection]} (setup)
-       request (init-request :page-new nil)
-       page-id nil
-       attributes {}
-       rdata (ReverieDataDatomic. connection request page-id attributes)
+       request {}
+       data (init-data :page-new nil)
+       rdata (ReverieDataDatomic. connection request data)
        page (rev/page-new! rdata)
        ]
    )

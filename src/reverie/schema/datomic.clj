@@ -127,8 +127,8 @@
   (page-new-object! [rdata object-data])
   (page-update-object! [rdata object-data])
   (page-delete-object! [rdata object-data])
-  (page-new! [{:keys [connection request] :as rdata}]
-    (let [{:keys [parent name uri template rights] :as data} (:data request)
+  (page-new! [{:keys [connection data] :as rdata}]
+    (let [{:keys [parent name uri template rights]} data
           tx @(d/transact connection
                           [{:db/id #db/id [:db.part/db]
                             :reverie.page/name name
@@ -136,7 +136,8 @@
                             :reverie.page/template template
                             :reverie/active? true}])]
       (assoc tx :db/id (-> tx :tempids vals last))))
-  (page-update! [rdata])
+  (page-update! [rdata]
+    )
   (page-delete! [rdata])
   (page-restore! [rdata])
   (page-get [{:keys [connection] :as rdata} page-id]

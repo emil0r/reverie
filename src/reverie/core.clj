@@ -53,7 +53,7 @@
     "Search pages for a match"))
 
 (defrecord ObjectDatomic [object attributes])
-(defrecord ReverieDataDatomic [connection request page-id attributes])
+(defrecord ReverieDataDatomic [connection request data])
 
 (defn- parse-options [options]
   (loop [m {}
