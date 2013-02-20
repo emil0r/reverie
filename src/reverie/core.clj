@@ -31,23 +31,23 @@
     "Returns a vector of all objects with the associated area/page")
   (page-get-meta [rdata]
     "Return all meta info about the page -> areas + template")
-  (page-update-object [rdata object-data]
-    "Update an object")
-  (page-new-object [rdata object-data]
+  (page-new-object! [rdata object-data]
     "Add an object to the page")
-  (page-delete-object [rdata object-data]
+  (page-update-object! [rdata object-data]
+    "Update an object")
+  (page-delete-object! [rdata object-data]
     "Delete an object from the page")
-  (page-restore-object [rdata object-data]
+  (page-restfore-object! [rdata object-data]
     "Restore a deleted object")
-  (page-new [rdata]
+  (page-new! [rdata]
     "Create a new page")
-  (page-update [rdata]
+  (page-update! [rdata]
     "Update the page with the new data")
-  (page-delete [rdata]
+  (page-delete! [rdata]
     "Delete the page")
-  (page-restore [rdata]
+  (page-restore! [rdata]
     "Restore a deleted page")
-  (page-get [page-id]
+  (page-get [rdata page-id]
     "Get page")
   (pages-search [rdata search-item]
     "Search pages for a match"))
