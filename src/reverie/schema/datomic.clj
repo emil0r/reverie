@@ -47,6 +47,7 @@
 
 (extend-type ObjectDatomic
   reverie-object
+
   (object-correct? [schema]
     (let [{:keys [attributes ks]} (expand-schema schema)]
       (loop [[k & ks] ks
@@ -57,9 +58,11 @@
             (if (not-any? nil? values)
               (recur ks true)
               (recur ks correct?)))))))
+
   (object-upgrade? [schema connection]
     (let [{:keys [object ks]} (expand-schema schema)]
       (not (migrated? ks (get-migrations connection object)))))
+
   (object-upgrade [schema connection]
     (let [{:keys [object attributes ks]} (expand-schema schema)
           datomic-schema (vec (map :schema (map #(attributes %) ks)))
@@ -67,6 +70,7 @@
       @(d/transact connection [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
                                {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
       @(d/transact connection datomic-schema)))
+
   (object-synchronize [schema connection]
     (let [{:keys [attributes ks]} (expand-schema schema)
           objects (map #(let [entity (d/entity (db connection) (first %))
@@ -88,6 +92,7 @@
                                                   (set i))))))
                              mismatched-objects))]
       @(d/transact connection transactions)))
+
   (object-initiate [schema connection]
     (let [{:keys [object]} (expand-schema schema)
           initials (get-initials schema)
@@ -99,11 +104,14 @@
                                     (cross-initials-idents initials idents))))
           tx @(d/transact connection attribs)]
       (assoc tx :db/id (-> tx :tempids vals last))))
+
   (object-get [schema connection id]
     (d/entity (db connection) id))
+
   (object-transform [schema entity]
     (let [idents (get-idents schema)]
       (into {} (map (fn [[attribute ident]] {attribute (get entity ident)}) idents))))
+
   (object-set [schema connection data id]
     (let [idents (get-idents schema)
           attribs (map (fn [[k attr]] {attr (data k)}) idents)]
@@ -120,8 +128,16 @@
   (page-update-object [rdata object-data])
   (page-delete-object [rdata object-data])
   (page-new [{:keys [connection request] :as rdata}]
-    (println connection request))
+    (let [{:keys [parent name uri template rights] :as data} (:data request)
+          tx @(d/transact connection
+                          [{:db/id #db/id [:db.part/db]
+                            :reverie.page/name name
+                            :reverie.page/uri uri
+                            :reverie.page/template template
+                            :reverie/active? true}])]
+      (assoc tx :db/id (-> tx :tempids vals last))))
   (page-update [rdata])
   (page-delete [rdata])
   (page-restore [rdata])
-  )
+  (page-get [page-id])
+  (page-rights? [rdata user what]))

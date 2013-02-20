@@ -15,14 +15,17 @@
        request {:command :page-new
                 :data {:parent nil
                        :name "my test page"
+                       :uri "my-test-page"
                        :template :main
-                       :control :?}}
+                       :rights :?}}
        page-id nil
        attributes {}
        rdata (ReverieDataDatomic. connection request page-id attributes)]
-   (rev/page-new rdata))
- => truthy)
+   (-> rdata rev/page-new :db/id pos?))
+ => true)
 
-(defn tempus [rdata]
-  (rev/area a))
-(tempus (ReverieDataDatomic. nil {} nil {:mode :public}))
+
+
+;; (defn tempus [rdata]
+;;   (rev/area a))
+;; (tempus (ReverieDataDatomic. nil {} nil {:mode :public}))

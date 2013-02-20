@@ -46,7 +46,11 @@
   (page-delete [rdata]
     "Delete the page")
   (page-restore [rdata]
-    "Restore a deleted page"))
+    "Restore a deleted page")
+  (page-get [page-id]
+    "Get page")
+  (pages-search [rdata search-item]
+    "Search pages for a match"))
 
 (defrecord ObjectDatomic [object attributes])
 (defrecord ReverieDataDatomic [connection request page-id attributes])
