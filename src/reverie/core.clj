@@ -47,9 +47,9 @@
     "Delete the page")
   (page-restore! [rdata]
     "Restore a deleted page")
-  (page-get [rdata page-id]
+  (page-get [rdata]
     "Get page")
-  (pages-search [rdata search-item]
+  (pages-search [rdata]
     "Search pages for a match"))
 
 (defrecord ObjectDatomic [object attributes])

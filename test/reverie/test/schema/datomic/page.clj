@@ -11,9 +11,9 @@
 (defn- init-data [command data]
   (merge {:command command
           :parent nil
-          :name "my test page"
-          :uri "my-test-page"
-          :template :main
+          :tx-data {:reverie.page/name "my test page"
+                    :reverie.page/uri "my-test-page"
+                    :reverie.page/template :main}
           :rights :?} data))
 
 (fact
@@ -32,7 +32,7 @@
        data (init-data :page-new nil)
        rdata (ReverieDataDatomic. connection request data)
        new-page-id (-> rdata rev/page-new! :db/id)]
-   (= new-page-id (:db/id (rev/page-get rdata new-page-id))))
+   (= new-page-id (:db/id (rev/page-get (assoc-in rdata [:data :page-id] new-page-id)))))
  => true)
 
 (fact
@@ -41,8 +41,14 @@
        request {}
        data (init-data :page-new nil)
        rdata (ReverieDataDatomic. connection request data)
-       page (rev/page-new! rdata)
+       tx (rev/page-new! rdata)
+       rdata-page-exists (assoc-in rdata [:data :page-id] (:db/id tx))
+       page (rev/page-get rdata-page-exists)
+       new-data (init-data :page-update {:name "my updated page" :page-id (:db/id tx)})
+       tx-update (rev/page-update! (assoc rdata :data new-data))
+       
        ]
+   {:update true}
    )
  => {:update true
      :delete true
