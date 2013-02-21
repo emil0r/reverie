@@ -119,26 +119,42 @@
         (-> @(d/transact connection attribs) (assoc :db/id id))))))
 
 
+(defn- assoc-rdata [rdata new-data]
+  (assoc rdata :data
+         (merge (:data rdata) new-data)))
+
 (extend-type ReverieDataDatomic
   reverie-page
   (page-render [rdata])
   (page-objects [rdata])
   (page-get-meta [rdata])
-  (page-new-object! [rdata object-data])
-  (page-update-object! [rdata object-data])
-  (page-delete-object! [rdata object-data])
+  (page-new-object! [rdata])
+  (page-update-object! [rdata])
+  (page-delete-object! [rdata])
   (page-new! [{:keys [connection data] :as rdata}]
     (let [{:keys [parent tx-data rights]} data
           tx @(d/transact connection
                           [(merge tx-data
                                   {:db/id #db/id [:db.part/db]
                                    :reverie/active? true})])]
-      (assoc tx :db/id (-> tx :tempids vals last))))
-  (page-update! [{:keys [connection data]}]
-    (let [{:keys [page-id]} data])
-    )
-  (page-delete! [rdata])
-  (page-restore! [rdata])
+      (assoc-rdata rdata {:tx tx :page-id (-> tx :tempids vals last)})))
+  (page-update! [{:keys [connection data] :as rdata}]
+    (let [{:keys [page-id tx-data]} data
+          tx @(d/transact connection
+                          [(merge tx-data {:db/id page-id})])]
+      (assoc-rdata rdata {:tx tx})))
+  (page-delete! [{:keys [connection data] :as rdata}]
+    (let [{:keys [page-id]} data
+          tx @(d/transact connection
+                          [{:db/id page-id
+                            :reverie/active? false}])]
+      (assoc-rdata rdata {:tx tx})))
+  (page-restore! [{:keys [connection data] :as rdata}]
+    (let [{:keys [page-id]} data
+          tx @(d/transact connection
+                          [{:db/id page-id
+                            :reverie/active? true}])]
+      (assoc-rdata rdata {:tx tx})))
   (page-get [{:keys [connection data] :as rdata}]
     (d/entity (db connection) (:page-id data)))
   (page-rights? [rdata user what]))
