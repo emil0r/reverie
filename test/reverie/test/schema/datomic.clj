@@ -5,12 +5,12 @@
   (:use midje.sweet
         [datomic.api :only [q db] :as d]
         [reverie.test.core :only [setup]])
-  (:import reverie.core.ObjectDatomic))
+  (:import reverie.core.ObjectSchemaDatomic))
 
 
 (fact
  "reverie-schema protocol/object-correct? datomic -> correct"
- (let [d (ObjectDatomic. :object/text {:object.text/text {:schema {:db/id #db/id [:db.part/db]
+ (let [d (ObjectSchemaDatomic. :object/text {:object.text/text {:schema {:db/id #db/id [:db.part/db]
                                                                    :db/ident :object.text/text
                                                                    :db/valueType :db.type/string
                                                                    :db/cardinality :db.cardinality/one
@@ -24,20 +24,20 @@
 
 (fact
  "reverie-schema protocol/object-correct? datomic -> not correct"
- (let [d (ObjectDatomic. :object/text {:text {:initial ""
+ (let [d (ObjectSchemaDatomic. :object/text {:text {:initial ""
                                               :input :text}})]
    (rev/object-correct? d)) => false)
 
 
 (fact
  "reverie-schema protocol/object-correct? datomic -> not correct"
- (let [d (ObjectDatomic. :object/text {:text {:initial ""
+ (let [d (ObjectSchemaDatomic. :object/text {:text {:initial ""
                                                    :input :text}})]
    (rev/object-correct? d)) => false)
 
 (fact
  "reverie-schema protocol/object-upgrade? datomic"
- (let [d (ObjectDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+ (let [d (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
                                                        :db/cardinality :db.cardinality/one
@@ -50,7 +50,7 @@
 
 (fact
  "reverie-schema protocol/object-upgrade datomic"
- (let [d (ObjectDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+ (let [d (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
                                                        :db/cardinality :db.cardinality/one
@@ -64,7 +64,7 @@
 
 (fact
  "reverie-schema protocol/object-initiate"
- (let [d (ObjectDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+ (let [d (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
                                                        :db/cardinality :db.cardinality/one
@@ -78,7 +78,7 @@
 
 (fact
  "reverie-schema protocol/object-initiate datomic"
- (let [d (ObjectDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+ (let [d (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
                                                        :db/cardinality :db.cardinality/one
@@ -93,7 +93,7 @@
 
 (fact
  "reverie-schema protocol/object-set datomic"
- (let [d (ObjectDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+ (let [d (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
                                                        :db/cardinality :db.cardinality/one
@@ -110,7 +110,7 @@
 
 (fact
  "reverie-schema protocol/object-synchronize datomic"
- (let [d (ObjectDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+ (let [d (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
                                                        :db/cardinality :db.cardinality/one
@@ -123,7 +123,7 @@
        tx1 (rev/object-initiate d connection)
        tx2 (rev/object-initiate d connection)
        tx3 (rev/object-initiate d connection)
-       d2 (ObjectDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+       d2 (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                         :db/ident :object.text/text
                                                         :db/valueType :db.type/string
                                                         :db/cardinality :db.cardinality/one
@@ -146,7 +146,7 @@
 
 (fact
  "reverie-schema protocol/object-get datomic"
- (let [d (ObjectDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+ (let [d (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
                                                        :db/cardinality :db.cardinality/one
@@ -164,7 +164,7 @@
 
 (fact
  "reverie-schema protocol/object-transform datomic"
- (let [d (ObjectDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+ (let [d (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                        :db/ident :object.text/text
                                                        :db/valueType :db.type/string
                                                        :db/cardinality :db.cardinality/one

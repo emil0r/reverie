@@ -54,7 +54,7 @@
   (page-right? [rdata user right]
     "Does the user have that right for the page?"))
 
-(defrecord ObjectDatomic [object attributes])
+(defrecord ObjectSchemaDatomic [object attributes])
 (defrecord ReverieDataDatomic [connection request data])
 
 (defn- parse-options [options]
@@ -76,7 +76,7 @@
                                         schema {:schema (merge (m k) {:db/id #db/id [:db.part/db]
                                                                       :db.install/_attribute :db.part/db})}]
                                     {k (merge m schema)})) attributes))]
-    (ObjectDatomic. object schemas-data)))
+    (ObjectSchemaDatomic. object schemas-data)))
 
 (defn- get-attributes [schemas]
   (map #(-> % name symbol) (keys (:attributes schemas))))

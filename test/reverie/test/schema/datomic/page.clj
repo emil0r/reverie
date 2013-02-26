@@ -5,7 +5,7 @@
   (:use midje.sweet
         [datomic.api :only [q db] :as d]
         [reverie.test.core :only [setup]])
-  (:import reverie.core.ObjectDatomic reverie.core.ReverieDataDatomic))
+  (:import reverie.core.ObjectSchemaDatomic reverie.core.ReverieDataDatomic))
 
 
 (defn- init-data [command data tx-data]
@@ -65,7 +65,7 @@
        data (init-data :page-new nil nil)
        rdata (ReverieDataDatomic. connection request data)
        tx-rdata (rev/page-new! rdata)
-       obj (ObjectDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+       obj (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                          :db/ident :object.text/text
                                                          :db/valueType :db.type/string
                                                          :db/cardinality :db.cardinality/one
