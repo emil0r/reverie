@@ -128,15 +128,22 @@
   (page-render [rdata])
   (page-objects [rdata])
   (page-get-meta [rdata])
-  (page-new-object! [rdata])
+  (page-new-object! [{:keys [connection data] :as rdata}]
+    (let [{:keys [tx-data object-id page-id]} data
+          page (d/entity (db connection) page-id)
+          tx @(d/transact connection
+                          [{:db/id page-id
+                            :reverie.page/objects (conj (:reverie.page/objects page) object-id)}])]
+      (assoc-rdata rdata {:tx tx})))
   (page-update-object! [rdata])
   (page-delete-object! [rdata])
   (page-new! [{:keys [connection data] :as rdata}]
-    (let [{:keys [parent tx-data rights]} data
+    (let [{:keys [parent tx-data]} data
           tx @(d/transact connection
                           [(merge tx-data
                                   {:db/id #db/id [:db.part/db]
-                                   :reverie/active? true})])]
+                                   :reverie/active? true
+                                   :reverie.page/objects []})])]
       (assoc-rdata rdata {:tx tx :page-id (-> tx :tempids vals last)})))
   (page-update! [{:keys [connection data] :as rdata}]
     (let [{:keys [page-id tx-data]} data
@@ -157,4 +164,4 @@
       (assoc-rdata rdata {:tx tx})))
   (page-get [{:keys [connection data] :as rdata}]
     (d/entity (db connection) (:page-id data)))
-  (page-rights? [rdata user what]))
+  (page-right? [rdata user right]))

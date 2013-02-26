@@ -53,12 +53,33 @@
        restored-page (rev/page-get tx-rdata)]
    {:updated (= (:reverie.page/name updated-page) "my updated page")
     :deleted (= (:reverie/active? deleted-page) false)
-    :restored (= (:reverie/active? restored-page) true)
-    }
-   )
+    :restored (= (:reverie/active? restored-page) true)})
  => {:updated true
      :deleted true
      :restored true})
+
+(fact
+ "add object to page"
+ (let [{:keys [connection]} (setup)
+       request {}
+       data (init-data :page-new nil nil)
+       rdata (ReverieDataDatomic. connection request data)
+       tx-rdata (rev/page-new! rdata)
+       obj (ObjectDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+                                                         :db/ident :object.text/text
+                                                         :db/valueType :db.type/string
+                                                         :db/cardinality :db.cardinality/one
+                                                         :db/doc "Text of the text object"
+                                                         :db.install/_attribute :db.part/db}
+                                                :initial "inital text"
+                                                :input :text}})
+       tx-obj (rev/object-upgrade obj connection)
+       obj-id (:db/id (rev/object-initiate obj connection))
+       tx-rdata2 (rev/page-new-object! (assoc tx-rdata
+                                         :data (assoc (:data tx-rdata) :object-id obj-id)))
+       page (rev/page-get tx-rdata2)]
+   (= obj-id
+      (-> page :reverie.page/objects first :db/id))) => true)
 
 
 

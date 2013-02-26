@@ -50,7 +50,9 @@
   (page-get [rdata]
     "Get page")
   (pages-search [rdata]
-    "Search pages for a match"))
+    "Search pages for a match")
+  (page-right? [rdata user right]
+    "Does the user have that right for the page?"))
 
 (defrecord ObjectDatomic [object attributes])
 (defrecord ReverieDataDatomic [connection request data])
