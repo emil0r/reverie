@@ -98,7 +98,8 @@
           initials (get-initials schema)
           idents (get-idents schema)
           tmpid {:db/id #db/id [:db.part/user -1]}
-          attribs (apply conj [(merge tmpid {:reverie/object object})]
+          attribs (apply conj [(merge tmpid {:reverie/object object
+                                             :reverie/active? true})]
                          (into []
                                (map #(merge tmpid %)
                                     (cross-initials-idents initials idents))))
