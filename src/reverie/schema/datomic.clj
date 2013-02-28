@@ -131,14 +131,16 @@
 (extend-type ReverieDataDatomic
   reverie-page
   (page-render [rdata])
-  (page-objects [rdata])
+  (page-objects [{:keys [connection data] :as rdata}]
+    (let [page (d/entity (db connection) (:page-id data))]
+      (:reverie.page/objects page)))
   (page-get-meta [rdata])
   (page-new-object! [{:keys [connection data] :as rdata}]
     (let [{:keys [tx-data object-id page-id]} data
           page (d/entity (db connection) page-id)
           tx @(d/transact connection
                           [{:db/id page-id
-                            :reverie.page/objects (conj (:reverie.page/objects page) object-id)}])]
+                            :reverie.page/objects object-id}])]
       (assoc-rdata rdata {:tx tx})))
   (page-update-object! [rdata]) ;; datomic allows upside travseral?
   (page-delete-object! [{:keys [connection data] :as rdata}]
