@@ -8,20 +8,20 @@
 
 (defprotocol reverie-object
   (object-correct? [schema]
-    "Checks that the schema of an object is correct; checks for :schema, :initial and :input. Returns true or false")
+    "Checks that the schema of an object is correct; checks for :schema, :initial and :input")
   (object-upgrade? [schema connection]
-    "Does the object need an upgrade? Returns true or false") ;; true or false
-  (object-upgrade [schema connection]
+    "Does the object need an upgrade?")
+  (object-upgrade! [schema connection]
     "Upgrades an object when a new schema has been added. Returns result of the upgrade")
-  (object-synchronize [schema connection]
+  (object-synchronize! [schema connection]
     "Synchronizes all objects after an upgrade has been done")
-  (object-initiate [schema connection]
+  (object-initiate! [schema connection]
     "Initiate a newly created object. Returns the result + the id")
   (object-get [schema connection id]
     "Hashmap of all the attributes with associated values")
-  (object-transform [schema entity]
+  (object-attr-transform [schema entity]
     "Returns a hashmap of the entity's attributes mapped to the attributes of the schema ")
-  (object-set [schema connection data id]
+  (object-attr-set! [schema connection data id]
     "Set the attributes of an object"))
 
 (defprotocol reverie-page
@@ -87,8 +87,8 @@
       (if (object-correct? s)
         (if (object-upgrade? s connection)
           (do
-            (object-upgrade s connection)
-            (object-synchronize s connection)))))))
+            (object-upgrade! s connection)
+            (object-synchronize! s connection)))))))
 
 (defmacro area [name]
   (let [name (keyword name)]

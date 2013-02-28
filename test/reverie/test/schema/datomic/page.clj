@@ -73,13 +73,18 @@
                                                          :db.install/_attribute :db.part/db}
                                                 :initial "inital text"
                                                 :input :text}})
-       tx-obj (rev/object-upgrade obj connection)
-       obj-id (:db/id (rev/object-initiate obj connection))
+       tx-obj (rev/object-upgrade! obj connection)
+       obj-id (:db/id (rev/object-initiate! obj connection))
+       tmp (rev/object-attr-set! obj connection {:reverie/area :a} obj-id)
        tx-rdata2 (rev/page-new-object! (assoc tx-rdata
-                                         :data (assoc (:data tx-rdata) :object-id obj-id)))
-       page (rev/page-get tx-rdata2)]
-   (= obj-id
-      (-> page :reverie.page/objects first :db/id))) => true)
+                                         :data (merge (:data tx-rdata) {:object-id obj-id})))
+       page (rev/page-get tx-rdata2)
+       object (rev/object-get obj connection obj-id)]
+   (println (-> object :reverie/area))
+   (= {:object-id obj-id
+       :area :a}
+      {:object-id (-> page :reverie.page/objects first :db/id)
+       :area (-> object :reverie/area)})) => true)
 
 
 

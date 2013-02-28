@@ -59,7 +59,7 @@
                                               :initial "object-upgrade"
                                               :input :text}})
        {:keys [database connection]} (setup)]
-   (rev/object-upgrade d connection)) => truthy)
+   (rev/object-upgrade! d connection)) => truthy)
 
 
 (fact
@@ -73,8 +73,8 @@
                                               :initial "initiate"
                                               :input :text}})
        {:keys [database connection]} (setup)
-       tx (rev/object-upgrade d connection)]
-   (rev/object-initiate d connection)) => truthy)
+       tx (rev/object-upgrade! d connection)]
+   (rev/object-initiate! d connection)) => truthy)
 
 (fact
  "reverie-schema protocol/object-initiate datomic"
@@ -87,8 +87,8 @@
                                               :initial "set"
                                               :input :text}})
        {:keys [database connection]} (setup)]
-   (rev/object-upgrade d connection)
-   (not (nil? (:db/id (rev/object-initiate d connection))))) => true)
+   (rev/object-upgrade! d connection)
+   (not (nil? (:db/id (rev/object-initiate! d connection))))) => true)
 
 
 (fact
@@ -102,10 +102,10 @@
                                               :initial "set with id"
                                               :input :text}})
        {:keys [database connection]} (setup)
-       tx (rev/object-upgrade d connection)
-       id (:db/id (rev/object-initiate d connection))]
-   (rev/object-set d connection {:text "my text"} id)
-   (= id (:db/id (rev/object-set d connection {:text "my text 2"} id)))) => true)
+       tx (rev/object-upgrade! d connection)
+       id (:db/id (rev/object-initiate! d connection))]
+   (rev/object-attr-set! d connection {:text "my text"} id)
+   (= id (:db/id (rev/object-attr-set! d connection {:text "my text 2"} id)))) => true)
 
 
 (fact
@@ -119,10 +119,10 @@
                                               :initial "set with id"
                                               :input :text}})
        {:keys [database connection]} (setup)
-       tx (rev/object-upgrade d connection)
-       tx1 (rev/object-initiate d connection)
-       tx2 (rev/object-initiate d connection)
-       tx3 (rev/object-initiate d connection)
+       tx (rev/object-upgrade! d connection)
+       tx1 (rev/object-initiate! d connection)
+       tx2 (rev/object-initiate! d connection)
+       tx3 (rev/object-initiate! d connection)
        d2 (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
                                                         :db/ident :object.text/text
                                                         :db/valueType :db.type/string
@@ -139,8 +139,8 @@
                                                          :db.install/_attribute :db.part/db}
                                                 :initial ""
                                                 :input :text}})]
-   (rev/object-upgrade d2 connection)
-   (rev/object-synchronize d2 connection)) => truthy)
+   (rev/object-upgrade! d2 connection)
+   (rev/object-synchronize! d2 connection)) => truthy)
 
 
 
@@ -155,9 +155,9 @@
                                               :initial "set with id"
                                               :input :text}})
        {:keys [database connection]} (setup)
-       tx (rev/object-upgrade d connection)
-       id (:db/id (rev/object-initiate d connection))
-       tx2 (rev/object-set d connection {:text "my text"} id)
+       tx (rev/object-upgrade! d connection)
+       id (:db/id (rev/object-initiate! d connection))
+       tx2 (rev/object-attr-set! d connection {:text "my text"} id)
        obj1 (rev/object-get d connection id)]
    (:object.text/text obj1)) => "my text")
 
@@ -173,8 +173,8 @@
                                               :initial "set with id"
                                               :input :text}})
        {:keys [database connection]} (setup)
-       tx (rev/object-upgrade d connection)
-       id (:db/id (rev/object-initiate d connection))
-       tx2 (rev/object-set d connection {:text "my text"} id)
+       tx (rev/object-upgrade! d connection)
+       id (:db/id (rev/object-initiate! d connection))
+       tx2 (rev/object-attr-set! d connection {:text "my text"} id)
        obj1 (rev/object-get d connection id)]
-   (->> obj1 (rev/object-transform d) :text)) => "my text")
+   (->> obj1 (rev/object-attr-transform d) :text)) => "my text")

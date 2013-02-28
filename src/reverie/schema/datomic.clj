@@ -63,7 +63,7 @@
     (let [{:keys [object ks]} (expand-schema schema)]
       (not (migrated? ks (get-migrations connection object)))))
 
-  (object-upgrade [schema connection]
+  (object-upgrade! [schema connection]
     (let [{:keys [object attributes ks]} (expand-schema schema)
           datomic-schema (vec (map :schema (map #(attributes %) ks)))
           migrations (get-migrations connection object)]
@@ -71,7 +71,7 @@
                                {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
       @(d/transact connection datomic-schema)))
 
-  (object-synchronize [schema connection]
+  (object-synchronize! [schema connection]
     (let [{:keys [attributes ks]} (expand-schema schema)
           objects (map #(let [entity (d/entity (db connection) (first %))
                               ks (keys entity)]
@@ -93,7 +93,7 @@
                              mismatched-objects))]
       @(d/transact connection transactions)))
 
-  (object-initiate [schema connection]
+  (object-initiate! [schema connection]
     (let [{:keys [object]} (expand-schema schema)
           initials (get-initials schema)
           idents (get-idents schema)
@@ -109,13 +109,14 @@
   (object-get [schema connection id]
     (d/entity (db connection) id))
 
-  (object-transform [schema entity]
+  (object-attr-transform [schema entity]
     (let [idents (get-idents schema)]
       (into {} (map (fn [[attribute ident]] {attribute (get entity ident)}) idents))))
 
-  (object-set [schema connection data id]
+  (object-attr-set! [schema connection data id]
     (let [idents (get-idents schema)
-          attribs (map (fn [[k attr]] {attr (data k)}) idents)]
+          attribs (filter #(-> % vals first nil? not) ;; sort out attribs with nil values
+                          (map (fn [[k attr]] {attr (data k)}) idents))]
       (let [attribs (into [] (map #(merge {:db/id id} %) attribs))]
         (-> @(d/transact connection attribs) (assoc :db/id id))))))
 
