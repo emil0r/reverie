@@ -1,4 +1,5 @@
 (ns reverie.schema.datomic
+  (:require [clojure.set :as set])
   (:use [datomic.api :only [q db] :as d]
         [reverie.core :only [reverie-object reverie-page]])
   (:import reverie.core.ObjectSchemaDatomic reverie.core.ReverieDataDatomic))
@@ -112,13 +113,15 @@
   (object-attr-transform [schema entity]
     (let [idents (get-idents schema)]
       (into {} (map (fn [[attribute ident]] {attribute (get entity ident)}) idents))))
-
-  (object-attr-set! [schema connection data id]
+  
+  (object-set! [schema connection data id]
     (let [idents (get-idents schema)
-          attribs (filter #(-> % vals first nil? not) ;; sort out attribs with nil values
-                          (map (fn [[k attr]] {attr (data k)}) idents))]
-      (let [attribs (into [] (map #(merge {:db/id id} %) attribs))]
-        (-> @(d/transact connection attribs) (assoc :db/id id))))))
+          attribs (filter #(-> % vals first nil? not) ;; remove attribs with nil values
+                          (map (fn [[k attr]] {attr (data k)}) idents))
+          extra-data-ks (set/difference (-> data keys set)
+                                        (->> idents (map first) set))]
+      (let [attribs (merge (select-keys data extra-data-ks) (into {:db/id id} attribs))]
+        (-> @(d/transact connection [attribs]) (assoc :db/id id))))))
 
 
 (defn- assoc-rdata [rdata new-data]

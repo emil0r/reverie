@@ -21,7 +21,7 @@
     "Hashmap of all the attributes with associated values")
   (object-attr-transform [schema entity]
     "Returns a hashmap of the entity's attributes mapped to the attributes of the schema ")
-  (object-attr-set! [schema connection data id]
+  (object-set! [schema connection data id]
     "Set the attributes of an object"))
 
 (defprotocol reverie-page
