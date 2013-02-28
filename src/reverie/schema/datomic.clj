@@ -133,7 +133,7 @@
   (page-render [rdata])
   (page-objects [{:keys [connection data] :as rdata}]
     (let [page (d/entity (db connection) (:page-id data))]
-      (:reverie.page/objects page)))
+      (sort-by :reverie/order (:reverie.page/objects page))))
   (page-get-meta [rdata])
   (page-new-object! [{:keys [connection data] :as rdata}]
     (let [{:keys [tx-data object-id page-id]} data
