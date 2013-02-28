@@ -140,8 +140,13 @@
                           [{:db/id page-id
                             :reverie.page/objects (conj (:reverie.page/objects page) object-id)}])]
       (assoc-rdata rdata {:tx tx})))
-  (page-update-object! [rdata])
-  (page-delete-object! [rdata])
+  (page-update-object! [rdata]) ;; datomic allows upside travseral?
+  (page-delete-object! [{:keys [connection data] :as rdata}]
+    (let [{:keys [object-id]} data
+          tx @(d/transact connection
+                          [{:db/id object-id
+                            :reverie/active? false}])]
+      (assoc-rdata rdata {:tx tx})))
   (page-new! [{:keys [connection data] :as rdata}]
     (let [{:keys [parent tx-data]} data
           tx @(d/transact connection

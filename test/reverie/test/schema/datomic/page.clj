@@ -86,6 +86,30 @@
        :area (-> object :reverie/area)})) => true)
 
 
+(fact
+ "delete object from page"
+ (let [{:keys [connection]} (setup)
+       request {}
+       data (init-data :page-new nil nil)
+       rdata (ReverieDataDatomic. connection request data)
+       tx-rdata (rev/page-new! rdata)
+       obj (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
+                                                         :db/ident :object.text/text
+                                                         :db/valueType :db.type/string
+                                                         :db/cardinality :db.cardinality/one
+                                                         :db/doc "Text of the text object"
+                                                         :db.install/_attribute :db.part/db}
+                                                :initial "inital text"
+                                                :input :text}})
+       tx-obj (rev/object-upgrade! obj connection)
+       obj-id (:db/id (rev/object-initiate! obj connection))
+       tmp (rev/object-set! obj connection {:reverie/area :a} obj-id)
+       tx-rdata2 (-> (assoc tx-rdata
+                       :data (merge (:data tx-rdata) {:object-id obj-id}))
+                     rev/page-new-object!
+                     rev/page-delete-object!)
+       object (rev/object-get obj connection obj-id)]
+   (:reverie/active? object)) => false)
 
 ;; (defn tempus [rdata]
 ;;   (rev/area a))
