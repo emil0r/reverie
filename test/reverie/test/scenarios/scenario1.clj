@@ -5,7 +5,7 @@
   (:use midje.sweet
         [datomic.api :only [q db] :as d]
         [reverie.test.core :only [setup]])
-  (:import reverie.core.ObjectDatomic))
+  (:import reverie.core.ObjectSchemaDatomic))
 
 
 (fact
