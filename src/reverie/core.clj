@@ -55,7 +55,10 @@
     "Does the user have that right for the page?"))
 
 (defrecord ObjectSchemaDatomic [object attributes])
-(defrecord ReverieDataDatomic [connection request data])
+(defrecord ReverieDataDatomic [])
+
+(defn reverie-data [data]
+  (merge (ReverieDataDatomic.) data))
 
 (defn- parse-options [options]
   (loop [m {}
