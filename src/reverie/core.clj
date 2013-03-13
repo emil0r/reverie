@@ -60,6 +60,17 @@
 (defn reverie-data [data]
   (merge (ReverieDataDatomic.) data))
 
+(defn add-route! [route data]
+  (swap! routes assoc route data))
+(defn remove-route! [route]
+  (swap! routes dissoc route))
+(defn get-route [uri]
+  (if-let [route-data (get @routes uri)]
+    route-data
+    (let [app-routes (filter #(= (:type %) :app) @routes)]
+      app-routes
+      @routes)))
+
 (defn- parse-options [options]
   (loop [m {}
          [opt & options] (partition 2 options)]

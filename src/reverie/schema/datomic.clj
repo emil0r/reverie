@@ -2,7 +2,7 @@
   (:require [clojure.set :as set])
   (:use [datomic.api :only [q db] :as d]
         [reverie.core :only [reverie-object reverie-page
-                             routes templates objects apps]])
+                             add-route! remove-route! get-route]])
   (:import reverie.core.ObjectSchemaDatomic reverie.core.ReverieDataDatomic))
 
 
@@ -129,13 +129,16 @@
   reverie-page
 
   (page-render [{:keys [connection request] :as rdata}]
-    (let [{:keys [uri]} request]))
+    (let [{:keys [uri]} request]
+      (if-let [page-data (get-route uri)]
+        :normal
+        )))
 
   (page-objects [{:keys [connection page-id] :as rdata}]
     (let [page (d/entity (db connection) page-id)]
       (sort-by :reverie/order
                (filter :reverie/active? (:reverie.page/objects page)))))
-
+  
   (page-get-meta [rdata])
   
   (page-new-object! [{:keys [connection tx-data object-id page-id] :as rdata}]
@@ -144,7 +147,7 @@
                           [{:db/id page-id
                             :reverie.page/objects object-id}])]
       (assoc rdata :tx tx)))
-
+  
   (page-update-object! [rdata]) ;; datomic allows upside travseral?
 
   (page-delete-object! [{:keys [connection object-id] :as rdata}]
@@ -161,7 +164,7 @@
                                    :reverie/active? true
                                    :reverie.page/objects []})])
           page-id (-> tx :tempids vals last)]
-      (swap! routes assoc uri {:page-id page-id :type :normal})
+      (add-route! uri {:page-id page-id :type :normal})
       (merge rdata {:tx tx :page-id page-id})))
 
   (page-update! [{:keys [connection page-id tx-data] :as rdata}]

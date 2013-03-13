@@ -96,3 +96,18 @@
    (rev/run-schemas! connection)
    (let [f (-> @rev/objects :object/text :get)]
      (f {:uri "/"} "my text"))) => "my text")
+
+(fact
+ "routes"
+ (reset-routes!)
+ (rev/add-route! "/" {:page-id 1 :type :normal})
+ (rev/add-route! "/info" {:page-id 2 :type :normal})
+ (rev/add-route! "/contact" {:page-id 3 :type :normal})
+ (rev/add-route! "/apps/app1" {:page-id 4 :type :app})
+ (rev/add-route! "/apps/app2" {:page-id 5 :type :app})
+ (map :page-id [(rev/get-route "/")
+                (rev/get-route "/contact")
+                (rev/get-route "/info")
+                (rev/get-route "/apps/app1")
+                (rev/get-route "/apps/app2/asdf")])
+ => [1 3 2 4 5])
