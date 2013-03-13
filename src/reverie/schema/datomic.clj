@@ -1,7 +1,8 @@
 (ns reverie.schema.datomic
   (:require [clojure.set :as set])
   (:use [datomic.api :only [q db] :as d]
-        [reverie.core :only [reverie-object reverie-page]])
+        [reverie.core :only [reverie-object reverie-page
+                             routes templates objects apps]])
   (:import reverie.core.ObjectSchemaDatomic reverie.core.ReverieDataDatomic))
 
 
@@ -124,15 +125,11 @@
         (-> @(d/transact connection [attribs]) (assoc :db/id id))))))
 
 
-(defn- assoc-rdata [rdata new-data]
-  (assoc rdata :data
-         (merge (:data rdata) new-data)))
-
 (extend-type ReverieDataDatomic
   reverie-page
 
-  (page-render [{:keys [connection page-id template] :as rdata}]
-    )
+  (page-render [{:keys [connection request] :as rdata}]
+    (let [{:keys [uri]} request]))
 
   (page-objects [{:keys [connection page-id] :as rdata}]
     (let [page (d/entity (db connection) page-id)]
@@ -157,12 +154,15 @@
       (assoc rdata :tx tx)))
 
   (page-new! [{:keys [connection parent tx-data] :as rdata}]
-    (let [tx @(d/transact connection
+    (let [uri (:reverie.page/uri tx-data)
+          tx @(d/transact connection
                           [(merge tx-data
                                   {:db/id #db/id [:db.part/db]
                                    :reverie/active? true
-                                   :reverie.page/objects []})])]
-      (merge rdata {:tx tx :page-id (-> tx :tempids vals last)})))
+                                   :reverie.page/objects []})])
+          page-id (-> tx :tempids vals last)]
+      (swap! routes assoc uri {:page-id page-id :type :normal})
+      (merge rdata {:tx tx :page-id page-id})))
 
   (page-update! [{:keys [connection page-id tx-data] :as rdata}]
     (let [tx @(d/transact connection
