@@ -23,4 +23,5 @@
                           [:div.area-b (rev/area :b)]
                           [:div.area-c (rev/area :c)]]]))]
    ((-> template :main :fn) rdata)
+   nil
    ) => nil)
