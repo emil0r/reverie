@@ -10,5 +10,17 @@
 
 (fact
  "defining template"
- (let [{:keys [database connection]} (setup)]
+ (let [{:keys [connection]} (setup)
+       rdata (rev/reverie-data {:connection connection})
+       template (rev/deftemplate :main [:areas [:a :b :c]]
+                  (list "<!DOCTYPE html>"
+                        [:html
+                         [:head
+                          [:meta {:charset "utf-8"}]
+                          [:title "Scenario 1"]]
+                         [:body
+                          [:div.area-a (rev/area :a)]
+                          [:div.area-b (rev/area :b)]
+                          [:div.area-c (rev/area :c)]]]))]
+   ((-> template :main :fn) rdata)
    ) => nil)
