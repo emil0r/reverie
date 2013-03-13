@@ -64,6 +64,12 @@
   :db/doc "The current template for the page"
   :db.install/_attribute :db.part/db}
  {:db/id #db/id [:db.part/db]
+  :db/ident :reverie.page/type
+  :db/valueType :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/doc "The type of page"
+  :db.install/_attribute :db.part/db}
+ {:db/id #db/id [:db.part/db]
   :db/ident :reverie.page/objects
   :db/valueType :db.type/ref
   :db/cardinality :db.cardinality/many
