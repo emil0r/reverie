@@ -67,9 +67,14 @@
 (defn get-route [uri]
   (if-let [route-data (get @routes uri)]
     route-data
-    (let [app-routes (filter #(= (:type %) :app) @routes)]
-      app-routes
-      @routes)))
+    (->>
+     @routes
+     (filter (fn [[k v]]
+               (and
+                (= (:type v) :app)
+                (re-find (re-pattern k) uri))))
+     first
+     second)))
 
 (defn- parse-options [options]
   (loop [m {}
