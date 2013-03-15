@@ -123,7 +123,10 @@
           extra-data-ks (set/difference (-> data keys set)
                                         (->> idents (map first) set))]
       (let [attribs (merge (select-keys data extra-data-ks) (into {:db/id id} attribs))]
-        (-> @(d/transact connection [attribs]) (assoc :db/id id))))))
+        (-> @(d/transact connection [attribs]) (assoc :db/id id)))))
+
+  (object-render [schema connection id rdata]
+    ))
 
 
 (extend-type ReverieDataDatomic

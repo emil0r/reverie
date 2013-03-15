@@ -12,6 +12,18 @@
 (reset! rev/templates {})
 (reset! rev/objects {})
 
+(rev/defobject object/text [:areas [:a :b :c]
+                            :attributes [{:text {:db/ident :object.text/text
+                                                 :db/valueType :db.type/string
+                                                 :db/cardinality :db.cardinality/one
+                                                 :db/doc "Text of the text object"}
+                                          :initial ""
+                                          :input :text
+                                          :name "Text"
+                                          :description ""}]]
+  [:get text])
+(rev/run-schemas! (:connection (setup)))
+
 (rev/deftemplate :main [:areas [:a :b :c]]
   (list "<!DOCTYPE html>"
         [:html

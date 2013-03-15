@@ -22,7 +22,9 @@
   (object-attr-transform [schema entity]
     "Returns a hashmap of the entity's attributes mapped to the attributes of the schema ")
   (object-set! [schema connection data id]
-    "Set the attributes of an object"))
+    "Set the attributes of an object")
+  (object-render [schema connection id rdata]
+    "Render an object"))
 
 (defprotocol reverie-page
   (page-render [rdata]
