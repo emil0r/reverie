@@ -190,4 +190,12 @@
        tx-rdata3 (rev/page-new-object! (assoc tx-rdata :object-id obj-id2))
        page (rev/page-get tx-rdata2)
        rendered (rev/page-render rdata)]
-   rendered) => ["obj-1", "obj-2"])
+   rendered) => ["<!DOCTYPE html>"
+                 [:html
+                  [:head
+                   [:meta {:charset "utf-8"}]
+                   [:title "page.clj"]]
+                  [:body
+                   [:div.area-a "obj-1" "obj-2" "obj-3"]
+                   [:div.area-b []]
+                   [:div.area-c []]]]])
