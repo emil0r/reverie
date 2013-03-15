@@ -189,7 +189,5 @@
        tx-rdata2 (rev/page-new-object! (assoc tx-rdata :object-id obj-id1))
        tx-rdata3 (rev/page-new-object! (assoc tx-rdata :object-id obj-id2))
        page (rev/page-get tx-rdata2)
-       rendered (rev/page-render rdata)
-       ]
-   (println @rev/routes)
-   :rendered) => ["obj-1", "obj-2"])
+       rendered (rev/page-render rdata)]
+   rendered) => ["obj-1", "obj-2"])

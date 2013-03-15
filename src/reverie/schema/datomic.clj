@@ -133,11 +133,9 @@
     (let [{:keys [uri]} request]
       (if-let [page-data (get-route uri)]
         (let [page (rev/page-get (assoc rdata :page-id (:page-id page-data)))
-              template  (:reverie.page/template page)
+              template (get @templates (:reverie.page/template page))
               fn (:fn template)]
-          (println (:db/id page) template @templates fn)
-          ;;(apply fn (assoc rdata :page-id (:db/id page)))
-          ))))
+          (fn (assoc rdata :page-id (:db/id page)))))))
 
   (page-objects [{:keys [connection page-id] :as rdata}]
     (let [page (d/entity (db connection) page-id)]
