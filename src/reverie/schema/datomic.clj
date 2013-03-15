@@ -2,7 +2,8 @@
   (:require [clojure.set :as set])
   (:use [datomic.api :only [q db] :as d]
         [reverie.core :only [reverie-object reverie-page
-                             add-route! remove-route! get-route] :as rev])
+                             add-route! remove-route! get-route
+                             templates] :as rev])
   (:import reverie.core.ObjectSchemaDatomic reverie.core.ReverieDataDatomic))
 
 
@@ -131,8 +132,11 @@
   (page-render [{:keys [connection request] :as rdata}]
     (let [{:keys [uri]} request]
       (if-let [page-data (get-route uri)]
-        (let [page (rev/page-get (assoc rdata :page-id (:page-id page-data)))]
-          
+        (let [page (rev/page-get (assoc rdata :page-id (:page-id page-data)))
+              template  (:reverie.page/template page)
+              fn (:fn template)]
+          (println (:db/id page) template @templates fn)
+          ;;(apply fn (assoc rdata :page-id (:db/id page)))
           ))))
 
   (page-objects [{:keys [connection page-id] :as rdata}]

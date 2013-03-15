@@ -114,3 +114,5 @@
                 (rev/get-route "/apps/app1")
                 (rev/get-route "/apps/app2/asdf")])
  => [1 3 2 4 5])
+
+(reset-routes!)

@@ -121,7 +121,7 @@
   (let [template (keyword template)
         options (parse-options options)]
     `(swap! templates assoc ~template {:options ~options
-                                    :fn (fn [~'rdata] ~@body)})))
+                                       :fn (fn [~'rdata] ~@body)})))
 
 (defmacro object-funcs [attributes methods & body]
   (let [all-kw? (zero? (count (filter #(not (keyword? %)) methods)))]

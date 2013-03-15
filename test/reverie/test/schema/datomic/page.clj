@@ -8,9 +8,24 @@
   (:import reverie.core.ObjectSchemaDatomic reverie.core.ReverieDataDatomic))
 
 
+(reset! rev/routes {})
+(reset! rev/templates {})
+(reset! rev/objects {})
+
+(rev/deftemplate :main [:areas [:a :b :c]]
+  (list "<!DOCTYPE html>"
+        [:html
+         [:head
+          [:meta {:charset "utf-8"}]
+          [:title "page.clj"]]
+         [:body
+          [:div.area-a (rev/area :a)]
+          [:div.area-b (rev/area :b)]
+          [:div.area-c (rev/area :c)]]]))
+
 (defn- init-data [command data]
   (let [my-tx-data {:reverie.page/name "my test page"
-                    :reverie.page/uri "my-test-page"
+                    :reverie.page/uri "/my-test-page"
                     :reverie.page/template :main}]
     (if-let [tx-data (:tx-data data)]
       (merge {:command command
@@ -151,19 +166,19 @@
 (fact
  "page render"
  (let [{:keys [connection]} (setup)
-       request {}
+       request {:uri "/my-test-page"}
        data (init-data :page-new {:connection connection
                                   :request request})
        rdata (rev/reverie-data data)
        tx-rdata (rev/page-new! rdata)
        obj (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
-                                                         :db/ident :object.text/text
-                                                         :db/valueType :db.type/string
-                                                         :db/cardinality :db.cardinality/one
-                                                         :db/doc "Text of the text object"
-                                                         :db.install/_attribute :db.part/db}
-                                                :initial "inital text"
-                                                :input :text}})
+                                                               :db/ident :object.text/text
+                                                               :db/valueType :db.type/string
+                                                               :db/cardinality :db.cardinality/one
+                                                               :db/doc "Text of the text object"
+                                                               :db.install/_attribute :db.part/db}
+                                                      :initial "inital text"
+                                                      :input :text}})
        tx-obj (rev/object-upgrade! obj connection)
        obj-id1 (:db/id (rev/object-initiate! obj connection))
        obj-id2 (:db/id (rev/object-initiate! obj connection))
@@ -174,5 +189,7 @@
        tx-rdata2 (rev/page-new-object! (assoc tx-rdata :object-id obj-id1))
        tx-rdata3 (rev/page-new-object! (assoc tx-rdata :object-id obj-id2))
        page (rev/page-get tx-rdata2)
-       objects (rev/page-objects tx-rdata)]
-   (vec (map :object.text/text objects))) => ["obj-1", "obj-2"])
+       rendered (rev/page-render rdata)
+       ]
+   (println @rev/routes)
+   :rendered) => ["obj-1", "obj-2"])
