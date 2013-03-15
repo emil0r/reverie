@@ -120,7 +120,7 @@
 (defmacro deftemplate [template options & body]
   (let [template (keyword template)
         options (parse-options options)]
-    `(swap! routes assoc ~template {:options ~options
+    `(swap! templates assoc ~template {:options ~options
                                     :fn (fn [~'rdata] ~@body)})))
 
 (defmacro object-funcs [attributes methods & body]

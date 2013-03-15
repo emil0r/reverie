@@ -26,6 +26,9 @@
 (defn reset-routes! []
   (reset! rev/routes {}))
 
+(defn reset-templates! []
+  (reset! rev/templates {}))
+
 (defn reset-objects! []
   (reset! rev/objects {}))
 
@@ -36,9 +39,9 @@
 (fact
  "deftemplate"
  (do
-   (reset-routes!)
+   (reset-templates!)
    (rev/deftemplate :main [:areas [:a :b :c] :pre [pre-test] :post [post-test]] "body")
-   (let [m @rev/routes
+   (let [m @rev/templates
          k (first (keys m))
          options (:options (m k))
          func (:fn (m k))]
