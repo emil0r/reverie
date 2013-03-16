@@ -102,6 +102,11 @@
 (defn- get-attributes [schemas]
   (map #(-> % name symbol) (keys (:attributes schemas))))
 
+(defn start [connection]
+  ;; TODO: implement, should run run-schemas!, start server and return
+  ;; server. more?
+  )
+
 (defn run-schemas! [connection]
   (let [schemas (map #(:schemas (@objects %)) (keys @objects))]
     (doseq [s schemas]
@@ -112,6 +117,7 @@
             (object-synchronize! s connection)))))))
 
 (defmacro area [name]
+  ;; TODO: map over object-render
   (let [name (keyword name)]
     `(let [{:keys [~'mode]} ~'rdata]
        (if (= ~'mode :edit)
@@ -138,7 +144,7 @@
             m
             (let [[fn-name fn-body] func-vector]
              (if-let [method (paired (first func-vector))]
-               (recur r (assoc m method `(fn [~'request ~@attributes] ~@fn-body)))
+               (recur r (assoc m method `(fn [~'rdata ~@attributes] ~@fn-body)))
                (recur r m)))))))))
 
 (defmacro defobject [object options methods & args]
