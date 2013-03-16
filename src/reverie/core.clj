@@ -86,21 +86,22 @@
       (let [[k v] opt]
         (recur (assoc m k v) options)))))
 
-(defmulti parse-schemas (fn [object options {:keys [schema]}] schema))
-(defmethod parse-schemas :default [object {:keys [attributes] :as options} settings]
-  (let [schemas-data (into {}
-                           (map (fn [m]
-                                  (let [k (first
-                                           (filter
-                                            #(not (nil? (:db/ident (m %))))
-                                            (keys m)))
-                                        schema {:schema (merge (m k) {:db/id #db/id [:db.part/db]
-                                                                      :db.install/_attribute :db.part/db})}]
-                                    {k (merge m schema)})) attributes))]
-    (ObjectSchemaDatomic. object schemas-data)))
+(defmulti parse-schema (fn [object options {:keys [schema]}] schema))
+(defmethod parse-schema :default [object {:keys [attributes] :as options} settings]
+  (ObjectSchemaDatomic.
+   object
+   (into {}
+         (map (fn [m]
+                (let [k (first
+                         (filter
+                          #(not (nil? (:db/ident (m %))))
+                          (keys m)))
+                      schema {:schema (merge (m k) {:db/id #db/id [:db.part/db]
+                                                    :db.install/_attribute :db.part/db})}]
+                  {k (merge m schema)})) attributes))))
 
-(defn- get-attributes [schemas]
-  (map #(-> % name symbol) (keys (:attributes schemas))))
+(defn- get-attributes [schema]
+  (map #(-> % name symbol) (keys (:attributes schema))))
 
 (defn start [connection]
   ;; TODO: implement, should run run-schemas!, start server and return
@@ -108,7 +109,7 @@
   )
 
 (defn run-schemas! [connection]
-  (let [schemas (map #(:schemas (@objects %)) (keys @objects))]
+  (let [schemas (map #(:schema (@objects %)) (keys @objects))]
     (doseq [s schemas]
       (if (object-correct? s)
         (if (object-upgrade? s connection)
@@ -151,7 +152,7 @@
    (let [object (keyword object)
          options (parse-options options)
          settings {}
-         schemas (parse-schemas object options settings)
-         attributes (get-attributes schemas)
+         schema (parse-schema object options settings)
+         attributes (get-attributes schema)
          body `(object-funcs ~attributes ~methods ~@args)]
-     `(swap! objects assoc ~object (merge {:options ~options :schemas ~schemas} ~body))))
+     `(swap! objects assoc ~object (merge {:options ~options :schema ~schema} ~body))))

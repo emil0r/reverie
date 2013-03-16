@@ -21,7 +21,8 @@
                                           :input :text
                                           :name "Text"
                                           :description ""}]]
-  [:get text])
+  [:get]
+  text)
 (rev/run-schemas! (:connection (setup)))
 
 (rev/deftemplate :main [:areas [:a :b :c]]

@@ -126,7 +126,11 @@
         (-> @(d/transact connection [attribs]) (assoc :db/id id)))))
 
   (object-render [schema connection id rdata]
-    ))
+    (let [object (rev/object-get schema connection id)
+          request (:request rdata)]
+      ;; TODO: check request for which method is used, apply as needed
+      (rev/object-attr-transform schema object)
+      )))
 
 
 (extend-type ReverieDataDatomic
@@ -147,7 +151,7 @@
   
   (page-get-meta [rdata])
   
-  (page-new-object! [{:keys [connection tx-data object-id page-id] :as rdata}]
+  (page-new-object! [{:keys [connection object-id page-id] :as rdata}]
     (let [page (d/entity (db connection) page-id)
           tx @(d/transact connection
                           [{:db/id page-id
