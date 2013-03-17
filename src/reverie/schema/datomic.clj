@@ -143,10 +143,12 @@
               fn (:fn template)]
           (fn (assoc rdata :page-id (:db/id page)))))))
 
-  (page-objects [{:keys [connection page-id] :as rdata}]
+  (page-objects [{:keys [connection page-id area] :as rdata}]
     (let [page (d/entity (db connection) page-id)]
       (sort-by :reverie/order
-               (filter :reverie/active? (:reverie.page/objects page)))))
+               (filter #(and
+                         (:reverie/active? %)
+                         (= (:reverie/area %) area)) (:reverie.page/objects page)))))
   
   (page-get-meta [rdata])
   

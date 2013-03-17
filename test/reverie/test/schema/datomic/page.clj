@@ -168,30 +168,22 @@
        obj-id3 (:db/id (rev/object-initiate! obj connection))
        tmp (rev/object-set! obj connection {:reverie/area :a :reverie/order 1 :text "obj-1"} obj-id1)
        tmp (rev/object-set! obj connection {:reverie/area :a :reverie/order 2 :text "obj-2"} obj-id2)
-       tmp (rev/object-set! obj connection {:reverie/area :a :reverie/order 3 :text "obj-3"} obj-id3)
        tx-rdata2 (rev/page-new-object! (assoc tx-rdata :object-id obj-id1))
        tx-rdata3 (rev/page-new-object! (assoc tx-rdata :object-id obj-id2))
        page (rev/page-get tx-rdata2)
-       objects (rev/page-objects tx-rdata)]
+       objects (rev/page-objects (assoc tx-rdata :area :a))]
    (vec (map :object.text/text objects))) => ["obj-1", "obj-2"])
 
 
 (fact
  "page render"
  (let [{:keys [connection]} (setup)
-       request {:uri "/my-test-page"}
+       request {:uri "/my-test-page" :request-method :get}
        data (init-data :page-new {:connection connection
                                   :request request})
        rdata (rev/reverie-data data)
        tx-rdata (rev/page-new! rdata)
-       obj (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
-                                                               :db/ident :object.text/text
-                                                               :db/valueType :db.type/string
-                                                               :db/cardinality :db.cardinality/one
-                                                               :db/doc "Text of the text object"
-                                                               :db.install/_attribute :db.part/db}
-                                                      :initial "inital text"
-                                                      :input :text}})
+       obj (:schema (:object/text @rev/objects))
        tx-obj (rev/object-upgrade! obj connection)
        obj-id1 (:db/id (rev/object-initiate! obj connection))
        obj-id2 (:db/id (rev/object-initiate! obj connection))
@@ -201,6 +193,7 @@
        tmp (rev/object-set! obj connection {:reverie/area :a :reverie/order 3 :text "obj-3"} obj-id3)
        tx-rdata2 (rev/page-new-object! (assoc tx-rdata :object-id obj-id1))
        tx-rdata3 (rev/page-new-object! (assoc tx-rdata :object-id obj-id2))
+       tx-rdata4 (rev/page-new-object! (assoc tx-rdata :object-id obj-id3))
        page (rev/page-get tx-rdata2)
        rendered (rev/page-render rdata)]
    rendered) =>
@@ -210,6 +203,6 @@
                    [:meta {:charset "utf-8"}]
                    [:title "page.clj"]]
                   [:body
-                   [:div.area-a "obj-1" "obj-2" "obj-3"]
+                   [:div.area-a ["obj-1" "obj-2" "obj-3"]]
                    [:div.area-b []]
                    [:div.area-c []]]]])

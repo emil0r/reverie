@@ -108,6 +108,9 @@
   ;; server. more?
   )
 
+(defn- get-schema [object]
+  (:schema (get @objects (:reverie/object object))))
+
 (defn run-schemas! [connection]
   (let [schemas (map #(:schema (@objects %)) (keys @objects))]
     (doseq [s schemas]
@@ -117,14 +120,19 @@
             (object-upgrade! s connection)
             (object-synchronize! s connection)))))))
 
+(defn area-render [object rdata]
+  (object-render (get-schema object)
+                 (:connection rdata)
+                 (:db/id object)
+                 (assoc rdata :object-id (:db/id object))))
+
 (defmacro area [name]
-  ;; TODO: map over object-render. group into respective areas
   (let [name (keyword name)]
     `(let [{:keys [~'mode]} ~'rdata]
        (if (= ~'mode :edit)
          [:div.reverie-area {:id ~name :name ~name :class ~name}
-          (page-objects (assoc ~'rdata :area ~name))]
-         (page-objects (assoc ~'rdata :area ~name))))))
+          (map #(area-render % ~'rdata) (page-objects (assoc ~'rdata :area ~name)))]
+         (map #(area-render % ~'rdata) (page-objects (assoc ~'rdata :area ~name)))))))
 
 (defmacro deftemplate [template options & body]
   (let [template (keyword template)
