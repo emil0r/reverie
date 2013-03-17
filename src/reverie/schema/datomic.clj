@@ -131,7 +131,7 @@
       ;; TODO: check request for which method is used, apply as needed
       (if-let [func (get (get @objects (:object schema))
                          (-> rdata :request :request-method))]
-        (rev/object-attr-transform schema object)))))
+        (func rdata (rev/object-attr-transform schema object))))))
 
 
 (extend-type ReverieDataDatomic

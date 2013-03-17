@@ -42,4 +42,5 @@
        tx-rdata (rev/page-new-object! (assoc rdata :object-id (:db/id tx-obj)))
        page (rev/page-get tx-rdata)]
    (rev/object-render schema connection (:db/id tx-obj) tx-rdata))
+ ;; TODO: fix initails. both become the latest
  => [:text "my initial text" :image "my initial image"])
