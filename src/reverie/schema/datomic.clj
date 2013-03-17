@@ -3,7 +3,7 @@
   (:use [datomic.api :only [q db] :as d]
         [reverie.core :only [reverie-object reverie-page
                              add-route! remove-route! get-route
-                             templates] :as rev])
+                             templates objects] :as rev])
   (:import reverie.core.ObjectSchemaDatomic reverie.core.ReverieDataDatomic))
 
 
@@ -129,8 +129,9 @@
     (let [object (rev/object-get schema connection id)
           request (:request rdata)]
       ;; TODO: check request for which method is used, apply as needed
-      (rev/object-attr-transform schema object)
-      )))
+      (if-let [func (get (get @objects (:object schema))
+                         (-> rdata :request :request-method))]
+        (rev/object-attr-transform schema object)))))
 
 
 (extend-type ReverieDataDatomic

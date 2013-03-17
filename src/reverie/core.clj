@@ -135,7 +135,7 @@
 (defmacro object-funcs [attributes methods & body]
   (let [all-kw? (zero? (count (filter #(not (keyword? %)) methods)))]
     (if all-kw?
-      `(let [~'func (fn [~'request ~@attributes] ~@body)]
+      `(let [~'func (fn [~'rdata {:keys [~@attributes]}] ~@body)]
          (into {} (map vector ~methods (repeat ~'func))))
       (let [paired (into {} (map (fn [[method fn-name]] {(keyword fn-name) method}) (partition 2 methods)))
             bodies (map (fn [[fn-name & fn-body]] [(keyword fn-name) fn-body]) (filter vector? body))]
@@ -145,7 +145,7 @@
             m
             (let [[fn-name fn-body] func-vector]
              (if-let [method (paired (first func-vector))]
-               (recur r (assoc m method `(fn [~'rdata ~@attributes] ~@fn-body)))
+               (recur r (assoc m method `(fn [~'rdata {:keys [~@attributes]}] ~@fn-body)))
                (recur r m)))))))))
 
 (defmacro defobject [object options methods & args]

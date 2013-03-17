@@ -58,19 +58,19 @@
 (fact
  "objectfuncs simple"
  (let [obj (rev/object-funcs [] [:get :post] (clojure.string/join " " ["this" "is" "my" "function!"]))]
-   [((:get obj) request) ((:post obj) request)]) => ["this is my function!" "this is my function!"])
+   [((:get obj) request {}) ((:post obj) request {})]) => ["this is my function!" "this is my function!"])
 
 (fact
  "objectfuncs multiple method/fn"
  (let [obj (rev/object-funcs [] [:get fn-get :post fn-post]
                              [fn-get "my get"]
                              [fn-post "my post"])]
-   [((:get obj) request) ((:post obj) request)]) => ["my get" "my post"])
+   [((:get obj) request {}) ((:post obj) request {})]) => ["my get" "my post"])
 
 (fact
  "objectfuncs attributes"
  (let [obj (rev/object-funcs [text] [:get] (hiccup/html [:div "this is my " text]))]
-   ((:get obj) request "text")) => "<div>this is my text</div>")
+   ((:get obj) request {:text "text"})) => "<div>this is my text</div>")
 
 
 (fact
@@ -98,7 +98,7 @@
    (rev/defobject object/text [:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]] [:get] text)
    (rev/run-schemas! connection)
    (let [f (-> @rev/objects :object/text :get)]
-     (f {:uri "/"} "my text"))) => "my text")
+     (f {:uri "/"} {:text "my text"}))) => "my text")
 
 (fact
  "routes"

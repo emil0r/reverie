@@ -38,7 +38,7 @@
  (let [request {:uri "/object-render"}
        schema (-> @rev/objects :object/text :schema)
        tx-obj (rev/object-initiate! schema connection)
-       rdata (rev/reverie-data {:page-id 42 :connection connection})
+       rdata (rev/reverie-data {:page-id 42 :connection connection :request {:request-method :get}})
        tx-rdata (rev/page-new-object! (assoc rdata :object-id (:db/id tx-obj)))
        page (rev/page-get tx-rdata)]
    (rev/object-render schema connection (:db/id tx-obj) tx-rdata))
