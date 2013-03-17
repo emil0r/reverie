@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [ring "1.1.6"]
-                 [com.datomic/datomic-free "0.8.3538"]
+                 [com.datomic/datomic-free "0.8.3848"]
                  [fs "1.3.2"]]
   :profiles {:dev {:dependencies [[midje "1.4.0"]
                                   [com.stuartsierra/lazytest "1.2.3"]]}}
