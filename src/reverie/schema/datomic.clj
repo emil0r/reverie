@@ -101,12 +101,11 @@
           initials (get-initials schema)
           idents (get-idents schema)
           tmpid {:db/id #db/id [:db.part/user -1]}
-          attribs (apply conj [(merge tmpid {:reverie/object object
-                                             :reverie/active? true})]
-                         (into []
-                               (map #(merge tmpid %)
-                                    (cross-initials-idents initials idents))))
-          tx @(d/transact connection attribs)]
+          attribs (merge {:db/id #db/id [:db.part/user -1]
+                          :reverie/object object
+                          :reverie/active? true}
+                         (into {} (cross-initials-idents initials idents)))
+          tx @(d/transact connection [attribs])]
       (assoc tx :db/id (-> tx :tempids vals last))))
 
   (object-get [schema connection id]
@@ -128,7 +127,6 @@
   (object-render [schema connection id rdata]
     (let [object (rev/object-get schema connection id)
           request (:request rdata)]
-      ;; TODO: check request for which method is used, apply as needed
       (if-let [func (get (get @objects (:object schema))
                          (-> rdata :request :request-method))]
         (func rdata (rev/object-attr-transform schema object))))))

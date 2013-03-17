@@ -1,5 +1,5 @@
 (ns reverie.core
-  (:use [datomic.api :only [db]]))
+  (:use [datomic.api :only [db tempid]]))
 
 (defonce routes (atom {}))
 (defonce templates (atom {}))
@@ -96,7 +96,7 @@
                          (filter
                           #(not (nil? (:db/ident (m %))))
                           (keys m)))
-                      schema {:schema (merge (m k) {:db/id #db/id [:db.part/db]
+                      schema {:schema (merge (m k) {:db/id (tempid :db.part/db) ;;#db/id [:db.part/db]
                                                     :db.install/_attribute :db.part/db})}]
                   {k (merge m schema)})) attributes))))
 
