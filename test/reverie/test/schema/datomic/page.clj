@@ -203,7 +203,8 @@
        tx-rdata3 (rev/page-new-object! (assoc tx-rdata :object-id obj-id2))
        page (rev/page-get tx-rdata2)
        rendered (rev/page-render rdata)]
-   rendered) => ["<!DOCTYPE html>"
+   rendered) =>
+   ["<!DOCTYPE html>"
                  [:html
                   [:head
                    [:meta {:charset "utf-8"}]
