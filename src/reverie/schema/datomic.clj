@@ -127,8 +127,10 @@
   (object-render [schema connection id rdata]
     (let [object (rev/object-get schema connection id)
           request (:request rdata)]
-      (if-let [func (get (get @objects (:object schema))
-                         (-> rdata :request :request-method))]
+      (if-let [func (or
+                     (get (get @objects (:object schema))
+                          (-> rdata :request :request-method))
+                     (get (get @objects (:object schema)) :any))]
         (func rdata (rev/object-attr-transform schema object))))))
 
 
