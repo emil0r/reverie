@@ -5,6 +5,7 @@
 (defonce templates (atom {}))
 (defonce objects (atom {}))
 (defonce apps (atom {}))
+(defonce plugins (atom {}))
 
 (defprotocol reverie-object
   (object-correct? [schema]
@@ -55,6 +56,9 @@
     "Search pages for a match")
   (page-right? [rdata user right]
     "Does the user have that right for the page?"))
+
+(defprotocol reverie-plugin
+  (plugin-correct? [pdata]))
 
 (defrecord ObjectSchemaDatomic [object attributes])
 (defrecord ReverieDataDatomic [])
@@ -133,6 +137,10 @@
          [:div.reverie-area {:id ~name :name ~name :class ~name}
           (map #(area-render % ~'rdata) (page-objects (assoc ~'rdata :area ~name)))]
          (map #(area-render % ~'rdata) (page-objects (assoc ~'rdata :area ~name)))))))
+
+(defmacro defplugin [name options]
+  (let [name (keyword name)]
+    `(swap! plugins ~name ~options )))
 
 (defmacro deftemplate [template options & body]
   (let [template (keyword template)
