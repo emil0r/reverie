@@ -4,7 +4,8 @@
             )
   (:use midje.sweet
         [datomic.api :only [q db] :as d]
-        [reverie.test.core :only [setup]]))
+        [reverie.test.core :only [setup]])
+  (:import reverie.core.PluginDatomic))
 
 (reset! rev/plugins {})
 
@@ -33,4 +34,12 @@
                                        {:db/ident :person/job
                                         :db/valueType :db.type/string
                                         :db/cardinality :db.cardinality/one
-                                        :db/doc ""}]})
+                                        :db/doc ""}]
+                              :active? true})
+
+
+(fact
+ "plugin-correct?"
+ (let [p (rev/get-plugin :organizations)]
+   (rev/plugin-correct? p))
+ => true)

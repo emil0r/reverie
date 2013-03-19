@@ -1,10 +1,12 @@
 (ns reverie.schema.datomic
   (:require [clojure.set :as set])
   (:use [datomic.api :only [q db] :as d]
-        [reverie.core :only [reverie-object reverie-page
+        [reverie.core :only [reverie-object reverie-page reverie-plugin
                              add-route! remove-route! get-route
                              templates objects] :as rev])
-  (:import reverie.core.ObjectSchemaDatomic reverie.core.ReverieDataDatomic))
+  (:import reverie.core.ObjectSchemaDatomic
+           reverie.core.ReverieDataDatomic
+           reverie.core.PluginDatomic))
 
 
 ;; defaults are either values or functions that return a value
@@ -201,3 +203,30 @@
     (d/entity (db connection) page-id))
 
   (page-right? [rdata user right]))
+
+(extend-type PluginDatomic
+  reverie-plugin
+
+  (plugin-correct? [pdata]
+    (let [schema (-> pdata :options :schema)]
+     (and
+      (not (nil? schema))
+      ;; [:db/ident :db/valueType :db/cardinality :db/doc]
+      )))
+
+  (plugin-upgrade? [schema connection]
+    (let [{:keys [object ks]} (expand-schema schema)]
+      (not (migrated? ks (get-migrations connection object)))))
+
+  (plugin-upgrade! [schema connection]
+    (let [{:keys [object attributes ks]} (expand-schema schema)
+          datomic-schema (vec (map :schema (map #(attributes %) ks)))
+          migrations (get-migrations connection object)]
+      @(d/transact connection [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
+                               {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
+      @(d/transact connection datomic-schema)))
+
+  (plugin-get [pdata connection data])
+  
+  (plugin-set! [schema connection data])
+  )

@@ -58,13 +58,21 @@
     "Does the user have that right for the page?"))
 
 (defprotocol reverie-plugin
-  (plugin-correct? [pdata]))
+  (plugin-correct? [pdata])
+  (plugin-upgrade? [pdata connection])
+  (plugin-upgrade! [pdata connection])
+  (plugin-get [pdata connection data])
+  (plugin-set! [pdata connection data]))
 
 (defrecord ObjectSchemaDatomic [object attributes])
 (defrecord ReverieDataDatomic [])
+(defrecord PluginDatomic [name options])
 
 (defn reverie-data [data]
   (merge (ReverieDataDatomic.) data))
+
+(defn get-plugin [name]
+  (PluginDatomic. name (get @plugins name)))
 
 (defn add-route! [route data]
   (swap! routes assoc route data))
@@ -140,7 +148,7 @@
 
 (defmacro defplugin [name options]
   (let [name (keyword name)]
-    `(swap! plugins ~name ~options )))
+    `(swap! plugins assoc ~name ~options )))
 
 (defmacro deftemplate [template options & body]
   (let [template (keyword template)
