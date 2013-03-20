@@ -26,11 +26,11 @@
           (recur migrations true)
           (recur migrations migrated?))))))
 
-(defn- get-migrations [connection object]
-  (q '[:find ?ks ?object :in $ ?object :where
-       [?c :reverie.object.migrations/name ?object]
-       [?c :reverie.object.migrations/keys ?ks]]
-     (db connection) object))
+(defn- get-migrations [connection migration]
+  (q '[:find ?ks ?migration :in $ ?migration :where
+       [?c :reverie.migrations/name ?migration]
+       [?c :reverie.migrations/keys ?ks]]
+     (db connection) migration))
 
 (defn- get-initials [schema]
   (let [{:keys [attributes ks]} (expand-schema schema)]
@@ -72,8 +72,8 @@
     (let [{:keys [object attributes ks]} (expand-schema schema)
           datomic-schema (vec (map :schema (map #(attributes %) ks)))
           migrations (get-migrations connection object)]
-      @(d/transact connection [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
-                               {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
+      @(d/transact connection [{:reverie.migrations/name object :db/id #db/id [:db.part/user -1]}
+                               {:reverie.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
       @(d/transact connection datomic-schema)))
 
   (object-synchronize! [schema connection]
@@ -209,14 +209,14 @@
 
   (plugin-correct? [pdata]
     (let [schema (-> pdata :options :schema)]
-     (and
-      (not (nil? schema))
-      ;; [:db/ident :db/valueType :db/cardinality :db/doc]
-      )))
+      (and
+       (not (nil? schema))
+       ;; [:db/ident :db/valueType :db/cardinality :db/doc]
+       )))
 
-  (plugin-upgrade? [schema connection]
-    (let [{:keys [object ks]} (expand-schema schema)]
-      (not (migrated? ks (get-migrations connection object)))))
+  (plugin-upgrade? [pdata connection]
+    (let [ks (-> pdata :options :schema keys)]
+      (not (migrated? ks (get-migrations connection (:name pdata))))))
 
   (plugin-upgrade! [schema connection]
     (let [{:keys [object attributes ks]} (expand-schema schema)
