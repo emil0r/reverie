@@ -43,3 +43,15 @@
  (let [p (rev/get-plugin :organizations)]
    (rev/plugin-correct? p))
  => true)
+
+(fact
+ "plugin-upgrade?"
+ (let [p (rev/get-plugin :organizations)]
+   (rev/plugin-upgrade? p connection))
+ => true)
+
+(fact
+ "plugin-upgrade!"
+ (let [p (rev/get-plugin :organizations)]
+   (rev/plugin-upgrade! p connection))
+ => true)

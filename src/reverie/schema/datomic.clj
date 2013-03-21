@@ -204,6 +204,14 @@
 
   (page-right? [rdata user right]))
 
+(defn- valid-plugin-schema? [schema]
+  (let [needed [:db/ident :db/valueType :db/cardinality :db/doc]]
+    (loop [[s & r] schema
+           valid? true]
+      (if (nil? s)
+        valid?
+        (recur r (every? #(-> (get s %) nil? not) needed))))))
+
 (extend-type PluginDatomic
   reverie-plugin
 
@@ -211,20 +219,25 @@
     (let [schema (-> pdata :options :schema)]
       (and
        (not (nil? schema))
-       ;; [:db/ident :db/valueType :db/cardinality :db/doc]
-       )))
+       (valid-plugin-schema? schema))))
 
   (plugin-upgrade? [pdata connection]
     (let [ks (-> pdata :options :schema keys)]
       (not (migrated? ks (get-migrations connection (:name pdata))))))
 
-  (plugin-upgrade! [schema connection]
-    (let [{:keys [object attributes ks]} (expand-schema schema)
-          datomic-schema (vec (map :schema (map #(attributes %) ks)))
-          migrations (get-migrations connection object)]
-      @(d/transact connection [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
-                               {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
-      @(d/transact connection datomic-schema)))
+  (plugin-upgrade! [pdata connection]
+    (let [schema (-> pdata :options :schema)]
+      ;;      (println schema)
+      true
+      )
+
+    ;; (let [{:keys [object attributes ks]} (expand-schema schema)
+    ;;       datomic-schema (vec (map :schema (map #(attributes %) ks)))
+    ;;       migrations (get-migrations connection object)]
+    ;;   @(d/transact connection [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
+    ;;                            {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
+    ;;   @(d/transact connection datomic-schema))
+    )
 
   (plugin-get [pdata connection data])
   
