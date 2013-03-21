@@ -54,5 +54,37 @@
  "plugin-upgrade!"
  (let [p (rev/get-plugin :organizations)]
    (rev/plugin-upgrade! p connection)
-   (number? (ffirst (q '[:find ?c :where [?c :db/ident :person/age]] (db connection)))))
- => true)
+   (rev/defplugin organizations {:schema [{:db/ident :organization/name
+                                           :db/valueType :db.type/string
+                                           :db/cardinality :db.cardinality/one
+                                           :db/doc "Name of the organization"}
+                                          {:db/ident :organization/hq
+                                           :db/valueType :db.type/string
+                                           :db/cardinality :db.cardinality/one
+                                           :db/doc "Headquarter of the organization"}
+                                          {:db/ident :organization/persons
+                                           :db/valueType :db.type/ref
+                                           :db/cardinality :db.cardinality/many
+                                           :db/doc "People belonging to the organization"}
+                                          {:db/ident :person/name
+                                           :db/valueType :db.type/string
+                                           :db/cardinality :db.cardinality/one
+                                           :db/doc ""}
+                                          {:db/ident :person/age
+                                           :db/valueType :db.type/long
+                                           :db/cardinality :db.cardinality/one
+                                           :db/doc ""}
+                                          {:db/ident :person/job
+                                           :db/valueType :db.type/string
+                                           :db/cardinality :db.cardinality/one
+                                           :db/doc ""}
+                                          {:db/ident :person/years-at-company
+                                           :db/valueType :db.type/long
+                                           :db/cardinality :db.cardinality/one
+                                           :db/doc ""}]
+                                 :active? true})
+   (let [p (rev/get-plugin :organizations)]
+     (rev/plugin-upgrade! p connection))
+   [(number? (ffirst (q '[:find ?c :where [?c :db/ident :person/age]] (db connection))))
+    (number? (ffirst (q '[:find ?c :where [?c :db/ident :person/years-at-company]] (db connection))))])
+ => [true true])

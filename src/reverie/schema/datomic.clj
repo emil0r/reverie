@@ -226,11 +226,14 @@
 
   (plugin-upgrade! [pdata connection]
     (let [schema (-> pdata :options :schema)
-          ks (map #(:db/ident %) schema)]
-      @(d/transact connection [{:reverie.migrations/name (:name pdata) :db/id #db/id [:db.part/user -1]}
-                               {:reverie.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
-      @(d/transact connection (map #(merge % {:db/id (d/tempid :db.part/db)
-                                              :db.install/_attribute :db.part/db}) schema))))
+          ks (map #(:db/ident %) schema)
+          tx1 @(d/transact connection [{:reverie.migrations/name (:name pdata) :db/id #db/id [:db.part/user -1]}
+                                       {:reverie.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
+          tx2 @(d/transact connection (map #(merge % {:db/id (d/tempid :db.part/db)
+                                                      :db.install/_attribute :db.part/db}) schema))]
+      (println tx2)
+      
+      tx2))
 
   (plugin-get [pdata connection data])
   
