@@ -70,8 +70,7 @@
 
   (object-upgrade! [schema connection]
     (let [{:keys [object attributes ks]} (expand-schema schema)
-          datomic-schema (vec (map :schema (map #(attributes %) ks)))
-          migrations (get-migrations connection object)]
+          datomic-schema (vec (map :schema (map #(attributes %) ks)))]
       @(d/transact connection [{:reverie.migrations/name object :db/id #db/id [:db.part/user -1]}
                                {:reverie.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
       @(d/transact connection datomic-schema)))
@@ -226,18 +225,12 @@
       (not (migrated? ks (get-migrations connection (:name pdata))))))
 
   (plugin-upgrade! [pdata connection]
-    (let [schema (-> pdata :options :schema)]
-      ;;      (println schema)
-      true
-      )
-
-    ;; (let [{:keys [object attributes ks]} (expand-schema schema)
-    ;;       datomic-schema (vec (map :schema (map #(attributes %) ks)))
-    ;;       migrations (get-migrations connection object)]
-    ;;   @(d/transact connection [{:reverie.object.migrations/name object :db/id #db/id [:db.part/user -1]}
-    ;;                            {:reverie.object.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
-    ;;   @(d/transact connection datomic-schema))
-    )
+    (let [schema (-> pdata :options :schema)
+          ks (map #(:db/ident %) schema)]
+      @(d/transact connection [{:reverie.migrations/name (:name pdata) :db/id #db/id [:db.part/user -1]}
+                               {:reverie.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
+      @(d/transact connection (map #(merge % {:db/id (d/tempid :db.part/db)
+                                              :db.install/_attribute :db.part/db}) schema))))
 
   (plugin-get [pdata connection data])
   

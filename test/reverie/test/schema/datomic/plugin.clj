@@ -53,5 +53,6 @@
 (fact
  "plugin-upgrade!"
  (let [p (rev/get-plugin :organizations)]
-   (rev/plugin-upgrade! p connection))
+   (rev/plugin-upgrade! p connection)
+   (number? (ffirst (q '[:find ?c :where [?c :db/ident :person/age]] (db connection)))))
  => true)
