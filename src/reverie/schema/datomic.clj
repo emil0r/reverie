@@ -232,7 +232,8 @@
       @(d/transact connection (map #(merge % {:db/id (d/tempid :db.part/db)
                                               :db.install/_attribute :db.part/db}) schema))))
 
-  (plugin-get [pdata connection data])
+  (plugin-get [pdata connection data]
+    )
   
-  (plugin-set! [schema connection data])
-  )
+  (plugin-set! [pdata connection data]
+    ))

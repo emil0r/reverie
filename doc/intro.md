@@ -24,3 +24,7 @@ tree. It allows objects inside itself based on input. The app can use
 a template as basis and will then simply fill the areas in the
 template with its own HTML representation, define everything itself or
 a combination thereof.
+
+
+## Plugins
+A plugin can have its own schema. Will have an automatic admin part.
