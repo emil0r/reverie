@@ -40,7 +40,7 @@
  "deftemplate"
  (do
    (reset-templates!)
-   (rev/deftemplate :main [:areas [:a :b :c] :pre [pre-test] :post [post-test]] "body")
+   (rev/deftemplate main [:areas [:a :b :c] :pre [pre-test] :post [post-test]] "body")
    (let [m @rev/templates
          k (first (keys m))
          options (:options (m k))
