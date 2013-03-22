@@ -180,3 +180,7 @@
          attributes (get-attributes schema)
          body `(object-funcs ~attributes ~methods ~@args)]
      `(swap! objects assoc ~object (merge {:options ~options :schema ~schema} ~body))))
+
+
+(defn deconstruct-uri [schema uri]
+  )

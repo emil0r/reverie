@@ -116,3 +116,10 @@
  => [1 3 2 4 5])
 
 (reset-routes!)
+
+
+
+(fact
+ "deconstruct-uri"
+ (rev/deconstruct-uri "/:foo/:nisse" "/test1/test2")
+ => {:foo "test1" :nisse "test2"})
