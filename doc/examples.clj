@@ -36,7 +36,7 @@
 
 ;;
 (defplugin name-of-plugin plugin-data)
-(defpligin hotel {:schema [{:db/ident :hotel/name
+(defplugin hotel {:schema [{:db/ident :hotel/name
                             :db/type :db.type/string
                             :db/cardinality :db.cardinality/string
                             :db/doc ""}]})
