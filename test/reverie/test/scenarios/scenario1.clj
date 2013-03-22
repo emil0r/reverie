@@ -22,6 +22,13 @@
                           [:div.area-a (rev/area :a)]
                           [:div.area-b (rev/area :b)]
                           [:div.area-c (rev/area :c)]]]))]
-   ((-> template :main :fn) rdata)
-   nil
-   ) => nil)
+   ((-> template :main :fn) rdata))
+ => ["<!DOCTYPE html>"
+     [:html
+      [:head
+       [:meta {:charset "utf-8"}]
+       [:title "Scenario 1"]]
+      [:body
+       [:div.area-a []]
+       [:div.area-b []]
+       [:div.area-c []]]]])
