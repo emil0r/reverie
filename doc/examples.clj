@@ -49,10 +49,12 @@
   [:get "/:gallery/:image" "display an image"]
   [:get "/:gallery" "images from the gallery"]
   [:get "*" "my body"]
-  [:post [:key1 :key2 :key3] "return body"])
+  [:post [name surname email] :as data "return body"]
+  ;; OR
+  [:post data (let [{:keys [name surname email]} data] "return body")])
 
 ;; name-of-app: name of the app. can be given a namespace
 ;; options: objects -> vector of objects or :any keyword
 ;; methods-with-path-and-body: list of arrays
 ;; like this -> [:get "/:path" (str "path was -> " path)]
-;; or [:post [:post :data :captured :here] "return body"]
+;; or [:post [post data captured here] "return body"]
