@@ -4,7 +4,8 @@
             )
   (:use midje.sweet
         [datomic.api :only [q db] :as d]
-        [reverie.test.core :only [setup]])
+        [reverie.test.core :only [setup]]
+        [ring.mock.request])
   (:import reverie.core.ObjectSchemaDatomic reverie.core.ReverieDataDatomic))
 
 
@@ -53,9 +54,8 @@
 (fact
  "add page"
  (let [{:keys [connection]} (setup)
-       request {}
        data (init-data :page-new {:connection connection
-                                  :request request})
+                                  :request (request :get "/")})
        rdata (rev/reverie-data data)]
    (-> rdata rev/page-new! :page-id pos?))
  => true)
@@ -63,9 +63,8 @@
 (fact
  "get page"
  (let [{:keys [connection]} (setup)
-       request {}
        data (init-data :page-new {:connection connection
-                                  :request request})
+                                  :request (request :get "/")})
        rdata (rev/reverie-data data)
        new-page-id (-> rdata rev/page-new! :page-id)]
    (= new-page-id (:db/id (rev/page-get (assoc rdata :page-id new-page-id)))))
@@ -74,9 +73,8 @@
 (fact
  "update page, delete page & restore page"
  (let [{:keys [connection]} (setup)
-       request {}
        data (init-data :page-new {:connection connection
-                                  :request request})
+                                  :request (request :get "/")})
        rdata (rev/reverie-data data)
        tx-rdata (rev/page-new! rdata)
        page (rev/page-get tx-rdata)
@@ -96,9 +94,8 @@
 (fact
  "add object to page"
  (let [{:keys [connection]} (setup)
-       request {}
        data (init-data :page-new {:connection connection
-                                  :request request})
+                                  :request (request :get "/")})
        rdata (rev/reverie-data data)
        tx-rdata (rev/page-new! rdata)
        obj (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
@@ -124,9 +121,8 @@
 (fact
  "delete object from page"
  (let [{:keys [connection]} (setup)
-       request {}
        data (init-data :page-new {:connection connection
-                                  :request request})
+                                  :request (request :get "/")})
        rdata (rev/reverie-data data)
        tx-rdata (rev/page-new! rdata)
        obj (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
@@ -149,9 +145,8 @@
 (fact
  "list objects of page"
  (let [{:keys [connection]} (setup)
-       request {}
        data (init-data :page-new {:connection connection
-                                  :request request})
+                                  :request (request :get "/")})
        rdata (rev/reverie-data data)
        tx-rdata (rev/page-new! rdata)
        obj (ObjectSchemaDatomic. :object/text {:text {:schema {:db/id #db/id [:db.part/db]
@@ -178,9 +173,8 @@
 (fact
  "page render"
  (let [{:keys [connection]} (setup)
-       request {:uri "/my-test-page" :request-method :get}
        data (init-data :page-new {:connection connection
-                                  :request request})
+                                  :request (request :get "/my-test-page")})
        rdata (rev/reverie-data data)
        tx-rdata (rev/page-new! rdata)
        obj (:schema (:object/text @rev/objects))

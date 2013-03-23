@@ -3,7 +3,8 @@
             [hiccup.core :as hiccup]
             [fs.core :as fs])
   (:use midje.sweet
-        [datomic.api :only [q db] :as d]))
+        [datomic.api :only [q db] :as d]
+        [ring.mock.request]))
 
 
 (def db-uri-mem "datomic:mem://reverie")
@@ -32,9 +33,6 @@
 (defn reset-objects! []
   (reset! rev/objects {}))
 
-(defn request []
-  {:uri "/"})
-
 
 (fact
  "deftemplate"
@@ -45,7 +43,7 @@
          k (first (keys m))
          options (:options (m k))
          func (:fn (m k))]
-     [k options (func {:request (request)
+     [k options (func {:request (request :get "/")
                        :connection nil
                        :page-id nil
                        :mode :edit})])) => [:main
