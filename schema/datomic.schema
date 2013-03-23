@@ -82,4 +82,8 @@
   :db/cardinality :db.cardinality/one
   :db/doc "An area in a template or an app"
   :db.install/_attribute :db.part/db}
+ ;; partitions
+ {:db/id #db/id [:db.part/db]
+  :db/ident :db.part/reverie
+  :db.install/_partition :db.part/db}
  ]

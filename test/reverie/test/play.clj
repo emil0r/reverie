@@ -6,9 +6,44 @@
 
 
 
+
+
 ;; (reset! rev/objects {})
 
 ;; (def db-uri-mem "datomic:mem://reverie.play")
+
+;; (defn setup []
+;;   (d/delete-database db-uri-mem)
+;;   (let [database (d/create-database db-uri-mem)
+;;         connection (d/connect db-uri-mem)]
+;;     {:database database
+;;      :connection connection}))
+
+;; (def connection (:connection (setup)))
+
+;; @(d/transact connection [{:db/id (d/tempid :db.part/db)
+;;                           :db/ident :db.part/foo
+;;                           :db.install/_partition :db.part/db}
+;;                          {:db/id (d/tempid :db.part/db)
+;;                           :db/ident :db.part/bar
+;;                           :db.install/_partition :db.part/db}])
+
+;; @(d/transact connection [{:db/id (d/tempid :db.part/db)
+;;                           :db/ident :asdf
+;;                           :db/valueType :db.type/string
+;;                           :db/cardinality :db.cardinality/one
+;;                           :db/doc "asdf"
+;;                           :db/unique :db.unique/value
+;;                           :db.install/_attribute :db.part/db}])
+
+;; @(d/transact connection [{:db/id #db/id [:db.part/foo -1]
+;;                           :asdf "nisse/foo"}
+;;                          ])
+
+;; @(d/transact connection [{:db/id (d/tempid :bar)
+;;                           :asdf "nisse/foo"}
+;;                          ])
+
 
 ;; (defn setup []
 ;;   (d/delete-database db-uri-mem)

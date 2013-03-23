@@ -71,8 +71,8 @@
   (object-upgrade! [schema connection]
     (let [{:keys [object attributes ks]} (expand-schema schema)
           datomic-schema (vec (map :schema (map #(attributes %) ks)))]
-      @(d/transact connection [{:reverie.migrations/name object :db/id #db/id [:db.part/user -1]}
-                               {:reverie.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
+      @(d/transact connection [{:reverie.migrations/name object :db/id #db/id [:db.part/reverie -1]}
+                               {:reverie.migrations/keys ks :db/id #db/id [:db.part/reverie -1]}])
       @(d/transact connection datomic-schema)))
 
   (object-synchronize! [schema connection]
@@ -101,8 +101,7 @@
     (let [{:keys [object]} (expand-schema schema)
           initials (get-initials schema)
           idents (get-idents schema)
-          tmpid {:db/id #db/id [:db.part/user -1]}
-          attribs (merge {:db/id #db/id [:db.part/user -1]
+          attribs (merge {:db/id #db/id [:db.part/reverie -1]
                           :reverie/object object
                           :reverie/active? true}
                          (into {} (cross-initials-idents initials idents)))
@@ -174,7 +173,7 @@
     (let [uri (:reverie.page/uri tx-data)
           tx @(d/transact connection
                           [(merge tx-data
-                                  {:db/id #db/id [:db.part/db]
+                                  {:db/id #db/id [:db.part/reverie]
                                    :reverie/active? true
                                    :reverie.page/objects []})])
           page-id (-> tx :tempids vals last)]
@@ -227,8 +226,8 @@
   (plugin-upgrade! [pdata connection]
     (let [schema (-> pdata :options :schema)
           ks (map #(:db/ident %) schema)]
-      @(d/transact connection [{:reverie.migrations/name (:name pdata) :db/id #db/id [:db.part/user -1]}
-                               {:reverie.migrations/keys ks :db/id #db/id [:db.part/user -1]}])
+      @(d/transact connection [{:reverie.migrations/name (:name pdata) :db/id #db/id [:db.part/reverie -1]}
+                               {:reverie.migrations/keys ks :db/id #db/id [:db.part/reverie -1]}])
       @(d/transact connection (map #(merge % {:db/id (d/tempid :db.part/db)
                                               :db.install/_attribute :db.part/db}) schema))))
 
