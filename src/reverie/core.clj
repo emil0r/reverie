@@ -171,3 +171,6 @@
          body `(object-funcs ~attributes ~methods ~@args)]
      `(swap! objects assoc ~object (merge {:options ~options :schema ~schema} ~body))))
 
+(defmacro defapp [app options & body]
+  (let [app (keyword app)]
+    `(swap! apps assoc ~app {:options ~options :fns []})))

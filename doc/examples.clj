@@ -48,7 +48,8 @@
 (defapp gallery {:objects [object/text object/image]}
   [:get "/:gallery/:image" "display an image"]
   [:get "/:gallery" "images from the gallery"]
-  [:get "*" "my body"])
+  [:get "*" "my body"]
+  [:post [:key1 :key2 :key3] "return body"])
 
 ;; name-of-app: name of the app. can be given a namespace
 ;; options: objects -> vector of objects or :any keyword
