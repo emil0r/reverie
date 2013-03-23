@@ -38,7 +38,7 @@
  "deftemplate"
  (do
    (reset-templates!)
-   (rev/deftemplate main [:areas [:a :b :c] :pre [pre-test] :post [post-test]] "body")
+   (rev/deftemplate main {:areas [:a :b :c] :pre [pre-test] :post [post-test]} "body")
    (let [m @rev/templates
          k (first (keys m))
          options (:options (m k))
@@ -56,26 +56,26 @@
 (fact
  "objectfuncs simple"
  (let [obj (rev/object-funcs [] [:get :post] (clojure.string/join " " ["this" "is" "my" "function!"]))]
-   [((:get obj) request {}) ((:post obj) request {})]) => ["this is my function!" "this is my function!"])
+   [((:get obj) :rdata-placeholder {}) ((:post obj) :rdata-placeholder {})]) => ["this is my function!" "this is my function!"])
 
 (fact
  "objectfuncs multiple method/fn"
  (let [obj (rev/object-funcs [] [:get fn-get :post fn-post]
                              [fn-get "my get"]
                              [fn-post "my post"])]
-   [((:get obj) request {}) ((:post obj) request {})]) => ["my get" "my post"])
+   [((:get obj) :rdata-placeholder {}) ((:post obj) :rdata-placeholder {})]) => ["my get" "my post"])
 
 (fact
  "objectfuncs attributes"
  (let [obj (rev/object-funcs [text] [:get] (hiccup/html [:div "this is my " text]))]
-   ((:get obj) request {:text "text"})) => "<div>this is my text</div>")
+   ((:get obj) :rdata-placeholder {:text "text"})) => "<div>this is my text</div>")
 
 
 (fact
  "defobject"
  (do
    (reset-objects!)
-   (rev/defobject object/text [:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/type :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text"}]] [:get] "")
+   (rev/defobject object/text {:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/type :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text"}]} [:get] "")
    (-> @rev/objects :object/text nil?)) => false)
 
 
@@ -84,7 +84,7 @@
  "defobject and run-schemas!"
  (let [{:keys [database connection]} (setup)]
    (reset-objects!)
-   (rev/defobject object/text [:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]] [:get] "")
+   (rev/defobject object/text {:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]} [:get] "")
    (rev/run-schemas! connection)
    (number? (ffirst (q '[:find ?c :where [?c :db/ident :object.text/text]] (db connection))))) => true)
 
@@ -93,7 +93,7 @@
  "defobject and atttributes"
  (let [{:keys [database connection]} (setup)]
    (reset-objects!)
-   (rev/defobject object/text [:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]] [:get] text)
+   (rev/defobject object/text {:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]} [:get] text)
    (rev/run-schemas! connection)
    (let [f (-> @rev/objects :object/text :get)]
      (f {:uri "/"} {:text "my text"}))) => "my text")
@@ -114,10 +114,3 @@
  => [1 3 2 4 5])
 
 (reset-routes!)
-
-
-
-(fact
- "deconstruct-uri"
- (rev/deconstruct-uri "/:foo/:nisse" "/test1/test2")
- => {:foo "test1" :nisse "test2"})

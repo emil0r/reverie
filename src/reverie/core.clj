@@ -90,14 +90,6 @@
      first
      second)))
 
-(defn- parse-options [options]
-  (loop [m {}
-         [opt & options] (partition 2 options)]
-    (if (nil? opt)
-      m
-      (let [[k v] opt]
-        (recur (assoc m k v) options)))))
-
 (defmulti parse-schema (fn [object options {:keys [schema]}] schema))
 (defmethod parse-schema :default [object {:keys [attributes] :as options} settings]
   (ObjectSchemaDatomic.
@@ -151,8 +143,7 @@
     `(swap! plugins assoc ~name ~options )))
 
 (defmacro deftemplate [template options & body]
-  (let [template (keyword template)
-        options (parse-options options)]
+  (let [template (keyword template)]
     `(swap! templates assoc ~template {:options ~options
                                        :fn (fn [~'rdata] ~@body)})))
 
@@ -174,13 +165,9 @@
 
 (defmacro defobject [object options methods & args]
    (let [object (keyword object)
-         options (parse-options options)
          settings {}
          schema (parse-schema object options settings)
          attributes (get-attributes schema)
          body `(object-funcs ~attributes ~methods ~@args)]
      `(swap! objects assoc ~object (merge {:options ~options :schema ~schema} ~body))))
 
-
-(defn deconstruct-uri [schema uri]
-  )

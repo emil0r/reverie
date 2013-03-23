@@ -13,7 +13,7 @@
 (reset! rev/templates {})
 (reset! rev/objects {})
 
-(rev/defobject object/text [:areas [:a :b :c]
+(rev/defobject object/text {:areas [:a :b :c]
                             :attributes [{:text {:db/ident :object.text/text
                                                  :db/valueType :db.type/string
                                                  :db/cardinality :db.cardinality/one
@@ -21,7 +21,7 @@
                                           :initial ""
                                           :input :text
                                           :name "Text"
-                                          :description ""}]]
+                                          :description ""}]}
   [:get]
   text)
 (rev/run-schemas! (:connection (setup)))

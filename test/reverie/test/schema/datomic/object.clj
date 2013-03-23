@@ -13,7 +13,7 @@
 
 (def connection (:connection (setup)))
 
-(rev/defobject object/text [:areas [:a :b :c]
+(rev/defobject object/text {:areas [:a :b :c]
                             :attributes [{:text {:db/ident :object.text/text
                                                  :db/valueType :db.type/string
                                                  :db/cardinality :db.cardinality/one
@@ -29,7 +29,7 @@
                                           :initial "my initial image"
                                           :input :text
                                           :name "Image"
-                                          :description ""}]]
+                                          :description ""}]}
   [:get :post]
   [:text text :image image])
 (rev/run-schemas! connection)
