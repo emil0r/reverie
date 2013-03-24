@@ -1,5 +1,6 @@
 (ns reverie.core
-  (:use [datomic.api :only [db tempid]]))
+  (:use [datomic.api :only [db tempid]]
+        [clout.core]))
 
 (defonce routes (atom {}))
 (defonce templates (atom {}))
@@ -171,6 +172,20 @@
          body `(object-funcs ~attributes ~methods ~@args)]
      `(swap! objects assoc ~object (merge {:options ~options :schema ~schema} ~body))))
 
-(defmacro defapp [app options & body]
+(defmacro app-method [[method & r]]
+  (case method
+    :get (if (= (count r) 2)
+           (let [[route body] r])
+           (let [[route regex & body] r]
+             [:get (route-compile route regex) (fn [rdata data] `~@body)]))
+    :asdf))
+(app-method [:get "/:gallery" (str "a" "s" "d" "f")])
+
+(defmacro defapp [app options & methods]
   (let [app (keyword app)]
-    `(swap! apps assoc ~app {:options ~options :fns []})))
+    (loop [[method & methods] methods
+           fns []]
+      (println method)
+      (if (nil? method)
+        `(swap! apps assoc ~app {:options ~options :fns ~fns})
+        (recur methods (conj fns (app-method method)))))))

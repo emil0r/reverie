@@ -114,3 +114,11 @@
  => [1 3 2 4 5])
 
 (reset-routes!)
+
+
+(println
+ (rev/defapp gallery {}
+   [:get "/:gallery/:image" "image"]
+   [:get "/:gallery" "gallery"]
+   [:get "*" "base"]
+   [:post data "my post"]))

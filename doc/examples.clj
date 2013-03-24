@@ -46,9 +46,9 @@
 
 (defapp name-of-app options methods-with-path-and-body)
 (defapp gallery {:objects [object/text object/image]}
-  [:get "/:gallery/:image" "display an image"]
-  [:get "/:gallery" "images from the gallery"]
-  [:get "*" "my body"]
+  [:get ["/:gallery/:image"] "display an image"]
+  [:get ["/:gallery" {:gallery #"\w+"}] [:h2 "my title"] [:div "images from the gallery"]]
+  [:get ["*"] "my body"]
   [:post [name surname email] :as data "return body"]
   ;; OR
   [:post data (let [{:keys [name surname email]} data] "return body")])
