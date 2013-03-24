@@ -115,11 +115,18 @@
 
 (reset-routes!)
 
+(rev/defapp gallery {}
+  [:get ["/:gallery/:image"] (clojure.string/join "/" [gallery image])]
+  [:get ["/:gallery"] (str "this is my " gallery)]
+  [:get ["*"] "base"]
+  [:post data "my post"])
 
-(println
- (rev/defapp gallery {}
-   [:get ["/:gallery/:image"] "image"]
-   [:get ["/:gallery"] "gallery"]
-   [:get ["*"] "base"]
-;;   [:post data "my post"]
-   ))
+(fact
+ "defapp"
+ (let [app (:gallery @rev/apps)
+       [[_ _ g1] [_ _ g2] [_ _ g3] [_ p1]] (:fns app)]
+   [(g1 {} {:gallery "gallery" :image "image"})
+    (g2 {} {:gallery "gallery"})
+    (g3 {} {})
+    (p1 {})])
+ => ["gallery/image" "this is my gallery" "base" "my post"])

@@ -175,7 +175,6 @@
 (defmacro app-method [[method options & body]]
   (case method
     :get (let [[route regex] options]
-           (println options)
            (if (nil? regex)
              (let [route (route-compile route)
                    keys (vec (map #(-> % name symbol) (:keys route)))]
@@ -183,8 +182,7 @@
              (let [route (route-compile route regex)
                    keys (vec (map #(-> % name symbol) (:keys route)))]
                [method route `(fn [~'rdata {:keys ~keys}] ~@body)])))
-    [method :asdf `(fn [~'rdata] ~@body)]))
-(app-method [:get ["/:gallery"] (str "a" "s" "d" "f")])
+    [method `(fn [~'rdata] ~@body)]))
 
 (defmacro defapp [app options & methods]
   (let [app (keyword app)]
@@ -193,8 +191,4 @@
       (if (nil? method)
         `(swap! apps assoc ~app {:options ~options :fns ~fns})
         (recur methods (conj fns `(app-method ~method)))))))
-
-(defapp testus {}
-  [:get ["/:asdf"] "asdf"])
-;;(app-method [:get ["/:asdf"] "asdf"])
 
