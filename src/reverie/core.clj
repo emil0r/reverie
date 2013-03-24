@@ -172,20 +172,29 @@
          body `(object-funcs ~attributes ~methods ~@args)]
      `(swap! objects assoc ~object (merge {:options ~options :schema ~schema} ~body))))
 
-(defmacro app-method [[method & r]]
+(defmacro app-method [[method options & body]]
   (case method
-    :get (if (= (count r) 2)
-           (let [[route body] r])
-           (let [[route regex & body] r]
-             [:get (route-compile route regex) (fn [rdata data] `~@body)]))
-    :asdf))
-(app-method [:get "/:gallery" (str "a" "s" "d" "f")])
+    :get (let [[route regex] options]
+           (println options)
+           (if (nil? regex)
+             (let [route (route-compile route)
+                   keys (vec (map #(-> % name symbol) (:keys route)))]
+               [method route `(fn [~'rdata {:keys ~keys}] ~@body)])
+             (let [route (route-compile route regex)
+                   keys (vec (map #(-> % name symbol) (:keys route)))]
+               [method route `(fn [~'rdata {:keys ~keys}] ~@body)])))
+    [method :asdf `(fn [~'rdata] ~@body)]))
+(app-method [:get ["/:gallery"] (str "a" "s" "d" "f")])
 
 (defmacro defapp [app options & methods]
   (let [app (keyword app)]
     (loop [[method & methods] methods
            fns []]
-      (println method)
       (if (nil? method)
         `(swap! apps assoc ~app {:options ~options :fns ~fns})
-        (recur methods (conj fns (app-method method)))))))
+        (recur methods (conj fns `(app-method ~method)))))))
+
+(defapp testus {}
+  [:get ["/:asdf"] "asdf"])
+;;(app-method [:get ["/:asdf"] "asdf"])
+

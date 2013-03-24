@@ -118,7 +118,8 @@
 
 (println
  (rev/defapp gallery {}
-   [:get "/:gallery/:image" "image"]
-   [:get "/:gallery" "gallery"]
-   [:get "*" "base"]
-   [:post data "my post"]))
+   [:get ["/:gallery/:image"] "image"]
+   [:get ["/:gallery"] "gallery"]
+   [:get ["*"] "base"]
+;;   [:post data "my post"]
+   ))
