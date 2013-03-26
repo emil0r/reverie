@@ -182,7 +182,7 @@
              (let [route (route-compile route regex)
                    keys (vec (map #(-> % name symbol) (:keys route)))]
                [method route `(fn [~'rdata {:keys ~keys}] ~@body)])))
-    [method `(fn [~'rdata] ~@body)]))
+    [method `(fn [~'rdata ~options] ~@body)]))
 
 (defmacro defapp [app options & methods]
   (let [app (keyword app)]

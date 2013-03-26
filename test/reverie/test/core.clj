@@ -119,7 +119,7 @@
   [:get ["/:gallery/:image"] (clojure.string/join "/" [gallery image])]
   [:get ["/:gallery"] (str "this is my " gallery)]
   [:get ["*"] "base"]
-  [:post data "my post"])
+  [:post data (str "my post -> " data)])
 
 (fact
  "defapp"
@@ -128,5 +128,5 @@
    [(g1 {} {:gallery "gallery" :image "image"})
     (g2 {} {:gallery "gallery"})
     (g3 {} {})
-    (p1 {})])
- => ["gallery/image" "this is my gallery" "base" "my post"])
+    (p1 {} "my data here")])
+ => ["gallery/image" "this is my gallery" "base" "my post -> my data here"])

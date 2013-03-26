@@ -49,8 +49,6 @@
   [:get ["/:gallery/:image"] [:h1 gallery] [:img {:src (get-src image) :alt image}]]
   [:get ["/:gallery" {:gallery #"\w+"}] [:h1 gallery] [:div "images from the gallery"]]
   [:get ["*"] "my body"]
-  [:post [name surname email {:as data}] "return body"]
-  ;; OR
   [:post data (let [{:keys [name surname email]} data] "return body")])
 
 ;; name-of-app: name of the app. can be given a namespace
