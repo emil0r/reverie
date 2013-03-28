@@ -113,6 +113,9 @@
   ;; server. more?
   )
 
+(defn- regex? [pattern]
+  (= (class pattern) java.util.regex.Pattern))
+
 (defn- get-schema [object]
   (:schema (get @objects (:reverie/object object))))
 
@@ -149,20 +152,19 @@
                                        :fn (fn [~'rdata] ~@body)})))
 
 (defmacro object-funcs [attributes methods & body]
-  (let [all-kw? (zero? (count (filter #(not (keyword? %)) methods)))]
-    (if all-kw?
-      `(let [~'func (fn [~'rdata {:keys [~@attributes]}] ~@body)]
-         (into {} (map vector ~methods (repeat ~'func))))
-      (let [paired (into {} (map (fn [[method fn-name]] {(keyword fn-name) method}) (partition 2 methods)))
-            bodies (map (fn [[fn-name & fn-body]] [(keyword fn-name) fn-body]) (filter vector? body))]
-        (loop [[func-vector & r] bodies
-               m {}]
-          (if (nil? func-vector)
-            m
-            (let [[fn-name fn-body] func-vector]
-             (if-let [method (paired (first func-vector))]
-               (recur r (assoc m method `(fn [~'rdata {:keys [~@attributes]}] ~@fn-body)))
-               (recur r m)))))))))
+  (if (every? keyword? methods)
+    `(let [~'func (fn [~'rdata {:keys [~@attributes]}] ~@body)]
+       (into {} (map vector ~methods (repeat ~'func))))
+    (let [paired (into {} (map (fn [[method fn-name]] {(keyword fn-name) method}) (partition 2 methods)))
+          bodies (map (fn [[fn-name & fn-body]] [(keyword fn-name) fn-body]) (filter vector? body))]
+      (loop [[func-vector & r] bodies
+             m {}]
+        (if (nil? func-vector)
+          m
+          (let [[fn-name fn-body] func-vector]
+            (if-let [method (paired (first func-vector))]
+              (recur r (assoc m method `(fn [~'rdata {:keys [~@attributes]}] ~@fn-body)))
+              (recur r m))))))))
 
 (defmacro defobject [object options methods & args]
    (let [object (keyword object)
@@ -174,15 +176,16 @@
 
 (defmacro app-method [[method options & body]]
   (case method
-    :get (let [[route regex] options]
-           (if (nil? regex)
-             (let [route (route-compile route)
-                   keys (vec (map #(-> % name symbol) (:keys route)))]
-               [method route `(fn [~'rdata {:keys ~keys}] ~@body)])
-             (let [route (route-compile route regex)
-                   keys (vec (map #(-> % name symbol) (:keys route)))]
-               [method route `(fn [~'rdata {:keys ~keys}] ~@body)])))
-    [method `(fn [~'rdata ~options] ~@body)]))
+    :get (let [[route _2 _3] options]
+           (let [regex (if (every? regex? (vals _2)) _2 nil)
+                 method-options (if (nil? regex) _2 _3)
+                 route (if (nil? regex)
+                         (route-compile route)
+                         (route-compile route regex))
+                 keys (vec (map #(-> % name symbol) (:keys route)))
+                 func `(fn [~'rdata {:keys ~keys}] ~@body)]
+             [method route func]))
+    [method ` (fn [~'rdata ~options] ~@body)]))
 
 (defmacro defapp [app options & methods]
   (let [app (keyword app)]

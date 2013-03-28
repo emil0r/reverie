@@ -116,8 +116,8 @@
 (reset-routes!)
 
 (rev/defapp gallery {}
-  [:get ["/:gallery/:image"] (clojure.string/join "/" [gallery image])]
-  [:get ["/:gallery"] (str "this is my " gallery)]
+  [:get ["/:gallery/:image" {:gallery #"\w+" :image #"\d+"}] (clojure.string/join "/" [gallery image])]
+  [:get ["/:gallery" {:gallery #"\w+"} {:wrap [nil]}] (str "this is my " gallery)]
   [:get ["*"] "base"]
   [:post data (str "my post -> " data)])
 
