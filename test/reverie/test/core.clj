@@ -116,17 +116,36 @@
 (reset-routes!)
 
 (rev/defapp gallery {}
+  ;; test :get
   [:get ["/:gallery/:image" {:gallery #"\w+" :image #"\d+"}] (clojure.string/join "/" [gallery image])]
   [:get ["/:gallery" {:gallery #"\w+"} {:wrap [nil]}] (str "this is my " gallery)]
   [:get ["*"] "base"]
-  [:post ["*" data] (str "my post -> " data)])
+  ;; test order in methods array
+  [:post ["/:gallery" {:gallery #"\w+"} data] (str gallery ", my post -> " data)]
+  [:post ["/:gallery" {:gallery #"\w+"} {:wrap [nil]} data] (str gallery ", my post -> " data)]
+  [:post ["/:gallery" {:wrap [nil]} data] (str gallery ", my post -> " data)]
+  [:post ["*" data] (str "my post -> " data)]
+  ;; TODO: add tests with hashmap as form-data and use deconstruct on it
+  )
 
 (fact
  "defapp"
  (let [app (:gallery @rev/apps)
-       [[_ _ _ g1] [_ _ _ g2] [_ _ _ g3] [_ _ _ p1]] (:fns app)]
+       [[_ _ _ g1] [_ _ _ g2] [_ _ _ g3]
+        [_ _ _ p1] [_ _ _ p2] [_ _ _ p3] [_ _ _ p4]] (:fns app)]
    [(g1 {} {:gallery "gallery" :image "image"})
     (g2 {} {:gallery "gallery"})
     (g3 {} {})
-    (p1 {} "my data here")])
- => ["gallery/image" "this is my gallery" "base" "my post -> my data here"])
+    (p1 {} {:gallery "gallery"} "my data")
+    (p2 {} {:gallery "gallery2"} "my data")
+    (p3 {} {:gallery "gallery3"} "my data")
+    (p4 {} {} "my data here")
+    ])
+ => ["gallery/image"
+     "this is my gallery"
+     "base"
+     "gallery, my post -> my data"
+     "gallery2, my post -> my data"
+     "gallery3, my post -> my data"
+     "my post -> my data here"
+     ])
