@@ -119,12 +119,12 @@
   [:get ["/:gallery/:image" {:gallery #"\w+" :image #"\d+"}] (clojure.string/join "/" [gallery image])]
   [:get ["/:gallery" {:gallery #"\w+"} {:wrap [nil]}] (str "this is my " gallery)]
   [:get ["*"] "base"]
-  [:post data (str "my post -> " data)])
+  [:post ["*" data] (str "my post -> " data)])
 
 (fact
  "defapp"
  (let [app (:gallery @rev/apps)
-       [[_ _ g1] [_ _ g2] [_ _ g3] [_ p1]] (:fns app)]
+       [[_ _ _ g1] [_ _ _ g2] [_ _ _ g3] [_ _ _ p1]] (:fns app)]
    [(g1 {} {:gallery "gallery" :image "image"})
     (g2 {} {:gallery "gallery"})
     (g3 {} {})

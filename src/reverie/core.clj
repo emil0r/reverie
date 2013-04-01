@@ -175,17 +175,17 @@
      `(swap! objects assoc ~object (merge {:options ~options :schema ~schema} ~body))))
 
 (defmacro app-method [[method options & body]]
-  (case method
-    :get (let [[route _2 _3] options]
-           (let [regex (if (every? regex? (vals _2)) _2 nil)
-                 method-options (if (nil? regex) _2 _3)
-                 route (if (nil? regex)
-                         (route-compile route)
-                         (route-compile route regex))
-                 keys (vec (map #(-> % name symbol) (:keys route)))
-                 func `(fn [~'rdata {:keys ~keys}] ~@body)]
-             [method route func]))
-    [method ` (fn [~'rdata ~options] ~@body)]))
+  (let [[route _2 _3] options
+        regex (if (and (seq? _2) (every? regex? (vals _2))) _2 nil)
+        method-options (if (nil? regex) _2 _3)
+        route (if (nil? regex)
+                (route-compile route)
+                (route-compile route regex))
+        keys (vec (map #(-> % name symbol) (:keys route)))
+        func (if (= method :get)
+               `(fn [~'rdata {:keys ~keys}] ~@body)
+               `(fn [~'rdata ~method-options] ~@body))]
+    [method route method-options func]))
 
 (defmacro defapp [app options & methods]
   (let [app (keyword app)]
