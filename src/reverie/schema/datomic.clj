@@ -1,7 +1,7 @@
 (ns reverie.schema.datomic
   (:require [clojure.set :as set])
   (:use [datomic.api :only [q db] :as d]
-        [reverie.core :only [reverie-object reverie-page reverie-plugin
+        [reverie.core :only [reverie-object reverie-page reverie-plugin reverie-app
                              add-route! remove-route! get-route
                              templates objects] :as rev])
   (:import reverie.core.ObjectSchemaDatomic
@@ -201,6 +201,10 @@
     (d/entity (db connection) page-id))
 
   (page-right? [rdata user right]))
+
+(extend-type ReverieDataDatomic
+  reverie-app
+  (app-render [rdata]))
 
 (defn- valid-plugin-schema? [schema]
   (let [needed [:db/ident :db/valueType :db/cardinality :db/doc]]

@@ -200,3 +200,7 @@
                    [:div.area-a ["obj-1" "obj-2" "obj-3"]]
                    [:div.area-b []]
                    [:div.area-c []]]]])
+
+(fact
+ "page-render with app"
+ => nil)

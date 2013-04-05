@@ -58,6 +58,10 @@
   (page-right? [rdata user right]
     "Does the user have that right for the page?"))
 
+(defprotocol reverie-app
+  (app-render [rdata]
+    "Render the app. Return a data structure to pass onto ring."))
+
 (defprotocol reverie-plugin
   (plugin-correct? [pdata])
   (plugin-upgrade? [pdata connection])

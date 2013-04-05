@@ -113,8 +113,6 @@
                 (rev/get-route "/apps/app2/asdf")])
  => [1 3 2 4 5])
 
-(reset-routes!)
-
 (rev/defapp gallery {}
   ;; test :get
   [:get ["/:gallery/:image" {:gallery #"\w+" :image #"\d+"}] (clojure.string/join "/" [gallery image])]
