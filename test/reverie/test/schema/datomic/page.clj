@@ -12,6 +12,7 @@
 (reset! rev/routes {})
 (reset! rev/templates {})
 (reset! rev/objects {})
+(reset! rev/apps {})
 
 (rev/defobject object/text {:areas [:a :b :c]
                             :attributes [{:text {:db/ident :object.text/text
@@ -36,6 +37,19 @@
           [:div.area-a (rev/area :a)]
           [:div.area-b (rev/area :b)]
           [:div.area-c (rev/area :c)]]]))
+
+(rev/defapp gallery {}
+  ;; test :get
+  [:get ["/:gallery/:image" {:gallery #"\w+" :image #"\d+"}] (clojure.string/join "/" [gallery image])]
+  [:get ["/:gallery" {:gallery #"\w+"} {:wrap [nil]}] (str "this is my " gallery)]
+  [:get ["*"] "base"]
+  ;; test order in methods array
+  [:post ["/:gallery" {:gallery #"\w+"} data] (str gallery ", my post -> " data)]
+  [:post ["/:gallery" {:gallery #"\w+"} {:wrap [nil]} data] (str gallery ", my post -> " data)]
+  [:post ["/:gallery" {:wrap [nil]} data] (str gallery ", my post -> " data)]
+  [:post ["*" data] (str "my post -> " data)]
+  ;; deconstructing works
+  [:post ["*" {:keys [testus] :as data}] (= testus true)])
 
 (defn- init-data [command data]
   (let [my-tx-data {:reverie.page/name "my test page"
@@ -173,9 +187,8 @@
 (fact
  "page render"
  (let [{:keys [connection]} (setup)
-       data (init-data :page-new {:connection connection
-                                  :request (request :get "/my-test-page")})
-       rdata (rev/reverie-data data)
+       rdata (rev/reverie-data (init-data :page-new {:connection connection
+                                                     :request (request :get "/my-test-page")}))
        tx-rdata (rev/page-new! rdata)
        obj (:schema (:object/text @rev/objects))
        tx-obj (rev/object-upgrade! obj connection)
@@ -203,4 +216,10 @@
 
 (fact
  "page-render with app"
- => nil)
+ (let [{:keys [connection]} (setup)
+       rdata (rev/reverie-data (init-data :page-new {:connection connection
+                                                     :request (request :get "/gallery/garden/image1")
+                                                     :tx-data {:reverie.page/uri "/gallery"}
+                                                     :page-type :app}))
+       tx-rdata (rev/page-new! rdata)]
+   (rev/page-render rdata)) => "/garden/image1")

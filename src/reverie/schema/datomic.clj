@@ -140,10 +140,12 @@
   (page-render [{:keys [connection request] :as rdata}]
     (let [{:keys [uri]} request]
       (if-let [page-data (get-route uri)]
-        (let [page (rev/page-get (assoc rdata :page-id (:page-id page-data)))
-              template (get @templates (:reverie.page/template page))
-              fn (:fn template)]
-          (fn (assoc rdata :page-id (:db/id page)))))))
+        (if (= (:type page-data) :normal)
+          (let [page (rev/page-get (assoc rdata :page-id (:page-id page-data)))
+                template (get @templates (:reverie.page/template page))
+                fn (:fn template)]
+            (fn (assoc rdata :page-id (:db/id page))))
+          (rev/app-render (assoc rdata :page-data page-data))))))
 
   (page-objects [{:keys [connection page-id area] :as rdata}]
     (let [page (d/entity (db connection) page-id)]
@@ -169,7 +171,7 @@
                             :reverie/active? false}])]
       (assoc rdata :tx tx)))
 
-  (page-new! [{:keys [connection parent tx-data] :as rdata}]
+  (page-new! [{:keys [connection parent tx-data page-type] :as rdata}]
     (let [uri (:reverie.page/uri tx-data)
           tx @(d/transact connection
                           [(merge tx-data
@@ -177,7 +179,7 @@
                                    :reverie/active? true
                                    :reverie.page/objects []})])
           page-id (-> tx :tempids vals last)]
-      (add-route! uri {:page-id page-id :type :normal})
+      (add-route! uri {:page-id page-id :type (or page-type :normal)})
       (merge rdata {:tx tx :page-id page-id})))
 
   (page-update! [{:keys [connection page-id tx-data] :as rdata}]
@@ -204,7 +206,8 @@
 
 (extend-type ReverieDataDatomic
   reverie-app
-  (app-render [rdata]))
+  (app-render [{:keys [connection request page-data] :as rdata}]
+    (println page-data)))
 
 (defn- valid-plugin-schema? [schema]
   (let [needed [:db/ident :db/valueType :db/cardinality :db/doc]]
