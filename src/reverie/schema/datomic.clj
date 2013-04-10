@@ -214,19 +214,17 @@
   reverie-app
   (app-render [{:keys [connection request page] :as rdata}]
     (if-let [app (@rev/apps (:reverie.page/app page))]
-      (let [method (:request-method request)
-            fns (filter #(= method (first %)) (:fns app))
-            request (update-app-uri request page)]
-        (loop [[[method route method-options f] & fns] fns
-               func nil]
-          (if (nil? func)
-            (if (nil? f)
-              404 ;; return a 404
-              (recur fns (if (clout/route-matches route request)
-                           [method route method-options f]
-                           nil)))
-            (let [[method route method-options f] func]
-              (f rdata (clout/route-matches route request)))))))))
+      (let [request (update-app-uri request page)
+            [_ route _ func] (->> app
+                                  :fns
+                                  (filter #(let [[method route _ _] %]
+                                             (and
+                                              (= (:request-method request) method)
+                                              (clout/route-matches route request))))
+                                  first)]
+        (if (nil? func)
+          {:status 404 :body "404, page not found"}
+          (func rdata (clout/route-matches route request)))))))
 
 (defn- valid-plugin-schema? [schema]
   (let [needed [:db/ident :db/valueType :db/cardinality :db/doc]]
