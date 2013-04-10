@@ -75,6 +75,12 @@
   :db/cardinality :db.cardinality/many
   :db/doc "Objects attached to the page"
   :db.install/_attribute :db.part/db}
+ {:db/id #db/id [:db.part/db]
+  :db/ident :reverie.page/app
+  :db/valueType :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/doc "App attached to the page"
+  :db.install/_attribute :db.part/db}
  ;; area
  {:db/id #db/id [:db.part/db]
   :db/ident :reverie/area

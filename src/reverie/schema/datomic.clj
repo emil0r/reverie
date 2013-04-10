@@ -1,5 +1,6 @@
 (ns reverie.schema.datomic
-  (:require [clojure.set :as set])
+  (:require [clojure.set :as set]
+            [clout.core :as clout])
   (:use [datomic.api :only [q db] :as d]
         [reverie.core :only [reverie-object reverie-page reverie-plugin reverie-app
                              add-route! remove-route! get-route
@@ -140,12 +141,12 @@
   (page-render [{:keys [connection request] :as rdata}]
     (let [{:keys [uri]} request]
       (if-let [page-data (get-route uri)]
-        (if (= (:type page-data) :normal)
-          (let [page (rev/page-get (assoc rdata :page-id (:page-id page-data)))
-                template (get @templates (:reverie.page/template page))
-                fn (:fn template)]
-            (fn (assoc rdata :page-id (:db/id page))))
-          (rev/app-render (assoc rdata :page-data page-data))))))
+        (let [page (rev/page-get (assoc rdata :page-id (:page-id page-data)))]
+         (if (= (:type page-data) :normal)
+           (let [template (get @templates (:reverie.page/template page))
+                 fn (:fn template)]
+             (fn (assoc rdata :page-id (:db/id page))))
+           (rev/app-render (assoc rdata :page-data page-data :page page)))))))
 
   (page-objects [{:keys [connection page-id area] :as rdata}]
     (let [page (d/entity (db connection) page-id)]
@@ -204,10 +205,28 @@
 
   (page-right? [rdata user right]))
 
+(defn- update-app-uri [request page]
+  (assoc-in request [:uri] (clojure.string/replace
+                            (:uri request)
+                            (re-pattern (clojure.string/replace (:reverie.page/uri page) #"/$" "")) "")))
+
 (extend-type ReverieDataDatomic
   reverie-app
-  (app-render [{:keys [connection request page-data] :as rdata}]
-    (println page-data)))
+  (app-render [{:keys [connection request page] :as rdata}]
+    (if-let [app (@rev/apps (:reverie.page/app page))]
+      (let [method (:request-method request)
+            fns (filter #(= method (first %)) (:fns app))
+            request (update-app-uri request page)]
+        (loop [[[method route method-options f] & fns] fns
+               func nil]
+          (if (nil? func)
+            (if (nil? f)
+              404 ;; return a 404
+              (recur fns (if (clout/route-matches route request)
+                           [method route method-options f]
+                           nil)))
+            (let [[method route method-options f] func]
+              (f rdata (clout/route-matches route request)))))))))
 
 (defn- valid-plugin-schema? [schema]
   (let [needed [:db/ident :db/valueType :db/cardinality :db/doc]]

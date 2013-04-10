@@ -219,7 +219,8 @@
  (let [{:keys [connection]} (setup)
        rdata (rev/reverie-data (init-data :page-new {:connection connection
                                                      :request (request :get "/gallery/garden/image1")
-                                                     :tx-data {:reverie.page/uri "/gallery"}
+                                                     :tx-data {:reverie.page/uri "/gallery"
+                                                               :reverie.page/app :gallery}
                                                      :page-type :app}))
        tx-rdata (rev/page-new! rdata)]
    (rev/page-render rdata)) => "/garden/image1")
