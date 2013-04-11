@@ -1,6 +1,7 @@
 (ns reverie.core
   (:use [datomic.api :only [db tempid]]
-        [clout.core]))
+        [clout.core]
+        [slingshot.slingshot :only [try+ throw+]]))
 
 (defonce routes (atom {}))
 (defonce templates (atom {}))
@@ -146,14 +147,21 @@
           (map #(area-render % ~'rdata) (page-objects (assoc ~'rdata :area ~name)))]
          (map #(area-render % ~'rdata) (page-objects (assoc ~'rdata :area ~name)))))))
 
+(defn raise-response [response]
+  (throw+ {:type :ring-response :response response}))
+
 (defmacro defplugin [name options]
   (let [name (keyword name)]
     `(swap! plugins assoc ~name ~options )))
 
+
 (defmacro deftemplate [template options & body]
   (let [template (keyword template)]
     `(swap! templates assoc ~template {:options ~options
-                                       :fn (fn [~'rdata] ~@body)})))
+                                       :fn (fn [~'rdata] (try+ ~@body
+                                                              (catch [:type :ring-response] {:keys [~'response ~'type]}
+                                                                ~'response)))})))
+
 
 (defmacro object-funcs [attributes methods & body]
   (if (every? keyword? methods)
@@ -187,7 +195,9 @@
                        (route-compile route regex))
                method-options (if (nil? regex) _2 _3)
                keys (vec (map #(-> % name symbol) (:keys route)))
-               func `(fn [~'rdata {:keys ~keys}] ~@body)]
+               func `(fn [~'rdata {:keys ~keys}] (try+ ~@body
+                                                      (catch [:type :ring-response] {:keys [~'response]}
+                                                        ~'response)))]
            [method route method-options func])
     (let [[route _2 _3 _4] options
           [regex method-options form-data]
@@ -201,7 +211,9 @@
                   (route-compile route)
                   (route-compile route regex))
           keys (vec (map #(-> % name symbol) (:keys route)))
-          func `(fn [~'rdata {:keys ~keys} ~form-data] ~@body)]
+          func `(fn [~'rdata {:keys ~keys} ~form-data] (try+ ~@body
+                                                            (catch [:type :ring-response] {:keys [~'response]}
+                                                              ~'response)))]
       ;; (println [(nil? regex) (nil? _3) (nil? _4)])
       ;; (println _2 _3 _4)
       ;; (println route regex method-options form-data)

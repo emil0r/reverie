@@ -125,13 +125,14 @@
   [:post ["*" data] (str "my post -> " data)]
   ;; deconstructing works
   [:post ["*" {:keys [testus] :as data}] (= testus true)]
+  [:post ["*" data] (rev/raise-response {:status 404 :body "404, page not found"})]
   )
 
 (fact
  "defapp"
  (let [app (:gallery @rev/apps)
        [[_ _ _ g1] [_ _ _ g2] [_ _ _ g3]
-        [_ _ _ p1] [_ _ _ p2] [_ _ _ p3] [_ _ _ p4] [_ _ _ p5]] (:fns app)]
+        [_ _ _ p1] [_ _ _ p2] [_ _ _ p3] [_ _ _ p4] [_ _ _ p5] [_ _ _ p6]] (:fns app)]
    [(g1 {} {:gallery "gallery" :image "image"})
     (g2 {} {:gallery "gallery"})
     (g3 {} {})
@@ -140,6 +141,7 @@
     (p3 {} {:gallery "gallery3"} "my data")
     (p4 {} {} "my data here")
     (p5 {} {} {:testus true})
+    (p6 {} {} {:not :this})
     ])
  => ["gallery/image"
      "this is my gallery"
@@ -149,4 +151,5 @@
      "gallery3, my post -> my data"
      "my post -> my data here"
      true
+     {:status 404 :body "404, page not found"}
      ])
