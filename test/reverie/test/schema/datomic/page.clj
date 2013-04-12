@@ -224,3 +224,18 @@
                                                      :page-type :app}))
        tx-rdata (rev/page-new! rdata)]
    (rev/page-render rdata)) => "garden/1")
+
+(rev/defpage "/testus" {}
+  [:get ["/:foo/:bar"] (str foo "/" bar)]
+  [:get ["*"] "my test page"])
+
+(fact
+ "defpage"
+ (let [{:keys [connection]} (setup)]
+   
+   [(rev/page-render (rev/reverie-data {:connection connection
+                                        :request (request :get "/testus/my-foo/my-bar")}))
+    (rev/page-render (rev/reverie-data {:connection connection
+                                        :request (request :get "/testus")}))])
+ => ["my-foo/my-bar"
+     "my test page"])

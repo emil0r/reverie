@@ -3,11 +3,12 @@
         [clout.core]
         [slingshot.slingshot :only [try+ throw+]]))
 
+(defonce apps (atom {}))
+(defonce objects (atom {}))
+(defonce pages (atom {}))
+(defonce plugins (atom {}))
 (defonce routes (atom {}))
 (defonce templates (atom {}))
-(defonce objects (atom {}))
-(defonce apps (atom {}))
-(defonce plugins (atom {}))
 
 (defprotocol reverie-object
   (object-correct? [schema]
@@ -86,15 +87,14 @@
   (swap! routes dissoc route))
 (defn get-route [uri]
   (if-let [route-data (get @routes uri)]
-    route-data
+    [uri route-data]
     (->>
      @routes
      (filter (fn [[k v]]
                (and
-                (= (:type v) :app)
+                (not= (:type v) :normal)
                 (re-find (re-pattern k) uri))))
-     first
-     second)))
+     first)))
 
 (defmulti parse-schema (fn [object options {:keys [schema]}] schema))
 (defmethod parse-schema :default [object {:keys [attributes] :as options} settings]
@@ -186,7 +186,7 @@
          body `(object-funcs ~attributes ~methods ~@args)]
      `(swap! objects assoc ~object (merge {:options ~options :schema ~schema} ~body))))
 
-(defmacro app-method [[method options & body]]
+(defmacro request-method [[method options & body]]
   (case method
     :get (let [[route _2 _3] options
                regex (if (every? regex? (vals _2)) _2 nil)
@@ -226,5 +226,15 @@
            fns []]
       (if (nil? method)
         `(swap! apps assoc ~app {:options ~options :fns ~fns})
-        (recur methods (conj fns `(app-method ~method)))))))
+        (recur methods (conj fns `(request-method ~method)))))))
+
+
+(defmacro defpage [path options & methods]
+  (loop [[method & methods] methods
+         fns []]
+    (if (nil? method)
+      (do
+        (add-route! path {:type :page})
+        `(swap! pages assoc ~path {:options ~options :fns ~fns}))
+      (recur methods (conj fns `(request-method ~method))))))
 

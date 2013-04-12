@@ -51,6 +51,12 @@
      (map (fn [[k attr]] {attr (initials k)})
           idents)))
 
+(defn- shorten-uri [request remove-part-of-uri]
+  "shortens the uri by removing the unwanted part"
+  (assoc-in request [:uri] (clojure.string/replace
+                            (:uri request)
+                            (re-pattern (clojure.string/replace remove-part-of-uri #"/$" "")) "")))
+
 (extend-type ObjectSchemaDatomic
   reverie-object
 
@@ -140,13 +146,25 @@
 
   (page-render [{:keys [connection request] :as rdata}]
     (let [{:keys [uri]} request]
-      (if-let [page-data (get-route uri)]
+      (if-let [[route-uri page-data] (get-route uri)]
         (let [page (rev/page-get (assoc rdata :page-id (:page-id page-data)))]
-         (if (= (:type page-data) :normal)
-           (let [template (get @templates (:reverie.page/template page))
-                 fn (:fn template)]
-             (fn (assoc rdata :page-id (:db/id page))))
-           (rev/app-render (assoc rdata :page-data page-data :page page)))))))
+          (case (:type page-data)
+            :normal (let [template (get @templates (:reverie.page/template page))
+                          fn (:fn template)]
+                      (fn (assoc rdata :page-id (:db/id page))))
+            :page (let [request (shorten-uri request route-uri)
+                        [_ route _ func] (->> route-uri
+                                              (get @rev/pages)
+                                              :fns
+                                              (filter #(let [[method route _ _] %]
+                                                         (and
+                                                          (= (:request-method request) method)
+                                                          (clout/route-matches route request))))
+                                              first)]
+                    (if (nil? func)
+                      {:status 404 :body "404, page not found"}
+                      (func rdata (clout/route-matches route request))))
+            (rev/app-render (assoc rdata :page-data page-data :page page)))))))
 
   (page-objects [{:keys [connection page-id area] :as rdata}]
     (let [page (d/entity (db connection) page-id)]
@@ -205,16 +223,11 @@
 
   (page-right? [rdata user right]))
 
-(defn- update-app-uri [request page]
-  (assoc-in request [:uri] (clojure.string/replace
-                            (:uri request)
-                            (re-pattern (clojure.string/replace (:reverie.page/uri page) #"/$" "")) "")))
-
 (extend-type ReverieDataDatomic
   reverie-app
   (app-render [{:keys [connection request page] :as rdata}]
     (if-let [app (@rev/apps (:reverie.page/app page))]
-      (let [request (update-app-uri request page)
+      (let [request (shorten-uri request (:reverie.page/uri page))
             [_ route _ func] (->> app
                                   :fns
                                   (filter #(let [[method route _ _] %]
