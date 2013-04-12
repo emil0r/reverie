@@ -159,6 +159,7 @@
   (let [template (keyword template)]
     `(swap! templates assoc ~template {:options ~options
                                        :fn (fn [~'rdata] (try+ {:status 200
+                                                               :headers (or (:headers ~options) {})
                                                                :body ~@body}
                                                               (catch [:type :ring-response] {:keys [~'response ~'type]}
                                                                 ~'response)))})))
@@ -197,6 +198,7 @@
                method-options (if (nil? regex) _2 _3)
                keys (vec (map #(-> % name symbol) (:keys route)))
                func `(fn [~'rdata {:keys ~keys}] (try+ {:status 200
+                                                       :headers (or (:headers ~method-options) {})
                                                        :body ~@body}
                                                       (catch [:type :ring-response] {:keys [~'response]}
                                                         ~'response)))]
@@ -214,6 +216,7 @@
                   (route-compile route regex))
           keys (vec (map #(-> % name symbol) (:keys route)))
           func `(fn [~'rdata {:keys ~keys} ~form-data] (try+ {:status 200
+                                                             :headers (or (:headers ~method-options) {})
                                                              :body ~@body}
                                                             (catch [:type :ring-response] {:keys [~'response]}
                                                               ~'response)))]
