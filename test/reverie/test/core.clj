@@ -43,14 +43,14 @@
          k (first (keys m))
          options (:options (m k))
          func (:fn (m k))]
-     [k options (func {:request (request :get "/")
-                       :connection nil
-                       :page-id nil
-                       :mode :edit})])) => [:main
-                                            {:areas [:a :b :c]
-                                             :pre [pre-test]
-                                             :post [post-test]}
-                                            "body"])
+     [k options (:body (func {:request (request :get "/")
+                              :connection nil
+                              :page-id nil
+                              :mode :edit}))])) => [:main
+                                                    {:areas [:a :b :c]
+                                                     :pre [pre-test]
+                                                     :post [post-test]}
+                                                    "body"])
 
 
 (fact
@@ -133,14 +133,14 @@
  (let [app (:gallery @rev/apps)
        [[_ _ _ g1] [_ _ _ g2] [_ _ _ g3]
         [_ _ _ p1] [_ _ _ p2] [_ _ _ p3] [_ _ _ p4] [_ _ _ p5] [_ _ _ p6]] (:fns app)]
-   [(g1 {} {:gallery "gallery" :image "image"})
-    (g2 {} {:gallery "gallery"})
-    (g3 {} {})
-    (p1 {} {:gallery "gallery"} "my data")
-    (p2 {} {:gallery "gallery2"} "my data")
-    (p3 {} {:gallery "gallery3"} "my data")
-    (p4 {} {} "my data here")
-    (p5 {} {} {:testus true})
+   [(:body (g1 {} {:gallery "gallery" :image "image"}))
+    (:body (g2 {} {:gallery "gallery"}))
+    (:body (g3 {} {}))
+    (:body (p1 {} {:gallery "gallery"} "my data"))
+    (:body (p2 {} {:gallery "gallery2"} "my data"))
+    (:body (p3 {} {:gallery "gallery3"} "my data"))
+    (:body (p4 {} {} "my data here"))
+    (:body (p5 {} {} {:testus true}))
     (p6 {} {} {:not :this})
     ])
  => ["gallery/image"

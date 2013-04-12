@@ -22,7 +22,7 @@
                           [:div.area-a (rev/area :a)]
                           [:div.area-b (rev/area :b)]
                           [:div.area-c (rev/area :c)]]]))]
-   ((-> template :main :fn) rdata))
+   (:body ((-> template :main :fn) rdata)))
  => ["<!DOCTYPE html>"
      [:html
       [:head

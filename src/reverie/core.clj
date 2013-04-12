@@ -158,7 +158,8 @@
 (defmacro deftemplate [template options & body]
   (let [template (keyword template)]
     `(swap! templates assoc ~template {:options ~options
-                                       :fn (fn [~'rdata] (try+ ~@body
+                                       :fn (fn [~'rdata] (try+ {:status 200
+                                                               :body ~@body}
                                                               (catch [:type :ring-response] {:keys [~'response ~'type]}
                                                                 ~'response)))})))
 
@@ -195,7 +196,8 @@
                        (route-compile route regex))
                method-options (if (nil? regex) _2 _3)
                keys (vec (map #(-> % name symbol) (:keys route)))
-               func `(fn [~'rdata {:keys ~keys}] (try+ ~@body
+               func `(fn [~'rdata {:keys ~keys}] (try+ {:status 200
+                                                       :body ~@body}
                                                       (catch [:type :ring-response] {:keys [~'response]}
                                                         ~'response)))]
            [method route method-options func])
@@ -211,7 +213,8 @@
                   (route-compile route)
                   (route-compile route regex))
           keys (vec (map #(-> % name symbol) (:keys route)))
-          func `(fn [~'rdata {:keys ~keys} ~form-data] (try+ ~@body
+          func `(fn [~'rdata {:keys ~keys} ~form-data] (try+ {:status 200
+                                                             :body ~@body}
                                                             (catch [:type :ring-response] {:keys [~'response]}
                                                               ~'response)))]
       ;; (println [(nil? regex) (nil? _3) (nil? _4)])

@@ -203,7 +203,7 @@
        tx-rdata4 (rev/page-new-object! (assoc tx-rdata :object-id obj-id3))
        page (rev/page-get tx-rdata2)
        rendered (rev/page-render rdata)]
-   rendered) =>
+   (:body rendered)) =>
    ["<!DOCTYPE html>"
                  [:html
                   [:head
@@ -223,7 +223,7 @@
                                                                :reverie.page/app :gallery}
                                                      :page-type :app}))
        tx-rdata (rev/page-new! rdata)]
-   (rev/page-render rdata)) => "garden/1")
+   (:body (rev/page-render rdata))) => "garden/1")
 
 (rev/defpage "/testus" {}
   [:get ["/:foo/:bar"] (str foo "/" bar)]
@@ -233,9 +233,9 @@
  "defpage"
  (let [{:keys [connection]} (setup)]
    
-   [(rev/page-render (rev/reverie-data {:connection connection
-                                        :request (request :get "/testus/my-foo/my-bar")}))
-    (rev/page-render (rev/reverie-data {:connection connection
-                                        :request (request :get "/testus")}))])
+   [(:body (rev/page-render (rev/reverie-data {:connection connection
+                                         :request (request :get "/testus/my-foo/my-bar")})))
+    (:body (rev/page-render (rev/reverie-data {:connection connection
+                                         :request (request :get "/testus")})))])
  => ["my-foo/my-bar"
      "my test page"])
