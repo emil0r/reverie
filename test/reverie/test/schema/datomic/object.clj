@@ -33,18 +33,24 @@
   [:get :post]
   [:text text :image image])
 (rev/run-schemas! connection)
+(def rdata (rev/reverie-data {:connection connection
+                              :request (request :get "/object-render")
+                              :tx-data {:reverie.page/uri "/object-render"
+                                        :reverie.page/name "page"
+                                        :reverie.page/template :main}}))
+(def page (rev/page-new! rdata))
+(def rdata (merge rdata {:page-id (:page-id page)
+                         :area :a}))
+
 
 (fact
  "object-render"
  (let [schema (-> @rev/objects :object/text :schema)
        tx-obj (rev/object-initiate! schema connection)
        obj (rev/object-get schema connection (:db/id tx-obj))
-       rdata (rev/reverie-data {:page-id 42 :connection connection
-                                :request (request :get "/object-render")})
        tx-rdata (rev/page-new-object! (assoc rdata :object-id (:db/id tx-obj)))
        page (rev/page-get tx-rdata)]
-   (println "asdf->" tx-obj)
-   (println "\nasdf2->" (rev/object-set! schema connection (:db/id obj) {:reverie/area :a}))
+   (rev/object-set! schema connection (:db/id obj) {:reverie/area :a})
    (rev/object-render schema connection (:db/id tx-obj) tx-rdata))
  => [:text "my initial text" :image "my initial image"])
 
@@ -52,16 +58,13 @@
 (fact
  "object-copy!"
  (let [schema (-> @rev/objects :object/text :schema)
-       rdata (rev/reverie-data {:page-id 42 :connection connection
-                                :request (request :get "/object-render")})
-       obj (-> rdata rev/page-objects first)
-       obj2 (rev/object-copy! schema connection (:db/id obj))]
-   (println (-> rdata rev/page-objects))
-   (and
-    (number? (:db/id obj))
-    (number? (:db/id obj2))
-    (not= (:db/id obj) (:db/id obj2))
-;;    (= (dissoc obj :db/id) (dissoc obj2 :db/id))
-    )
-   [obj (keys obj2)])
+       obj1 (-> rdata rev/page-objects first)
+       obj2 (rev/object-get schema connection (:db/id (rev/object-copy! schema connection (:db/id obj1))))]
+   (let [obj1 (select-keys obj1 (conj (keys obj1) :db/id))
+         obj2 (select-keys obj2 (conj (keys obj2) :db/id))]
+     (and
+      (number? (:db/id obj1))
+      (number? (:db/id obj2))
+      (not= (:db/id obj1) (:db/id obj2))
+      (= (dissoc obj1 :db/id :reverie/order) (dissoc obj2 :db/id :reverie/order)))))
  => true)
