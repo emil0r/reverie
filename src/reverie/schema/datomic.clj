@@ -128,10 +128,13 @@
             {:page-id page-id :area area})))
 
   (object-copy! [schema connection id]
-    (let [tx @(d/transact (-> (object-get schema connection id)
-                              (dissoc :db/id)
-                              (assoc :reverie/order (get-latest-order connection id))))])
-    (assoc tx :db/id (-> tx :tempids vals last)))
+    (let [obj (rev/object-get schema connection id)
+          tx @(d/transact connection
+                          [(-> obj
+                               (select-keys (keys obj))
+                               (assoc :db/id (d/tempid :db.part/reverie))
+                               (assoc :reverie/order (get-last-order connection id)))])]
+      (assoc tx :db/id (-> tx :tempids vals last))))
 
   (object-get [schema connection id]
     (d/entity (db connection) id))

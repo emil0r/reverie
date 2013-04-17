@@ -44,3 +44,18 @@
        page (rev/page-get tx-rdata)]
    (rev/object-render schema connection (:db/id tx-obj) tx-rdata))
  => [:text "my initial text" :image "my initial image"])
+
+
+(fact
+ "object-copy!"
+ (let [schema (-> @rev/objects :object/text :schema)
+       rdata (rev/reverie-data {:page-id 42 :connection connection
+                                :request (request :get "/object-render")})
+       obj (-> rdata rev/page-objects first)
+       obj2 (rev/object-copy! schema connection (:db/id obj))]
+   (and
+    (number? (:db/id obj))
+    (number? (:db/id obj2))
+    (not= (:db/id obj) (:db/id obj2))
+    (= (dissoc obj :db/id) (dissoc obj2 :db/id))))
+ => true)
