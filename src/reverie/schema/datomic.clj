@@ -143,7 +143,7 @@
     (let [idents (get-idents schema)]
       (into {} (map (fn [[attribute ident]] {attribute (get entity ident)}) idents))))
   
-  (object-set! [schema connection data id]
+  (object-set! [schema connection id data]
     (let [idents (get-idents schema)
           attribs (filter #(-> % vals first nil? not) ;; remove attribs with nil values
                           (map (fn [[k attr]] {attr (data k)}) idents))

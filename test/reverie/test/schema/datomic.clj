@@ -104,8 +104,8 @@
        {:keys [database connection]} (setup)
        tx (rev/object-upgrade! d connection)
        id (:db/id (rev/object-initiate! d connection))]
-   (rev/object-set! d connection {:text "my text"} id)
-   (= id (:db/id (rev/object-set! d connection {:text "my text 2"} id)))) => true)
+   (rev/object-set! d connection id {:text "my text"})
+   (= id (:db/id (rev/object-set! d connection id {:text "my text 2"})))) => true)
 
 
 (fact
@@ -157,7 +157,7 @@
        {:keys [database connection]} (setup)
        tx (rev/object-upgrade! d connection)
        id (:db/id (rev/object-initiate! d connection))
-       tx2 (rev/object-set! d connection {:text "my text"} id)
+       tx2 (rev/object-set! d connection id {:text "my text"})
        obj1 (rev/object-get d connection id)]
    (:object.text/text obj1)) => "my text")
 
@@ -183,7 +183,7 @@
        {:keys [database connection]} (setup)
        tx (rev/object-upgrade! d connection)
        id (:db/id (rev/object-initiate! d connection))
-       tx2 (rev/object-set! d connection {:text "my text" :image "my image"} id)
+       tx2 (rev/object-set! d connection id {:text "my text" :image "my image"})
        obj1 (rev/object-get d connection id)]
    [(->> obj1 (rev/object-attr-transform d) :text)
     (->> obj1 (rev/object-attr-transform d) :image)]) => ["my text"
