@@ -1,3 +1,10 @@
+# all of these are random thoughts
+
+* TODO
+** use-template
+** use-object
+** use-app
+
 * Options
 ** options for defapp
    :wrap (vector of wrap-request)
