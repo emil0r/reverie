@@ -57,6 +57,9 @@
                             (:uri request)
                             (re-pattern (clojure.string/replace remove-part-of-uri #"/$" "")) "")))
 
+(defn- get-last-order [connection id]
+  99)
+
 (extend-type ObjectSchemaDatomic
   reverie-object
 
@@ -114,6 +117,20 @@
                          (into {} (cross-initials-idents initials idents)))
           tx @(d/transact connection [attribs])]
       (assoc tx :db/id (-> tx :tempids vals last))))
+
+  (object-move! [schema connection id {:keys [page-id area order]}]
+    (let [order (cond order
+                      :last (get-last-order connection id)
+                      :first 1
+                      order)]
+     (merge @(d/transact connection [{:reverie/area area :db/id page-id}])
+            {:page-id page-id :area area})))
+
+  (object-copy! [schema connection id]
+    (let [tx @(d/transact (-> (object-get schema connection id)
+                              (dissoc :db/id)
+                              (assoc :reverie/order (get-latest-order connection id))))])
+    (assoc tx :db/id (-> tx :tempids vals last)))
 
   (object-get [schema connection id]
     (d/entity (db connection) id))

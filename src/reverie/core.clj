@@ -21,6 +21,10 @@
     "Synchronizes all objects after an upgrade has been done")
   (object-initiate! [schema connection]
     "Initiate a newly created object. Returns the result + the id")
+  (object-move! [schema connection id data]
+    "Move an object between pages and areas")
+  (object-copy! [schema connection id]
+    "Copy an object")
   (object-get [schema connection id]
     "Hashmap of all the attributes with associated values")
   (object-attr-transform [schema entity]
