@@ -38,10 +38,13 @@
  "object-render"
  (let [schema (-> @rev/objects :object/text :schema)
        tx-obj (rev/object-initiate! schema connection)
+       obj (rev/object-get schema connection (:db/id tx-obj))
        rdata (rev/reverie-data {:page-id 42 :connection connection
                                 :request (request :get "/object-render")})
        tx-rdata (rev/page-new-object! (assoc rdata :object-id (:db/id tx-obj)))
        page (rev/page-get tx-rdata)]
+   (println "asdf->" tx-obj)
+   (println "\nasdf2->" (rev/object-set! schema connection (:db/id obj) {:reverie/area :a}))
    (rev/object-render schema connection (:db/id tx-obj) tx-rdata))
  => [:text "my initial text" :image "my initial image"])
 
@@ -53,9 +56,12 @@
                                 :request (request :get "/object-render")})
        obj (-> rdata rev/page-objects first)
        obj2 (rev/object-copy! schema connection (:db/id obj))]
+   (println (-> rdata rev/page-objects))
    (and
     (number? (:db/id obj))
     (number? (:db/id obj2))
     (not= (:db/id obj) (:db/id obj2))
-    (= (dissoc obj :db/id) (dissoc obj2 :db/id))))
+;;    (= (dissoc obj :db/id) (dissoc obj2 :db/id))
+    )
+   [obj (keys obj2)])
  => true)
