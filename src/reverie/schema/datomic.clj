@@ -124,8 +124,9 @@
                       :first 1
                       nil (get-last-order connection id)
                       order)]
-     (merge @(d/transact connection [{:reverie/area area :db/id page-id}])
-            {:page-id page-id :area area})))
+     ;; (merge @(d/transact connection [{:reverie/area area :db/id page-id}])
+     ;;        {:page-id page-id :area area})
+      ))
 
   (object-copy! [schema connection id]
     (let [obj (rev/object-get schema connection id)

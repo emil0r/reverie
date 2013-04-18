@@ -41,6 +41,10 @@
 (def page (rev/page-new! rdata))
 (def rdata (merge rdata {:page-id (:page-id page)
                          :area :a}))
+(def page2 (rev/page-new! (rev/reverie-data {:connection connection
+                                             :tx-data {:reverie.page/uri "/page2"
+                                                       :reverie.page/name "page 2"
+                                                       :reverie.page/template :main}})))
 
 
 (fact
@@ -67,4 +71,14 @@
       (number? (:db/id obj2))
       (not= (:db/id obj1) (:db/id obj2))
       (= (dissoc obj1 :db/id :reverie/order) (dissoc obj2 :db/id :reverie/order)))))
+ => true)
+
+(fact
+ "object-move!"
+ (let [schema (-> @rev/objects :object/text :schema)
+       obj1 (-> rdata rev/page-objects first)
+       tx-obj2 (rev/object-move! schema connection (:db/id obj1) {:page page2
+                                                                  :area :b})
+       obj2 (-> (assoc rdata :page-id (:page-id page2)) rev/page-objects first)]
+   (= (:db/id obj1) (:db/id obj2)))
  => true)
