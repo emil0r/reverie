@@ -9,6 +9,7 @@
 (defonce plugins (atom {}))
 (defonce routes (atom {}))
 (defonce templates (atom {}))
+(defonce settings (atom {}))
 
 (defprotocol reverie-object
   (object-correct? [schema]
@@ -116,11 +117,6 @@
 
 (defn- get-attributes [schema]
   (map #(-> % name symbol) (keys (:attributes schema))))
-
-(defn start [connection]
-  ;; TODO: implement, should run run-schemas!, start server and return
-  ;; server. more?
-  )
 
 (defn- regex? [pattern]
   (= (class pattern) java.util.regex.Pattern))
@@ -248,3 +244,30 @@
         `(swap! pages assoc ~path {:options ~options :fns ~fns}))
       (recur methods (conj fns `(request-method ~method))))))
 
+(defn- get-connection []
+  (db (get @settings :connection-string)))
+
+(defn default-handler [request]
+  (if-let [[_ route] (get-route (:uri request))]
+    (page-render (reverie-data {:connection (get-connection)
+                                :request request
+                                :page-type (:page-type route)}))
+    {:status 404 :body "404, page not found."}))
+
+(defn start [options]
+  (require 'ring.adapter.jetty)
+  (println "Starting server... ")
+  (let [{:keys [port connection-string]} options
+        jetty-options (merge {:port port :join? false} (:jetty-options options))
+        run-fn (resolve 'ring.adapter.jetty/run-jetty)]
+    (swap! settings options)
+    (run-schemas! (get-connection))
+    (println (str "Server started on port " port "."))
+    (run-fn default-handler jetty-options)))
+
+(defn stop [server]
+  (.stop server))
+
+(defn restart [server]
+  (stop server)
+  (.start server))
