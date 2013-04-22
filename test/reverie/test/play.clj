@@ -16,6 +16,20 @@
 (testus :bar)
 
 
+(defn wrap-t [handler]
+  (fn [request]
+    (handler (assoc request :level (+ (:level request) 1)))))
+
+((->
+  (fn [request]
+    request)
+  (wrap-t)
+  (wrap-t)) {:level 1})
+
+(reduce (fn [cur [func args]] (apply func cur args))
+        )
+
+
 ;; (reset! rev/objects {})
 
 ;; (def db-uri-mem "datomic:mem://reverie.play")

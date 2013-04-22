@@ -247,34 +247,5 @@
         `(swap! pages assoc ~path {:options ~options :fns ~fns}))
       (recur methods (conj fns `(request-method ~method))))))
 
-(defn- get-connection []
+(defn get-connection []
   (db (get @settings :connection-string)))
-
-(defn generate-handler [request]
-  (if-let [[_ route] (get-route (:uri request))]
-    (page-render (reverie-data {:connection (get-connection)
-                                :request request
-                                :page-type (:page-type route)}))
-    {:status 404 :body "404, page not found."}))
-
-(defn start [options]
-  (require 'ring.adapter.jetty)
-  (println "Starting server... ")
-  (let [{:keys [port connection-string]} options
-        jetty-options (merge {:port port :join? false} (:jetty-options options))
-        run-fn (resolve 'ring.adapter.jetty/run-jetty)]
-    (swap! settings options)
-    (run-schemas! (get-connection))
-    (println (str "Server started on port " port "."))
-    (run-fn (generate-handler options) jetty-options)))
-
-(defn stop [server]
-  (println "Stopping server...")
-  (.stop server)
-  (println "Done."))
-
-(defn restart [server]
-  (println "Restarting server...")
-  (.stop server)
-  (.start server)
-  (println "Done."))
