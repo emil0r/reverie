@@ -6,7 +6,7 @@
 (defonce apps (atom {}))
 (defonce objects (atom {}))
 (defonce pages (atom {}))
-(defonce plugins (atom {}))
+(defonce modules (atom {}))
 (defonce routes (atom {}))
 (defonce templates (atom {}))
 (defonce settings (atom {}))
@@ -69,22 +69,22 @@
   (app-render [rdata]
     "Render the app. Return a data structure to pass onto ring."))
 
-(defprotocol reverie-plugin
-  (plugin-correct? [pdata])
-  (plugin-upgrade? [pdata connection])
-  (plugin-upgrade! [pdata connection])
-  (plugin-get [pdata connection data])
-  (plugin-set! [pdata connection data]))
+(defprotocol reverie-module
+  (module-correct? [pdata])
+  (module-upgrade? [pdata connection])
+  (module-upgrade! [pdata connection])
+  (module-get [pdata connection data])
+  (module-set! [pdata connection data]))
 
 (defrecord ObjectSchemaDatomic [object attributes])
 (defrecord ReverieDataDatomic [])
-(defrecord PluginDatomic [name options])
+(defrecord ModuleDatomic [name options])
 
 (defn reverie-data [data]
   (merge (ReverieDataDatomic.) data))
 
-(defn get-plugin [name]
-  (PluginDatomic. name (get @plugins name)))
+(defn get-module [name]
+  (ModuleDatomic. name (get @modules name)))
 
 (defn add-route! [uri route]
   (swap! routes assoc uri route))
@@ -153,9 +153,9 @@
 (defn raise-response [response]
   (throw+ {:type :ring-response :response response}))
 
-(defmacro defplugin [name options]
+(defmacro defmodule [name options]
   (let [name (keyword name)]
-    `(swap! plugins assoc ~name ~options )))
+    `(swap! modules assoc ~name ~options )))
 
 
 (defmacro deftemplate [template options & body]

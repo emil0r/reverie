@@ -2,12 +2,12 @@
   (:require [clojure.set :as set]
             [clout.core :as clout])
   (:use [datomic.api :only [q db] :as d]
-        [reverie.core :only [reverie-object reverie-page reverie-plugin reverie-app
+        [reverie.core :only [reverie-object reverie-page reverie-module reverie-app
                              add-route! remove-route! get-route
                              templates objects] :as rev])
   (:import reverie.core.ObjectSchemaDatomic
            reverie.core.ReverieDataDatomic
-           reverie.core.PluginDatomic))
+           reverie.core.ModuleDatomic))
 
 
 ;; defaults are either values or functions that return a value
@@ -270,7 +270,7 @@
           {:status 404 :body "404, page not found"}
           (func rdata (clout/route-matches route request)))))))
 
-(defn- valid-plugin-schema? [schema]
+(defn- valid-module-schema? [schema]
   (let [needed [:db/ident :db/valueType :db/cardinality :db/doc]]
     (loop [[s & r] schema
            valid? true]
@@ -278,20 +278,20 @@
         valid?
         (recur r (every? #(-> (get s %) nil? not) needed))))))
 
-(extend-type PluginDatomic
-  reverie-plugin
+(extend-type ModuleDatomic
+  reverie-module
 
-  (plugin-correct? [pdata]
+  (module-correct? [pdata]
     (let [schema (-> pdata :options :schema)]
       (and
        (not (nil? schema))
-       (valid-plugin-schema? schema))))
+       (valid-module-schema? schema))))
 
-  (plugin-upgrade? [pdata connection]
+  (module-upgrade? [pdata connection]
     (let [ks (-> pdata :options :schema keys)]
       (not (migrated? ks (get-migrations connection (:name pdata))))))
 
-  (plugin-upgrade! [pdata connection]
+  (module-upgrade! [pdata connection]
     (let [schema (-> pdata :options :schema)
           ks (map #(:db/ident %) schema)]
       @(d/transact connection [{:reverie.migrations/name (:name pdata) :db/id #db/id [:db.part/reverie -1]}
@@ -299,8 +299,8 @@
       @(d/transact connection (map #(merge % {:db/id (d/tempid :db.part/db)
                                               :db.install/_attribute :db.part/db}) schema))))
 
-  (plugin-get [pdata connection data]
+  (module-get [pdata connection data]
     )
   
-  (plugin-set! [pdata connection data]
+  (module-set! [pdata connection data]
     ))
