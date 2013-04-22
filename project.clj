@@ -3,8 +3,8 @@
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.4.0"]
-                 [ring "1.1.6"]
+  :dependencies [[org.clojure/clojure "1.5.1"]
+                 [ring "1.1.8"]
                  [com.datomic/datomic-free "0.8.3848"]
                  [fs "1.3.2"]
                  [clout "1.1.0"]
