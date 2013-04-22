@@ -86,10 +86,13 @@
 (defn get-plugin [name]
   (PluginDatomic. name (get @plugins name)))
 
-(defn add-route! [route data]
-  (swap! routes assoc route data))
-(defn remove-route! [route]
-  (swap! routes dissoc route))
+(defn add-route! [uri route]
+  (swap! routes assoc uri route))
+(defn remove-route! [uri]
+  (swap! routes dissoc uri))
+(defn update-route! [new-uri {:keys [uri] :as route}]
+  (remove-route! uri)
+  (add-route! new-uri route))
 (defn get-route [uri]
   (if-let [route-data (get @routes uri)]
     [uri route-data]
@@ -247,7 +250,7 @@
 (defn- get-connection []
   (db (get @settings :connection-string)))
 
-(defn default-handler [request]
+(defn generate-handler [request]
   (if-let [[_ route] (get-route (:uri request))]
     (page-render (reverie-data {:connection (get-connection)
                                 :request request
@@ -263,11 +266,15 @@
     (swap! settings options)
     (run-schemas! (get-connection))
     (println (str "Server started on port " port "."))
-    (run-fn default-handler jetty-options)))
+    (run-fn (generate-handler options) jetty-options)))
 
 (defn stop [server]
-  (.stop server))
+  (println "Stopping server...")
+  (.stop server)
+  (println "Done."))
 
 (defn restart [server]
-  (stop server)
-  (.start server))
+  (println "Restarting server...")
+  (.stop server)
+  (.start server)
+  (println "Done."))

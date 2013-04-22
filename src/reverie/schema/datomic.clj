@@ -220,18 +220,27 @@
                                    :reverie/active? true
                                    :reverie.page/objects []})])
           page-id (-> tx :tempids vals last)]
-      (add-route! uri {:page-id page-id :type (or page-type :normal)})
+      (add-route! uri {:page-id page-id :type (or page-type :normal)
+                       :template (:reverie.page/template tx-data)})
       (merge rdata {:tx tx :page-id page-id})))
 
   (page-update! [{:keys [connection page-id tx-data] :as rdata}]
-    (let [tx @(d/transact connection
+    (let [old-uri (:reverie.page/uri (rev/page-get rdata))
+          new-uri (:reverie.page/uri tx-data)
+          tx @(d/transact connection
                           [(merge tx-data {:db/id page-id})])]
+      (if (and
+           (not (nil? new-uri))
+           (not= new-uri old-uri))
+        (rev/update-route! new-uri (rev/get-route old-uri)))
       (assoc rdata :tx tx)))
 
   (page-delete! [{:keys [connection page-id] :as rdata}]
-    (let [tx @(d/transact connection
+    (let [uri (:page.reverie/uri (rev/page-get rdata))
+          tx @(d/transact connection
                           [{:db/id page-id
                             :reverie/active? false}])]
+      (rev/remove-route! uri)
       (assoc rdata :tx tx)))
 
   (page-restore! [{:keys [connection page-id] :as rdata}]

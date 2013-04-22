@@ -234,8 +234,8 @@
  (let [{:keys [connection]} (setup)]
    
    [(:body (rev/page-render (rev/reverie-data {:connection connection
-                                         :request (request :get "/testus/my-foo/my-bar")})))
+                                               :request (request :get "/testus/my-foo/my-bar")})))
     (:body (rev/page-render (rev/reverie-data {:connection connection
-                                         :request (request :get "/testus")})))])
+                                               :request (request :get "/testus")})))])
  => ["my-foo/my-bar"
      "my test page"])
