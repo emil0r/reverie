@@ -17,7 +17,8 @@
 (defmethod start :default [{:keys [port get-connection handlers] :as options}]
   (require 'ring.adapter.jetty)
   (println "Starting server... ")
-  (let [jetty-options (merge {:port port :join? false} (:jetty-options options))
+  (let [jetty-options (merge {:port port :join? false :dev-mode? true}
+                             (:jetty-options options))
         run-fn (resolve 'ring.adapter.jetty/run-jetty)]
     (swap! rev/settings options)
     (rev/run-schemas! (get-connection))
