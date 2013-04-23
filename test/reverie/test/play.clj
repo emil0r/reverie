@@ -26,8 +26,7 @@
   (wrap-t)
   (wrap-t)) {:level 1})
 
-(reduce (fn [cur [func args]] (apply func cur args))
-        )
+
 
 
 ;; (reset! rev/objects {})

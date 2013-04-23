@@ -17,7 +17,7 @@
 
 (fact
  "generate-handler"
- (get-in ((server/generate-handler get-connection [[wrap-count] [wrap-count]])
+ (get-in ((server/generate-handler get-connection [[wrap-count] [wrap-count]] {})
           {:level 1 :uri "/generate-handler"}) [:headers "level"]) => 3)
 
 (fact
