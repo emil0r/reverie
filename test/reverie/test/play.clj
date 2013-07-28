@@ -32,15 +32,21 @@
 ;; (reset! rev/objects {})
 
 ;; (def db-uri-mem "datomic:mem://reverie.play")
+;; (def uris [1 2 3 4 5 6])
 
-;; (defn setup []
-;;   (d/delete-database db-uri-mem)
-;;   (let [database (d/create-database db-uri-mem)
-;;         connection (d/connect db-uri-mem)]
+;; (defn setup [uri]
+;;   (d/delete-database uri)
+;;   (let [database (d/create-database uri)
+;;         connection (d/connect uri)]
 ;;     {:database database
 ;;      :connection connection}))
 
-;; (def connection (:connection (setup)))
+;; (def connection (:connection (setup db-uri-mem)))
+
+;; (doseq [uri uris]
+;;   (println (:connection (setup (str db-uri-mem uri)))))
+;; (println connection)
+
 
 ;; @(d/transact connection [{:db/id (d/tempid :db.part/db)
 ;;                           :db/ident :db.part/foo

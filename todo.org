@@ -2,6 +2,7 @@
 
 * TODO
 ** use-template
+
 ** use-object
 ** use-app
 
@@ -17,7 +18,6 @@
    :template (a given template to use in the rendering, requires a map 
    with the areas as response)
    
-
 
 
 * UX
