@@ -57,8 +57,11 @@
                             (:uri request)
                             (re-pattern (clojure.string/replace remove-part-of-uri #"/$" "")) "")))
 
-(defn- get-last-order [connection id]
-  99)
+(defn- get-last-order [obj]
+  (let [numbers (map :reverie/order (:_reverie.page/objects obj))]
+    (if (empty? numbers)
+      1
+      (-> numbers sort last))))
 
 (extend-type ObjectSchemaDatomic
   reverie-object
@@ -119,10 +122,11 @@
       (assoc tx :db/id (-> tx :tempids vals last))))
 
   (object-move! [schema connection id {:keys [page-id area order]}]
-    (let [order (cond order
-                      :last (get-last-order connection id)
+    (let [obj (rev/object-get schema connection id)
+          order (cond order
+                      :last (get-last-order obj)
                       :first 1
-                      nil (get-last-order connection id)
+                      nil (get-last-order obj)
                       order)]
      ;; (merge @(d/transact connection [{:reverie/area area :db/id page-id}])
      ;;        {:page-id page-id :area area})
@@ -134,7 +138,7 @@
                           [(-> obj
                                (select-keys (keys obj))
                                (assoc :db/id (d/tempid :db.part/reverie))
-                               (assoc :reverie/order (get-last-order connection id)))])]
+                               (assoc :reverie/order (get-last-order obj)))])]
       (assoc tx :db/id (-> tx :tempids vals last))))
 
   (object-get [schema connection id]
@@ -252,7 +256,7 @@
   (page-get [{:keys [connection page-id] :as rdata}]
     (d/entity (db connection) page-id))
 
-  (page-right? [rdata user right]))
+  (page-rights? [rdata user right]))
 
 (extend-type ReverieDataDatomic
   reverie-app

@@ -27,9 +27,15 @@
   :db.install/_attribute :db.part/db}
  {:db/id #db/id [:db.part/db]
   :db/ident :reverie/mode
-  :db/valueType :db.type/boolean
+  :db/valueType :db.type/keyword
   :db/cardinality :db.cardinality/one
   :db/doc "Mode of pages, objects, etc"
+  :db.install/_attribute :db.part/db}
+ {:db/id #db/id [:db.part/db]
+  :db/ident :reverie/link
+  :db/valueType :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc "Eg, a published page link to it's unpublished counterpart"
   :db.install/_attribute :db.part/db}
  ;; objects
  {:db/id #db/id [:db.part/db]

@@ -4,12 +4,12 @@
         [slingshot.slingshot :only [try+ throw+]]))
 
 (defonce apps (atom {}))
+(defonce modules (atom {}))
 (defonce objects (atom {}))
 (defonce pages (atom {}))
-(defonce modules (atom {}))
 (defonce routes (atom {}))
-(defonce templates (atom {}))
 (defonce settings (atom {}))
+(defonce templates (atom {}))
 
 (defprotocol reverie-object
   (object-correct? [schema]
@@ -30,8 +30,12 @@
     "Hashmap of all the attributes with associated values")
   (object-attr-transform [schema entity]
     "Returns a hashmap of the entity's attributes mapped to the attributes of the schema ")
-  (object-set! [schema connection data id]
+  (object-set! [schema connection id data]
     "Set the attributes of an object")
+  (object-publish! [schema connection id]
+    "Publish an object")
+  (object-unpublish! [schema connection id]
+    "Unpublish an object")
   (object-render [schema connection id rdata]
     "Render an object"))
 
@@ -58,11 +62,15 @@
     "Delete the page")
   (page-restore! [rdata]
     "Restore a deleted page")
+  (page-publish! [rdata]
+    "Publish a page")
+  (page-unpublish! [rdata]
+    "Unpublish a page")
   (page-get [rdata]
     "Get page")
   (pages-search [rdata]
     "Search pages for a match")
-  (page-right? [rdata user right]
+  (page-rights? [rdata user right]
     "Does the user have that right for the page?"))
 
 (defprotocol reverie-app

@@ -59,7 +59,7 @@
                                               :initial "object-upgrade"
                                               :input :text}})
        {:keys [database connection]} (setup)]
-   (rev/object-upgrade! d connection)) => truthy)
+   (nil? (rev/object-upgrade! d connection))) => false)
 
 
 (fact
@@ -74,7 +74,7 @@
                                               :input :text}})
        {:keys [database connection]} (setup)
        tx (rev/object-upgrade! d connection)]
-   (rev/object-initiate! d connection)) => truthy)
+   (nil? (rev/object-initiate! d connection))) => false)
 
 (fact
  "reverie-schema protocol/object-initiate datomic"
@@ -88,7 +88,7 @@
                                               :input :text}})
        {:keys [database connection]} (setup)]
    (rev/object-upgrade! d connection)
-   (not (nil? (:db/id (rev/object-initiate! d connection))))) => true)
+   (nil? (:db/id (rev/object-initiate! d connection)))) => false)
 
 
 (fact
@@ -140,7 +140,7 @@
                                                 :initial ""
                                                 :input :text}})]
    (rev/object-upgrade! d2 connection)
-   (rev/object-synchronize! d2 connection)) => truthy)
+   (nil? (rev/object-synchronize! d2 connection))) => false)
 
 
 

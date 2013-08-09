@@ -10,7 +10,7 @@
                  [clout "1.1.0"]
                  [slingshot "0.10.3"]
                  [bultitude "0.1.5"]]
-  :profiles {:dev {:dependencies [[midje "1.4.0"]
+  :profiles {:dev {:dependencies [[midje "1.6-alpha1"]
                                   [com.stuartsierra/lazytest "1.2.3"]
                                   [ring-mock "0.1.3"]]}}
   :repositories {"stuart" "http://stuartsierra.com/maven2"})

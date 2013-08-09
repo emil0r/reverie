@@ -78,8 +78,6 @@
    (rev/defobject object/text {:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/type :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text"}]} [:get] "")
    (-> @rev/objects :object/text nil?)) => false)
 
-
-
 (fact
  "defobject and run-schemas!"
  (let [{:keys [database connection]} (setup)]
