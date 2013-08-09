@@ -126,32 +126,35 @@
       (assoc tx :db/id (-> tx :tempids vals last))))
 
   (object-move! [schema connection id {:keys [page-id area order]}]
+    "If page-id exists it assumes a new page to move things to. area and order are always assumed to exist"
     (let [obj (rev/object-get schema connection id)
           old-page (-> obj :reverie.page/_objects first)
           new-page (rev/page-get (rev/reverie-data {:connection connection
                                                     :page-id page-id}))
-          order (cond order
+          order (case order
                       :last (get-last-order obj)
                       :first 1
                       nil (get-last-order obj)
-                      order)]
-      (assoc
-          {:page-id page-id
-           :area area
-           :order order}
-        :tx @(d/transact connection
-                         [;; update object with area
-                          (merge (clean-entity-map obj) {:reverie/area area})
-                          ;; remove object from old page
-                          (assoc (clean-entity-map old-page)
-                            :reverie.page/objects
-                            (remove #(= (:db/id %) (:db/id obj))
-                                    (:reverie.page/objects old-page)))
-                          ;; add object to new page
-                          (assoc (clean-entity-map new-page)
-                            :reverie.page/objects
-                            (conj (:reverie.page/objects new-page) (:db/id obj)))]))
-      ))
+                      order)
+          ;; update object with area
+          transactions [(merge (clean-entity-map obj) {:reverie/area area 
+                                                       :reverie/order order})]
+          transactions (if (nil? new-page)
+                         transactions
+                         (apply conj transactions
+                                [;; remove object from old page
+                                 (assoc (clean-entity-map old-page)
+                                   :reverie.page/objects
+                                   (remove #(= (:db/id %) (:db/id obj))
+                                           (:reverie.page/objects old-page)))
+                                 ;; add object to new page
+                                 (assoc (clean-entity-map new-page)
+                                   :reverie.page/objects
+                                   (conj (:reverie.page/objects new-page) (:db/id obj)))]))]
+      (assoc {:page-id page-id
+              :area area
+              :order order}
+        :tx @(d/transact connection transactions))))
 
   (object-copy! [schema connection id]
     (let [obj (rev/object-get schema connection id)
