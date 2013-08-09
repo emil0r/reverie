@@ -11,3 +11,5 @@ pom.xml
 /.emacs.desktop
 /.emacs.desktop.lock
 /projects
+/.DS_Store
+/.lein-repl-history
