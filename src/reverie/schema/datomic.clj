@@ -171,12 +171,16 @@
   
   (object-set! [schema connection id data]
     (let [idents (get-idents schema)
-          attribs (filter #(-> % vals first nil? not) ;; remove attribs with nil values
+          attribs (remove #(-> % vals first nil?) ;; remove attribs with nil values
                           (map (fn [[k attr]] {attr (data k)}) idents))
           extra-data-ks (set/difference (-> data keys set)
                                         (->> idents (map first) set))]
       (let [attribs (merge (select-keys data extra-data-ks) (into {:db/id id} attribs))]
         (-> @(d/transact connection [attribs]) (assoc :db/id id)))))
+
+  (object-publish! [schema connection id])
+
+  (object-unpublish! [schema connection id])
 
   (object-render [schema connection id rdata]
     (let [object (rev/object-get schema connection id)
@@ -276,6 +280,10 @@
 
   (page-get [{:keys [connection page-id] :as rdata}]
     (d/entity (db connection) page-id))
+
+  (page-publish! [rdata])
+
+  (page-unpublish! [rdata])
 
   (page-rights? [rdata user right]))
 
