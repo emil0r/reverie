@@ -38,7 +38,7 @@
                               :tx-data {:reverie.page/uri "/object-render"
                                         :reverie.page/name "page"
                                         :reverie.page/template :main}}))
-(def page (rev/page-new! rdata))
+(def page1 (rev/page-new! rdata))
 (def rdata (merge rdata {:page-id (:page-id page)
                          :area :a}))
 (def page2 (rev/page-new! (rev/reverie-data {:connection connection
@@ -53,7 +53,7 @@
        tx-obj (rev/object-initiate! schema connection)
        obj (rev/object-get schema connection (:db/id tx-obj))
        tx-rdata (rev/page-new-object! (assoc rdata :object-id (:db/id tx-obj)))
-       page (rev/page-get tx-rdata)]
+       page1 (rev/page-get tx-rdata)]
    (rev/object-set! schema connection (:db/id obj) {:reverie/area :a})
    (rev/object-render schema connection (:db/id tx-obj) tx-rdata))
  => [:text "my initial text" :image "my initial image"])
@@ -77,9 +77,10 @@
  "object-move!"
  (let [schema (-> @rev/objects :object/text :schema)
        obj1 (-> rdata rev/page-objects first)
-       tx-obj2 (rev/object-move! schema connection (:db/id obj1) {:page page2
+       tx-obj2 (rev/object-move! schema connection (:db/id obj1) {:page-id (:page-id page2)
                                                                   :area :b})
        obj2 (-> (assoc rdata :page-id (:page-id page2)) rev/page-objects first)]
-   (= (:db/id obj1) (:db/id obj2)))
- true ;; TODO: fix
+   (and
+    (= (:db/id page2) (-> obj2 :reverie.page/_objects first :page-id))
+    (= (:db/id page1) (-> obj1 :reverie.page/_objects first :page-id))))
  => true)
