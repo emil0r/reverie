@@ -1,19 +1,18 @@
 (ns reverie.test.core
-  (:require [reverie.core :as rev]
+  (:require [fs.core :as fs]
             [hiccup.core :as hiccup]
-            [fs.core :as fs])
+            [korma.core :as korma]
+            [reverie.core :as rev])
   (:use midje.sweet
+        [korma.db :only [defdb postgres]]
         [ring.mock.request]))
 
-
-;; (defn setup []
-;;   (d/delete-database db-uri-mem)
-;;   (let [database (d/create-database db-uri-mem)
-;;         connection (d/connect db-uri-mem)
-;;         schema (read-string (slurp "schema/datomic.schema"))]
-;;     @(d/transact connection schema)
-;;     {:database database
-;;      :connection connection}))
+(def db {:classname "org.postgresql.Driver"
+         :subprotocol "postgresql"
+         :subname "//localhost:5432/dev-reverie"
+         :user "dev-reverie"
+         :password "reverie"})
+(defdb dev-db db)
 
 (defn reset-routes! []
   (reset! rev/routes {}))
@@ -67,23 +66,26 @@
  "defobject"
  (do
    (reset-objects!)
-   (rev/defobject object/text {:areas [:a :b]
-                               :attributes {:text {:initial ""
-                                                   :input :text
-                                                   :name "Text"}}}
+   (rev/defobject text {:areas [:a :b]
+                        :attributes {:text {:initial ""
+                                            :input :text
+                                            :name "Text"}}}
      [:get]
      "")
-   (-> @rev/objects :object/text nil?)) => false)
+   (-> @rev/objects :text nil?)) => false)
 
+(fact
+ "defobject and atttributes"
+ (reset-objects!)
+ (rev/defobject text {:areas [:a :b] :attributes {:text {:initial "" :input :text :name "Text" :description ""}}} [:get] text)
+ (let [f (-> @rev/objects :text :get)]
+   (f {:uri "/"} {:text "my text"})) => "my text")
 
-;; (fact
-;;  "defobject and atttributes"
-;;  (let [{:keys [database connection]} (setup)]
-;;    (reset-objects!)
-;;    (rev/defobject object/text {:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]} [:get] text)
-;;    (rev/run-schemas! connection)
-;;    (let [f (-> @rev/objects :object/text :get)]
-;;      (f {:uri "/"} {:text "my text"}))) => "my text")
+(fact
+ "defobject and korma"
+ (reset-objects!)
+ (rev/defobject text {:areas [:a :b] :attributes {:text {:initial "" :input :text :name "Text" :description ""}}} [:get] text)
+ (korma/as-sql (korma/select* (-> @rev/objects :text :entity))) => "SELECT \"text\".* FROM \"text\"")
 
 (fact
  "routes"

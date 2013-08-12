@@ -1,12 +1,8 @@
 (ns lobos.test.migrations
   (require [lobos.core :as lobos]
-           [lobos.connectivity :as conn]))
+           [lobos.connectivity :as conn]
+           [reverie.test.core :only [db]]))
 
-(def db {:classname "org.postgresql.Driver"
-         :subprotocol "postgresql"
-         :subname "//localhost:5432/dev-reverie"
-         :user "dev-reverie"
-         :password "reverie"})
 
 (defn open-global-when-necessary
   "Open a global connection only when necessary, that is, when no previous

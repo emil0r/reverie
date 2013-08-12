@@ -212,10 +212,11 @@
          attributes (get-attributes options)
          table-symbol (or (:table options) object)
          body `(object-funcs ~attributes ~methods ~@args)]
-     `(korma/defentity ~entity
+     `(korma/defentity (name ~object)
         (korma/table ~table-symbol)
         (korma/belongs-to object))
-     `(swap! objects assoc ~object (merge {:options ~options} ~body))))
+     `(swap! objects assoc ~object (merge {:options ~options
+                                           :entity ~object} ~body))))
 
 (defmacro request-method
   "Pick apart the request methods specified in other macros"
