@@ -3,15 +3,14 @@
             [reverie.schema.datomic :as _] ;; for reloads in midje
             )
   (:use midje.sweet
-        [datomic.api :only [q db] :as d]
-        [reverie.test.core :only [setup]])
-  (:import reverie.core.ObjectSchemaDatomic))
+        ;;[reverie.test.core :only [setup]]
+        ))
 
 
 (fact
  "defining template"
- (let [{:keys [connection]} (setup)
-       rdata (rev/reverie-data {:connection connection})
+ (let [;;{:keys [connection]} (setup)
+       rdata (rev/reverie-data {})
        template (rev/deftemplate :main [:areas [:a :b :c]]
                   (list "<!DOCTYPE html>"
                         [:html

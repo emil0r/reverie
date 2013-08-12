@@ -1,9 +1,7 @@
 (ns reverie.test.play
   (:require [reverie.core :as rev]
             [reverie.schema.datomic :as _])
-  (:use [datomic.api :only [q db] :as d]
-        [slingshot.slingshot :only [try+ throw+]])
-  (:import reverie.core.ObjectSchemaDatomic reverie.core.ReverieDataDatomic))
+  (:use [slingshot.slingshot :only [try+ throw+]]))
 
 
 (defn testus [data]

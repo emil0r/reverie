@@ -3,20 +3,19 @@
             [hiccup.core :as hiccup]
             [fs.core :as fs])
   (:use midje.sweet
-        [datomic.api :only [q db] :as d]
         [ring.mock.request]))
 
 
 (def db-uri-mem "datomic:mem://reverie")
 
-(defn setup []
-  (d/delete-database db-uri-mem)
-  (let [database (d/create-database db-uri-mem)
-        connection (d/connect db-uri-mem)
-        schema (read-string (slurp "schema/datomic.schema"))]
-    @(d/transact connection schema)
-    {:database database
-     :connection connection}))
+;; (defn setup []
+;;   (d/delete-database db-uri-mem)
+;;   (let [database (d/create-database db-uri-mem)
+;;         connection (d/connect db-uri-mem)
+;;         schema (read-string (slurp "schema/datomic.schema"))]
+;;     @(d/transact connection schema)
+;;     {:database database
+;;      :connection connection}))
 
 (defn pre-test [request]
   (keys request))
@@ -78,23 +77,23 @@
    (rev/defobject object/text {:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/type :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text"}]} [:get] "")
    (-> @rev/objects :object/text nil?)) => false)
 
-(fact
- "defobject and run-schemas!"
- (let [{:keys [database connection]} (setup)]
-   (reset-objects!)
-   (rev/defobject object/text {:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]} [:get] "")
-   (rev/run-schemas! connection)
-   (number? (ffirst (q '[:find ?c :where [?c :db/ident :object.text/text]] (db connection))))) => true)
+;; (fact
+;;  "defobject and run-schemas!"
+;;  (let [{:keys [database connection]} (setup)]
+;;    (reset-objects!)
+;;    (rev/defobject object/text {:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]} [:get] "")
+;;    (rev/run-schemas! connection)
+;;    (number? (ffirst (q '[:find ?c :where [?c :db/ident :object.text/text]] (db connection))))) => true)
 
 
-(fact
- "defobject and atttributes"
- (let [{:keys [database connection]} (setup)]
-   (reset-objects!)
-   (rev/defobject object/text {:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]} [:get] text)
-   (rev/run-schemas! connection)
-   (let [f (-> @rev/objects :object/text :get)]
-     (f {:uri "/"} {:text "my text"}))) => "my text")
+;; (fact
+;;  "defobject and atttributes"
+;;  (let [{:keys [database connection]} (setup)]
+;;    (reset-objects!)
+;;    (rev/defobject object/text {:areas [:a :b] :attributes [{:text {:db/ident :object.text/text :db/valueType :db.type/string :db/cardinality :db.cardinality/one :db/doc "Text of the text object"} :initial "" :input :text :name "Text" :description ""}]} [:get] text)
+;;    (rev/run-schemas! connection)
+;;    (let [f (-> @rev/objects :object/text :get)]
+;;      (f {:uri "/"} {:text "my text"}))) => "my text")
 
 (fact
  "routes"

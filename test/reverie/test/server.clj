@@ -3,11 +3,11 @@
             [reverie.server :as server]
             [reverie.test.core :as test])
   (:use midje.sweet
-        [datomic.api :only [q db] :as d]
         [ring.mock.request]))
 
 (defn get-connection []
-  (:connection (test/setup)))
+  ;;(:connection (test/setup))
+  )
 
 (defn wrap-count [handler]
   (fn [request]
