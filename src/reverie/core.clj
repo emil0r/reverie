@@ -1,4 +1,5 @@
 (ns reverie.core
+  (:require [korma.core :as korma])
   (:use [datomic.api :only [db tempid]]
         [clout.core]
         [slingshot.slingshot :only [try+ throw+]]))
@@ -10,6 +11,20 @@
 (defonce routes (atom {}))
 (defonce settings (atom {}))
 (defonce templates (atom {}))
+
+(korma/defentity role)
+(korma/defentity page
+  (korma/many-to-many role :role_page))
+(korma/defentity page_attributes
+  (korma/belongs-to page))
+(korma/defentity object
+  (korma/belongs-to page))
+(korma/defentity app
+  (korma/belongs-to page))
+(korma/defentity user
+  (korma/many-to-many role :role_user))
+(korma/defentity group
+  (korma/many-to-many role :role_group))
 
 (defprotocol reverie-object
   (object-correct? [schema]
@@ -126,8 +141,8 @@
                                                     :db.install/_attribute :db.part/db})}]
                   {k (merge m schema)})) attributes))))
 
-(defn- get-attributes [schema]
-  (map #(-> % name symbol) (keys (:attributes schema))))
+(defn- get-attributes [options]
+  (map symbol (map name (keys (:attributes options)))))
 
 (defn- regex? [pattern]
   (= (class pattern) java.util.regex.Pattern))
@@ -178,7 +193,7 @@
 
 (defmacro object-funcs [attributes methods & body]
   (if (every? keyword? methods)
-    `(let [~'func (fn [~'rdata {:keys [~@attributes]}] ~@body)]
+    `(let [~'func (fn [~'data {:keys [~@attributes]}] ~@body)]
        (into {} (map vector ~methods (repeat ~'func))))
     (let [paired (into {} (map (fn [[method fn-name]] {(keyword fn-name) method}) (partition 2 methods)))
           bodies (map (fn [[fn-name & fn-body]] [(keyword fn-name) fn-body]) (filter vector? body))]
@@ -188,18 +203,23 @@
           m
           (let [[fn-name fn-body] func-vector]
             (if-let [method (paired (first func-vector))]
-              (recur r (assoc m method `(fn [~'rdata {:keys [~@attributes]}] ~@fn-body)))
+              (recur r (assoc m method `(fn [~'data {:keys [~@attributes]}] ~@fn-body)))
               (recur r m))))))))
 
 (defmacro defobject [object options methods & args]
    (let [object (keyword object)
          settings {}
-         schema (parse-schema object options settings)
-         attributes (get-attributes schema)
+         attributes (get-attributes options)
+         table-symbol (or (:table options) object)
          body `(object-funcs ~attributes ~methods ~@args)]
-     `(swap! objects assoc ~object (merge {:options ~options :schema ~schema} ~body))))
+     `(korma/defentity ~entity
+        (korma/table ~table-symbol)
+        (korma/belongs-to object))
+     `(swap! objects assoc ~object (merge {:options ~options} ~body))))
 
-(defmacro request-method [[method options & body]]
+(defmacro request-method
+  "Pick apart the request methods specified in other macros"
+  [[method options & body]]
   (case method
     :get (let [[route _2 _3] options
                regex (if (every? regex? (vals _2)) _2 nil)
@@ -208,7 +228,7 @@
                        (route-compile route regex))
                method-options (if (nil? regex) _2 _3)
                keys (vec (map #(-> % name symbol) (:keys route)))
-               func `(fn [~'rdata {:keys ~keys}] (try+ {:status 200
+               func `(fn [~'data {:keys ~keys}] (try+ {:status 200
                                                        :headers (or (:headers ~method-options) {})
                                                        :body ~@body}
                                                       (catch [:type :ring-response] {:keys [~'response]}
@@ -226,7 +246,7 @@
                   (route-compile route)
                   (route-compile route regex))
           keys (vec (map #(-> % name symbol) (:keys route)))
-          func `(fn [~'rdata {:keys ~keys} ~form-data] (try+ {:status 200
+          func `(fn [~'data {:keys ~keys} ~form-data] (try+ {:status 200
                                                              :headers (or (:headers ~method-options) {})
                                                              :body ~@body}
                                                             (catch [:type :ring-response] {:keys [~'response]}

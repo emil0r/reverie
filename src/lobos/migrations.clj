@@ -37,7 +37,13 @@
                         (integer :id :primary-key :auto-inc :not-null)
                         (timestamp :created (default (now)))
                         (varchar :name 255 :not-null))))
-    (down [] (drop (table :role))))
+  (down [] (drop (table :role))))
+
+(defmigration init-role-page
+  (up [] (create (table :role_page
+                        (integer :role_id [:refer :role :id] :not-null)
+                        (integer :page_id [:refer :page :id] :not-null))))
+  (down [] (drop (table :role_page))))
 
 
 (defmigration init-object
@@ -82,3 +88,15 @@
                         (integer :group_id [:refer :group :id] :not-null))
                  (index :user_group_unique [:user_id :group_id] :unique)))
   (down [] (drop (table :user_group))))
+
+(defmigration init-role-user
+  (up [] (create (table :role_user
+                        (integer :role_id [:refer :role :id] :not-null)
+                        (integer :user_id [:refer :user :id] :not-null))))
+  (down [] (drop (table :role_user))))
+
+(defmigration init-role-group
+  (up [] (create (table :role_group
+                        (integer :role_id [:refer :role :id] :not-null)
+                        (integer :group_id [:refer :group :id] :not-null))))
+  (down [] (drop (table :role_group))))

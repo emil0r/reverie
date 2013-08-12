@@ -5,9 +5,9 @@
   (:use midje.sweet
         [ring.mock.request]))
 
-(defn get-connection []
-  ;;(:connection (test/setup))
-  )
+;; (defn get-connection []
+;;   ;;(:connection (test/setup))
+;;   )
 
 (defn wrap-count [handler]
   (fn [request]
@@ -20,9 +20,9 @@
  (get-in ((server/generate-handler get-connection [[wrap-count] [wrap-count]] {})
           {:level 1 :uri "/generate-handler"}) [:headers "level"]) => 3)
 
-(fact
- "start server, stop server, restart server"
- (let [s (server/start {:port 8888 :get-connection get-connection :handlers []})]
-   (server/restart s)
-   (server/stop s)
-   s) => truthy)
+;; (fact
+;;  "start server, stop server, restart server"
+;;  (let [s (server/start {:port 8888 :get-connection get-connection :handlers []})]
+;;    (server/restart s)
+;;    (server/stop s)
+;;    s) => truthy)
