@@ -15,13 +15,23 @@
 
 (defn- template->str [tx]
   (if (:template tx)
-    (assoc tx :template (-> tx :template  str (s/replace #":" "")) )
+    (assoc tx :template (-> tx :template util/kw->str) )
     tx))
 (defn- template->kw [tx]
   (if (:template tx)
     (assoc tx :template (-> tx :template keyword))
     tx))
 
+(defn- get-serial-page []
+  (let [serial (-> page (k/select (k/aggregate (max :serial) :serial)) first :serial)]
+    (if serial
+      (+ 1 serial)
+      1)))
+(defn- get-serial-object []
+  (let [serial (-> object (k/select (k/aggregate (max :serial) :serial)) first :serial)]
+    (if serial
+      (+ 1 serial)
+      1)))
 
 (defn get
   "Get a page. serial + version overrides page-id"
@@ -29,6 +39,15 @@
   (if (and serial version)
     (first (k/select page (k/where {:serial serial :version version})))
     (first (k/select page (k/where {:id page-id})))))
+
+(defn- get-last-page-order [request]
+  (let [p (get request)
+        parent (or (:parent p) (:id p))]
+    (+ 1
+       (or
+        (-> page (k/select (k/aggregate (max :order) :order)
+                           (k/where {:parent parent})) first :order)
+        -1))))
 
 (defn objects
   "Get objects associated with a page. page-id required"
@@ -64,9 +83,9 @@
   (k/select page_attributes (k/where {:page_id page-id})))
 
 (defn add-object! [{:keys [page-id] :as request} obj]
-  (k/insert object (k/values {:page_id page-id :update (k/sqlfn now)
-                              :name (:name obj) :area (:area obj)
-                              :version 0})))
+  (k/insert object (k/values {:page_id page-id :updated (k/sqlfn now)
+                              :name (:name obj) :area (-> obj :area util/kw->str)
+                              :version 0 :serial (get-serial-object)})))
 
 (defn new! [{:keys [page-type tx-data] :as request}]
   (let [uri (:uri tx-data)
@@ -91,7 +110,7 @@
   request)
 
 (defn restore! [{:keys [page-id] :as request}]
-  (k/update page (k/set-fields {:active true :order (util/get-last-order nil)}))
+  (k/update page (k/set-fields {:active true :order (get-last-page-order request)}))
   request)
 
 (defn publish! [{:keys [page-id] :as request}]

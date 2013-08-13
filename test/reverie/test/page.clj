@@ -18,3 +18,9 @@
  "page/update!"
  (page/update! {:page-id 1 :tx-data {:name "Updated!"}})
  (:name (page/get {:page-id 1})) => "Updated!")
+
+
+(fact
+ "page/add-object!"
+ (:name (page/add-object! {:page-id 1} {:name "text" :area :a}))
+ => "text")
