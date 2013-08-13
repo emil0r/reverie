@@ -1,98 +1,123 @@
 (ns reverie.page
-  (:require [korma.core :as k]))
+  (:refer-clojure :exclude [get meta])
+  (:require [clojure.string :as s]
+            [clout.core :as clout]
+            [korma.core :as k]
+            [reverie.util :as util])
+  (:use [reverie.core :exclude [objects]]
+        reverie.entity))
+
+(defn- shorten-uri [request remove-part-of-uri]
+  "shortens the uri by removing the unwanted part"
+  (assoc-in request [:uri] (clojure.string/replace
+                            (:uri request)
+                            (re-pattern (s/replace remove-part-of-uri #"/$" "")) "")))
+
+(defn- template->str [tx]
+  (if (:template tx)
+    (assoc tx :template (-> tx :template  str (s/replace #":" "")) )
+    tx))
+(defn- template->kw [tx]
+  (if (:template tx)
+    (assoc tx :template (-> tx :template keyword))
+    tx))
 
 
-;; (extend-type ReverieDataDatomic
-;;   reverie-page
+(defn get
+  "Get a page. serial + version overrides page-id"
+  [{:keys [page-id serial version] :as request}]
+  (if (and serial version)
+    (first (k/select page (k/where {:serial serial :version version})))
+    (first (k/select page (k/where {:id page-id})))))
 
-;;   (page-render [{:keys [connection request] :as rdata}]
-;;     (let [{:keys [uri]} request]
-;;       (if-let [[route-uri page-data] (get-route uri)]
-;;         (let [page (rev/page-get (assoc rdata :page-id (:page-id page-data)))]
-;;           (case (:type page-data)
-;;             :normal (let [template (get @templates (:reverie.page/template page))
-;;                           fn (:fn template)]
-;;                       (fn (assoc rdata :page-id (:db/id page))))
-;;             :page (let [request (shorten-uri request route-uri)
-;;                         [_ route _ func] (->> route-uri
-;;                                               (get @rev/pages)
-;;                                               :fns
-;;                                               (filter #(let [[method route _ _] %]
-;;                                                          (and
-;;                                                           (= (:request-method request) method)
-;;                                                           (clout/route-matches route request))))
-;;                                               first)]
-;;                     (if (nil? func)
-;;                       {:status 404 :body "404, page not found"}
-;;                       (func rdata (clout/route-matches route request))))
-;;             (rev/app-render (assoc rdata :page-data page-data :page page)))))))
+(defn objects
+  "Get objects associated with a page. page-id required"
+  [{:keys [page-id area version] :as request}]
+  (let [w {:page_id page-id :active true}
+        w (cond
+           (and area version) (merge w {:area area :version version})
+           area (merge w {:area area})
+           version (merge w {:version version})
+           :else w)]
+   (k/select object (k/where w))))
 
-;;   (page-objects [{:keys [connection page-id area] :as rdata}]
-;;     (let [page (d/entity (db connection) page-id)]
-;;       (sort-by :reverie/order
-;;                (filter #(and
-;;                          (:reverie/active? %)
-;;                          (= (:reverie/area %) area)) (:reverie.page/objects page)))))
-  
-;;   (page-get-meta [rdata])
-  
-;;   (page-new-object! [{:keys [connection object-id page-id] :as rdata}]
-;;     (let [page (d/entity (db connection) page-id)
-;;           tx @(d/transact connection
-;;                           [{:db/id page-id
-;;                             :reverie.page/objects object-id}])]
-;;       (assoc rdata :tx tx)))
-  
-;;   (page-update-object! [rdata]) ;; datomic allows upside travseral?
 
-;;   (page-delete-object! [{:keys [connection object-id] :as rdata}]
-;;     (let [tx @(d/transact connection
-;;                           [{:db/id object-id
-;;                             :reverie/active? false}])]
-;;       (assoc rdata :tx tx)))
+(defn render
+  "Renders a page"
+  [{:keys [uri] :as request}]
+  (if-let [[route-uri page-data] (get-route uri)]
+    (let [page (get (assoc request :page-id (:page-id page-data)))]
+      (case (:type page-data)
+        :normal (let [template (clojure.core/get @templates (-> page :template keyword))
+                      f (:fn template)]
+                  (f (assoc request :page-id (:id page))))
+        :page (let [request (shorten-uri request route-uri)
+                    [_ route _ f] (->> route-uri
+                                       (clojure.core/get @pages)
+                                       :fns
+                                       (filter #(let [[method route _ _] %]
+                                                  (and
+                                                   (= (:request-method request) method)
+                                                   (clout/route-matches route request)))))])))))
 
-;;   (page-new! [{:keys [connection parent tx-data page-type] :as rdata}]
-;;     (let [uri (:reverie.page/uri tx-data)
-;;           tx @(d/transact connection
-;;                           [(merge tx-data
-;;                                   {:db/id #db/id [:db.part/reverie]
-;;                                    :reverie/active? true
-;;                                    :reverie.page/objects []})])
-;;           page-id (-> tx :tempids vals last)]
-;;       (add-route! uri {:page-id page-id :type (or page-type :normal)
-;;                        :template (:reverie.page/template tx-data)})
-;;       (merge rdata {:tx tx :page-id page-id})))
+(defn meta [{:keys [page-id] :as request}]
+  (k/select page_attributes (k/where {:page_id page-id})))
 
-;;   (page-update! [{:keys [connection page-id tx-data] :as rdata}]
-;;     (let [old-uri (:reverie.page/uri (rev/page-get rdata))
-;;           new-uri (:reverie.page/uri tx-data)
-;;           tx @(d/transact connection
-;;                           [(merge tx-data {:db/id page-id})])]
-;;       (if (and
-;;            (not (nil? new-uri))
-;;            (not= new-uri old-uri))
-;;         (rev/update-route! new-uri (rev/get-route old-uri)))
-;;       (assoc rdata :tx tx)))
+(defn add-object! [{:keys [page-id] :as request} obj]
+  (k/insert object (k/values {:page_id page-id :update (k/sqlfn now)
+                              :name (:name obj) :area (:area obj)
+                              :version 0})))
 
-;;   (page-delete! [{:keys [connection page-id] :as rdata}]
-;;     (let [uri (:page.reverie/uri (rev/page-get rdata))
-;;           tx @(d/transact connection
-;;                           [{:db/id page-id
-;;                             :reverie/active? false}])]
-;;       (rev/remove-route! uri)
-;;       (assoc rdata :tx tx)))
+(defn new! [{:keys [page-type tx-data] :as request}]
+  (let [uri (:uri tx-data)
+        tx (k/insert page (k/values (template->str tx-data)))]
+    (add-route! uri {:page-id (:id tx) :type (or page-type :normal)
+                     :template (:template tx-data) :published? false})
+    (assoc request :page-id (:id tx) :tx tx)))
 
-;;   (page-restore! [{:keys [connection page-id] :as rdata}]
-;;     (let [tx @(d/transact connection
-;;                           [{:db/id page-id
-;;                             :reverie/active? true}])]
-;;       (assoc rdata :tx tx)))
+(defn update! [{:keys [page-id tx-data] :as request}]
+  (let [old-uri (:uri (get request))
+        new-uri (:uri tx-data)
+        result (k/update page (k/set-fields tx-data)
+                         (k/where {:id page-id}))]
+    (if (and
+         (not (nil? new-uri))
+         (not= new-uri old-uri))
+      (update-route! new-uri (get-route old-uri)))
+    request))
 
-;;   (page-get [{:keys [connection page-id] :as rdata}]
-;;     (d/entity (db connection) page-id))
+(defn delete! [{:keys [page-id] :as request}]
+  (k/update page (k/set-fields {:active false :order 0}))
+  request)
 
-;;   (page-publish! [rdata])
+(defn restore! [{:keys [page-id] :as request}]
+  (k/update page (k/set-fields {:active true :order (util/get-last-order nil)}))
+  request)
 
-;;   (page-unpublish! [rdata])
+(defn publish! [{:keys [page-id] :as request}]
+  (let [p (get request)
+        pages (k/select page (k/where {:serial (:serial p)
+                                       :active true
+                                       :version [> 1]}))]
+    (doseq [p pages]
+      (k/update page
+                (k/set-fields {:version (+ 1 (:version p))})
+                (k/where {:id (:id p)})))
+    (k/insert page
+              (k/values (-> p
+                            (dissoc :id :version)
+                            (assoc :version 1))))
+    (update-route! (:uri p) (assoc (get-route (:uri p)) :published? true))
+    request))
 
-;;   (page-rights? [rdata user right]))
+(defn unpublish! [{:keys [page-id] :as request}]
+  (let [p (get request)
+        pages (k/select page (k/where {:serial (:serial p)
+                                       :active true
+                                       :version [> 0]}))]
+    (doseq [p pages]
+      (k/update page
+                (k/set-fields {:version (+ 1 (:version p))})
+                (k/where {:id (:id p)})))
+    (update-route! (:uri p) (assoc (get-route (:uri p)) :published? false))
+    request))

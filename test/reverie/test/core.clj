@@ -85,7 +85,8 @@
  "defobject and korma"
  (reset-objects!)
  (rev/defobject text {:areas [:a :b] :attributes {:text {:initial "" :input :text :name "Text" :description ""}}} [:get] text)
- (korma/as-sql (korma/select* (-> @rev/objects :text :entity))) => "SELECT \"text\".* FROM \"text\"")
+ (korma/as-sql (korma/select* (-> @rev/objects :text :entity)))
+ => "SELECT \"text\".* FROM \"text\"")
 
 (fact
  "routes"

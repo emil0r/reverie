@@ -12,20 +12,6 @@
 (defonce settings (atom {}))
 (defonce templates (atom {}))
 
-(korma/defentity role)
-(korma/defentity page
-  (korma/many-to-many role :role_page))
-(korma/defentity page_attributes
-  (korma/belongs-to page))
-(korma/defentity object
-  (korma/belongs-to page))
-(korma/defentity app
-  (korma/belongs-to page))
-(korma/defentity user
-  (korma/many-to-many role :role_user))
-(korma/defentity group
-  (korma/many-to-many role :role_group))
-
 (defprotocol reverie-object
   (object-correct? [schema]
     "Checks that the schema of an object is correct; checks for :schema, :initial and :input")
