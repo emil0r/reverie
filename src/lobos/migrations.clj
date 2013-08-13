@@ -9,6 +9,7 @@
                         (integer :serial :not-null)
                         (timestamp :created (default (now)) :not-null)
                         (timestamp :updated :not-null)
+                        (varchar :type 100 :not-null)
                         (varchar :name 255 :not-null)
                         (varchar :title 255 :not-null)
                         (varchar :template 255 :not-null)
