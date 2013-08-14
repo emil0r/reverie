@@ -1,6 +1,6 @@
 (ns reverie.test.play
   (:require [reverie.core :as rev]
-            [reverie.schema.datomic :as _])
+            )
   (:use [slingshot.slingshot :only [try+ throw+]]))
 
 

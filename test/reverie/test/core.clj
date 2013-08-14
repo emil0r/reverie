@@ -5,7 +5,7 @@
             [reverie.core :as rev])
   (:use midje.sweet
         [korma.db :only [defdb postgres]]
-        [ring.mock.request]))
+        ring.mock.request))
 
 (def db {:classname "org.postgresql.Driver"
          :subprotocol "postgresql"

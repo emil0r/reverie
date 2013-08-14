@@ -6,9 +6,11 @@
         ring.mock.request))
 
 
+
+
 (fact
- "page/new!"
- (let [p (page/new! {:tx-data {:updated (korma/sqlfn now)
+ "page/add!"
+ (let [p (page/add! {:tx-data {:updated (korma/sqlfn now)
                                :name "Test" :title "Test"
                                :template :main :uri "/test"
                                :parent 0 :order 0 :version 0}})]

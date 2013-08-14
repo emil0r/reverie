@@ -3,15 +3,10 @@
   (:require [clojure.string :as s]
             [clout.core :as clout]
             [korma.core :as k]
+            [reverie.app :as app]
             [reverie.util :as util])
   (:use [reverie.core :exclude [objects]]
         reverie.entity))
-
-(defn- shorten-uri [request remove-part-of-uri]
-  "shortens the uri by removing the unwanted part"
-  (assoc-in request [:uri] (clojure.string/replace
-                            (:uri request)
-                            (re-pattern (s/replace remove-part-of-uri #"/$" "")) "")))
 
 (defn- template->str [tx]
   (if (:template tx)
@@ -27,6 +22,9 @@
     (if serial
       (+ 1 serial)
       1)))
+
+(defn get* [w]
+  (k/select page (k/where w)))
 
 (defn get
   "Get a page. serial + version overrides page-id"
@@ -65,24 +63,28 @@
         :normal (let [template (clojure.core/get @templates (-> page :template keyword))
                       f (:fn template)]
                   (f (assoc request :page-id (:id page))))
-        :page (let [request (shorten-uri request route-uri)
+        :page (let [request (util/shorten-uri request route-uri)
                     [_ route _ f] (->> route-uri
                                        (clojure.core/get @pages)
                                        :fns
                                        (filter #(let [[method route _ _] %]
                                                   (and
                                                    (= (:request-method request) method)
-                                                   (clout/route-matches route request)))))])))))
+                                                   (clout/route-matches route request)))))])
+        (app/render (assoc request :page-data page-data :page page))))))
 
 (defn meta [{:keys [page-id] :as request}]
   (k/select page_attributes (k/where {:page_id page-id})))
 
-(defn new! [{:keys [page-type tx-data] :as request}]
+(defn add! [{:keys [tx-data] :as request}]
   (let [uri (:uri tx-data)
-        type (or page-type :normal)
-        tx-data (assoc tx-data :serial (or (:serial tx-data)
-                                           (get-serial-page))
-                       :type (name type))
+        type (or (:type tx-data) :normal)
+        tx-data (assoc tx-data
+                  :serial (or (:serial tx-data)
+                              (get-serial-page))
+                  :version (or (:version tx-data) 0)
+                  :updated (or (:updated tx-data) (k/sqlfn now))
+                  :type (name type))
         tx (k/insert page (k/values (template->str tx-data)))]
     (add-route! uri {:page-id (:id tx) :type type
                      :template (:template tx-data) :published? false})

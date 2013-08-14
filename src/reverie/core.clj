@@ -33,43 +33,19 @@
                 (re-find (re-pattern k) uri))))
      first)))
 
-(defmulti parse-schema (fn [object options {:keys [schema]}] schema))
-(defmethod parse-schema :default [object {:keys [attributes] :as options} settings]
-  (ObjectSchemaDatomic.
-   object
-   (into {}
-         (map (fn [m]
-                (let [k (first
-                         (filter
-                          #(not (nil? (:db/ident (m %))))
-                          (keys m)))
-                      schema {:schema (merge (m k) {:db/id (tempid :db.part/db)
-                                                    :db.install/_attribute :db.part/db})}]
-                  {k (merge m schema)})) attributes))))
-
 (defn- get-attributes [options]
   (map symbol (map name (keys (:attributes options)))))
 
 (defn- regex? [pattern]
   (= (class pattern) java.util.regex.Pattern))
 
-(defn- get-schema [object]
-  (:schema (get @objects (:reverie/object object))))
-
-(defn run-schemas! [connection]
-  (let [schemas (map #(:schema (@objects %)) (keys @objects))]
-    (doseq [s schemas]
-      (if (object-correct? s)
-        (if (object-upgrade? s connection)
-          (do
-            (object-upgrade! s connection)
-            (object-synchronize! s connection)))))))
 
 (defn area-render [object rdata]
-  (object-render (get-schema object)
-                 (:connection rdata)
-                 (:db/id object)
-                 (assoc rdata :object-id (:db/id object))))
+  ;; (object-render (get-schema object)
+  ;;                (:connection rdata)
+  ;;                (:db/id object)
+  ;;                (assoc rdata :object-id (:db/id object)))
+  )
 
 (defmacro area [name]
   (let [name (keyword name)]
@@ -178,6 +154,3 @@
         (add-route! path {:type :page})
         `(swap! pages assoc ~path {:options ~options :fns ~fns}))
       (recur methods (conj fns `(request-method ~method))))))
-
-(defn get-connection []
-  (db (get @settings :connection-string)))
