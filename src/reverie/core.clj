@@ -1,7 +1,6 @@
 (ns reverie.core
   (:require [korma.core :as korma])
-  (:use [datomic.api :only [db tempid]]
-        clout.core
+  (:use clout.core
         [reverie.entity :only [object]]
         [slingshot.slingshot :only [try+ throw+]]))
 
@@ -12,89 +11,6 @@
 (defonce routes (atom {}))
 (defonce settings (atom {}))
 (defonce templates (atom {}))
-
-(defprotocol reverie-object
-  (object-correct? [schema]
-    "Checks that the schema of an object is correct; checks for :schema, :initial and :input")
-  (object-upgrade? [schema connection]
-    "Does the object need an upgrade?")
-  (object-upgrade! [schema connection]
-    "Upgrades an object when a new schema has been added. Returns result of the upgrade")
-  (object-synchronize! [schema connection]
-    "Synchronizes all objects after an upgrade has been done")
-  (object-initiate! [schema connection]
-    "Initiate a newly created object. Returns the result + the id")
-  (object-move! [schema connection id data]
-    "Move an object between pages and areas")
-  (object-copy! [schema connection id]
-    "Copy an object")
-  (object-get [schema connection id]
-    "Hashmap of all the attributes with associated values")
-  (object-attr-transform [schema entity]
-    "Returns a hashmap of the entity's attributes mapped to the attributes of the schema ")
-  (object-set! [schema connection id data]
-    "Set the attributes of an object")
-  (object-publish! [schema connection id]
-    "Publish an object")
-  (object-unpublish! [schema connection id]
-    "Unpublish an object")
-  (object-render [schema connection id rdata]
-    "Render an object"))
-
-(defprotocol reverie-page
-  (page-render [rdata]
-    "Render the entire page. Return a data structure to pass onto ring.")
-  (page-objects [rdata]
-    "Returns a vector of all objects with the associated area/page")
-  (page-get-meta [rdata]
-    "Return all meta info about the page -> areas + template")
-  (page-new-object! [rdata]
-    "Add an object to the page")
-  (page-update-object! [rdata]
-    "Update an object")
-  (page-delete-object! [rdata]
-    "Delete an object from the page")
-  (page-restore-object! [rdata]
-    "Restore a deleted object")
-  (page-new! [rdata]
-    "Create a new page")
-  (page-update! [rdata]
-    "Update the page with the new data")
-  (page-delete! [rdata]
-    "Delete the page")
-  (page-restore! [rdata]
-    "Restore a deleted page")
-  (page-publish! [rdata]
-    "Publish a page")
-  (page-unpublish! [rdata]
-    "Unpublish a page")
-  (page-get [rdata]
-    "Get page")
-  (pages-search [rdata]
-    "Search pages for a match")
-  (page-rights? [rdata user right]
-    "Does the user have that right for the page?"))
-
-(defprotocol reverie-app
-  (app-render [rdata]
-    "Render the app. Return a data structure to pass onto ring."))
-
-(defprotocol reverie-module
-  (module-correct? [pdata])
-  (module-upgrade? [pdata connection])
-  (module-upgrade! [pdata connection])
-  (module-get [pdata connection data])
-  (module-set! [pdata connection data]))
-
-(defrecord ObjectSchemaDatomic [object attributes])
-(defrecord ReverieDataDatomic [])
-(defrecord ModuleDatomic [name options])
-
-(defn reverie-data [data]
-  (merge (ReverieDataDatomic.) data))
-
-(defn get-module [name]
-  (ModuleDatomic. name (get @modules name)))
 
 (defn get-object-entity [name]
   (:entity (get @objects (keyword name))))
