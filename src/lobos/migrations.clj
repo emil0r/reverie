@@ -105,3 +105,10 @@
                         (integer :role_id [:refer :role :id] :not-null)
                         (integer :group_id [:refer :group :id] :not-null))))
   (down [] (drop (table :role_group))))
+
+(defmigration init-dev-text
+  (up [] (create (table :test_text
+                        (integer :id :primary-key :auto-inc :not-null)
+                        (text :text :not-null (default ""))
+                        (integer :object_id [:refer :object :id] :not-null))))
+  (down [] (drop (table :text))))

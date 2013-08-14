@@ -67,6 +67,7 @@
  (do
    (reset-objects!)
    (rev/defobject text {:areas [:a :b]
+                        :table :test_text
                         :attributes {:text {:initial ""
                                             :input :text
                                             :name "Text"}}}
@@ -77,16 +78,20 @@
 (fact
  "defobject and atttributes"
  (reset-objects!)
- (rev/defobject text {:areas [:a :b] :attributes {:text {:initial "" :input :text :name "Text" :description ""}}} [:get] text)
+ (rev/defobject text {:areas [:a :b]
+                      :table :test_text
+                      :attributes {:text {:initial "" :input :text :name "Text" :description ""}}} [:get] text)
  (let [f (-> @rev/objects :text :get)]
    (f {:uri "/"} {:text "my text"})) => "my text")
 
 (fact
  "defobject and korma"
  (reset-objects!)
- (rev/defobject text {:areas [:a :b] :attributes {:text {:initial "" :input :text :name "Text" :description ""}}} [:get] text)
+ (rev/defobject text {:areas [:a :b]
+                      :table :test_text
+                      :attributes {:text {:initial "" :input :text :name "Text" :description ""}}} [:get] text)
  (korma/as-sql (korma/select* (-> @rev/objects :text :entity)))
- => "SELECT \"text\".* FROM \"text\"")
+ => "SELECT \"test_text\".* FROM \"test_text\"")
 
 (fact
  "routes"

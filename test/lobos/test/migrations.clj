@@ -1,7 +1,6 @@
 (ns lobos.test.migrations
-  (require [lobos.core :as lobos]
-           [lobos.connectivity :as conn]))
-
+  (:require [lobos.core :as lobos]
+            [lobos.connectivity :as conn]))
 
 (def db {:classname "org.postgresql.Driver"
          :subprotocol "postgresql"
@@ -24,8 +23,7 @@
     ((lobos.connectivity/open-global db-spec) :default-connection)
     (@lobos.connectivity/global-connections :default-connection)))
 
-
 (open-global-when-necessary db)
 
-;;(lobos.core/rollback :all)
+;;(lobos.core/rollback)
 (lobos.core/migrate)

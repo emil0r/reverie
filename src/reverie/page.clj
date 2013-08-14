@@ -27,11 +27,6 @@
     (if serial
       (+ 1 serial)
       1)))
-(defn- get-serial-object []
-  (let [serial (-> object (k/select (k/aggregate (max :serial) :serial)) first :serial)]
-    (if serial
-      (+ 1 serial)
-      1)))
 
 (defn get
   "Get a page. serial + version overrides page-id"
@@ -82,23 +77,23 @@
 (defn meta [{:keys [page-id] :as request}]
   (k/select page_attributes (k/where {:page_id page-id})))
 
-(defn add-object! [{:keys [page-id] :as request} obj]
-  (k/insert object (k/values {:page_id page-id :updated (k/sqlfn now)
-                              :name (:name obj) :area (-> obj :area util/kw->str)
-                              :version 0 :serial (get-serial-object)})))
-
 (defn new! [{:keys [page-type tx-data] :as request}]
   (let [uri (:uri tx-data)
+        type (or page-type :normal)
+        tx-data (assoc tx-data :serial (or (:serial tx-data)
+                                           (get-serial-page))
+                       :type (name type))
         tx (k/insert page (k/values (template->str tx-data)))]
-    (add-route! uri {:page-id (:id tx) :type (or page-type :normal)
+    (add-route! uri {:page-id (:id tx) :type type
                      :template (:template tx-data) :published? false})
     (assoc request :page-id (:id tx) :tx tx)))
 
-(defn update! [{:keys [page-id tx-data] :as request}]
-  (let [old-uri (:uri (get request))
+(defn update! [{:keys [tx-data] :as request}]
+  (let [p (get request)
+        old-uri (:uri p)
         new-uri (:uri tx-data)
         result (k/update page (k/set-fields tx-data)
-                         (k/where {:id page-id}))]
+                         (k/where {:id (:id p)}))]
     (if (and
          (not (nil? new-uri))
          (not= new-uri old-uri))

@@ -1,7 +1,8 @@
 (ns reverie.core
   (:require [korma.core :as korma])
   (:use [datomic.api :only [db tempid]]
-        [clout.core]
+        clout.core
+        [reverie.entity :only [object]]
         [slingshot.slingshot :only [try+ throw+]]))
 
 (defonce apps (atom {}))
@@ -94,6 +95,9 @@
 
 (defn get-module [name]
   (ModuleDatomic. name (get @modules name)))
+
+(defn get-object-entity [name]
+  (:entity (get @objects (keyword name))))
 
 (defn add-route! [uri route]
   (swap! routes assoc uri route))
@@ -198,11 +202,8 @@
          attributes (get-attributes options)
          table-symbol (or (:table options) object)
          body `(object-funcs ~attributes ~methods ~@args)]
-     `(korma/defentity (name ~object)
-        (korma/table ~table-symbol)
-        (korma/belongs-to object))
      `(swap! objects assoc ~object (merge {:options ~options
-                                           :entity ~object} ~body))))
+                                           :entity ~table-symbol} ~body))))
 
 (defmacro request-method
   "Pick apart the request methods specified in other macros"
