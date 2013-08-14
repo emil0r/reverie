@@ -19,9 +19,9 @@
   [:post ["*" {:keys [testus] :as data}] (= testus true)])
 
 
-(if (empty? (page/get* {:version 0 :uri "/gallery"}))
-  (page/add! {:tx-data {:uri "/gallery" :name "Gallery" :title "Gallery"
-                        :template :main :parent 0 :order 0 :type :app}}))
+(page/add! {:tx-data {:uri "/gallery" :name "Gallery" :title "Gallery"
+                      :template :main :parent 0 :order 0 :type :app
+                      :app :gallery}})
 
 (fact
  "page-render with app"

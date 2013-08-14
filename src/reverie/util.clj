@@ -13,3 +13,13 @@
   (assoc-in request [:uri] (clojure.string/replace
                             (:uri request)
                             (re-pattern (s/replace remove-part-of-uri #"/$" "")) "")))
+
+(defn revmap->kw [m]
+  (let [w (merge m (if (:type m) {:type (-> m :type keyword)} {}))
+        w (if (:app m) (merge w {:app (-> m :app keyword)}) w)]
+    w))
+
+(defn revmap->str [m]
+  (let [w (merge m (if (:type m) {:type (-> m :type kw->str)} {}))
+        w (if (:app m) (merge w {:app (-> m :app kw->str)}) w)]
+    w))

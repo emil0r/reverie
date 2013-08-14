@@ -30,8 +30,8 @@
   "Get a page. serial + version overrides page-id"
   [{:keys [page-id serial version] :as request}]
   (if (and serial version)
-    (first (k/select page (k/where {:serial serial :version version})))
-    (first (k/select page (k/where {:id page-id})))))
+    (-> page (k/select (k/where {:serial serial :version version})) first util/revmap->kw)
+    (-> page (k/select (k/where {:id page-id})) first util/revmap->kw)))
 
 (defn- get-last-page-order [request]
   (let [p (get request)
@@ -79,12 +79,12 @@
 (defn add! [{:keys [tx-data] :as request}]
   (let [uri (:uri tx-data)
         type (or (:type tx-data) :normal)
-        tx-data (assoc tx-data
-                  :serial (or (:serial tx-data)
-                              (get-serial-page))
-                  :version (or (:version tx-data) 0)
-                  :updated (or (:updated tx-data) (k/sqlfn now))
-                  :type (name type))
+        tx-data (util/revmap->str (assoc tx-data
+                                     :serial (or (:serial tx-data)
+                                                 (get-serial-page))
+                                     :version (or (:version tx-data) 0)
+                                     :updated (or (:updated tx-data) (k/sqlfn now))
+                                     :type type))
         tx (k/insert page (k/values (template->str tx-data)))]
     (add-route! uri {:page-id (:id tx) :type type
                      :template (:template tx-data) :published? false})
@@ -94,7 +94,7 @@
   (let [p (get request)
         old-uri (:uri p)
         new-uri (:uri tx-data)
-        result (k/update page (k/set-fields tx-data)
+        result (k/update page (k/set-fields (util/revmap->str tx-data))
                          (k/where {:id (:id p)}))]
     (if (and
          (not (nil? new-uri))

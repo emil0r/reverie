@@ -10,6 +10,7 @@
                         (timestamp :created (default (now)) :not-null)
                         (timestamp :updated :not-null)
                         (varchar :type 100 :not-null)
+                        (varchar :app 100 :not-null (default ""))
                         (varchar :name 255 :not-null)
                         (varchar :title 255 :not-null)
                         (varchar :template 255 :not-null)
@@ -63,13 +64,6 @@
   (down [] (drop (table :object))))
 
 
-(defmigration init-app
-  (up [] (create (table :app
-                        (integer :id :primary-key :auto-inc :not-null)
-                        (varchar :name 255 :not-null)
-                        (integer :page_id [:refer :page :id] :not-null))))
-  (down [] (drop (table :app))))
-
 (defmigration init-user
   (up [] (create (table :user
                         (integer :id :primary-key :auto-inc :not-null)
@@ -111,4 +105,4 @@
                         (integer :id :primary-key :auto-inc :not-null)
                         (text :text :not-null (default ""))
                         (integer :object_id [:refer :object :id] :not-null))))
-  (down [] (drop (table :text))))
+  (down [] (drop (table :test_text))))
