@@ -15,18 +15,17 @@
       1)))
 
 
+(defn render [{:keys [object-id] :as request}]
+  )
+
 (defn get [{:keys [object-id serial version] :as request}]
   (let [w (if object-id
             {:id object-id}
             {:serial serial :version version})
         obj (-> object (k/select (k/where w)) first)]
-    ;; (first (k/select
-    ;;         (get-object-entity (:name obj))
-    ;;         (k/where {:object_id (:id obj)})))
-    ))
-
-(defn render [{:keys [object-id] :as request}]
-  )
+    (first (k/select
+            (get-object-entity (:name obj))
+            (k/where {:object_id (:id obj)})))))
 
 (defn add! [{:keys [page-id] :as request} meta obj]
   (let [page-obj (k/insert object
@@ -35,8 +34,6 @@
                                       :area (-> meta :area util/kw->str)
                                       :version 0 :serial (get-serial-object)}))
 
-        ;; real-obj (k/insert (get-object-entity (:name meta))
-        ;;                    (k/values (assoc obj :object_id (:id page-obj))))
-        ]
-    (println (get-object-entity (:name meta)))
+        real-obj (k/insert (get-object-entity (:name meta))
+                           (k/values (assoc obj :object_id (:id page-obj))))]
     page-obj))
