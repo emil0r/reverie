@@ -25,5 +25,5 @@
 
 (open-global-when-necessary db)
 
-;;(lobos.core/rollback :all)
+(lobos.core/rollback :all)
 (lobos.core/migrate)

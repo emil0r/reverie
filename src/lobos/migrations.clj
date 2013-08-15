@@ -70,8 +70,12 @@
                         (timestamp :created (default (now)) :not-null)
                         (varchar :first_name 255 :not-null)
                         (varchar :last_name 255 :not-null)
+                        (varchar :name 255 :not-null :unique)
                         (varchar :email 255 :not-null)
-                        (varchar :password 100 :not-null))))
+                        (varchar :password 100 :not-null)
+                        (boolean :active :not-null (default true))
+                        (boolean :is_staff :not-null (default false))
+                        (boolean :is_admin :not-null (default false)))))
   (down [] (drop (table :user))))
 
 (defmigration init-group
