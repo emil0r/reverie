@@ -20,3 +20,7 @@
 (fact
  "object/get"
  (:text (object/get {:serial 1 :version 0})) => "testus")
+
+(fact
+ "object/render"
+ (object/render (merge (request :get "/") {:serial 1 :version 0})) => "testus")

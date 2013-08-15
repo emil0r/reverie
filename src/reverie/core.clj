@@ -85,7 +85,7 @@
           m
           (let [[fn-name fn-body] func-vector]
             (if-let [method (paired (first func-vector))]
-              (recur r (assoc m method `(fn [~'data {:keys [~@attributes]}] ~@fn-body)))
+              (recur r (assoc m method `(fn [~'request {:keys [~@attributes]}] ~@fn-body)))
               (recur r m))))))))
 
 (defmacro defobject [object options methods & args]

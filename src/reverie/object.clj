@@ -4,7 +4,7 @@
             [clout.core :as clout]
             [korma.core :as k]
             [reverie.util :as util])
-  (:use [reverie.core :exclude [objects]]
+  (:use reverie.core
         reverie.entity))
 
 
@@ -14,18 +14,14 @@
       (+ 1 serial)
       1)))
 
-
-(defn render [{:keys [object-id] :as request}]
-  )
-
 (defn get [{:keys [object-id serial version] :as request}]
   (let [w (if object-id
             {:id object-id}
             {:serial serial :version version})
         obj (-> object (k/select (k/where w)) first)]
-    (first (k/select
-            (get-object-entity (:name obj))
-            (k/where {:object_id (:id obj)})))))
+    (-> obj :name (get-object-entity)
+        (k/select (k/where {:object_id (:id obj)}))
+        first (assoc :reverie-object-name (keyword (:name obj))))))
 
 (defn add! [{:keys [page-id] :as request} meta obj]
   (let [page-obj (k/insert object
@@ -37,3 +33,11 @@
         real-obj (k/insert (get-object-entity (:name meta))
                            (k/values (assoc obj :object_id (:id page-obj))))]
     page-obj))
+
+(defn render [request]
+  (let [obj (get request)]
+    (if-let [f (or
+                (clojure.core/get (clojure.core/get @objects (:reverie-object-name obj))
+                                  (-> request :request-method))
+                (clojure.core/get (clojure.core/get @objects (:reverie-object-name)) :any))]
+      (f request obj))))
