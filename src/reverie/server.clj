@@ -1,8 +1,10 @@
 (ns reverie.server
   (:use [bultitude.core :only [namespaces-on-classpath]]
-        [clojure.java.io :only [file]])
-  (:require [reverie.core :as rev]
-            [reverie.middleware :as middleware]))
+        [clojure.java.io :only [file]]
+        [reverie.core :only [get-route]])
+  (:require [reverie.page :as page]
+            [reverie.middleware :as middleware]
+            [reverie.responses :as r]))
 
 (defn load-views [& dirs]
   (doseq [f (namespaces-on-classpath :classpath (map file dirs))]
@@ -13,16 +15,14 @@
           f (namespaces-on-classpath :prefix (name sym))]
     (require f)))
 
-;; (defn generate-handler [get-connection handlers {:keys [dev-mode?] :as options}]
-;;   (reduce (fn [current [handler & args]]
-;;             (apply handler current args))
-;;           (fn [request]
-;;             (if-let [[_ route] (rev/get-route (:uri request))]
-;;               (rev/page-render (rev/reverie-data {:connection (get-connection)
-;;                                                   :request request
-;;                                                   :page-type (:page-type route)}))
-;;               {:status 404 :body "404, page not found."}))
-;;           (conj handlers [middleware/reload options])))
+(defn generate-handler [handlers {:keys [dev-mode?] :as options}]
+  (reduce (fn [current [handler & args]]
+            (apply handler current args))
+          (fn [request]
+            (if-let [[_ route] (get-route (:uri request))]
+              (page/render (assoc request :page-type (:page-type route)))
+              r/response-404))
+          handlers))
 
 ;; (defmulti start :database)
 ;; (defmethod start :default [{:keys [port get-connection handlers] :as options}]

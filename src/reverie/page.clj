@@ -45,13 +45,15 @@
 (defn objects
   "Get objects associated with a page. page-id required"
   [{:keys [page-id area version] :as request}]
-  (let [w {:page_id page-id :active true}
+  (let [version (or version (util/which-version? request))
+        area (util/kw->str area)
+        w {:page_id page-id :version version}
         w (cond
            (and area version) (merge w {:area area :version version})
            area (merge w {:area area})
            version (merge w {:version version})
            :else w)]
-   (k/select object (k/where w))))
+    (k/select object (k/where w))))
 
 
 (defn render

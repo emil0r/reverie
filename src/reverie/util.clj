@@ -23,3 +23,9 @@
   (let [w (merge m (if (:type m) {:type (-> m :type kw->str)} {}))
         w (if (:app m) (merge w {:app (-> m :app kw->str)}) w)]
     w))
+
+
+(defn which-version? [request]
+  (if (= (:mode request) :edit)
+    0
+    1))

@@ -3,6 +3,9 @@
 (def response-403
   {:status 403 :body "Forbidden"})
 
+(def response-404
+  {:status 404 :body "Page Not Found"})
+
 (def response-500
   {:status 500 :body "Internal Server Error"})
 

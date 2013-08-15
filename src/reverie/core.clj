@@ -40,20 +40,16 @@
   (= (class pattern) java.util.regex.Pattern))
 
 
-(defn area-render [object rdata]
-  ;; (object-render (get-schema object)
-  ;;                (:connection rdata)
-  ;;                (:db/id object)
-  ;;                (assoc rdata :object-id (:db/id object)))
-  )
+(defn area-render [obj request]
+  (reverie.object/render (assoc request :object-id (:id obj))))
 
 (defmacro area [name]
   (let [name (keyword name)]
-    `(let [{:keys [~'mode]} ~'rdata]
+    `(let [{:keys [~'mode]} ~'request]
        (if (= ~'mode :edit)
          [:div.reverie-area {:id ~name :name ~name :class ~name}
-          (map #(area-render % ~'rdata) (page-objects (assoc ~'rdata :area ~name)))]
-         (map #(area-render % ~'rdata) (page-objects (assoc ~'rdata :area ~name)))))))
+          (map #(area-render % ~'request) (reverie.page/objects (assoc ~'request :area ~name)))]
+         (map #(area-render % ~'request) (reverie.page/objects (assoc ~'request :area ~name)))))))
 
 (defn raise-response [response]
   (throw+ {:type :ring-response :response response}))
@@ -66,11 +62,11 @@
 (defmacro deftemplate [template options & body]
   (let [template (keyword template)]
     `(swap! templates assoc ~template {:options ~options
-                                       :fn (fn [~'rdata] (try+ {:status 200
-                                                               :headers (or (:headers ~options) {})
-                                                               :body ~@body}
-                                                              (catch [:type :ring-response] {:keys [~'response ~'type]}
-                                                                ~'response)))})))
+                                       :fn (fn [~'request] (try+ {:status 200
+                                                                 :headers (or (:headers ~options) {})
+                                                                 :body ~@body}
+                                                                (catch [:type :ring-response] {:keys [~'response ~'type]}
+                                                                  ~'response)))})))
 
 
 (defmacro object-funcs [attributes methods & body]
