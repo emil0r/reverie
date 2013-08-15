@@ -1,10 +1,13 @@
 (ns reverie.middleware
-  (:require [ring.middleware.reload :as r-reload]))
+  (:require [korma.core :as k]
+            [reverie.auth.user :as user]
+            [reverie.responses :as r])
+  (:use reverie.entity))
 
-(defn dev-mode? [options]
-  (= (:mode options) :dev))
-
-(defn reload [handler options]
-  (if (dev-mode? options)
-    (r-reload/wrap-reload handler options))
-  handler)
+(defn wrap-admin [handler]
+  (fn [{:keys [uri] :as request}]
+    (if (and
+         (or (user/staff?) (user/admin?))
+         (re-find #"^/admin" uri))
+      (handler request)
+      (r/response-302 "/admin/login"))))

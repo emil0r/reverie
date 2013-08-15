@@ -10,18 +10,6 @@
 (defn exists? [name]
   (not (nil? (first (k/select user (k/where {:name name}))))))
 
-(defn admin?
-  ([]
-     (admin? (get)))
-  ([user]
-     (:is_admin user)))
-
-(defn staff?
-  ([]
-     (staff? (get)))
-  ([user]
-     (:is_staff user)))
-
 (defn gen-session []
   (let [salt (crypt/gen-salt)]
     (session/put! salt {:session-id salt})
@@ -108,3 +96,15 @@
      (if-let [user-id (:id (get name))]
        (k/update (k/set-fields data)
                  (k/where {:id user-id})))))
+
+(defn admin?
+  ([]
+     (admin? (get)))
+  ([user]
+     (:is_admin user)))
+
+(defn staff?
+  ([]
+     (staff? (get)))
+  ([user]
+     (:is_staff user)))
