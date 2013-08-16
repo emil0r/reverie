@@ -12,8 +12,7 @@
                  [bultitude "0.1.5"]
                  [lobos "1.0.0-beta1"]
                  [lib-noir "0.6.6"]]
-  :profiles {:dev {:dependencies [[com.datomic/datomic-free "0.8.3848"]
-                                  [midje "1.6-alpha1"]
+  :profiles {:dev {:dependencies [[midje "1.6-alpha1"]
                                   [com.stuartsierra/lazytest "1.2.3"]
                                   [ring-mock "0.1.3"]
                                   [org.postgresql/postgresql "9.2-1002-jdbc4"]]}}
