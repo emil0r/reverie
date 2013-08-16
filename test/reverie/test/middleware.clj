@@ -24,4 +24,4 @@
  "access admin, failure"
  (with-noir
   (:status ((-> test-handler
-                middleware/wrap-admin) {}))) => 302)
+                middleware/wrap-admin) (request :get "/admin")))) => 302)
