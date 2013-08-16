@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [ring "1.2.0"]
                  [korma "0.3.0-RC5"]
-                 [fs "1.3.2"]
+                 [me.raynes/fs "1.4.5"]
                  [clout "1.1.0"]
                  [slingshot "0.10.3"]
                  [bultitude "0.1.5"]

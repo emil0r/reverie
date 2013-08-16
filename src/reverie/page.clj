@@ -60,7 +60,8 @@
   "Renders a page"
   [{:keys [uri] :as request}]
   (if-let [[route-uri page-data] (get-route uri)]
-    (let [page (get (assoc request :page-id (:page-id page-data)))]
+    (let [page (get (assoc request :page-id (:page-id page-data)))
+          request (assoc request :page page)]
       (case (:type page-data)
         :normal (let [template (clojure.core/get @templates (-> page :template keyword))
                       f (:fn template)]

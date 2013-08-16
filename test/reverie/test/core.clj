@@ -1,5 +1,5 @@
 (ns reverie.test.core
-  (:require [fs.core :as fs]
+  (:require [me.raynes.fs :as fs]
             [hiccup.core :as hiccup]
             [korma.core :as korma]
             [reverie.core :as rev])
