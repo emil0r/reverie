@@ -3,7 +3,7 @@
             [clout.core :as clout]
             [korma.core :as k]
             [reverie.util :as util])
-  (:use [reverie.core :exclude [objects]]
+  (:use [reverie.atoms :exclude [objects]]
         reverie.entity))
 
 

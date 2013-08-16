@@ -4,7 +4,7 @@
             [clout.core :as clout]
             [korma.core :as k]
             [reverie.util :as util])
-  (:use reverie.core
+  (:use reverie.atoms
         reverie.entity))
 
 

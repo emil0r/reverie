@@ -3,7 +3,7 @@
         [clojure.java.io :only [file]]
         [noir.cookies :only [wrap-noir-cookies]]
         [noir.session :only [wrap-noir-session mem]]
-        [reverie.core :only [get-route]]
+        [reverie.atoms :only [get-route]]
         [reverie.middleware :only [wrap-admin]]
         ;;[ring.middlewar.file :only [wrap-file]] ;; research for later
         [ring.middleware.file-info :only [wrap-file-info]]

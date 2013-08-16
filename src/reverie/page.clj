@@ -5,7 +5,7 @@
             [korma.core :as k]
             [reverie.app :as app]
             [reverie.util :as util])
-  (:use [reverie.core :exclude [objects]]
+  (:use [reverie.atoms :exclude [objects]]
         reverie.entity))
 
 (defn- template->str [tx]
