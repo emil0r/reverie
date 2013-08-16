@@ -2,7 +2,7 @@
   (:require [reverie.core :as rev]
             [reverie.server :as server])
   (:use midje.sweet
-        [ring.mock.request]))
+        ring.mock.request))
 
 
 (defn wrap-count [handler]
@@ -13,7 +13,7 @@
 
 (fact
  "generate-handler"
- (get-in ((server/generate-handler [[wrap-count] [wrap-count]] {})
+ (get-in ((server/generate-handler :handlers [[wrap-count] [wrap-count]])
           {:level 1 :uri "/generate-handler"}) [:headers "level"]) => 3)
 
 ;; (fact

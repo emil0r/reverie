@@ -1,9 +1,19 @@
 (ns reverie.server
   (:use [bultitude.core :only [namespaces-on-classpath]]
         [clojure.java.io :only [file]]
-        [reverie.core :only [get-route]])
+        [noir.cookies :only [wrap-noir-cookies]]
+        [noir.session :only [wrap-noir-session mem]]
+        [reverie.core :only [get-route]]
+        [reverie.middleware :only [wrap-admin]]
+        ;;[ring.middlewar.file :only [wrap-file]] ;; research for later
+        [ring.middleware.file-info :only [wrap-file-info]]
+        [ring.middleware.keyword-params :only [wrap-keyword-params]]
+        [ring.middleware.multipart-params :only [wrap-multipart-params]]
+        [ring.middleware.nested-params :only [wrap-nested-params]]
+        [ring.middleware.params :only [wrap-params]]
+        [ring.middleware.resource :only [wrap-resource]]
+        [ring.middleware.session.memory :only [memory-store]])
   (:require [reverie.page :as page]
-            [reverie.middleware :as middleware]
             [reverie.responses :as r]))
 
 (defn load-views [& dirs]
@@ -15,14 +25,23 @@
           f (namespaces-on-classpath :prefix (name sym))]
     (require f)))
 
-(defn generate-handler [handlers {:keys [dev-mode?] :as options}]
-  (reduce (fn [current [handler & args]]
-            (apply handler current args))
-          (fn [request]
-            (if-let [[_ route] (get-route (:uri request))]
-              (page/render (assoc request :page-type (:page-type route)))
-              r/response-404))
-          handlers))
+(defn generate-handler [& {:keys [handlers store multipart-opts mime-types]}]
+  (let [handlers (apply conj (or handlers [])
+                        [[wrap-admin]
+                         [wrap-keyword-params]
+                         [wrap-nested-params]
+                         [wrap-params]
+                         [wrap-multipart-params multipart-opts]
+                         [wrap-file-info mime-types]
+                         [wrap-noir-cookies]
+                         [wrap-noir-session {:store (or store (memory-store mem))}]])]
+    (reduce (fn [current [handler & args]]
+              (apply handler current args))
+            (fn [request]
+              (if-let [[_ route] (get-route (:uri request))]
+                (page/render (assoc request :page-type (:page-type route)))
+                r/response-404))
+            handlers)))
 
 ;; (defmulti start :database)
 ;; (defmethod start :default [{:keys [port get-connection handlers] :as options}]
