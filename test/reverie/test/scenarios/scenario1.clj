@@ -3,8 +3,7 @@
             [reverie.page :as page]
             [reverie.server :as server])
   (:use midje.sweet
-        ring.mock.request
-        ))
+        ring.mock.request))
 
 
 (fact
