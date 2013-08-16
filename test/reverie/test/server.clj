@@ -16,9 +16,9 @@
  (get-in ((server/generate-handler {:handlers [[wrap-count] [wrap-count]]})
           {:level 1 :uri "/generate-handler"}) [:headers "level"]) => 3)
 
-;; (fact
-;;  "start server, stop server, restart server"
-;;  (let [s (server/start {:port 8888 :get-connection get-connection :handlers []})]
-;;    (server/restart s)
-;;    (server/stop s)
-;;    s) => truthy)
+(fact
+ "start server, stop server, restart server"
+ (let [s (server/start {:port 8888 :handlers []})]
+   (server/restart s)
+   (server/stop s)
+   s) => truthy)

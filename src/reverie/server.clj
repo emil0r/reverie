@@ -62,13 +62,13 @@
                 (println (str "Server started on port " port "."))
                 (run-fn (generate-handler options) jetty-options)))))
 
-;; (defn stop [server]
-;;   (println "Stopping server...")
-;;   (.stop server)
-;;   (println "Done."))
+(defn stop [server]
+  (println "Stopping server...")
+  (.stop server)
+  (println "Done."))
 
-;; (defn restart [server]
-;;   (println "Restarting server...")
-;;   (.stop server)
-;;   (.start server)
-;;   (println "Done."))
+(defn restart [server]
+  (println "Restarting server...")
+  (.stop server)
+  (.start server)
+  (println "Done."))
