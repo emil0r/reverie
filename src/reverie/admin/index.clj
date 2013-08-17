@@ -6,3 +6,6 @@
 
 (rev/defpage "/admin" {}
   [:get ["*"] (t/main {:title "Admin"})])
+
+(rev/defpage "/admin/login" {}
+  [:get ["*"] (t/auth {:title "Admin login"})])
