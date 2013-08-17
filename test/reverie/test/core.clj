@@ -149,3 +149,13 @@
      true
      {:status 404 :body "404, page not found"}
      ])
+
+
+(rev/defpage "/test/defpage" {}
+  [:get ["/:foo/:bar"] (str foo "/" bar)]
+  [:get ["*"] "asdf"])
+
+
+(fact
+ "defpage"
+ (:body (reverie.page/render (request :get "/test/defpage/foo/bar"))) => "foo/bar")

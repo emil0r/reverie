@@ -12,6 +12,7 @@
                  [bultitude "0.1.5"]
                  [lobos "1.0.0-beta1"]
                  [lib-noir "0.6.6"]]
+  :ring {:handler reveriecms.dev/app}
   :profiles {:dev {:dependencies [[midje "1.6-alpha1"]
                                   [com.stuartsierra/lazytest "1.2.3"]
                                   [ring-mock "0.1.3"]

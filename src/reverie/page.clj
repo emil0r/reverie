@@ -4,7 +4,8 @@
             [clout.core :as clout]
             [korma.core :as k]
             [reverie.app :as app]
-            [reverie.util :as util])
+            [reverie.util :as util]
+            [reverie.responses :as r])
   (:use [reverie.atoms :exclude [objects]]
         reverie.entity))
 
@@ -73,7 +74,11 @@
                                        (filter #(let [[method route _ _] %]
                                                   (and
                                                    (= (:request-method request) method)
-                                                   (clout/route-matches route request)))))])
+                                                   (clout/route-matches route request))))
+                                       first)]
+                (if (nil? f)
+                  r/response-404
+                  (f request (clout/route-matches route request))))
         (app/render (assoc request :page-data page-data :page page))))))
 
 (defn meta [{:keys [page-id] :as request}]
