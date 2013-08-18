@@ -78,7 +78,9 @@
                                      first)]
               (if (nil? f)
                 r/response-404
-                (f request (clout/route-matches route request))))
+                (if (= :get (:request-method request))
+                  (f request (clout/route-matches route request))
+                  (f request (clout/route-matches route request) (:params request)))))
       (app/render (assoc request :page-data page-data :page (get (assoc request :page-id (:page-id page-data))))))))
 
 (defn meta [{:keys [page-id] :as request}]

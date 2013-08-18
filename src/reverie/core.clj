@@ -79,11 +79,11 @@
                        (route-compile route regex))
                method-options (if (nil? regex) _2 _3)
                keys (vec (map #(-> % name symbol) (:keys route)))
-               func `(fn [~'data {:keys ~keys}] (try+ {:status 200
-                                                       :headers (or (:headers ~method-options) {})
-                                                       :body ~@body}
-                                                      (catch [:type :ring-response] {:keys [~'response]}
-                                                        ~'response)))]
+               func `(fn [~'request {:keys ~keys}] (try+ {:status 200
+                                                         :headers (or (:headers ~method-options) {})
+                                                         :body ~@body}
+                                                        (catch [:type :ring-response] {:keys [~'response]}
+                                                          ~'response)))]
            [method route method-options func])
     (let [[route _2 _3 _4] options
           [regex method-options form-data]
@@ -97,11 +97,11 @@
                   (route-compile route)
                   (route-compile route regex))
           keys (vec (map #(-> % name symbol) (:keys route)))
-          func `(fn [~'data {:keys ~keys} ~form-data] (try+ {:status 200
-                                                             :headers (or (:headers ~method-options) {})
-                                                             :body ~@body}
-                                                            (catch [:type :ring-response] {:keys [~'response]}
-                                                              ~'response)))]
+          func `(fn [~'request {:keys ~keys} ~form-data] (try+ {:status 200
+                                                               :headers (or (:headers ~method-options) {})
+                                                               :body ~@body}
+                                                              (catch [:type :ring-response] {:keys [~'response]}
+                                                                ~'response)))]
       ;; (println [(nil? regex) (nil? _3) (nil? _4)])
       ;; (println _2 _3 _4)
       ;; (println route regex method-options form-data)

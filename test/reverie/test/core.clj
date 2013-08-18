@@ -4,16 +4,12 @@
             [korma.core :as korma]
             [reverie.core :as rev])
   (:use midje.sweet
-        [korma.db :only [defdb postgres]]
         reverie.atoms
+        reverie.test.init
         ring.mock.request))
 
-(def db {:classname "org.postgresql.Driver"
-         :subprotocol "postgresql"
-         :subname "//localhost:5432/dev-reverie"
-         :user "dev-reverie"
-         :password "reverie"})
-(defdb dev-db db)
+
+
 
 (defn reset-routes! []
   (reset! routes {}))
@@ -153,7 +149,9 @@
 
 (rev/defpage "/test/defpage" {}
   [:get ["/:foo/:bar"] (str foo "/" bar)]
-  [:get ["*"] "asdf"])
+  [:get ["*"] "asdf"]
+  ;;[:post ["*"] "posted asdf"]
+  )
 
 
 (fact

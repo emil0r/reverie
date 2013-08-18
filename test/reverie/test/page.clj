@@ -3,6 +3,7 @@
             [reverie.entity :as entity]
             [reverie.page :as page])
   (:use midje.sweet
+        reverie.test.init
         ring.mock.request))
 
 

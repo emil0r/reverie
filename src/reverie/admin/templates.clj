@@ -9,14 +9,16 @@
 (defn- get-title [m]
   (str (:title m) " &mdash; " (:title-back m)))
 
+(defn- get-body [body]
+  [:body body])
+
 (defn main [m & body]
   (let [{:keys [title title-back] :as m} (mould-keys m)]
     (html5
      [:head
       [:charset "utf-8"]
       [:title (get-title m)]]
-     [:body
-      body])))
+     (get-body body))))
 
 
 (defn auth [m & body]
@@ -25,5 +27,5 @@
      [:head
       [:meta {:charset "utf-8"}]
       [:title (get-title m)]]
-     [:body body])))
+     (get-body body))))
 

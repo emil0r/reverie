@@ -1,147 +1,52 @@
 (ns reverie.test.play
-  (:require [reverie.core :as rev]
-            )
-  (:use [slingshot.slingshot :only [try+ throw+]]))
+  (:require [clout.core :as clout]
+            [reverie.atoms :as atoms]
+            [reverie.core :as rev]
+            [reverie.page :as page])
+  (:use reverie.test.init
+        ring.mock.request
+        [ring.middleware.keyword-params :only [wrap-keyword-params]]
+        [ring.middleware.params :only [wrap-params]]
+        [slingshot.slingshot :only [try+ throw+]]))
 
 
-(defn testus [data]
-  (try+
-   (throw+ {:type :test :data :foo})
-   data
-   (catch [:type :test] {:keys [data]}
-     data)))
+;;(reset! atoms/pages {})
 
-(testus :bar)
+(rev/defpage "/testus" {}
+  [:get ["*"] "asdf"]
+  [:post ["*" {:keys [my] :as datus}] my])
 
+;;(println @atoms/routes)
+;;(println "\n--")
+(clojure.pprint/pprint @atoms/pages)
 
-(defn wrap-t [handler]
-  (fn [request]
-    (handler (assoc request :level (+ (:level request) 1)))))
+;; (println (-> (get @atoms/pages "/testus") :fns second second))
+;; (clout/route-matches (-> (get @atoms/pages "/testus") :fns second second)
+;;                      (request :post "/testus" {"my" "data"}))
+(println ((-> page/render
+              wrap-keyword-params
+              wrap-params)  (request :post "/testus" {:my "data"})) )
 
-((->
-  (fn [request]
-    request)
-  (wrap-t)
-  (wrap-t)) {:level 1})
-
-
-
-
-;; (reset! rev/objects {})
-
-;; (def db-uri-mem "datomic:mem://reverie.play")
-;; (def uris [1 2 3 4 5 6])
-
-;; (defn setup [uri]
-;;   (d/delete-database uri)
-;;   (let [database (d/create-database uri)
-;;         connection (d/connect uri)]
-;;     {:database database
-;;      :connection connection}))
-
-;; (def connection (:connection (setup db-uri-mem)))
-
-;; (doseq [uri uris]
-;;   (println (:connection (setup (str db-uri-mem uri)))))
-;; (println connection)
-
-
-;; @(d/transact connection [{:db/id (d/tempid :db.part/db)
-;;                           :db/ident :db.part/foo
-;;                           :db.install/_partition :db.part/db}
-;;                          {:db/id (d/tempid :db.part/db)
-;;                           :db/ident :db.part/bar
-;;                           :db.install/_partition :db.part/db}])
-
-;; @(d/transact connection [{:db/id (d/tempid :db.part/db)
-;;                           :db/ident :asdf
-;;                           :db/valueType :db.type/string
-;;                           :db/cardinality :db.cardinality/one
-;;                           :db/doc "asdf"
-;;                           :db/unique :db.unique/value
-;;                           :db.install/_attribute :db.part/db}])
-
-;; @(d/transact connection [{:db/id #db/id [:db.part/foo -1]
-;;                           :asdf "nisse/foo"}
-;;                          ])
-
-;; @(d/transact connection [{:db/id (d/tempid :bar)
-;;                           :asdf "nisse/foo"}
-;;                          ])
-
-
-;; (defn setup []
-;;   (d/delete-database db-uri-mem)
-;;   (let [database (d/create-database db-uri-mem)
-;;         connection (d/connect db-uri-mem)
-;;         schema (read-string (slurp "schema/datomic.schema"))]
-;;     @(d/transact connection schema)
-;;     {:database database
-;;      :connection connection}))
-
-;; (def connection (:connection (setup)))
-
-;; (rev/defobject object/text [:areas [:a :b :c]
-;;                             :attributes [{:text {:db/ident :object.text/text
-;;                                                  :db/valueType :db.type/string
-;;                                                  :db/cardinality :db.cardinality/one
-;;                                                  :db/doc "Text of the text object"}
-;;                                           :initial "my initial text"
-;;                                           :input :text
-;;                                           :name "Text"
-;;                                           :description ""}
-;;                                          {:image {:db/ident :object.text/image
-;;                                                   :db/valueType :db.type/string
-;;                                                   :db/cardinality :db.cardinality/one
-;;                                                   :db/doc "Image of the text object"}
-;;                                           :initial "my initial image"
-;;                                           :input :text
-;;                                           :name "Image"
-;;                                           :description ""}]]
-;;   [:get :post]
-;;   [:text text :image image])
-;; (rev/run-schemas! connection)
-
-;; @(d/transact connection [{:db/id #db/id[:db.part/db],
-;;                           :db.install/_attribute :db.part/db,
-;;                           :db/ident :object.text/text,
-;;                           :db/valueType :db.type/string,
-;;                           :db/cardinality :db.cardinality/one,
-;;                           :db/doc "Text of the text object"}
-;;                          {:db/id #db/id[:db.part/db],
-;;                           :db.install/_attribute :db.part/db,
-;;                           :db/ident :object.text/image,
-;;                           :db/valueType :db.type/string,
-;;                           :db/cardinality :db.cardinality/one,
-;;                           :db/doc "Image of the text object"}])
-
-
-;; (let [request {:uri "/object-render"}
-;;       schema (-> @rev/objects :object/text :schema)
-;;       tx-obj (rev/object-initiate! schema connection)
-;;       rdata (rev/reverie-data {:page-id 42 :connection connection :request {:request-method :get}})
-;;       object-id (:db/id tx-obj)
-;;       tx-rdata (rev/page-new-object! (assoc rdata :object-id (:db/id tx-obj)))
-;;       page (rev/page-get tx-rdata)]
-;;   (println
-;;    "object-id ->" object-id
-;;    "\nobject keys ->" (keys (rev/object-get schema connection object-id))
-;;    "\n\n--\n"
-;;    (rev/object-render schema connection (:db/id tx-obj) tx-rdata)))
+;;(println (request :post "/testus" {"my" "data"}))
 
 
 
-;; (let [tx @(d/transact connection [{
-;;                                    :object.text/image "my image"
-;;                                    :object.text/text "my text"
-;;                                    :db/id #db/id[:db.part/user -1]
-;;                                    :reverie/object :object/text
-;;                                    :reverie/active? true}])
-;;       id (-> tx :tempids vals last)
-;;       obj (d/entity (db connection) id)]
-;;   (println id (:db/id obj))
-;;   (clojure.pprint/pprint (into {} obj)))
+;; (defn testus [data]
+;;   (try+
+;;    (throw+ {:type :test :data :foo})
+;;    data
+;;    (catch [:type :test] {:keys [data]}
+;;      data)))
 
-;;(println (map #(:db/ident (d/entity (db connection) (first %))) (q
-;'[:find ?c :where [?c :db/ident]] (db connection))))
+;; (testus :bar)
 
+
+;; (defn wrap-t [handler]
+;;   (fn [request]
+;;     (handler (assoc request :level (+ (:level request) 1)))))
+
+;; ((->
+;;   (fn [request]
+;;     request)
+;;   (wrap-t)
+;;   (wrap-t)) {:level 1})

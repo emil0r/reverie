@@ -2,6 +2,7 @@
   (:require [reverie.core :as rev]
             [reverie.page :as page])
   (:use midje.sweet
+        reverie.test.init
         ring.mock.request))
 
 
@@ -27,7 +28,3 @@
  "page-render with app"
  (let [req (request :get "/gallery/garden/1")]
    (:body (page/render req))) => "garden/1")
-
-;; (rev/defpage "/testus" {}
-;;   [:get ["/:foo/:bar"] (str foo "/" bar)]
-;;   [:get ["*"] "my test page"])
