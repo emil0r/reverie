@@ -23,7 +23,7 @@
   (let [{:keys [title title-back] :as m} (mould-keys m)]
     (html5
      [:head
-      [:charset "utf-8"]
+      [:meta {:charset "utf-8"}]
       [:title (get-title m)]]
      [:body body])))
 

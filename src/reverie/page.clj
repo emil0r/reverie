@@ -61,25 +61,25 @@
   "Renders a page"
   [{:keys [uri] :as request}]
   (if-let [[route-uri page-data] (get-route uri)]
-    (let [page (get (assoc request :page-id (:page-id page-data)))
-          request (assoc request :page page)]
-      (case (:type page-data)
-        :normal (let [template (clojure.core/get @templates (-> page :template keyword))
-                      f (:fn template)]
-                  (f (assoc request :page-id (:id page))))
-        :page (let [request (util/shorten-uri request route-uri)
-                    [_ route _ f] (->> route-uri
-                                       (clojure.core/get @pages)
-                                       :fns
-                                       (filter #(let [[method route _ _] %]
-                                                  (and
-                                                   (= (:request-method request) method)
-                                                   (clout/route-matches route request))))
-                                       first)]
-                (if (nil? f)
-                  r/response-404
-                  (f request (clout/route-matches route request))))
-        (app/render (assoc request :page-data page-data :page page))))))
+    (case (:type page-data)
+      :normal (let [page (get (assoc request :page-id (:page-id page-data)))
+                    request (assoc request :page page)
+                    template (clojure.core/get @templates (-> page :template keyword))
+                    f (:fn template)]
+                (f (assoc request :page-id (:id page))))
+      :page (let [request (util/shorten-uri request route-uri)
+                  [_ route _ f] (->> route-uri
+                                     (clojure.core/get @pages)
+                                     :fns
+                                     (filter #(let [[method route _ _] %]
+                                                (and
+                                                 (= (:request-method request) method)
+                                                 (clout/route-matches route request))))
+                                     first)]
+              (if (nil? f)
+                r/response-404
+                (f request (clout/route-matches route request))))
+      (app/render (assoc request :page-data page-data :page (get (assoc request :page-id (:page-id page-data))))))))
 
 (defn meta [{:keys [page-id] :as request}]
   (k/select page_attributes (k/where {:page_id page-id})))

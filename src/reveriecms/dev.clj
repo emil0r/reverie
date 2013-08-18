@@ -1,5 +1,7 @@
 (ns reveriecms.dev
-  (:require [reverie.server :as server]))
+  (:require [reveriecms.init :as init]
+            [reverie.server :as server]))
 
 
+(init/init)
 (def app (server/generate-handler {}))

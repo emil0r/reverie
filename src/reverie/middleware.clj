@@ -6,7 +6,10 @@
 
 (defn wrap-admin [handler]
   (fn [{:keys [uri] :as request}]
-    (if (re-find #"^/admin" uri)
+    (if (and
+         (re-find #"^/admin" uri)
+         (not (re-find #"^/admin/login" uri))
+         (not (re-find #"^/admin/logout" uri)))
       (if (or (user/staff?) (user/admin?))
         (handler request)
         (r/response-302 "/admin/login"))
