@@ -1,7 +1,10 @@
 (ns reverie.admin.auth
   (:require [hiccup.form :as form]
+            [reverie.admin.templates :as t]
+            [reverie.auth.user :as user]
             [reverie.core :as rev]
-            [reverie.admin.templates :as t]))
+            [reverie.responses :as r]
+            ))
 
 
 (rev/defpage "/admin/login" {}
@@ -20,11 +23,7 @@
                          [:td]
                          [:td (form/submit-button "Log in")]]]))]
 
-  [:post ["*" {:keys [username password]}] (t/auth {:title "Admin login"}
-                                                   [:table
-                                                    [:tr
-                                                     [:td "Username"]
-                                                     [:td username]]
-                                                    [:tr
-                                                     [:td "Password"]
-                                                     [:td password]]])])
+  [:post ["*" {:keys [username password]}]
+   (if (user/login username password)
+     (-> "/admin" r/response-302 rev/raise-response)
+     (-> "/admin/login" r/response-302 rev/raise-response))])
