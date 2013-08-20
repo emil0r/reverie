@@ -16,5 +16,10 @@
   :profiles {:dev {:dependencies [[midje "1.6-alpha1"]
                                   [com.stuartsierra/lazytest "1.2.3"]
                                   [ring-mock "0.1.3"]
-                                  [org.postgresql/postgresql "9.2-1002-jdbc4"]]}}
+                                  [org.postgresql/postgresql "9.2-1002-jdbc4"]
+                                  [cljsbuild "0.3.2"]]}}
+  :cljsbuild {:builds [{:source-paths ["src-cljs"]
+                        :compiler {:output-to "public/resources/js/main.js"
+                                   :optimizations :whitespace
+                                   :pretty-print true}}]}
   :repositories {"stuart" "http://stuartsierra.com/maven2"})
