@@ -24,6 +24,8 @@
                         (integer :serial :not-null)
                         (timestamp :created (default (now)) :not-null)
                         (timestamp :updated :not-null)
+                        (boolean :locked (default false))
+                        (timestamp :lock_time (default (now)) :not-null)
                         (varchar :type 100 :not-null)
                         (varchar :app 100 :not-null (default ""))
                         (varchar :name 255 :not-null)

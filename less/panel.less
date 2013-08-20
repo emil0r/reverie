@@ -1,0 +1,55 @@
+.user-info {
+    text-align: right;
+    border-bottom: 5px dotted @secondaryB1;
+    padding: 5px 10px;
+    span {
+        color: @primary4;
+        font-weight: bold;
+    }
+    .logout {
+        margin-top: 5px;
+        i {
+            margin-left: 5px;
+        }
+        a {
+            color: @secondaryB1;
+            display: inline-block;
+        }
+    }
+}
+
+.tree {
+    padding: 5px 5px 10px 5px;
+    border-bottom: 5px dotted @secondaryB1;
+    input[type=text] {
+        width: 88%;
+    }
+    i {
+        margin-left: 5px;
+        color: @primary4;
+        &:hover {
+            cursor: pointer;
+            text-shadow: 1px 1px 3px fade(@primary4, 50%);
+        }
+    }
+    #tree {
+        margin-top: 5px;
+        min-height: 250px;
+        border: 1px @grayLight solid;
+    }
+    .icons {
+        i {
+            margin: 10px 5px;
+            font-size: 25px;
+            line-height: 0;
+            display: inline-block;
+        }
+        .hidden {
+            display: none;
+        }
+    }
+}
+
+.meta {
+    padding: 5px;
+}

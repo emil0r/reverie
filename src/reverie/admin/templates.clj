@@ -12,20 +12,39 @@
 (defn- get-body [body]
   [:body body])
 
+(defn includes [m]
+  (reduce (fn [out k]
+            (if (-> m k nil?)
+              out
+              (cond
+               (= k :css) (conj out (map include-css (:css m)))
+               (= k :js) (conj out (map include-js (:js m))))))
+          []
+          (keys m)))
+
 (defn main [m & body]
-  (let [{:keys [title title-back] :as m} (mould-keys m)]
+  (let [m (mould-keys m)]
     (html5
      [:head
-      [:charset "utf-8"]
+      [:meta {:charset "utf-8"}]
       [:title (get-title m)]]
-     (get-body body))))
+     body)))
 
 
 (defn auth [m & body]
-  (let [{:keys [title title-back] :as m} (mould-keys m)]
+  (let [m (mould-keys m)]
     (html5
      [:head
       [:meta {:charset "utf-8"}]
       [:title (get-title m)]]
      (get-body body))))
 
+
+(defn frame-left [m & body]
+  (let [m (mould-keys m)]
+    (html5
+     [:head
+      [:meta {:charset "utf-8"}]
+      [:title ""]
+      (includes m)]
+     (get-body body))))

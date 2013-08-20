@@ -27,3 +27,10 @@
    (if (user/login username password)
      (-> "/admin" r/response-302 rev/raise-response)
      (-> "/admin/login" r/response-302 rev/raise-response))])
+
+
+(rev/defpage "/admin/logout" {}
+  [:get ["*"]
+   (do
+     (user/logout)
+     (-> "/admin/login" r/response-302 rev/raise-response))])

@@ -4,6 +4,7 @@
         [noir.cookies :only [wrap-noir-cookies]]
         [noir.session :only [wrap-noir-session mem]]
         [noir.util.middleware :only [wrap-strip-trailing-slash]]
+        [reverie.admin.auth :as admin-auth]
         [reverie.atoms :only [get-route]]
         [reverie.middleware :only [wrap-admin]]
         [ring.middleware.file :only [wrap-file]] ;; research for later

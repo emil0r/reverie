@@ -1,0 +1,83 @@
+.clearfix {
+  *zoom: 1;
+}
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: "";
+  line-height: 0;
+}
+.clearfix:after {
+  clear: both;
+}
+body,
+html {
+  padding: 0;
+  margin: 0;
+}
+html {
+  height: 100%;
+  border-right: #000000 2px solid;
+}
+body {
+  background-color: #ffffff;
+  color: #333333;
+}
+a {
+  color: #ff8e00;
+  text-decoration: none;
+}
+a:hover {
+  text-shadow: 0 0 2px #ff8e00;
+}
+.user-info {
+  text-align: right;
+  border-bottom: 5px dotted #ff8e00;
+  padding: 5px 10px;
+}
+.user-info span {
+  color: #4d54d8;
+  font-weight: bold;
+}
+.user-info .logout {
+  margin-top: 5px;
+}
+.user-info .logout i {
+  margin-left: 5px;
+}
+.user-info .logout a {
+  color: #ff8e00;
+  display: inline-block;
+}
+.tree {
+  padding: 5px 5px 10px 5px;
+  border-bottom: 5px dotted #ff8e00;
+}
+.tree input[type=text] {
+  width: 88%;
+}
+.tree i {
+  margin-left: 5px;
+  color: #4d54d8;
+}
+.tree i:hover {
+  cursor: pointer;
+  text-shadow: 1px 1px 3px rgba(77, 84, 216, 0.5);
+}
+.tree #tree {
+  margin-top: 5px;
+  min-height: 250px;
+  border: 1px #999999 solid;
+}
+.tree .icons i {
+  margin: 10px 5px;
+  font-size: 25px;
+  line-height: 0;
+  display: inline-block;
+}
+.tree .icons .hidden {
+  display: none;
+}
+.meta {
+  padding: 5px;
+}

@@ -1,0 +1,5 @@
+{:reverie-admin
+ {:notify ["../resources/public/admin/css/main.css"]
+  :actions [{:command "lessc ../less/admin.less ../resources/public/admin/css/main.css"
+             :watch-dir "../less/"
+             :pattern "^[\\w+0-9]+"}]}}
