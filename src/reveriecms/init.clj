@@ -1,6 +1,7 @@
 (ns reveriecms.init
   (:require [lobos.core :as lobos]
             [lobos.migrations :as migrations]
+            [reverie.auth.user :as user]
             [reverie.server :as server])
   (:use [korma.db :only [defdb postgres]]))
 
@@ -15,10 +16,15 @@
                :user "reveriecms"
                :password "reveriecms"})
 
+(defn init-db []
+  (user/add! {:first-name "Admin" :last-name "Admin" :name "admin"
+              :password "admin0r" :email "" :is-staff true :is-admin true}))
+
 (defn init []
   (migrations/open-global-when-necessary lobos-db)
   (lobos.core/migrate)
   (server/load-views "admin"))
 
 ;;(init)
+;;(init-db)
 
