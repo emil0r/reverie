@@ -26,5 +26,5 @@
      (filter (fn [[k v]]
                (and
                 (not= (:type v) :normal)
-                (re-find (re-pattern k) uri))))
+                (re-find (re-pattern (str k "$")) uri))))
      first)))
