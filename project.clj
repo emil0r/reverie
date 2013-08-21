@@ -13,14 +13,20 @@
                  [lobos "1.0.0-beta1"]
                  [lib-noir "0.6.6"]]
   :ring {:handler reveriecms.dev/app}
+  :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
   :profiles {:dev {:dependencies [[midje "1.6-alpha1"]
                                   [com.stuartsierra/lazytest "1.2.3"]
                                   [ring-mock "0.1.3"]
                                   [org.postgresql/postgresql "9.2-1002-jdbc4"]
                                   [cljsbuild "0.3.2"]
-                                  [org.clojure/tools.trace "0.7.5"]]}}
-  :cljsbuild {:builds [{:source-paths ["src-cljs"]
-                        :compiler {:output-to "resources/public/admin/js/main.js"
-                                   :optimizations :whitespace
-                                   :pretty-print true}}]}
+                                  [org.clojure/tools.trace "0.7.5"]
+                                  [com.cemerick/piggieback "0.0.4"]]}}
+  :cljsbuild {:builds {:prod {:source-paths ["src-cljs"]
+                              :compiler {:output-to "resources/public/admin/js/main.js"
+                                         :optimizations :advanced
+                                         :pretty-print false}}
+                       :dev {:source-paths ["src-cljs"]
+                             :compiler {:output-to "resources/public/admin/js/main-dev.js"
+                                        :optimizations :whitespace
+                                        :pretty-print true}}}}
   :repositories {"stuart" "http://stuartsierra.com/maven2"})

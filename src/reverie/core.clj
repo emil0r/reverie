@@ -68,11 +68,17 @@
      `(swap! objects assoc ~object (merge {:options ~options
                                            :entity ~table-symbol} ~body))))
 
+(defn- clean-route
+  "Cleans any route of a trailing slash in order to confirm with internal mechanics"
+  [route]
+  (clojure.string/replace route #"/$" ""))
+
 (defmacro request-method
   "Pick apart the request methods specified in other macros"
   [[method options & body]]
   (case method
     :get (let [[route _2 _3] options
+               route (clean-route route)
                regex (if (every? regex? (vals _2)) _2 nil)
                route (if (nil? regex)
                        (route-compile route)
@@ -86,6 +92,7 @@
                                                           ~'response)))]
            [method route method-options func])
     (let [[route _2 _3 _4] options
+          route (clean-route route)
           [regex method-options form-data]
           (let [regex (if (and (map? _2) (every? regex? (vals _2))) _2 nil)]
             (case [(nil? regex) (nil? _3) (nil? _4)]

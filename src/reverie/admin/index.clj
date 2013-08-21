@@ -8,7 +8,7 @@
 
 
 (rev/defpage "/admin" {}
-  [:get ["*"] (t/main {:title "Admin"}
+  [:get ["/"] (t/main {:title "Admin"}
                       [:frameset {:id :top :name :top :cols "240px,*"}
                        [:frameset {:id :control :name :control}
                         [:frame {:src "/admin/frame/left" :noresize "noresize" :frameborder "no"}]]

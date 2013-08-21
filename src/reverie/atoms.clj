@@ -15,9 +15,6 @@
   (swap! routes assoc uri route))
 (defn remove-route! [uri]
   (swap! routes dissoc uri))
-(defn update-route! [new-uri {:keys [uri] :as route}]
-  (remove-route! uri)
-  (add-route! new-uri route))
 (defn get-route [uri]
   (if-let [route-data (get @routes uri)]
     [uri route-data]
@@ -26,5 +23,12 @@
      (filter (fn [[k v]]
                (and
                 (not= (:type v) :normal)
-                (re-find (re-pattern (str k "$")) uri))))
+                (re-find (re-pattern (str "^" k)) uri))))
      first)))
+(defn update-route! [new-uri {:keys [uri] :as route}]
+  (remove-route! uri)
+  (add-route! new-uri route))
+(defn update-route-data! [uri k v]
+  (if-let [[uri route-data] (get-route uri)]
+    (swap! routes assoc uri (assoc route-data k v))))
+

@@ -95,15 +95,17 @@
  (reset-routes!)
  (add-route! "/" {:page-id 1 :type :normal})
  (add-route! "/info" {:page-id 2 :type :normal})
- (add-route! "/contact" {:page-id 3 :type :normal})
+ (add-route! "/contact" {:page-id 3 :type :page})
  (add-route! "/apps/app1" {:page-id 4 :type :app})
  (add-route! "/apps/app2" {:page-id 5 :type :app})
  (map #(-> % second :page-id) [(get-route "/")
                                (get-route "/contact")
                                (get-route "/info")
                                (get-route "/apps/app1")
-                               (get-route "/apps/app2/asdf")])
- => [1 3 2 4 5])
+                               (get-route "/apps/app2/asdf")
+                               (get-route "/contact/ceo")
+                               (get-route "/info/does-not-exist")])
+ => [1 3 2 4 5 3 nil])
 
 (rev/defapp gallery {}
   ;; test :get
@@ -149,7 +151,7 @@
 
 (rev/defpage "/test/defpage" {}
   [:get ["/:foo/:bar"] (str foo "/" bar)]
-  [:get ["*"] "asdf"]
+  [:get ["/"] "asdf"]
   ;;[:post ["*"] "posted asdf"]
   )
 
@@ -157,3 +159,14 @@
 (fact
  "defpage"
  (:body (reverie.page/render (request :get "/test/defpage/foo/bar"))) => "foo/bar")
+
+(fact
+ "defpage 404"
+ (:status (reverie.page/render (request :get "/test/defpage/no-no"))) => 404)
+
+(fact
+ "defpage /"
+ (:body (reverie.page/render (request :get "/test/defpage"))) => "asdf")
+
+
+

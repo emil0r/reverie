@@ -12,20 +12,20 @@
 
 ;;(reset! atoms/pages {})
 
-(rev/defpage "/testus" {}
-  [:get ["*"] "asdf"]
-  [:post ["*" {:keys [my] :as datus}] my])
+;; (rev/defpage "/testus" {}
+;;   [:get ["*"] "asdf"]
+;;   [:post ["*" {:keys [my] :as datus}] my])
 
 ;;(println @atoms/routes)
 ;;(println "\n--")
-(clojure.pprint/pprint @atoms/pages)
+;;(clojure.pprint/pprint @atoms/pages)
 
 ;; (println (-> (get @atoms/pages "/testus") :fns second second))
 ;; (clout/route-matches (-> (get @atoms/pages "/testus") :fns second second)
 ;;                      (request :post "/testus" {"my" "data"}))
-(println ((-> page/render
-              wrap-keyword-params
-              wrap-params)  (request :post "/testus" {:my "data"})) )
+;; (println ((-> page/render
+;;               wrap-keyword-params
+;;               wrap-params)  (request :post "/testus" {:my "data"})) )
 
 ;;(println (request :post "/testus" {"my" "data"}))
 
