@@ -24,15 +24,18 @@
       (+ 1 serial)
       1)))
 
-(defn edit [request]
+(defn edit! [request]
   (if (update-route-data! (:uri request) :mode :edit)
     true
     false))
 
-(defn view [request]
+(defn view! [request]
   (if (update-route-data! (:uri request) :mode :view)
     true
     false))
+
+(defn mode? [request mode]
+  (= (-> request :uri get-route second :mode) mode))
 
 (defn get* [w]
   (k/select page (k/where w)))
