@@ -8,10 +8,14 @@
 
 
 (rev/defpage "/admin" {}
-  [:get ["/"] (t/main {:title "Admin"}
+  [:get ["/"] (t/main {:title "Admin"
+                       :js ["/admin/js/jquery-2.0.3.min.js"
+                            "/admin/js/main-dev.js"
+                            "/admin/js/dev.js"]
+                       }
                       [:frameset {:id :top :name :top :cols "240px,*"}
                        [:frameset {:id :control :name :control}
-                        [:frame {:src "/admin/frame/left" :noresize "noresize" :frameborder "no"}]]
+                        [:frame {:src "/admin/frame/left" :noresize "noresize" :frameborder "no" :id :framec :name :framec}]]
                        [:frameset {:id :main :name :main}
-                        [:frame {:src "/" :frameborder "no"}]]])
+                        [:frame {:src "/" :frameborder "no" :id :framem :name :framem}]]])
    ])

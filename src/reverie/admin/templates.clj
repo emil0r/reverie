@@ -18,7 +18,8 @@
               out
               (cond
                (= k :css) (conj out (map include-css (:css m)))
-               (= k :js) (conj out (map include-js (:js m))))))
+               (= k :js) (conj out (map include-js (:js m)))
+               (= k :head) (apply conj out (reverse (:head m))))))
           []
           (keys m)))
 
@@ -27,7 +28,8 @@
     (html5
      [:head
       [:meta {:charset "utf-8"}]
-      [:title (get-title m)]]
+      [:title (get-title m)]
+      (includes m)]
      body)))
 
 
