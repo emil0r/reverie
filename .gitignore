@@ -8,8 +8,13 @@ pom.xml
 .lein-deps-sum
 .lein-failures
 .lein-plugins
-/.emacs.desktop
-/.emacs.desktop.lock
+.emacs.desktop
+.emacs.desktop.lock
 /projects
 .DS_Store
 /.lein-repl-history
+.repl
+.nrepl-port
+out
+resources/public/admin/js/main-dev.js
+resources/public/admin/js/main.js
