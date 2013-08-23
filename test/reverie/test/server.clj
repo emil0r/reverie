@@ -12,9 +12,9 @@
       (assoc-in response [:headers "level"] (+ level 1)))))
 
 (fact
- "generate-handler"
- (get-in ((server/generate-handler {:handlers [[wrap-count] [wrap-count]]})
-          {:level 1 :uri "/generate-handler"}) [:headers "level"]) => 3)
+ "server-handler"
+ (get-in ((server/server-handler {:handlers [[wrap-count] [wrap-count]]})
+          {:level 1 :uri "/server-handler"}) [:headers "level"]) => 3)
 
 (fact
  "start server, stop server, restart server"

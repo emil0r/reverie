@@ -29,8 +29,8 @@
           f (namespaces-on-classpath :prefix (name sym))]
     (require f)))
 
-(defn generate-handler [{:keys [handlers store multipart-opts mime-types
-                                file-path resource]}]
+(defn server-handler [{:keys [handlers store multipart-opts mime-types
+                              file-path resource]}]
   (let [file-path (or file-path (FilenameUtils/concat (.toString fs/*cwd*) "media"))
         resource (or resource "public")
         handlers (apply conj (or handlers [])
@@ -63,7 +63,7 @@
                                          (:jetty-options options))
                     run-fn (resolve 'ring.adapter.jetty/run-jetty)]
                 (println (str "Server started on port " port "."))
-                (run-fn (generate-handler options) jetty-options)))))
+                (run-fn (server-handler options) jetty-options)))))
 
 (defn stop [server]
   (println "Stopping server...")
