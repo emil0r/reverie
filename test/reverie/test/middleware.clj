@@ -40,8 +40,7 @@
  "wrap edn params"
  (with-noir
    (let [new-handler (generate-handler [[wrap-params]
-                                        [wrap-edn-params]
-                                        ] ping-handler)
+                                        [wrap-edn-params]] ping-handler)
          req (content-type (request :post "/edn-params" "{:test [1 2 3]}") "application/edn")]
-    (-> (new-handler req) :body :params)))
+     (-> (new-handler req) :body :params)))
   => {:test [1 2 3]})

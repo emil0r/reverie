@@ -1,6 +1,5 @@
 (ns reverie.util
-  (:require [clojure.string :as s]
-            [clojure.tools.trace :as trace]))
+  (:require [clojure.string :as s]))
 
 
 (defn kw->str

@@ -14,3 +14,9 @@
         (handler request)
         (r/response-302 "/admin/login"))
       (handler request))))
+
+(defn wrap-edn-response [handler & [encoding]]
+  (fn [request]
+    (let [resp (handler request)
+          encoding (or "utf-8" encoding)]
+      (assoc-in resp [:headers "Content-Type"] (str "application/edn; charset=" encoding "")))))
