@@ -10,6 +10,9 @@
         [slingshot.slingshot :only [try+ throw+]]))
 
 
+(let [uris ["/admin" "/admin/api/pages" "/admin/frames/left" "/admin/login" "/admin/logout"]]
+  (println (reverse (sort-by count (map #(re-find (re-pattern (str "^" %)) "/admin/api/pages/read") uris)))))
+
 ;;(reset! atoms/pages {})
 
 ;; (rev/defpage "/testus" {}

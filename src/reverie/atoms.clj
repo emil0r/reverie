@@ -16,7 +16,6 @@
 (defn remove-route! [uri]
   (swap! routes dissoc uri))
 (defn get-route [uri]
-  (println @routes)
   (if-let [route-data (get @routes uri)]
     [uri route-data]
     (->>
