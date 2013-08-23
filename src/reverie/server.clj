@@ -29,6 +29,12 @@
           f (namespaces-on-classpath :prefix (name sym))]
     (require f)))
 
+(defn generate-handler [handlers final-handler]
+  (reduce (fn [current [handler & args]]
+            (apply handler current args))
+          final-handler
+          handlers))
+
 (defn server-handler [{:keys [handlers store multipart-opts mime-types
                               file-path resource]}]
   (let [file-path (or file-path (FilenameUtils/concat (.toString fs/*cwd*) "media"))
@@ -45,13 +51,12 @@
                          [wrap-strip-trailing-slash]
                          [wrap-noir-cookies]
                          [wrap-noir-session {:store (or store (memory-store mem))}]])]
-    (reduce (fn [current [handler & args]]
-              (apply handler current args))
-            (fn [request]
-              (if-let [[_ route] (get-route (:uri request))]
-                (page/render (assoc request :page-type (:page-type route)))
-                r/response-404))
-            handlers)))
+    (generate-handler
+     handlers
+     (fn [request]
+       (if-let [[_ route] (get-route (:uri request))]
+         (page/render (assoc request :page-type (:page-type route)))
+         r/response-404)))))
 
 (defn start [{:keys [port handlers] :as options}]
   (cond
