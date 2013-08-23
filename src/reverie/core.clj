@@ -4,6 +4,7 @@
             [reverie.page :as p])
   (:use clout.core
         reverie.atoms
+        [reverie.util :only [generate-handler]]
         [slingshot.slingshot :only [try+ throw+]]))
 
 
@@ -85,14 +86,16 @@
                        (route-compile route regex))
                method-options (if (nil? regex) _2 _3)
                keys (vec (map #(-> % name symbol) (:keys route)))
-               func `(fn [~'request {:keys ~keys}] (try+ {:status 200
-                                                         :headers (or (:headers ~method-options) {})
-                                                         :body ~@body}
-                                                        (catch [:type :ring-response] {:keys [~'response]}
-                                                          ~'response)))]
+               func `(fn [~'request {:keys ~keys}]
+                        (try+ {:status 200
+                               :headers (or (:headers ~method-options) {})
+                               :body ~@body}
+                              (catch [:type :ring-response] {:keys [~'response]}
+                                ~'response)))]
            [method route method-options func])
     (let [[route _2 _3 _4] options
           route (clean-route route)
+          ;; map all tree possible options to their correct name
           [regex method-options form-data]
           (let [regex (if (and (map? _2) (every? regex? (vals _2))) _2 nil)]
             (case [(nil? regex) (nil? _3) (nil? _4)]
@@ -104,11 +107,12 @@
                   (route-compile route)
                   (route-compile route regex))
           keys (vec (map #(-> % name symbol) (:keys route)))
-          func `(fn [~'request {:keys ~keys} ~form-data] (try+ {:status 200
-                                                               :headers (or (:headers ~method-options) {})
-                                                               :body ~@body}
-                                                              (catch [:type :ring-response] {:keys [~'response]}
-                                                                ~'response)))]
+          func `(fn [~'request {:keys ~keys} ~form-data]
+                   (try+ {:status 200
+                          :headers (or (:headers ~method-options) {})
+                          :body ~@body}
+                         (catch [:type :ring-response] {:keys [~'response]}
+                           ~'response)))]
       ;; (println [(nil? regex) (nil? _3) (nil? _4)])
       ;; (println _2 _3 _4)
       ;; (println route regex method-options form-data)

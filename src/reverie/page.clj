@@ -69,7 +69,6 @@
            :else w)]
     (k/select object (k/where w))))
 
-
 (defn render
   "Renders a page"
   [{:keys [uri] :as request}]
@@ -81,19 +80,23 @@
                     f (:fn template)]
                 (f (assoc request :page-id (:id page))))
       :page (let [request (util/shorten-uri request route-uri)
-                  [_ route _ f] (->> route-uri
+                  [_ route o f] (->> route-uri
                                      (clojure.core/get @pages)
                                      :fns
-                                     (filter #(let [[method route _ _] %]
-                                                (and
-                                                 (= (:request-method request) method)
-                                                 (clout/route-matches route request))))
+                                     (filter #(let [[method route _ _] %
+                                                    r (and
+                                                       (= (:request-method request) method)
+                                                       (clout/route-matches route request))]
+
+                                                r))
                                      first)]
               (if (nil? f)
                 r/response-404
                 (if (= :get (:request-method request))
-                  (f request (clout/route-matches route request))
-                  (f request (clout/route-matches route request) (:params request)))))
+                  (util/middleware-wrap (:middleware o) f request
+                                        (clout/route-matches route request))
+                  (util/middleware-wrap (:middleware o) f request
+                                        (clout/route-matches route request) (:params request)))))
       (app/render (assoc request :page-data page-data :page (get (assoc request :page-id (:page-id page-data))))))))
 
 (defn meta [{:keys [page-id] :as request}]
@@ -103,11 +106,11 @@
   (let [uri (:uri tx-data)
         type (or (:type tx-data) :normal)
         tx-data (util/revmap->str (assoc tx-data
-                                     :serial (or (:serial tx-data)
-                                                 (get-serial-page))
-                                     :version (or (:version tx-data) 0)
-                                     :updated (or (:updated tx-data) (k/sqlfn now))
-                                     :type type))
+                                    :serial (or (:serial tx-data)
+                                                (get-serial-page))
+                                    :version (or (:version tx-data) 0)
+                                    :updated (or (:updated tx-data) (k/sqlfn now))
+                                    :type type))
         tx (k/insert page (k/values (template->str tx-data)))]
     (add-route! uri {:page-id (:id tx) :type type
                      :template (:template tx-data) :published? false})

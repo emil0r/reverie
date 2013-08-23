@@ -2,6 +2,7 @@
   (:require [clojure.string :as s]
             [clout.core :as clout]
             [korma.core :as k]
+            [reverie.responses :as r]
             [reverie.util :as util])
   (:use [reverie.atoms :exclude [objects]]
         reverie.entity))
@@ -12,13 +13,19 @@
   [{:keys [page] :as request}]
   (if-let [app (@apps (keyword (:app page)))]
       (let [request (util/shorten-uri request (:uri page))
-            [_ route _ func] (->> app
-                                  :fns
-                                  (filter #(let [[method route _ _] %]
-                                             (and
-                                              (= (:request-method request) method)
-                                              (clout/route-matches route request))))
-                                  first)]
-        (if (nil? func)
-          {:status 404 :body "404, page not found"}
-          (func request (clout/route-matches route request))))))
+            [_ route o f] (->> app
+                               :fns
+                               (filter #(let [[method route _ _] %]
+                                          (and
+                                           (= (:request-method request) method)
+                                           (clout/route-matches route request))))
+                               first)]
+        (if (nil? f)
+          r/response-404
+          (if (= :get (:request-method request))
+            
+            (util/middleware-wrap (:middleware o) f request
+                                  (clout/route-matches route request))
+            
+            (util/middleware-wrap (:middleware o) f request
+                                  (clout/route-matches route request) (:params request)))))))

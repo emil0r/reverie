@@ -152,6 +152,7 @@
 (rev/defpage "/test/defpage" {}
   [:get ["/:foo/:bar"] (str foo "/" bar)]
   [:get ["/"] "asdf"]
+  [:get ["/read" {}] "read"]
   ;;[:post ["*"] "posted asdf"]
   )
 
@@ -168,5 +169,6 @@
  "defpage /"
  (:body (reverie.page/render (request :get "/test/defpage"))) => "asdf")
 
-
-
+(fact
+ "defpage /read"
+ (:body (reverie.page/render (request :get "/test/defpage/read"))) => "read")

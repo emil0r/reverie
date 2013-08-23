@@ -2,8 +2,13 @@
   (:require [reverie.middleware :as middleware]
             [reverie.auth.user :as user]
             [noir.session :as session]
-            [noir.cookies :as cookies])
+            [noir.cookies :as cookies]
+            [clojure.edn])
   (:use midje.sweet
+        [reverie.util :only [generate-handler]]
+        [ring.middleware.edn :only [wrap-edn-params]]
+        [ring.middleware.keyword-params :only [wrap-keyword-params]]
+        [ring.middleware.params :only [wrap-params]]
         ring.mock.request
         reverie.test.helpers))
 
@@ -12,6 +17,11 @@
   {:status 200
    :headers {"Location" "http://localhost"}
    :body "Hello World!"})
+
+(defn ping-handler [request]
+  {:status 200
+   :headers {"Location" "http://localhost"}
+   :body request})
 
 (fact
  "access admin"
@@ -25,3 +35,13 @@
  (with-noir
   (:status ((-> test-handler
                 middleware/wrap-admin) (request :get "/admin")))) => 302)
+
+(fact
+ "wrap edn params"
+ (with-noir
+   (let [new-handler (generate-handler [[wrap-params]
+                                        [wrap-edn-params]
+                                        ] ping-handler)
+         req (content-type (request :post "/edn-params" "{:test [1 2 3]}") "application/edn")]
+    (-> (new-handler req) :body :params)))
+  => {:test [1 2 3]})

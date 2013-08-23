@@ -6,6 +6,7 @@
         [noir.util.middleware :only [wrap-strip-trailing-slash]]
         [reverie.atoms :only [get-route]]
         [reverie.middleware :only [wrap-admin]]
+        [reverie.util :only [generate-handler]]
         [ring.middleware.file :only [wrap-file]] ;; research for later
         [ring.middleware.file-info :only [wrap-file-info]]
         [ring.middleware.keyword-params :only [wrap-keyword-params]]
@@ -28,12 +29,6 @@
   (doseq [sym ns-syms
           f (namespaces-on-classpath :prefix (name sym))]
     (require f)))
-
-(defn generate-handler [handlers final-handler]
-  (reduce (fn [current [handler & args]]
-            (apply handler current args))
-          final-handler
-          handlers))
 
 (defn server-handler [{:keys [handlers store multipart-opts mime-types
                               file-path resource]}]

@@ -2,16 +2,44 @@
   (:require [clout.core :as clout]
             [reverie.atoms :as atoms]
             [reverie.core :as rev]
-            [reverie.page :as page])
+            [reverie.page :as page]
+            [clojure.edn])
   (:use reverie.test.init
+        [reverie.util :only [generate-handler]]
         ring.mock.request
+        [ring.middleware.edn :only [wrap-edn-params]]
         [ring.middleware.keyword-params :only [wrap-keyword-params]]
         [ring.middleware.params :only [wrap-params]]
         [slingshot.slingshot :only [try+ throw+]]))
 
 
-(let [uris ["/admin" "/admin/api/pages" "/admin/frames/left" "/admin/login" "/admin/logout"]]
-  (println (reverse (sort-by count (map #(re-find (re-pattern (str "^" %)) "/admin/api/pages/read") uris)))))
+;;(println (clojure.edn/read-string "{:asdf 1}"))
+(defn test-handler [request]
+  {:status 200
+   :headers {"Location" "http://localhost"}
+   :body "Hello World!"})
+(defn ping-handler [request]
+  {:status 200
+   :headers {"Location" "http://localhost"}
+   :body request})
+
+
+(let [new-handler (-> ping-handler wrap-edn-params)
+         ;; (generate-handler [;;[wrap-params]
+         ;;                    [wrap-edn-params]
+         ;;                    ] ping-handler)
+         req (content-type (request :post "/edn-params" "{:test [1 2 3]}") "application/edn")
+         ;;req (request :post "/form-params" {"test" "foo"})
+        ;;body (and (edn-request? req) (:body req))
+        ;;edn (-read-edn body)
+        ]
+    ;;(println edn)
+    (new-handler req))
+
+
+
+;; (let [uris ["/admin" "/admin/api/pages" "/admin/frames/left" "/admin/login" "/admin/logout"]]
+;;   (println (reverse (sort-by count (map #(re-find (re-pattern (str "^" %)) "/admin/api/pages/read") uris)))))
 
 ;;(reset! atoms/pages {})
 
