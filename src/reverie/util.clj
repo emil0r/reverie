@@ -59,3 +59,13 @@
      (let [new-f (generate-handler middleware (fn [req]
                                                 (f req args form-data)))]
        (new-f request))))
+(defn middleware-merge
+  "Merge two or more middleware options into one"
+  [& options]
+  (loop [middleware []
+         [option & options] options]
+    (if (nil? option)
+      middleware
+      (if-let [wares (:middleware option)]
+        (recur (apply conj middleware wares) options)
+        (recur middleware options)))))

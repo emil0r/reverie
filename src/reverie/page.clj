@@ -80,24 +80,27 @@
                     f (:fn template)]
                 (f (assoc request :page-id (:id page))))
       :page (let [request (util/shorten-uri request route-uri)
-                  [_ route o f] (->> route-uri
-                                     (clojure.core/get @pages)
-                                     :fns
-                                     (filter #(let [[method route _ _] %
-                                                    r (and
+                  page-options (->> route-uri (clojure.core/get @pages) :options)
+                  [_ route options f] (->> route-uri
+                                           (clojure.core/get @pages)
+                                           :fns
+                                           (filter #(let [[method route _ _] %]
+                                                      (and
                                                        (= (:request-method request) method)
-                                                       (clout/route-matches route request))]
-
-                                                r))
-                                     first)]
+                                                       (clout/route-matches route request))))
+                                           first)]
               (if (nil? f)
                 r/response-404
                 (if (= :get (:request-method request))
-                  (util/middleware-wrap (:middleware o) f request
-                                        (clout/route-matches route request))
-                  (util/middleware-wrap (:middleware o) f request
-                                        (clout/route-matches route request) (:params request)))))
-      (app/render (assoc request :page-data page-data :page (get (assoc request :page-id (:page-id page-data))))))))
+                  (util/middleware-wrap
+                   (util/middleware-merge page-options options)
+                   f request (clout/route-matches route request))
+                  
+                  (util/middleware-wrap
+                   (util/middleware-merge page-options options)
+                   f request (clout/route-matches route request) (:params request)))))
+      (app/render (assoc request :page-data page-data
+                         :page (get (assoc request :page-id (:page-id page-data))))))))
 
 (defn meta [{:keys [page-id] :as request}]
   (k/select page_attributes (k/where {:page_id page-id})))
