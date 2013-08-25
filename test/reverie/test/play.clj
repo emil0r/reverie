@@ -4,7 +4,8 @@
             [reverie.core :as rev]
             [reverie.page :as page]
             [clojure.edn])
-  (:use reverie.test.init
+  (:use [clojure.pprint :only [pprint]]
+        reverie.test.init
         [reverie.util :only [generate-handler]]
         ring.mock.request
         [ring.middleware.edn :only [wrap-edn-params]]
@@ -22,6 +23,9 @@
   {:status 200
    :headers {"Location" "http://localhost"}
    :body request})
+
+
+(pprint @atoms/templates)
 
 
 (let [new-handler (-> ping-handler wrap-edn-params)

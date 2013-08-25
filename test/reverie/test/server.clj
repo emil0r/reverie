@@ -2,14 +2,11 @@
   (:require [reverie.core :as rev]
             [reverie.server :as server])
   (:use midje.sweet
+        [reverie.test.util :only [wrap-count]]
         ring.mock.request))
 
 
-(defn wrap-count [handler]
-  (fn [request]
-    (let [response (handler request)
-          level (get-in response [:headers "level"] 1)]
-      (assoc-in response [:headers "level"] (+ level 1)))))
+
 
 (fact
  "server-handler"

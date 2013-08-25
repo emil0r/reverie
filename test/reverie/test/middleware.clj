@@ -9,19 +9,9 @@
         [ring.middleware.edn :only [wrap-edn-params]]
         [ring.middleware.keyword-params :only [wrap-keyword-params]]
         [ring.middleware.params :only [wrap-params]]
+        [reverie.test.util :only [wrap-count test-handler ping-handler]]
         ring.mock.request
         reverie.test.helpers))
-
-
-(defn test-handler [request]
-  {:status 200
-   :headers {"Location" "http://localhost"}
-   :body "Hello World!"})
-
-(defn ping-handler [request]
-  {:status 200
-   :headers {"Location" "http://localhost"}
-   :body request})
 
 (fact
  "access admin"

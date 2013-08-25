@@ -51,6 +51,10 @@
 
 (defn middleware-wrap
   "Wrap middleware in options around the function"
+  ([middleware f request]
+     (let [new-f (generate-handler middleware (fn [req]
+                                                (f req)))]
+       (new-f request)))
   ([middleware f request args]
      (let [new-f (generate-handler middleware (fn [req]
                                                 (f req args)))]

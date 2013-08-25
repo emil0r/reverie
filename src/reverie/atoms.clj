@@ -11,6 +11,14 @@
 (defn get-object-entity [name]
   (:entity (get @objects (keyword name))))
 
+(defmulti get-template class)
+(defmethod get-template clojure.lang.Keyword [name]
+  (get @templates name))
+(defmethod get-template java.lang.String [name]
+  (get @templates (keyword name)))
+(defmethod get-template :default [page]
+  (->> page :template keyword (get @templates)))
+
 (defn add-route! [uri route]
   (swap! routes assoc uri route))
 (defn remove-route! [uri]

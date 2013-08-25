@@ -75,10 +75,13 @@
   (if-let [[route-uri page-data] (get-route uri)]
     (case (:type page-data)
       :normal (let [page (get (assoc request :page-id (:page-id page-data)))
+                    template-options (-> page get-template :options)
                     request (assoc request :page page)
                     template (clojure.core/get @templates (-> page :template keyword))
                     f (:fn template)]
-                (f (assoc request :page-id (:id page))))
+                (util/middleware-wrap
+                 (util/middleware-merge template-options)
+                 f (assoc request :page-id (:id page))))
       :page (let [request (util/shorten-uri request route-uri)
                   page-options (->> route-uri (clojure.core/get @pages) :options)
                   [_ route options f] (->> route-uri
