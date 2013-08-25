@@ -7,11 +7,6 @@
         reverie.test.init
         ring.mock.request))
 
-
-
-
-
-
 (fact
  "object/add!"
  (let [p (page/get {:serial 1 :version 0})]
@@ -25,3 +20,4 @@
 (fact
  "object/render"
  (object/render (merge (request :get "/") {:serial 1 :version 0})) => "testus")
+

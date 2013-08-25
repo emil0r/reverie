@@ -25,7 +25,7 @@
    :body request})
 
 
-(pprint @atoms/templates)
+;;(pprint @atoms/objects)
 
 
 (let [new-handler (-> ping-handler wrap-edn-params)

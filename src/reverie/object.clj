@@ -39,5 +39,5 @@
     (if-let [f (or
                 (clojure.core/get (clojure.core/get @objects (:reverie-object-name obj))
                                   (-> request :request-method))
-                (clojure.core/get (clojure.core/get @objects (:reverie-object-name)) :any))]
+                (clojure.core/get (clojure.core/get @objects (:reverie-object-name obj)) :any))]
       (f request obj))))
