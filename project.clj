@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [ring "1.2.0"]
                  ;;[ring-anti-forgery "0.2.1"]
-                 [fogus/ring-edn "0.2.0"]
+                 [ring/ring-json "0.2.0"]
                  [korma "0.3.0-RC5"]
                  [me.raynes/fs "1.4.5"]
                  [clout "1.1.0"]

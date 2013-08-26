@@ -13,10 +13,16 @@
    :else (:name user)))
 
 (rev/defpage "/admin/frame/left" {}
-  [:get ["*"] (t/frame-left
+  [:get ["/"] (t/frame
                {:css ["/admin/css/font-awesome.min.css"
-                      "/admin/css/main.css"]
-                :js ["/admin/js/eyespy.js"
+                      "/admin/css/main.css"
+                      "/admin/css/dyna-skin/ui.dynatree.css"]
+                :js ["/admin/js/jquery-1.8.3.min.js"
+                     "/admin/js/jquery-ui.custom.js"
+                     "/admin/js/jquery.dynatree-1.2.4.js"
+                     "/admin/js/main-dev.js"
+                     "/admin/js/dev.js"
+                     "/admin/js/eyespy.js"
                      "/admin/js/init.js"]}
                [:div.user-info "Logged in as " [:span (-> (user/get) user-info)]
                 [:div.logout [:a {:href "/admin/logout"}
@@ -34,3 +40,8 @@
 
                [:div.meta
                 "my meta stuff"])])
+
+(rev/defpage "/admin/frame/options" {}
+  [:get ["/"] (t/frame
+               {}
+               [:div.options "my options!"])])

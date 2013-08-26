@@ -42,7 +42,7 @@
      (get-body body))))
 
 
-(defn frame-left [m & body]
+(defn frame [m & body]
   (let [m (mould-keys m)]
     (html5
      [:head
