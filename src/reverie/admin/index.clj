@@ -1,6 +1,7 @@
 (ns reverie.admin.index
   ;; import defpages
-  (:require [reverie.admin.api.pages :as api-pages]
+  (:require [reverie.admin.api :as api]
+            [reverie.admin.api.pages :as api-pages]
             [reverie.admin.auth :as auth]
             [reverie.admin.frames :as frames]
             ;; import rest

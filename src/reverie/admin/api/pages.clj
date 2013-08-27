@@ -26,25 +26,11 @@
                                    {:title "Test 6"
                                     :id 7}]}]))
 
-(defn- init? []
-  (=
-   0
-   (->
-    (k/select page
-              (k/aggregate (count :*) :count)
-              (k/where {:parent 0 :version 0}))
-    first
-    :count)))
-
-(defn- status []
-  {:should_init (init?)})
 
 (rev/defpage "/admin/api/pages" {:middleware [[wrap-json-params]
                                               [wrap-json-response]]}
   [:get ["/read"]
    @test-pages]
-  [:get ["/status"]
-   (status)]
   [:post ["/write" data]
    false]
   [:post ["/add" data]

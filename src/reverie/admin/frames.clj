@@ -44,4 +44,4 @@
 (rev/defpage "/admin/frame/options" {}
   [:get ["/"] (t/frame
                {}
-               [:div.options "my options!"])])
+               [:div#options "my options!"])])
