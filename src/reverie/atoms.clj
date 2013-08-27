@@ -32,7 +32,7 @@
                (and
                 (not= (:type v) :normal)
                 (re-find (re-pattern (str "^" k)) uri))))
-     (sort-by count)
+     (sort-by first)
      reverse
      first)))
 (defn update-route! [new-uri {:keys [uri] :as route}]
