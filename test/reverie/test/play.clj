@@ -42,6 +42,13 @@
 
 
 
+;; (form [:post "/asdf/"]
+;;       [text-field :name "asdf"]
+;;       [email-field :email "emil0r@gmail.com"]
+;;       {:text ["asdf is not allowed"]})
+
+
+
 ;; (let [uris ["/admin" "/admin/api/pages" "/admin/frames/left" "/admin/login" "/admin/logout"]]
 ;;   (println (reverse (sort-by count (map #(re-find (re-pattern (str "^" %)) "/admin/api/pages/read") uris)))))
 

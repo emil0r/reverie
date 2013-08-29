@@ -5,6 +5,8 @@
             [reverie.atoms :as atoms]
             [reverie.auth.user :as user]
             [reverie.core :as rev]
+            [reverie.page :as page]
+            [reverie.responses :as r]
             [reverie.util :as util])
   (:use [hiccup core form]))
 
@@ -83,15 +85,15 @@
   (not (nil? (re-find #"[^a-zA-Z0-9\.\-\_]" uri))))
 
 (defn valid-page? [{:keys [parent name type template app uri]}]
-  (v/rule (v/has-value? name) [:name "Name must be longer than 1 character"])
-  (if (= type "template")
+  (v/rule (v/has-value? name) [:name "Name is required"])
+  (if (= type "normal")
     (v/rule (v/has-value? template) [:template "You must choose a template"])
     (v/rule (v/has-value? app) [:app "You must choose an app"]))
   (if (not (= parent "0"))
     (do
       (v/rule (valid-uri? uri) [:uri "The URI is not valid. Only a-zA-Z0-9.-_ is allowed."])
       (v/rule (v/has-value? uri) [:uri "The URI must have a path"])))
-  )
+  (not (v/errors? :name :template :app :uri)))
 
 
 (rev/defpage "/admin/frame/options" {}
@@ -103,7 +105,13 @@
     (page-form {:parent 0}))]
   [:post ["/new-root-page" {:keys [parent name title type template app uri] :as data}]
    (if (valid-page? data)
-     "asdf"
+     (do
+       (page/add! {:tx-data {:uri "/" :order 0 :version 0 :name name :app (or app "")
+                             :title title :parent (read-string parent) :type type :template (or template "")}})
+       (t/frame
+        frame-options-options
+        [:h2 "Root page added!"]
+        [:div.added]))
      (t/frame
       frame-options-options
       [:h2 "No root page exists. Please create a new one."]

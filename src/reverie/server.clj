@@ -3,6 +3,7 @@
         [clojure.java.io :only [file]]
         [noir.cookies :only [wrap-noir-cookies]]
         [noir.session :only [wrap-noir-session mem]]
+        [noir.validation :only [wrap-noir-validation]]
         [noir.util.middleware :only [wrap-strip-trailing-slash]]
         [reverie.atoms :only [get-route]]
         [reverie.middleware :only [wrap-admin]]
@@ -44,6 +45,7 @@
                          [wrap-resource resource]
                          [wrap-file-info mime-types]
                          [wrap-strip-trailing-slash]
+                         [wrap-noir-validation]
                          [wrap-noir-cookies]
                          [wrap-noir-session {:store (or store (memory-store mem))}]])]
     (generate-handler
