@@ -5,7 +5,7 @@
         [noir.session :only [wrap-noir-session mem]]
         [noir.validation :only [wrap-noir-validation]]
         [noir.util.middleware :only [wrap-strip-trailing-slash]]
-        [reverie.atoms :only [get-route]]
+        [reverie.atoms :only [get-route read-routes!]]
         [reverie.middleware :only [wrap-admin]]
         [reverie.util :only [generate-handler]]
         [ring.middleware.file :only [wrap-file]] ;; research for later
@@ -59,6 +59,7 @@
   (cond
       (nil? port) (println "No port specified.")
       :else (do
+              (read-routes!)
               (require 'ring.adapter.jetty)
               (println "Starting server... ")
               (let [jetty-options (merge {:port port :join? false}

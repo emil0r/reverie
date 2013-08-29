@@ -133,6 +133,6 @@
          fns []]
     (if (nil? method)
       (do
-        (add-route! path {:type :page})
+        (add-route! path {:type :page :uri path})
         `(swap! pages assoc ~path {:options ~options :fns ~fns}))
       (recur methods (conj fns `(request-method ~method))))))

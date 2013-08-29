@@ -1,5 +1,7 @@
 (ns reverie.atoms
-  (:use [reverie.util :only [kw->str]]))
+  (:use [korma.core :only [select where]]
+        [reverie.entity :only [page]]
+        [reverie.util :only [kw->str published?]]))
 
 (defonce apps (atom {}))
 (defonce modules (atom {}))
@@ -24,7 +26,9 @@
   (swap! routes assoc uri route))
 (defn remove-route! [uri]
   (swap! routes dissoc uri))
-(defn get-route [uri]
+(defn get-route
+  "Get the uri and the data for that uri"
+  [uri]
   (if-let [route-data (get @routes uri)]
     [uri route-data]
     (->>
@@ -36,18 +40,39 @@
      (sort-by first)
      reverse
      first)))
-(defn update-route! [new-uri {:keys [uri] :as route}]
+(defn update-route!
+  "Update the route. This means remove old route and plug in new route"
+  [new-uri {:keys [uri] :as route}]
   (remove-route! uri)
   (add-route! new-uri route))
-(defn update-route-data! [uri k v]
+(defn update-route-data!
+  "Update the route data associated with the specific uri"
+  [uri k v]
   (if-let [[uri route-data] (get-route uri)]
     (swap! routes assoc uri (assoc route-data k v))))
 
+(defn read-routes!
+  "Read in the routes in the database"
+  []
+  (doseq [p (select page (where (and
+                                 {:version [>= 0]}
+                                 {:version [<= 1]})))]
+    (swap! routes assoc (:uri p) {:type (-> p :type keyword)
+                                  :uri (-> p :uri)
+                                  :page-id (-> p :id)
+                                  :template (-> p :template keyword)
+                                  :published? (published? p)})))
 
-(defn get-templates []
+
+(defn get-templates
+  "Get a list of the templates stringified"
+  []
   (map kw->str (keys @templates)))
-(defn get-apps []
+(defn get-apps
+  "Get a list of the apps stringified"
+  []
   (map kw->str (keys @apps)))
-(defn get-objects []
+(defn get-objects
+  "Get a list of the objects stringified"
+  []
   (map kw->str (keys @objects)))
-
