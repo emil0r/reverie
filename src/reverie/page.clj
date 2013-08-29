@@ -71,6 +71,7 @@
 
 (defn render
   "Renders a page"
+  ;; TODO: check for rights to see the page
   [{:keys [uri] :as request}]
   (if-let [[route-uri page-data] (get-route uri)]
     (case (:type page-data)
