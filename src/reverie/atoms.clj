@@ -1,5 +1,5 @@
 (ns reverie.atoms
-  (:use [korma.core :only [select where]]
+  (:use [korma.core :only [select where order]]
         [reverie.entity :only [page]]
         [reverie.util :only [kw->str published?]]))
 
@@ -54,9 +54,11 @@
 (defn read-routes!
   "Read in the routes in the database"
   []
-  (doseq [p (select page (where (and
-                                 {:version [>= 0]}
-                                 {:version [<= 1]})))]
+  (doseq [p (select page
+                    (where (and
+                            {:version [>= 0]}
+                            {:version [<= 1]}))
+                    (order :version :ASC))]
     (swap! routes assoc (:uri p) {:type (-> p :type keyword)
                                   :uri (-> p :uri)
                                   :page-id (-> p :id)
