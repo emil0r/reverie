@@ -118,7 +118,7 @@
                                     :updated (or (:updated tx-data) (k/sqlfn now))
                                     :type type))
         tx (k/insert page (k/values (template->str tx-data)))]
-    (add-route! uri {:page-id (:id tx) :type type
+    (add-route! uri {:page-id (:id tx) :type (keyword type)
                      :template (:template tx-data) :published? false})
     (assoc request :page-id (:id tx) :tx tx)))
 
