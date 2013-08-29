@@ -9,8 +9,8 @@
 (defn- get-title [m]
   (str (:title m) " &mdash; " (:title-back m)))
 
-(defn- get-body [body]
-  [:body body])
+(defn- get-body [body & [opt]]
+  [:body [:div.container opt body]])
 
 (defn includes [m]
   (reduce (fn [out k]
@@ -49,4 +49,4 @@
       [:meta {:charset "utf-8"}]
       [:title ""]
       (includes m)]
-     (get-body body))))
+     (get-body body {:class "frame container"}))))

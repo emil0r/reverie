@@ -1,7 +1,11 @@
 (ns reverie.admin.frames
-  (:require [reverie.admin.templates :as t]
+  (:require [korma.core :as k]
+            [noir.validation :as v]
+            [reverie.admin.templates :as t]
+            [reverie.atoms :as atoms]
             [reverie.auth.user :as user]
-            [reverie.core :as rev])
+            [reverie.core :as rev]
+            [reverie.util :as util])
   (:use [hiccup core form]))
 
 
@@ -41,7 +45,67 @@
                [:div.meta
                 "my meta stuff"])])
 
+
+
+
+(def frame-options-options {:css ["/admin/css/main.css"]
+                            :js ["/admin/js/jquery-1.8.3.min.js"
+                                 "/admin/js/main-dev.js"
+                                 "/admin/js/eyespy.js"
+                                 "/admin/js/init.js"]})
+
+
+(defn error-item [[error]]
+  [:p.error error])
+
+(defn- table-row
+  ([th td error]
+     [:tr [:th th] [:td td error]])
+  ([options th td error]
+     [:tr options [:th th] [:td td error]]))
+
+(defn page-form [{:keys [parent name title type template app uri]}]
+  (form-to
+   [:post ""]
+   [:table.table.small
+    (hidden-field :parent parent)
+    (table-row (label :name "Name") (text-field :name name) (v/on-error :name error-item))
+    (table-row (label :title "Title") (text-field :title title) nil)
+    (if (nil? parent)
+      (table-row (label :uri "Uri") (text-field :uri uri) (v/on-error :uri error-item)))
+    (table-row (label :type "Type") (drop-down :type ["normal" "app"] type) nil)
+    (table-row {:class "template"} (label :template "Template") (drop-down :template (atoms/get-templates) template) (v/on-error :template error-item))
+    (table-row {:class "hidden app"} (label :app "App") (drop-down :app (atoms/get-apps) app) (v/on-error :app error-item))
+    (table-row nil (submit-button {:class "btn btn-primary"} "Create") nil)]))
+
+
+(defn- valid-uri? [uri]
+  (not (nil? (re-find #"[^a-zA-Z0-9\.\-\_]" uri))))
+
+(defn valid-page? [{:keys [parent name type template app uri]}]
+  (v/rule (v/has-value? name) [:name "Name must be longer than 1 character"])
+  (if (= type "template")
+    (v/rule (v/has-value? template) [:template "You must choose a template"])
+    (v/rule (v/has-value? app) [:app "You must choose an app"]))
+  (if (not (= parent "0"))
+    (do
+      (v/rule (valid-uri? uri) [:uri "The URI is not valid. Only a-zA-Z0-9.-_ is allowed."])
+      (v/rule (v/has-value? uri) [:uri "The URI must have a path"])))
+  )
+
+
 (rev/defpage "/admin/frame/options" {}
-  [:get ["/"] (t/frame
-               {}
-               [:div#options "my options!"])])
+  [:get ["/"] nil]
+  [:get ["/new-root-page"]
+   (t/frame
+    frame-options-options
+    [:h2 "No root page exists. Please create a new one."]
+    (page-form {:parent 0}))]
+  [:post ["/new-root-page" {:keys [parent name title type template app uri] :as data}]
+   (if (valid-page? data)
+     "asdf"
+     (t/frame
+      frame-options-options
+      [:h2 "No root page exists. Please create a new one."]
+      (page-form {:parent parent :name name :title title :type type
+                  :template template :app app :uri uri})))])

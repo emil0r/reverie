@@ -20,7 +20,8 @@
 (defn- get-meta []
   {:init-root-page? (init-root-page?)
    :templates (map util/kw->str (keys @atoms/templates))
-   :objects (map util/kw->str (keys @atoms/objects))})
+   :objects (map util/kw->str (keys @atoms/objects))
+   :apps (map util/kw->str (keys @atoms/apps))})
 
 (rev/defpage "/admin/api" {:middleware [[wrap-json-params]
                                         [wrap-json-response]]}

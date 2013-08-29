@@ -1,4 +1,5 @@
-(ns reverie.atoms)
+(ns reverie.atoms
+  (:use [reverie.util :only [kw->str]]))
 
 (defonce apps (atom {}))
 (defonce modules (atom {}))
@@ -41,4 +42,12 @@
 (defn update-route-data! [uri k v]
   (if-let [[uri route-data] (get-route uri)]
     (swap! routes assoc uri (assoc route-data k v))))
+
+
+(defn get-templates []
+  (map kw->str (keys @templates)))
+(defn get-apps []
+  (map kw->str (keys @apps)))
+(defn get-objects []
+  (map kw->str (keys @objects)))
 

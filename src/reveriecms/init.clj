@@ -2,7 +2,8 @@
   (:require [lobos.core :as lobos]
             [lobos.migrations :as migrations]
             [reverie.auth.user :as user]
-            [reverie.server :as server])
+            [reverie.server :as server]
+            reveriecms.templates.main)
   (:use [korma.db :only [defdb postgres]]))
 
 (defdb reveriecms-db (postgres {:db "reveriecms"
@@ -23,7 +24,7 @@
 (defn init []
   (migrations/open-global-when-necessary lobos-db)
   (lobos.core/migrate)
-  (server/load-views "admin"))
+  (server/load-views "templates"))
 
 ;;(init)
 ;;(init-db)
