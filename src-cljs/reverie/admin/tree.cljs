@@ -52,13 +52,16 @@
           }
     }))
 
+(defn ^:export reload []
+  (util/log "Reload tree...")
+  (util/log (-> :#tree jq/$))
+  (-> :#tree
+      jq/$
+      (.dynatree "reload")))
+
 (defn init []
   (-> (jq/$ :#tree)
       (.dynatree (get-settings))))
-
-(defn start [$elem url]
-  )
-
 
 
 (defn ^:export dev-init []

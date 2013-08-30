@@ -8,7 +8,8 @@
             [reverie.page :as page]
             [reverie.responses :as r]
             [reverie.util :as util])
-  (:use [hiccup core form]))
+  (:use [cheshire.core :only [generate-string]]
+        [hiccup core form]))
 
 
 (defn- user-info [user]
@@ -105,13 +106,15 @@
     (page-form {:parent 0}))]
   [:post ["/new-root-page" {:keys [parent name title type template app uri] :as data}]
    (if (valid-page? data)
-     (do
-       (page/add! {:tx-data {:uri "/" :order 0 :version 0 :name name :app (or app "")
-                             :title title :parent (read-string parent) :type type :template (or template "")}})
+     (let [tx (page/add! {:tx-data {:uri "/" :order 0 :version 0
+                                    :name name :app (or app "")
+                                    :title title :parent (read-string parent)
+                                    :type type :template (or template "")}})]
+       
        (t/frame
-        frame-options-options
-        [:h2 "Root page added!"]
-        [:div.added]))
+        (assoc frame-options-options :custom-js
+               ["parent.control.framec.reverie.admin.tree.reload();"])
+        [:h2 "Root page added!"]))
      (t/frame
       frame-options-options
       [:h2 "No root page exists. Please create a new one."]

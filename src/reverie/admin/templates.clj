@@ -12,16 +12,23 @@
 (defn- get-body [body & [opt]]
   [:body [:div.container opt body]])
 
+(defn- custom-js [js]
+  [:script {:type "text/javascript"}
+   (str "$(document).ready(function(){"
+        (apply str js)
+        "});")])
+
 (defn includes [m]
   (reduce (fn [out k]
             (if (-> m k nil?)
               out
               (cond
-               (= k :css) (conj out (map include-css (:css m)))
-               (= k :js) (conj out (map include-js (:js m)))
+               (= k :css) (apply conj out (reverse (apply include-css (:css m))))
+               (= k :js) (apply conj out (reverse (apply include-js (:js m))))
+               (= k :custom-js) (conj out (custom-js (:custom-js m)))
                (= k :head) (apply conj out (reverse (:head m))))))
-          []
-          (keys m)))
+          (list)
+          [:custom-js :head :js :css]))
 
 (defn main [m & body]
   (let [m (mould-keys m)]
