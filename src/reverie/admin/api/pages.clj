@@ -2,35 +2,38 @@
   (:require [korma.core :as k]
             [reverie.core :as rev])
   (:use reverie.entity
+        [reverie.util :only [published?]]
         [ring.middleware.json :only [wrap-json-params
                                      wrap-json-response]]))
 
-(def test-pages (atom [{:title "Start"
-                        :id 1
-                        :children [{:title "Test 1"
-                                    :id 2}
-                                   {:title "Test 2"
-                                    :id 3}
-                                   {:title "Test 3"
-                                    :id 4}
-                                   {:title "Test 4"
-                                    :id 5
-                                    :children [{:title "Test 4.1"
-                                                :id 8}
-                                               {:title "Test 4.2"
-                                                :id 9}
-                                               {:title "Test 4.3"
-                                                :id 10}]}
-                                   {:title "Test 5"
-                                    :id 6}
-                                   {:title "Test 6"
-                                    :id 7}]}]))
+(defn- page->data [p & [lazy?]]
+  {:title (:name p)
+   :real-title (:title p)
+   :uri (:uri p)
+   :id (:id p)
+   :key (:serial p)
+   :serial (:serial p)
+   :published? (published? p)
+   :isLazy (if (nil? lazy?) true lazy?)
+   :created (:created p)
+   :updated (:updated p)
+   :order (:order p)})
+
+(defn- get-pages [id]
+  (let [p (first (k/select page (k/where {:id id})))
+        children (k/select page (k/where {:version 0
+                                          :parent id}))]
+    (if (empty? children)
+      (page->data p false)
+      (assoc (page->data p) :children (map page->data children)))))
 
 
 (rev/defpage "/admin/api/pages" {:middleware [[wrap-json-params]
                                               [wrap-json-response]]}
   [:get ["/read"]
-   @test-pages]
+   (get-pages (-> (k/select page (k/where {:version 0 :parent 0})) first :id))]
+  [:get ["/read/:parent"]
+   (get-pages (read-string parent))]
   [:post ["/write" data]
    false]
   [:post ["/add" data]

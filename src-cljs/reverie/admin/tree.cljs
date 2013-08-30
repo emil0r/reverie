@@ -1,5 +1,6 @@
 (ns reverie.admin.tree
   (:require [reverie.dom :as dom]
+            [reverie.meta :as meta]
             [jayq.core :as jq]
             [jayq.util :as util]
             [crate.core :as crate]))
@@ -31,6 +32,10 @@
   ;;(util/log "on-drag-leave" node source-node)
   )
 
+(defn on-activation [e]
+  (let [data (js->clj (.-data e) :keywordize-keys true)]
+    (meta/display data)))
+
 (defn- get-settings []
   (clj->js
    { :initAjax {:url "/admin/api/pages/read"
@@ -38,8 +43,7 @@
     :debugLevel 0
     :imagePath "../css/dyna-skin/"
     :keyboard false
-    ;;:onActivate util/log
-    ;;:onDeactivate util/log
+    :onActivate on-activation
     :dnd {
           :onDragStart on-drag-start
           :onDragStop on-drag-stop

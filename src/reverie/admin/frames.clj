@@ -99,11 +99,13 @@
 
 (rev/defpage "/admin/frame/options" {}
   [:get ["/"] nil]
+
   [:get ["/new-root-page"]
    (t/frame
     frame-options-options
     [:h2 "No root page exists. Please create a new one."]
     (page-form {:parent 0}))]
+
   [:post ["/new-root-page" {:keys [parent name title type template app uri] :as data}]
    (if (valid-page? data)
      (let [tx (page/add! {:tx-data {:uri "/" :order 0 :version 0
@@ -119,4 +121,17 @@
       frame-options-options
       [:h2 "No root page exists. Please create a new one."]
       (page-form {:parent parent :name name :title title :type type
-                  :template template :app app :uri uri})))])
+                  :template template :app app :uri uri})))]
+
+  [:get ["/publish/:serial"]
+   (let [p (page/get {:serial (read-string serial) :version 0})]
+    (t/frame
+     frame-options-options
+     [:h2 "Publishing"]
+     [:table.table.small
+      [:tr [:th "Name"] [:td (:name p)]]
+      [:tr [:th "Title"] [:td (:title p)]]
+      [:tr [:th "Created"] [:td (:created p)]]
+      [:tr [:th "Updated"] [:td (:updated p)]]
+      [:tr [:th "Published?"] [:td (util/published? p)]]
+      [:tr [:th] [:td (submit-button {:class "btn btn-primary"} "Publish")]]]))])

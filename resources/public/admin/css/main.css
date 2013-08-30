@@ -2163,6 +2163,12 @@ h6 {
 .meta {
   padding: 5px;
 }
+.meta .buttons {
+  margin: 15px 0;
+}
+.meta .edit {
+  margin-left: 10px;
+}
 .container.frame {
   margin: 0;
 }
