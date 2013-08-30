@@ -6,7 +6,8 @@
 (rev/deftemplate main {}
   (html5
    [:head
-    [:charset "utf-8"]
+    [:meta {:charset "utf-8"}]
     [:title (str (-> request :page :title) " &mdash; reverie/cms")]]
    [:body
+    "area a"
     (rev/area :a)]))
