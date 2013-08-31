@@ -56,6 +56,10 @@
       (jq/on :click :.icon-eye-open nil foo)
       (jq/on :click :.icon-trash nil foo)))
 
+(defn on-lazy-read [node]
+  (let [serial (-> node .-data .-serial)]
+   (.appendAjax node (clj->js {:url (str "/admin/api/pages/read/" serial)}))))
+
 (defn on-activation [e]
   (let [data (js->clj (.-data e) :keywordize-keys true)]
     (meta/display data)))
@@ -67,6 +71,7 @@
     :debugLevel 0
     :imagePath "../css/dyna-skin/"
     :keyboard false
+    :onLazyRead on-lazy-read
     :onActivate on-activation
     :dnd {
           :onDragStart on-drag-start
@@ -84,6 +89,9 @@
   (-> :#tree
       jq/$
       (.dynatree "reload")))
+
+(defn ^:export added! [data]
+  )
 
 
 (defn ^:export init []

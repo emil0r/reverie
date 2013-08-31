@@ -20,28 +20,29 @@
    :updated (:updated p)
    :order (:order p)})
 
-(defn- get-pages [id]
-  (let [p (first (k/select page (k/where {:id id})))
+(defn- get-pages [serial root?]
+  (let [p (first (k/select page (k/where {:serial serial :version 0})))
         children (k/select page (k/where {:version 0
                                           :parent (:serial p)}))
         grand-children (k/select page (k/where {:version 0
-                                                :parent [in (map :serial children)]}))]
-    (println grand-children)
-    (if (empty? children)
-      (page->data p false)
-      (assoc (page->data p) :children
-             (map (fn [{:keys [serial] :as c}]
-                    (page->data c (some #(do
-                                           (println (:parent %) serial)
-                                           (= (:parent %) serial)) grand-children))) children)))))
+                                                :parent [in (map :serial children)]}))
+        children (map (fn [{:keys [serial] :as c}]
+                        (page->data
+                         c
+                         (some #(= (:parent %) serial)
+                               grand-children))) children)]
+    (cond
+     (and root? (empty? children)) (page->data p false)
+     root? (assoc (page->data p) :children children)
+     :else children)))
 
 
 (rev/defpage "/admin/api/pages" {:middleware [[wrap-json-params]
                                               [wrap-json-response]]}
   [:get ["/read"]
-   (get-pages (-> (k/select page (k/where {:version 0 :parent 0})) first :id))]
+   (get-pages (-> (k/select page (k/where {:version 0 :parent 0})) first :serial) true)]
   [:get ["/read/:parent"]
-   (get-pages (read-string parent))]
+   (get-pages (read-string parent) false)]
   [:post ["/write" data]
    false]
   [:post ["/add" data]
