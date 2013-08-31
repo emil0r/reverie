@@ -7,6 +7,7 @@
                                      wrap-json-response]]))
 
 (defn- page->data [p & [lazy?]]
+  (println (:serial p) lazy?)
   {:title (:name p)
    :real-title (:title p)
    :uri (:uri p)
@@ -14,7 +15,7 @@
    :key (:serial p)
    :serial (:serial p)
    :published? (published? p)
-   :isLazy (if (nil? lazy?) true lazy?)
+   :isLazy (if (nil? lazy?) false lazy?)
    :created (:created p)
    :updated (:updated p)
    :order (:order p)})
@@ -22,10 +23,17 @@
 (defn- get-pages [id]
   (let [p (first (k/select page (k/where {:id id})))
         children (k/select page (k/where {:version 0
-                                          :parent id}))]
+                                          :parent (:serial p)}))
+        grand-children (k/select page (k/where {:version 0
+                                                :parent [in (map :serial children)]}))]
+    (println grand-children)
     (if (empty? children)
       (page->data p false)
-      (assoc (page->data p) :children (map page->data children)))))
+      (assoc (page->data p) :children
+             (map (fn [{:keys [serial] :as c}]
+                    (page->data c (some #(do
+                                           (println (:parent %) serial)
+                                           (= (:parent %) serial)) grand-children))) children)))))
 
 
 (rev/defpage "/admin/api/pages" {:middleware [[wrap-json-params]
