@@ -2171,6 +2171,7 @@ h6 {
 }
 .container.frame {
   margin: 0;
+  padding: 0;
 }
 .container.frame .table.small {
   width: 400px;
