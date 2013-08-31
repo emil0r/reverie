@@ -7,6 +7,7 @@
                  [ring "1.2.0"]
                  ;;[ring-anti-forgery "0.2.1"]
                  [ring/ring-json "0.2.0"]
+                 [clj-time "0.6.0"]
                  [korma "0.3.0-RC5"]
                  [me.raynes/fs "1.4.5"]
                  [clout "1.1.0"]

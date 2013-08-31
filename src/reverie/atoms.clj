@@ -1,4 +1,5 @@
 (ns reverie.atoms
+  (:require [clj-time.core :as time])
   (:use [korma.core :only [select where order]]
         [reverie.entity :only [page]]
         [reverie.util :only [kw->str published?]]))
@@ -8,8 +9,16 @@
 (defonce objects (atom {}))
 (defonce pages (atom {}))
 (defonce routes (atom {}))
-(defonce settings (atom {}))
+(defonce settings (atom {:edits {}}))
 (defonce templates (atom {}))
+
+(defn edit! [uri user]
+  (swap! settings assoc-in [:edits uri] {:time (time/now)
+                                         :user user}))
+
+(defn view! [uri]
+  (swap! settings update-in [:edits] dissoc uri))
+
 
 (defn get-object-entity [name]
   (:entity (get @objects (keyword name))))

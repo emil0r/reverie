@@ -25,18 +25,6 @@
  (:name (page/get {:serial 1 :version 0 })) => "Updated!")
 
 (fact
- "page/edit!"
- (let [r (request :get "/test")]
-  [(page/edit! r)
-   (page/mode? r :edit)]) => [true true])
-
-(fact
- "page/view!"
- (let [r (request :get "/test")]
-   [(page/view! r)
-    (page/mode? r :view)]) => [true true])
-
-(fact
  "page/render -> template options"
  (let [page (page/add! {:tx-data {:updated (korma/sqlfn now)
                                   :name "Template options" :title "Test"
