@@ -8,9 +8,14 @@
   (-> string str (s/replace #":" "")))
 
 (defn published?
-  "object/page == x"
+  "x == object/page"
   [x]
   (= 1 (:version x)))
+
+(defn trash?
+  "x == object/page"
+  [x]
+  (= -1 (:version x)))
 
 (defn shorten-uri
   "shortens the uri by removing the unwanted part"
