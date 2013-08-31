@@ -32,6 +32,8 @@
                         (varchar :uri 2048 :not-null)
                         (integer :parent)
                         (integer :order :not-null)
+                        
+                        ;; -1 for trash, 0 for edit, 1 for public, >1 for versioning
                         (integer :version :not-null)
 
                         (index :page_index_serial [:serial])
