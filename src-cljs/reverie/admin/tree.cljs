@@ -90,8 +90,8 @@
       jq/$
       (.dynatree "reload")))
 
-(defn ^:export added! [data]
-  )
+(defn ^:export added [data]
+  (.addChild (get-active-node) data))
 
 
 (defn ^:export init []

@@ -7,7 +7,6 @@
                                      wrap-json-response]]))
 
 (defn- page->data [p & [lazy?]]
-  (println (:serial p) lazy?)
   {:title (:name p)
    :real-title (:title p)
    :uri (:uri p)
@@ -50,8 +49,4 @@
   [:post ["/delete" data]
    false]
   [:post ["/search" data]
-   false]
-  [:post ["/publish" data]
-   false]
-  [:post ["/unpublish" data]
    false])

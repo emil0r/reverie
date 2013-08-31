@@ -164,15 +164,26 @@
    (if (valid-page? data)
      (let [p (page/get {:serial (read-string parent) :version 0})
            base-uri (:uri p)
-           tx (page/add! {:parent (:id p)
-                          :tx-data {:uri (util/join-uri base-uri uri) :order 0
-                                    :name name :app (or app "")
-                                    :title title :parent (read-string parent)
-                                    :type type :template (or template "")}})]
-       
+           tx (:tx (page/add! {:parent (:id p)
+                               :tx-data {:uri (util/join-uri base-uri uri) :order 0
+                                         :name name :app (or app "")
+                                         :title title :parent (read-string parent)
+                                         :type type :template (or template "")}}))]
        (t/frame
         (assoc frame-options-options :custom-js
-               ["parent.control.framec.reverie.admin.tree.reload();"])
+               ["parent.control.framec.reverie.admin.tree.added("
+                (generate-string {:serial (:serial tx)
+                                  :title name
+                                  :real-title title
+                                  :uri (:uri tx)
+                                  :updated (:updated tx)
+                                  :created (:created tx)
+                                  :id (:id tx)
+                                  :key (:serial tx)
+                                  :published? false
+                                  :isLazy false
+                                  :order (:order tx)})
+                ");"])
         [:h2 (str name " added!")]))
      (t/frame
       frame-options-options

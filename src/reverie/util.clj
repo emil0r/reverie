@@ -82,12 +82,8 @@
 (defn join-uri
   "Join two or more fragmets of an URI together"
   [& uris]
-  (loop [uri "/"
-         [u & uris] (map #(s/replace % #"\/" "") uris)]
+  (loop [parts []
+         [u & uris] uris]
     (if (nil? u)
-      uri
-      (cond
-       (and (= u "/") (= uri "/")) (recur uri uris)
-       (= uri "/") (recur (str uri u) uris)
-       (= u "/") (recur uri uris)
-       :else (recur (str uri "/" u) uris)))))
+      (str "/" (s/join "/" (flatten parts)))
+      (recur (conj parts (remove s/blank? (s/split u #"/"))) uris))))
