@@ -19,6 +19,14 @@
 (defn view! [uri]
   (swap! settings update-in [:edits] dissoc uri))
 
+(defn edit?
+  ([uri]
+     (not (nil? (get-in @settings [:edits uri]))))
+  ([uri user]
+     (and
+      (not (nil? (get-in @settings [:edits uri])))
+      (= user (get-in @settings [:edits uri :user])))))
+
 
 (defn get-object-entity [name]
   (:entity (get @objects (keyword name))))
