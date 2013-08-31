@@ -78,3 +78,16 @@
       (if-let [wares (:middleware option)]
         (recur (apply conj middleware wares) options)
         (recur middleware options)))))
+
+(defn join-uri
+  "Join two or more fragmets of an URI together"
+  [& uris]
+  (loop [uri "/"
+         [u & uris] (map #(s/replace % #"\/" "") uris)]
+    (if (nil? u)
+      uri
+      (cond
+       (and (= u "/") (= uri "/")) (recur uri uris)
+       (= uri "/") (recur (str uri u) uris)
+       (= u "/") (recur uri uris)
+       :else (recur (str uri "/" u) uris)))))
