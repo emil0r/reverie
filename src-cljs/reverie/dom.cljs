@@ -58,3 +58,10 @@
             .-main
             .-frameo
             .-location) uri))
+
+(defn main-uri! [uri]
+  (set! (-> js/window
+            .-parent
+            .-main
+            .-framem
+            .-location) uri))

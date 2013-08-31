@@ -1,6 +1,5 @@
 (ns reverie.admin.frames
-  (:require [korma.core :as k]
-            [noir.validation :as v]
+  (:require [noir.validation :as v]
             [reverie.admin.templates :as t]
             [reverie.atoms :as atoms]
             [reverie.auth.user :as user]
@@ -39,11 +38,11 @@
                 [:i.icon-search]
                 [:div#tree]
                 [:div.icons
-                 [:i.icon-refresh]
-                 [:i.icon-plus-sign]
-                 [:i.icon-edit-sign]
-                 [:i.icon-eye-open.hidden]
-                 [:i.icon-trash]]]
+                 [:i.icon-refresh {:title "Refresh"}]
+                 [:i.icon-plus-sign {:title "Add page"}]
+                 [:i.icon-edit-sign {:title "Edit mode"}]
+                 [:i.icon-eye-open.hidden {:title "View mode"}]
+                 [:i.icon-trash {:title "Trash it"}]]]
 
                [:div.meta])])
 
@@ -73,7 +72,7 @@
     (hidden-field :parent parent)
     (table-row (label :name "Name") (text-field :name name) (v/on-error :name error-item))
     (table-row (label :title "Title") (text-field :title title) nil)
-    (if (nil? parent)
+    (if (pos? parent)
       (table-row (label :uri "Uri") (text-field :uri uri) (v/on-error :uri error-item)))
     (table-row (label :type "Type") (drop-down :type ["normal" "app"] type) nil)
     (table-row {:class "template"} (label :template "Template") (drop-down :template (atoms/get-templates) template) (v/on-error :template error-item))
@@ -82,18 +81,26 @@
 
 
 (defn- valid-uri? [uri]
-  (not (nil? (re-find #"[^a-zA-Z0-9\.\-\_]" uri))))
+  (nil? (re-find #"[^a-zA-Z0-9\.\-\_]" uri)))
+
+(defn- conflicting-uri? [parent uri]
+  (let [compare-uri (str (:uri (page/get {:serial parent :version 0}))
+                         "/" uri)
+        pages (page/get* {:parent parent :version 0})]
+    (empty? (filter #(= compare-uri (:uri %)) pages))))
 
 (defn valid-page? [{:keys [parent name type template app uri]}]
-  (v/rule (v/has-value? name) [:name "Name is required"])
-  (if (= type "normal")
-    (v/rule (v/has-value? template) [:template "You must choose a template"])
-    (v/rule (v/has-value? app) [:app "You must choose an app"]))
-  (if (not (= parent "0"))
-    (do
-      (v/rule (valid-uri? uri) [:uri "The URI is not valid. Only a-zA-Z0-9.-_ is allowed."])
-      (v/rule (v/has-value? uri) [:uri "The URI must have a path"])))
-  (not (v/errors? :name :template :app :uri)))
+  (let [parent (read-string parent)]
+    (v/rule (v/has-value? name) [:name "Name is required"])
+    (if (= type "normal")
+      (v/rule (v/has-value? template) [:template "You must choose a template"])
+      (v/rule (v/has-value? app) [:app "You must choose an app"]))
+    (if (not (zero? parent))
+      (do
+        (v/rule (valid-uri? uri) [:uri "The URI is not valid. Only a-zA-Z0-9.-_ is allowed."])
+        (v/rule (conflicting-uri? parent uri) [:uri "The URI conflicts with another page using the same URI."])
+        (v/rule (v/has-value? uri) [:uri "The URI must have a path"])))
+    (not (v/errors? :name :template :app :uri))))
 
 
 (rev/defpage "/admin/frame/options" {}
@@ -119,7 +126,7 @@
      (t/frame
       frame-options-options
       [:h2 "No root page exists. Please create a new one."]
-      (page-form {:parent parent :name name :title title :type type
+      (page-form {:parent (read-string parent) :name name :title title :type type
                   :template template :app app :uri uri})))]
 
   [:get ["/publish/:serial"]
@@ -144,4 +151,31 @@
         (do
           (page/publish! {:serial (read-string serial)})
           [:div.success "Published!"])
-        [:div.error "You are not allowed to publish"])))])
+        [:div.error "You are not allowed to publish"])))]
+
+  [:get ["/add-page"]
+   (let [serial (get-in request [:params :serial])]
+    (t/frame
+     frame-options-options
+     [:h2 "New page"]
+     (page-form {:parent (read-string serial)})))]
+  
+  [:post ["/add-page" {:keys [parent name title type template app uri] :as data}]
+   (if (valid-page? data)
+     (let [p (page/get {:serial (read-string parent) :version 0})
+           base-uri (:uri p)
+           tx (page/add! {:parent (:id p)
+                          :tx-data {:uri (util/join-uri base-uri uri) :order 0
+                                    :name name :app (or app "")
+                                    :title title :parent (read-string parent)
+                                    :type type :template (or template "")}})]
+       
+       (t/frame
+        (assoc frame-options-options :custom-js
+               ["parent.control.framec.reverie.admin.tree.reload();"])
+        [:h2 (str name " added!")]))
+     (t/frame
+      frame-options-options
+      [:h2 "New page"]
+      (page-form {:parent (read-string parent) :name name :title title :type type
+                  :template template :app app :uri uri})))])

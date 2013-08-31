@@ -16,7 +16,15 @@
     (dom/show-options)))
 
 (defn edit-page! [e]
-  (util/log e)
+  ;;(util/log e)
   (dom/show-options)
   ;;(dom/options-uri! "/admin/frame/options/edit")
   )
+
+(defn add-page! [serial]
+  (dom/options-uri! (str "/admin/frame/options/add-page?serial=" serial))
+  (dom/show-options))
+
+(defn refresh! [uri]
+  (dom/main-uri uri)
+  (dom/show-main))

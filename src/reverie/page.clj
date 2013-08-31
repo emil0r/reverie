@@ -48,8 +48,7 @@
     (-> page (k/select (k/where {:id page-id})) first util/revmap->kw)))
 
 (defn- get-last-page-order [request]
-  (let [p (get request)
-        parent (or (:parent p) (:id p))]
+  (let [parent (or (:parent request) (:id (get request)))]
     (+ 1
        (or
         (-> page (k/select (k/aggregate (max :order) :order)
@@ -115,6 +114,8 @@
         tx-data (util/revmap->str (assoc tx-data
                                     :serial (or (:serial tx-data)
                                                 (get-serial-page))
+                                    :order (or (:order tx-data)
+                                               (get-last-page-order request))
                                     :version (or (:version tx-data) 0)
                                     :updated (or (:updated tx-data) (k/sqlfn now))
                                     :type type))

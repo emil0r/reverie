@@ -1,10 +1,10 @@
 (ns reverie.admin.tree
   (:require [reverie.dom :as dom]
             [reverie.meta :as meta]
+            [reverie.admin.options :as options]
             [jayq.core :as jq]
             [jayq.util :as util]
             [crate.core :as crate]))
-
 
 
 (defn- on-drag-start [node]
@@ -32,6 +32,13 @@
   ;;(util/log "on-drag-leave" node source-node)
   )
 
+(defn get-active-node []
+  (-> :#tree jq/$ (.dynatree "getActiveNode")))
+
+(defn foo [])
+
+
+
 (defn listen! []
   (-> :.icons
       jq/$
@@ -40,12 +47,14 @@
       (jq/off :click :.icon-edit-sign)
       (jq/off :click :.icon-eye-open)
       (jq/off :click :.icon-trash))
-  (-> :.meta
+  (-> :.icons
       jq/$
-      (jq/on :click :.edit nil options/edit-page!))
-  (-> :.meta
-      jq/$
-      (jq/on :click :.publish nil options/publish-page!)))
+      (jq/on :click :.icon-refersh nil foo)
+      (jq/on :click :.icon-plus-sign nil #(if-let [node (get-active-node)]
+                                            (options/add-page! (-> node .-data .-serial)) ))
+      (jq/on :click :.icon-edit-sign nil foo)
+      (jq/on :click :.icon-eye-open nil foo)
+      (jq/on :click :.icon-trash nil foo)))
 
 (defn on-activation [e]
   (let [data (js->clj (.-data e) :keywordize-keys true)]
@@ -72,15 +81,13 @@
     }))
 
 (defn ^:export reload []
-  (util/log "Reload tree...")
-  (util/log (-> :#tree jq/$))
   (-> :#tree
       jq/$
       (.dynatree "reload")))
 
 
 (defn ^:export init []
-  (util/log (get-settings))
+  ;;(util/log (get-settings))
   (-> :#tree
       jq/$
       jq/empty

@@ -12,8 +12,11 @@
 (defmulti init identity)
 (defmethod init "/admin/frame/options/new-root-page" []
   (page/init))
+(defmethod init "/admin/frame/options/add-page" []
+  (page/init))
 (defmethod init :default []
   (meta/listen!)
+  (tree/listen!)
   (meta/read! (fn []
                 (if (:init-root-page? @meta/data)
                   (options/new-root-page!))
