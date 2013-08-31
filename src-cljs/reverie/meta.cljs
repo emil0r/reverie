@@ -2,7 +2,8 @@
   (:require [crate.core :as crate]
             [jayq.core :as jq]
             [jayq.util :as util]
-            [reverie.admin.options :as options]))
+            [reverie.admin.options :as options]
+            [reverie.util :as util2]))
 
 (def data (atom {}))
 
@@ -17,16 +18,12 @@
 (defn listen! []
   (-> :.meta
       jq/$
-      (jq/off :click :.edit))
-  (-> :.meta
-      jq/$
+      (jq/off :click :.edit)
       (jq/off :click :.publish))
   (-> :.meta
       jq/$
-      (jq/on :click :.edit nil options/edit-page!))
-  (-> :.meta
-      jq/$
-      (jq/on :click :.publish nil options/publish-page!)))
+      (jq/on :click :.publish nil options/publish-page!)
+      (jq/on :click :.edit nil options/edit-page!)))
 
 (defn display [data]
   (-> :.meta
@@ -35,8 +32,8 @@
                             [:table.meta
                              [:tr [:th "Name"] [:td (:title data)]]
                              [:tr [:th "Title"] [:td (:real-title data)]]
-                             [:tr [:th "Created"] [:td (:created data)]]
-                             [:tr [:th "Updated"] [:td (:updated data)]]]
+                             [:tr [:th "Created"] [:td (util2/date-format (:created data))]]
+                             [:tr [:th "Updated"] [:td (util2/date-format (:updated data))]]]
                             [:div.buttons
                              [:div.btn.btn-primary.publish
                               {:serial (:serial data)

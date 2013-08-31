@@ -13,10 +13,11 @@
 (defmethod init "/admin/frame/options/new-root-page" []
   (page/init))
 (defmethod init :default []
+  (meta/listen!)
   (meta/read! (fn []
                 (if (:init-root-page? @meta/data)
                   (options/new-root-page!))
-                (tree/dev-init)
+                (tree/init)
                 (dev/start-repl))))
 
 (jq/document-ready

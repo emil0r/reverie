@@ -45,8 +45,7 @@
                  [:i.icon-eye-open.hidden]
                  [:i.icon-trash]]]
 
-               [:div.meta
-                "my meta stuff"])])
+               [:div.meta])])
 
 
 
@@ -128,10 +127,21 @@
     (t/frame
      frame-options-options
      [:h2 "Publishing"]
-     [:table.table.small
-      [:tr [:th "Name"] [:td (:name p)]]
-      [:tr [:th "Title"] [:td (:title p)]]
-      [:tr [:th "Created"] [:td (:created p)]]
-      [:tr [:th "Updated"] [:td (:updated p)]]
-      [:tr [:th "Published?"] [:td (util/published? p)]]
-      [:tr [:th] [:td (submit-button {:class "btn btn-primary"} "Publish")]]]))])
+     (form-to [:post ""]
+              [:table.table.small
+               [:tr [:th "Name"] [:td (:name p)]]
+               [:tr [:th "Title"] [:td (:title p)]]
+               [:tr [:th "Created"] [:td (:created p)]]
+               [:tr [:th "Updated"] [:td (:updated p)]]
+               [:tr [:th "Published?"] [:td (util/published? p)]]
+               [:tr [:th] [:td (submit-button {:class "btn btn-primary"} "Publish")]]])))]
+  [:post ["/publish/:serial" data]
+   (let [p (page/get {:serial (read-string serial) :version 0})]
+     (t/frame
+      frame-options-options
+      [:h2 "Publishing"]
+      (if (or (user/admin?) (user/staff?))
+        (do
+          (page/publish! {:serial (read-string serial)})
+          [:div.success "Published!"])
+        [:div.error "You are not allowed to publish"])))])

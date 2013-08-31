@@ -32,6 +32,21 @@
   ;;(util/log "on-drag-leave" node source-node)
   )
 
+(defn listen! []
+  (-> :.icons
+      jq/$
+      (jq/off :click :.icon-refresh)
+      (jq/off :click :.icon-plus-sign)
+      (jq/off :click :.icon-edit-sign)
+      (jq/off :click :.icon-eye-open)
+      (jq/off :click :.icon-trash))
+  (-> :.meta
+      jq/$
+      (jq/on :click :.edit nil options/edit-page!))
+  (-> :.meta
+      jq/$
+      (jq/on :click :.publish nil options/publish-page!)))
+
 (defn on-activation [e]
   (let [data (js->clj (.-data e) :keywordize-keys true)]
     (meta/display data)))
@@ -63,16 +78,11 @@
       jq/$
       (.dynatree "reload")))
 
-(defn init []
-  (-> (jq/$ :#tree)
-      (.dynatree (get-settings))))
 
-
-(defn ^:export dev-init []
+(defn ^:export init []
   (util/log (get-settings))
-  (-> (jq/$ :#tree)
-      jq/empty)
-  (init))
-
-;;(dev-init)
+  (-> :#tree
+      jq/$
+      jq/empty
+      (.dynatree (get-settings))))
 

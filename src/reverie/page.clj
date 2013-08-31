@@ -143,24 +143,24 @@
   (k/update page (k/set-fields {:active true :order (get-last-page-order request)}))
   request)
 
-(defn publish! [{:keys [page-id] :as request}]
-  (let [p (get request)
+(defn publish! [request]
+  (let [p (get (assoc request :version 0))
         pages (k/select page (k/where {:serial (:serial p)
-                                       :active true
-                                       :version [> 1]}))]
+                                       :version [>= 1]}))]
     (doseq [p pages]
       (k/update page
                 (k/set-fields {:version (+ 1 (:version p))})
                 (k/where {:id (:id p)})))
     (k/insert page
               (k/values (-> p
+                            util/revmap->str
                             (dissoc :id :version)
                             (assoc :version 1))))
-    (update-route! (:uri p) (assoc (get-route (:uri p)) :published? true))
+    (update-route! (:uri p) (assoc (second (get-route (:uri p))) :published? true))
     request))
 
-(defn unpublish! [{:keys [page-id] :as request}]
-  (let [p (get request)
+(defn unpublish! [request]
+  (let [p (get (assoc request :version 0))
         pages (k/select page (k/where {:serial (:serial p)
                                        :active true
                                        :version [> 0]}))]

@@ -11,8 +11,9 @@
 
 (defn publish-page! [e]
   (let [serial (-> e .-target jq/$ (jq/attr :serial))]
-    (dom/options-uri! (str "/admin/frame/options/publish/" serial)))
-  (dom/show-options))
+    (util/log "serial->" serial)
+    (dom/options-uri! (str "/admin/frame/options/publish/" serial))
+    (dom/show-options)))
 
 (defn edit-page! [e]
   (util/log e)
