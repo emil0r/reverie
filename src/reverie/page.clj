@@ -123,13 +123,18 @@
       (update-route! new-uri (get-route old-uri)))
     request))
 
-(defn delete! [{:keys [page-id] :as request}]
-  (k/update page (k/set-fields {:active false :order 0}))
-  request)
+(defn delete! [{:keys [serial]}]
+  (k/delete page
+            (k/where {:serial serial :version [> 0]}))
+  (k/update page
+            (k/set-fields {:order 0 :version -1})
+            (k/where {:serial serial :version 0})))
 
-(defn restore! [{:keys [page-id] :as request}]
-  (k/update page (k/set-fields {:active true :order (get-last-page-order request)}))
-  request)
+(defn restore! [{:keys [serial]}]
+  (k/update page
+            (k/set-fields {:order (get-last-page-order {:serial serial :version 0})
+                           :version 0})
+            (k/where {:serial serial :version -1})))
 
 (defn publish! [request]
   (let [p (get (assoc request :version 0))

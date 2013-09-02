@@ -32,14 +32,11 @@
   ;;(util/log "on-drag-leave" node source-node)
   )
 
-(defn get-active-node []
+(defn- get-active-node []
   (-> :#tree jq/$ (.dynatree "getActiveNode")))
 
-(defn refresh! [uri]
-  (util/log "refresh!")
-  
-  (dom/show-main)
-  (dom/main-uri! uri))
+(defn- get-node [serial]
+  (-> :#tree jq/$ (.dynatree "getTree") (.getNodeByKey (str serial))))
 
 (defn foo [])
 
@@ -56,12 +53,16 @@
   (-> :.icons
       jq/$
       (jq/on :click :.icon-refresh nil #(if-let [node (get-active-node)]
-                                         (refresh! (-> node .-data .-uri))))
+                                          (if-let [uri (-> node .-data .-uri)]
+                                            (options/refresh! uri))))
       (jq/on :click :.icon-plus-sign nil #(if-let [node (get-active-node)]
-                                            (options/add-page! (-> node .-data .-serial)) ))
+                                            (if-let [serial (-> node .-data .-serial)]
+                                              (options/add-page! serial))))
       (jq/on :click :.icon-edit-sign nil foo)
       (jq/on :click :.icon-eye-open nil foo)
-      (jq/on :click :.icon-trash nil foo)))
+      (jq/on :click :.icon-trash nil #(if-let [node (get-active-node)]
+                                            (if-let [serial (-> node .-data .-serial)]
+                                              (options/delete! serial))))))
 
 (defn on-lazy-read [node]
   (let [serial (-> node .-data .-serial)]
@@ -95,11 +96,24 @@
 (defn ^:export reload []
   (-> :#tree
       jq/$
-      (.dynatree "reload")))
+      (.dynatree "getTree")
+      (.reload)))
 
 (defn ^:export added [data]
   (.addChild (get-active-node) data))
 
+(defn ^:export deleted [data]
+  (let [serial (.-serial data)
+        node (get-node serial)
+        parent (get-node "trash")]
+    (set! (-> node .-data .-version) -1)
+    (.move node parent "child")))
+
+(defn ^:export restored [data]
+  (let [node (get-node (.-serial data))
+        parent (get-node (.-parent data))]
+    (set! (-> node .-data .-version) 0)
+    (.move node parent "child")))
 
 (defn ^:export init []
   ;;(util/log (get-settings))

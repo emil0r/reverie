@@ -19,29 +19,42 @@
   (-> :.meta
       jq/$
       (jq/off :click :.edit)
-      (jq/off :click :.publish))
+      (jq/off :click :.publish)
+      (jq/off :click :.restore))
   (-> :.meta
       jq/$
       (jq/on :click :.publish nil options/publish-page!)
-      (jq/on :click :.edit nil options/edit-page!)))
+      (jq/on :click :.edit nil options/edit-page!)
+      (jq/on :click :.restore nil options/restore!)))
 
 (defn display [data]
-  (-> :.meta
-      jq/$
-      (jq/html (crate/html [:div
-                            [:table.meta
-                             [:tr [:th "Name"] [:td (:title data)]]
-                             [:tr [:th "Title"] [:td (:real-title data)]]
-                             [:tr [:th "Created"] [:td (util2/date-format (:created data))]]
-                             [:tr [:th "Updated"] [:td (util2/date-format (:updated data))]]]
-                            [:div.buttons
-                             [:div.btn.btn-primary.publish
-                              {:serial (:serial data)
-                               :page-id (:id data)}
-                              (if (:published? data)
-                                "Unpublish"
-                                "Publish")]
-                             [:div.btn.btn-primary.edit
-                              {:serial (:serial data)
-                               :page-id (:id data)}
-                              "Edit"]]]))))
+  (case (:version data)
+    "trash" (-> :.meta
+                jq/$
+                jq/empty)
+    -1 (-> :.meta
+             jq/$
+             (jq/html (crate/html
+                       [:div.buttons
+                        [:div.btn.btn-primary.restore
+                         {:serial (:serial data)}
+                         "Restore"]])))
+    (-> :.meta
+        jq/$
+        (jq/html (crate/html [:div
+                              [:table.meta
+                               [:tr [:th "Name"] [:td (:title data)]]
+                               [:tr [:th "Title"] [:td (:real-title data)]]
+                               [:tr [:th "Created"] [:td (util2/date-format (:created data))]]
+                               [:tr [:th "Updated"] [:td (util2/date-format (:updated data))]]]
+                              [:div.buttons
+                               [:div.btn.btn-primary.publish
+                                {:serial (:serial data)
+                                 :page-id (:id data)}
+                                (if (:published? data)
+                                  "Unpublish"
+                                  "Publish")]
+                               [:div.btn.btn-primary.edit
+                                {:serial (:serial data)
+                                 :page-id (:id data)}
+                                "Edit"]]])))))

@@ -14,6 +14,10 @@
   (page/init))
 (defmethod init "/admin/frame/options/add-page" []
   (page/init))
+(defmethod init "/admin/frame/options/restore" []
+  (page/init))
+(defmethod init "/admin/frame/options/delete" []
+  (page/init))
 (defmethod init :default []
   (meta/listen!)
   (tree/listen!)

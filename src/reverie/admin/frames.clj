@@ -131,17 +131,17 @@
 
   [:get ["/publish/:serial"]
    (let [p (page/get {:serial (read-string serial) :version 0})]
-    (t/frame
-     frame-options-options
-     [:h2 "Publishing"]
-     (form-to [:post ""]
-              [:table.table.small
-               [:tr [:th "Name"] [:td (:name p)]]
-               [:tr [:th "Title"] [:td (:title p)]]
-               [:tr [:th "Created"] [:td (:created p)]]
-               [:tr [:th "Updated"] [:td (:updated p)]]
-               [:tr [:th "Published?"] [:td (util/published? p)]]
-               [:tr [:th] [:td (submit-button {:class "btn btn-primary"} "Publish")]]])))]
+     (t/frame
+      frame-options-options
+      [:h2 "Publishing"]
+      (form-to [:post ""]
+               [:table.table.small
+                [:tr [:th "Name"] [:td (:name p)]]
+                [:tr [:th "Title"] [:td (:title p)]]
+                [:tr [:th "Created"] [:td (:created p)]]
+                [:tr [:th "Updated"] [:td (:updated p)]]
+                [:tr [:th "Published?"] [:td (util/published? p)]]
+                [:tr [:th] [:td (submit-button {:class "btn btn-primary"} "Publish")]]])))]
   [:post ["/publish/:serial" data]
    (let [p (page/get {:serial (read-string serial) :version 0})]
      (t/frame
@@ -153,12 +153,74 @@
           [:div.success "Published!"])
         [:div.error "You are not allowed to publish"])))]
 
+  [:get ["/restore"]
+   (let [serial (get-in request [:params :serial])
+         p (page/get {:serial (read-string serial) :version -1})]
+     (t/frame
+      frame-options-options
+      [:h2 "Restore: " (:name p)]
+      (form-to [:post ""]
+               [:table.table.small
+                [:tr [:th "Name"] [:td (:name p)]]
+                [:tr [:th "Title"] [:td (:title p)]]
+                [:tr [:th "Created"] [:td (:created p)]]
+                [:tr [:th "Updated"] [:td (:updated p)]]
+                [:tr [:th] [:td (submit-button {:class "btn btn-primary"} "Restore")]]])))]
+  [:post ["/restore" data]
+   (let [serial (get-in request [:params :serial])
+         p (page/get {:serial (read-string serial) :version -1})]
+     (if (or (user/admin?) (user/staff?))
+        (do
+          (page/restore! {:serial (read-string serial)})
+          (t/frame
+           (assoc frame-options-options :custom-js
+                  ["parent.control.framec.reverie.admin.tree.restored("
+                   (generate-string {:serial (:serial p)
+                                     :parent (:parent p)})
+                   ");"])
+           [:h2 "Restore: " (:name p)]
+           [:div.success "Restored!"]))
+        (t/frame
+         frame-options-options
+         [:div.error "You are not allowed to restore this page"])))]
+  
+  [:get ["/delete"]
+   (let [serial (get-in request [:params :serial])
+         p (page/get {:serial (read-string serial) :version 0})]
+     (t/frame
+      frame-options-options
+      [:h2 "Delete: " (:name p)]
+      (form-to [:post ""]
+               [:table.table.small
+                [:tr [:th "Name"] [:td (:name p)]]
+                [:tr [:th "Title"] [:td (:title p)]]
+                [:tr [:th "Created"] [:td (:created p)]]
+                [:tr [:th "Updated"] [:td (:updated p)]]
+                [:tr [:th] [:td (submit-button {:class "btn btn-primary"} "Delete")]]])))]
+  
+  [:post ["/delete" data]
+   (let [serial (get-in request [:params :serial])
+         p (page/get {:serial (read-string serial) :version 0})]
+     (if (or (user/admin?) (user/staff?))
+        (do
+          (page/delete! {:serial (read-string serial)})
+          (t/frame
+           (assoc frame-options-options :custom-js
+                  ["parent.control.framec.reverie.admin.tree.deleted("
+                   (generate-string {:serial (:serial p)})
+                   ");"])
+           [:h2 "Delete: " (:name p)]
+           [:div.success "Deleted!"]))
+        (t/frame
+         frame-options-options 
+         [:div.error "You are not allowed to delete this page"])))]
+
   [:get ["/add-page"]
    (let [serial (get-in request [:params :serial])]
-    (t/frame
-     frame-options-options
-     [:h2 "New page"]
-     (page-form {:parent (read-string serial)})))]
+     (t/frame
+      frame-options-options
+      [:h2 "New page"]
+      (page-form {:parent (read-string serial)})))]
   
   [:post ["/add-page" {:keys [parent name title type template app uri] :as data}]
    (if (valid-page? data)

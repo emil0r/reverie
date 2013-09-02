@@ -17,7 +17,17 @@
    :isLazy (if (nil? lazy?) false lazy?)
    :created (:created p)
    :updated (:updated p)
-   :order (:order p)})
+   :order (:order p)
+   :parent (:parent p)
+   :version (:version p)})
+
+(defn- get-trash []
+  {:title "Trash"
+   :key "trash"
+   :version "trash"
+   :children (map page->data (k/select page
+                                       (k/where {:version -1})
+                                       (k/order :name :ASC)))})
 
 (defn- get-pages [serial root?]
   (let [p (first (k/select page (k/where {:serial serial :version 0})))
@@ -31,8 +41,8 @@
                          (some #(= (:parent %) serial)
                                grand-children))) children)]
     (cond
-     (and root? (empty? children)) (page->data p false)
-     root? (assoc (page->data p) :children children)
+     (and root? (empty? children)) [(page->data p false) (get-trash)]
+     root? [(assoc (page->data p) :children children) (get-trash)]
      :else children)))
 
 
