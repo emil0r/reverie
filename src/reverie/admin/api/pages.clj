@@ -1,6 +1,7 @@
 (ns reverie.admin.api.pages
   (:require [korma.core :as k]
-            [reverie.core :as rev])
+            [reverie.core :as rev]
+            [reverie.page :as page])
   (:use reverie.entity
         [reverie.util :only [published?]]
         [ring.middleware.json :only [wrap-json-params
@@ -56,5 +57,6 @@
    (get-pages (read-string parent) false)]
   [:post ["/search" data]
    false]
-  [:get ["/move/:node/:new-parent"]
-   false])
+  [:get ["/move/:node/:source-node/:hit-mode"]
+   ;; anchor serial hit-mode in that order
+   {:result (page/move! (read-string node) (read-string source-node) hit-mode)}])

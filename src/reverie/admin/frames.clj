@@ -228,7 +228,7 @@
      (let [p (page/get {:serial (read-string parent) :version 0})
            base-uri (:uri p)
            tx (:tx (page/add! {:parent (:id p)
-                               :tx-data {:uri (util/join-uri base-uri uri) :order 0
+                               :tx-data {:uri (util/join-uri base-uri uri)
                                          :name name :app (or app "")
                                          :title title :parent (read-string parent)
                                          :type type :template (or template "")}}))]
@@ -268,15 +268,15 @@
            p (page/get {:serial (read-string serial) :version 0})
            parent (page/get {:serial (read-string parent) :version 0})
            base-uri (:uri parent)
-           tx (:tx (page/updated! {:tx-data
-                                   (assoc p
-                                     :uri (util/join-uri base-uri uri) :order 0
-                                     :name name
-                                     :title title
-                                     :type type
-                                     :app (or app "")
-                                     :template (or template "")
-                                     :update (sqlfn now))}))]
+           tx (:tx (page/update! {:tx-data
+                                  (assoc p
+                                    :uri (util/join-uri base-uri uri) :order 0
+                                    :name name
+                                    :title title
+                                    :type type
+                                    :app (or app "")
+                                    :template (or template "")
+                                    :update (sqlfn now))}))]
        (t/frame
         (assoc frame-options-options :custom-js
                ["parent.control.framec.reverie.admin.tree.metad("

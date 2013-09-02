@@ -21,10 +21,19 @@
     (clj->js ["before" "after"])))
 
 (defn- on-drop [node source-node hit-mode ui draggable]
-  (let [parent-serial (-> source-node .-data .-serial)
-        serial (-> node .-data .-serial)]
-    (util/log "from->" (-> node .-data .-title) ", parent->" (-> source-node .-data .-title))
-    (.move source-node node hit-mode )))
+  (let [source-node-serial (-> source-node .-data .-serial)
+        node-serial (-> node .-data .-serial)]
+    (jq/xhr [:get (str "/admin/api/pages/move/"
+                       node-serial
+                       "/"
+                       source-node-serial
+                       "/"
+                       hit-mode)] (clj->js {})
+                       (fn [data]
+                         (if (.-result data)
+                           (do
+                             (.move source-node node hit-mode)
+                             (.expand source-node true)))))))
 
 (defn- get-active-node []
   (-> :#tree jq/$ (.dynatree "getActiveNode")))

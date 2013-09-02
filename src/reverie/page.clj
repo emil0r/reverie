@@ -163,3 +163,44 @@
                 (k/where {:id (:id p)})))
     (update-route! (:uri p) (assoc (get-route (:uri p)) :published? false))
     request))
+
+
+(defn move! [anchor serial hit-mode]
+  (let [{:keys [parent order]} (get {:serial anchor :version 0})]
+    (println "order->" order ", parent->" parent)
+    (case hit-mode
+      "before" (let [siblings (k/select page (k/where {:parent parent
+                                                       :order [> (+ order 1)]}))]
+                 ;; update node
+                 (k/update page
+                           (k/set-fields {:order order :parent parent})
+                           (k/where {:serial serial :version 0}))
+                 ;; update anchor
+                 (k/update page
+                           (k/set-fields {:order (+ order 1)})
+                           (k/where {:serial anchor :version 0}))
+                 ;; update siblings after anchor and new node
+                 (doseq [s siblings]
+                   (k/update page
+                             (k/set-fields {:order (+ (:order s) 1)})
+                             (k/where {:serial (:serial s) :version 0})))
+                 true)
+      "after" (let [siblings (k/select page (k/where {:parent parent
+                                                      :order [> (+ order 1)]}))]
+                ;; update node
+                (k/update page
+                          (k/set-fields {:order (+ order 1) :parent parent})
+                          (k/where {:serial serial :version 0}))
+                ;; update siblings
+                (doseq [s siblings]
+                  (k/update page
+                            (k/set-fields {:order (+ (:order s) 1)})
+                            (k/where {:serial (:serial s) :version 0})))
+                true)
+      "over" (do
+               (k/update page
+                         (k/set-fields {:order (get-last-page-order {:parent anchor})
+                                        :parent anchor})
+                         (k/where {:serial serial :version 0}))
+               true)
+      false)))
