@@ -18,13 +18,13 @@
 (defn listen! []
   (-> :.meta
       jq/$
-      (jq/off :click :.edit)
       (jq/off :click :.publish)
+      (jq/off :click :.meta)
       (jq/off :click :.restore))
   (-> :.meta
       jq/$
       (jq/on :click :.publish nil options/publish-page!)
-      (jq/on :click :.edit nil options/edit-page!)
+      (jq/on :click :.meta nil options/meta-page!)
       (jq/on :click :.restore nil options/restore!)))
 
 (defn display [data]
@@ -54,7 +54,7 @@
                                 (if (:published? data)
                                   "Unpublish"
                                   "Publish")]
-                               [:div.btn.btn-primary.edit
+                               [:div.btn.btn-primary.meta
                                 {:serial (:serial data)
                                  :page-id (:id data)}
-                                "Edit"]]])))))
+                                "Meta"]]])))))

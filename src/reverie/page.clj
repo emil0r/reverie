@@ -121,7 +121,7 @@
          (not (nil? new-uri))
          (not= new-uri old-uri))
       (update-route! new-uri (get-route old-uri)))
-    request))
+    {:tx result}))
 
 (defn delete! [{:keys [serial]}]
   (k/delete page

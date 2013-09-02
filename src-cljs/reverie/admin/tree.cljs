@@ -8,29 +8,23 @@
 
 
 (defn- on-drag-start [node]
-  (util/log "on-drag-start" node)
-  true)
-
-
-(defn- on-drag-stop [node]
-  (util/log "on-drag-stop" node)
-  )
+  (if (false? (-> node .-data .-draggable))
+    false
+    true))
 
 (defn- on-drag-enter [node source-node]
-  (util/log "on-drag-enter" node source-node)
   true)
 
 (defn- on-drag-over [node source-node hit-mode]
-  ;;(util/log "on-drag-over" node source-node hit-mode)
-  "after")
+  (if (false? (-> node .-data .-draggable))
+    false
+    (clj->js ["before" "after"])))
 
 (defn- on-drop [node source-node hit-mode ui draggable]
-  ;;(util/log "on-drop" node source-node hit-mode ui draggable)
-  (.move source-node node hit-mode ))
-
-(defn- on-drag-leave [node source-node]
-  ;;(util/log "on-drag-leave" node source-node)
-  )
+  (let [parent-serial (-> source-node .-data .-serial)
+        serial (-> node .-data .-serial)]
+    (util/log "from->" (-> node .-data .-title) ", parent->" (-> source-node .-data .-title))
+    (.move source-node node hit-mode )))
 
 (defn- get-active-node []
   (-> :#tree jq/$ (.dynatree "getActiveNode")))
@@ -83,11 +77,9 @@
     :onActivate on-activation
     :dnd {
           :onDragStart on-drag-start
-          :onDragStop on-drag-stop
           :onDragEnter on-drag-enter
           :onDragOver on-drag-over
           :onDrop on-drop
-          :onDragLeave on-drag-leave
           :autoExpandMS 1000
           :preventVoidMoves true
           }
@@ -115,10 +107,13 @@
     (set! (-> node .-data .-version) 0)
     (.move node parent "child")))
 
+(defn ^:export metad [data]
+  (dom/main-uri! (.-uri data))
+  (dom/show-main))
+
 (defn ^:export init []
   ;;(util/log (get-settings))
   (-> :#tree
       jq/$
       jq/empty
       (.dynatree (get-settings))))
-

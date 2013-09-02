@@ -8,6 +8,7 @@
             [reverie.responses :as r]
             [reverie.util :as util])
   (:use [cheshire.core :only [generate-string]]
+        [korma.core :only [sqlfn]]
         [hiccup core form]))
 
 
@@ -214,7 +215,7 @@
         (t/frame
          frame-options-options 
          [:div.error "You are not allowed to delete this page"])))]
-
+  
   [:get ["/add-page"]
    (let [serial (get-in request [:params :serial])]
      (t/frame
@@ -234,6 +235,51 @@
        (t/frame
         (assoc frame-options-options :custom-js
                ["parent.control.framec.reverie.admin.tree.added("
+                (generate-string {:serial (:serial tx)
+                                  :title name
+                                  :real-title title
+                                  :uri (:uri tx)
+                                  :updated (:updated tx)
+                                  :created (:created tx)
+                                  :id (:id tx)
+                                  :key (:serial tx)
+                                  :published? false
+                                  :isLazy false
+                                  :order (:order tx)})
+                ");"])
+        [:h2 (str name " added!")]))
+     (t/frame
+      frame-options-options
+      [:h2 "New page"]
+      (page-form {:parent (read-string parent) :name name :title title :type type
+                  :template template :app app :uri uri})))]
+
+  [:get ["/meta"]
+   (let [serial (get-in request [:params :serial])
+         p (page/get {:serial (read-string serial) :version 0})]
+     (t/frame
+      frame-options-options
+      [:h2 "Meta: " (:name p)]
+      (page-form p)))]
+  
+  [:post ["/meta" {:keys [parent name title type template app uri] :as data}]
+   (if (valid-page? data)
+     (let [serial (get-in request [:params :serial])
+           p (page/get {:serial (read-string serial) :version 0})
+           parent (page/get {:serial (read-string parent) :version 0})
+           base-uri (:uri parent)
+           tx (:tx (page/updated! {:tx-data
+                                   (assoc p
+                                     :uri (util/join-uri base-uri uri) :order 0
+                                     :name name
+                                     :title title
+                                     :type type
+                                     :app (or app "")
+                                     :template (or template "")
+                                     :update (sqlfn now))}))]
+       (t/frame
+        (assoc frame-options-options :custom-js
+               ["parent.control.framec.reverie.admin.tree.metad("
                 (generate-string {:serial (:serial tx)
                                   :title name
                                   :real-title title

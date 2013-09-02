@@ -16,11 +16,9 @@
   (dom/options-uri! (str "/admin/frame/options/publish/" (get-serial e)))
   (dom/show-options))
 
-(defn edit-page! [e]
-  ;;(util/log e)
+(defn meta-page! [e]
   (dom/show-options)
-  ;;(dom/options-uri! "/admin/frame/options/edit")
-  )
+  (dom/options-uri! (str "/admin/frame/options/meta?serial=" (get-serial e))))
 
 (defn add-page! [serial]
   (dom/options-uri! (str "/admin/frame/options/add-page?serial=" serial))
