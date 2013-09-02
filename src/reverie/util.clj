@@ -87,3 +87,14 @@
     (if (nil? u)
       (str "/" (s/join "/" (flatten parts)))
       (recur (conj parts (remove s/blank? (s/split u #"/"))) uris))))
+
+(defn uri-last-part
+  "Take any uri and only return the last part corresponding to the page"
+  [uri]
+  (last (remove s/blank? (s/split uri #"/"))))
+
+(defn uri-but-last-part
+  "Take any uri and return everything but the last part corresponding to the page"
+  [uri]
+  (s/join "/" (butlast (remove s/blank? (s/split uri #"/")))))
+

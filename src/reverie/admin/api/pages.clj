@@ -35,9 +35,11 @@
 (defn- get-pages [serial root?]
   (let [p (first (k/select page (k/where {:serial serial :version 0})))
         children (k/select page (k/where {:version 0
-                                          :parent (:serial p)}))
+                                          :parent (:serial p)})
+                           (k/order :order :ASC))
         grand-children (k/select page (k/where {:version 0
-                                                :parent [in (map :serial children)]}))
+                                                :parent [in (map :serial children)]})
+                                 (k/order :order :ASC))
         children (map (fn [{:keys [serial] :as c}]
                         (page->data
                          c

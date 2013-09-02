@@ -166,41 +166,54 @@
 
 
 (defn move! [anchor serial hit-mode]
-  (let [{:keys [parent order]} (get {:serial anchor :version 0})]
-    (println "order->" order ", parent->" parent)
+  (let [{:keys [parent order uri name]} (get {:serial anchor :version 0})
+        node (get {:serial serial :version 0})]
     (case hit-mode
       "before" (let [siblings (k/select page (k/where {:parent parent
-                                                       :order [> (+ order 1)]}))]
+                                                       :version 0
+                                                       :order [> order]
+                                                       :serial [not= serial]}))
+                     new-uri (util/join-uri (util/uri-but-last-part uri)
+                                            (util/uri-last-part (:uri node)))]
+
                  ;; update node
                  (k/update page
-                           (k/set-fields {:order order :parent parent})
+                           (k/set-fields {:order order :parent parent
+                                          :uri new-uri})
                            (k/where {:serial serial :version 0}))
                  ;; update anchor
                  (k/update page
                            (k/set-fields {:order (+ order 1)})
                            (k/where {:serial anchor :version 0}))
                  ;; update siblings after anchor and new node
+                 (println (map :serial siblings))
                  (doseq [s siblings]
                    (k/update page
-                             (k/set-fields {:order (+ (:order s) 1)})
+                             (k/set-fields {:order (+ (:order s) 2)})
                              (k/where {:serial (:serial s) :version 0})))
                  true)
       "after" (let [siblings (k/select page (k/where {:parent parent
-                                                      :order [> (+ order 1)]}))]
+                                                      :version 0
+                                                      :order [> (+ order 1)]
+                                                      :serial [not= serial]}))
+                    new-uri (util/join-uri (util/uri-but-last-part uri)
+                                            (util/uri-last-part (:uri node)))]
                 ;; update node
                 (k/update page
-                          (k/set-fields {:order (+ order 1) :parent parent})
+                          (k/set-fields {:order (+ order 1) :parent parent
+                                         :uri new-uri})
                           (k/where {:serial serial :version 0}))
                 ;; update siblings
                 (doseq [s siblings]
                   (k/update page
-                            (k/set-fields {:order (+ (:order s) 1)})
+                            (k/set-fields {:order (+ (:order s) 2)})
                             (k/where {:serial (:serial s) :version 0})))
                 true)
-      "over" (do
+      "over" (let [new-uri (util/join-uri uri (util/uri-last-part (:uri node)))]
                (k/update page
                          (k/set-fields {:order (get-last-page-order {:parent anchor})
-                                        :parent anchor})
+                                        :parent anchor
+                                        :uri new-uri})
                          (k/where {:serial serial :version 0}))
                true)
       false)))
