@@ -9,5 +9,5 @@
     [:meta {:charset "utf-8"}]
     [:title (str (-> request :page :title) " &mdash; reverie/cms")]]
    [:body
-    "area a"
+    "area a -> " (:uri request)
     (rev/area :a)]))

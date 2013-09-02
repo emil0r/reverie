@@ -35,6 +35,12 @@
 (defn get-active-node []
   (-> :#tree jq/$ (.dynatree "getActiveNode")))
 
+(defn refresh! [uri]
+  (util/log "refresh!")
+  
+  (dom/show-main)
+  (dom/main-uri! uri))
+
 (defn foo [])
 
 
@@ -49,7 +55,8 @@
       (jq/off :click :.icon-trash))
   (-> :.icons
       jq/$
-      (jq/on :click :.icon-refersh nil foo)
+      (jq/on :click :.icon-refresh nil #(if-let [node (get-active-node)]
+                                         (refresh! (-> node .-data .-uri))))
       (jq/on :click :.icon-plus-sign nil #(if-let [node (get-active-node)]
                                             (options/add-page! (-> node .-data .-serial)) ))
       (jq/on :click :.icon-edit-sign nil foo)
