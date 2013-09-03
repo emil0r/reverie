@@ -16,8 +16,10 @@
   (swap! settings assoc-in [:edits uri] {:time (time/now)
                                          :user user}))
 
-(defn view! [uri]
-  (swap! settings update-in [:edits] dissoc uri))
+(defn view! [user]
+  (doseq [uri (keys (:edits @settings))]
+    (if (= user (get-in @settings [:edits uri :user]))
+      (swap! settings update-in [:edits] dissoc uri))))
 
 (defn edit?
   ([uri]

@@ -186,7 +186,6 @@
                            (k/set-fields {:order (+ order 1)})
                            (k/where {:serial anchor :version 0}))
                  ;; update siblings after anchor and new node
-                 (println (map :serial siblings))
                  (doseq [s siblings]
                    (k/update page
                              (k/set-fields {:order (+ (:order s) 2)})

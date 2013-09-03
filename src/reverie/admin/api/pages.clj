@@ -1,6 +1,8 @@
 (ns reverie.admin.api.pages
   (:require [korma.core :as k]
+            [reverie.auth.user :as user]
             [reverie.core :as rev]
+            [reverie.atoms :as atoms]
             [reverie.page :as page])
   (:use reverie.entity
         [reverie.util :only [published?]]
@@ -59,6 +61,21 @@
    (get-pages (read-string parent) false)]
   [:post ["/search" data]
    false]
+  [:get ["/view"]
+   (if (or (user/admin?) (user/staff?))
+     (do
+       (atoms/view! (:name (user/get)))
+       {:result true})
+     {:result false})]
+  [:get ["/edit/:serial"]
+   (let [p (page/get {:serial (read-string serial) :version 0})
+         user-name (:name (user/get))]
+     (if (or (user/admin?) (user/staff?))
+       (do
+         (atoms/view! user-name)
+         (atoms/edit! (:uri p) user-name)
+         {:result true})
+       {:result false}))]
   [:get ["/move/:node/:source-node/:hit-mode"]
    ;; anchor serial hit-mode in that order
    {:result (page/move! (read-string node) (read-string source-node) hit-mode)}])

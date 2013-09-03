@@ -32,8 +32,8 @@
                        (fn [data]
                          (if (.-result data)
                            (do
-                             (.move source-node node hit-mode)
-                             (.expand source-node true)))))))
+                             (.expand source-node true)
+                             (.move source-node node hit-mode)))))))
 
 (defn- get-active-node []
   (-> :#tree jq/$ (.dynatree "getActiveNode")))
@@ -41,8 +41,24 @@
 (defn- get-node [serial]
   (-> :#tree jq/$ (.dynatree "getTree") (.getNodeByKey (str serial))))
 
-(defn foo [])
+(defn edit-mode! [e]
+  (let [serial (-> (get-active-node) .-data .-serial)]
+    (jq/xhr [:get (str "/admin/api/pages/read/" serial)]
+            nil
+            (fn [data]
+              (if (.-result data)
+                (do
+                  (-> :.icon-edit-sign jq/$ (jq/add-class "hidden"))
+                  (-> :.icon-eye-open jq/$ (jq/remove-class "hidden"))))))))
 
+(defn view-mode! [e]
+  (jq/xhr [:get "/admin/api/pages/view"]
+          nil
+          (fn [data]
+            (if (.-result data)
+              (do
+                (-> :.icon-eye-open jq/$ (jq/add-class "hidden"))
+                (-> :.icon-edit-sign jq/$ (jq/remove-class "hidden")))))))
 
 
 (defn listen! []
@@ -61,8 +77,8 @@
       (jq/on :click :.icon-plus-sign nil #(if-let [node (get-active-node)]
                                             (if-let [serial (-> node .-data .-serial)]
                                               (options/add-page! serial))))
-      (jq/on :click :.icon-edit-sign nil foo)
-      (jq/on :click :.icon-eye-open nil foo)
+      (jq/on :click :.icon-edit-sign nil edit-mode!)
+      (jq/on :click :.icon-eye-open nil view-mode!)
       (jq/on :click :.icon-trash nil #(if-let [node (get-active-node)]
                                             (if-let [serial (-> node .-data .-serial)]
                                               (options/delete! serial))))))

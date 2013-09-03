@@ -35,3 +35,4 @@
 (defn delete! [serial]
   (dom/options-uri! (str "/admin/frame/options/delete?serial=" serial))
   (dom/show-options))
+
