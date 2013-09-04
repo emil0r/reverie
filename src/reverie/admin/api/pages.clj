@@ -62,15 +62,17 @@
   [:post ["/search" data]
    false]
   [:get ["/view"]
-   (if (or (user/admin?) (user/staff?))
-     (do
-       (atoms/view! (:name (user/get)))
-       {:result true})
-     {:result false})]
+   (let [u (user/get)]
+     (if (or (user/admin? u) (user/staff? u))
+       (do
+         (atoms/view! (:name (user/get)))
+         {:result true})
+       {:result false}))]
   [:get ["/edit/:serial"]
    (let [p (page/get {:serial (read-string serial) :version 0})
-         user-name (:name (user/get))]
-     (if (or (user/admin?) (user/staff?))
+         u (user/get)
+         user-name (:name u)]
+     (if (or (user/admin? u) (user/staff? u))
        (do
          (atoms/view! user-name)
          (atoms/edit! (:uri p) user-name)
