@@ -29,6 +29,11 @@
       (not (nil? (get-in @settings [:edits uri])))
       (= user (get-in @settings [:edits uri :user])))))
 
+(defn editing? [user]
+  (not (empty?
+        (filter #(= user %)
+                (map #(-> % second :user) (:edits @settings))))))
+
 
 (defn get-object-entity [name]
   (:entity (get @objects (keyword name))))

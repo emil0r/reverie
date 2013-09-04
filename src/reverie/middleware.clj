@@ -1,5 +1,6 @@
 (ns reverie.middleware
   (:require [korma.core :as k]
+            [reverie.atoms :as atoms]
             [reverie.auth.user :as user]
             [reverie.responses :as r])
   (:use reverie.entity))
@@ -20,3 +21,18 @@
     (let [resp (handler request)
           encoding (or "utf-8" encoding)]
       (assoc-in resp [:headers "Content-Type"] (str "application/edn; charset=" encoding "")))))
+
+
+(defn wrap-edit-mode [handler]
+  (fn [{:keys [uri] :as request}]
+    (let [user-name (:name (user/get))]
+      (if (atoms/edit? uri)
+        (if (atoms/edit? uri user-name)
+          (handler (assoc request :mode :edit))
+          (handler (assoc request :mode :edit-other)))
+        (if (atoms/editing? user-name)
+          (do
+            (atoms/view! user-name)
+            (atoms/edit! uri user-name)
+            (handler (assoc request :mode :edit)))
+          (handler (assoc request :mode :view)))))))
