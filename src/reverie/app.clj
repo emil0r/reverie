@@ -10,8 +10,8 @@
 
 (defn render
   "Renders the app"
-  [{:keys [page] :as request}]
-  (if-let [app (@apps (keyword (:app page)))]
+  [{:keys [reverie] :as request}]
+  (if-let [app (@apps (:app reverie))]
     (let [request (util/shorten-uri request (:uri page))
           app-options (:options app)
           [_ route options f] (->> app

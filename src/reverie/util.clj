@@ -42,7 +42,7 @@
 (defn which-version?
   "Which version in the system are we using? 0 for the as of yet unpublished, 1 for published, everything else is a version number in ascending order"
   [request]
-  (if (= (:mode request) :edit)
+  (if (= (get-in request [:reverie :mode]) :edit)
     0
     1))
 

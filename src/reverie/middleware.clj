@@ -28,14 +28,14 @@
     (let [user-name (:name (user/get))]
       (if (atoms/edit? uri)
         (if (atoms/edit? uri user-name)
-          (handler (assoc request :mode :edit))
-          (handler (assoc request :mode :edit-other)))
+          (handler (assoc-in request [:reverie :mode] :edit))
+          (handler (assoc-in request [:reverie :mode] :edit-other)))
         (if (atoms/editing? user-name)
           (do
             (atoms/view! user-name)
             (atoms/edit! uri user-name)
-            (handler (assoc request :mode :edit)))
-          (handler (assoc request :mode :view)))))))
+            (handler (assoc-in request [:reverie :mode] :edit)))
+          (handler (assoc-in request [:reverie :mode] :view)))))))
 
 (defn wrap-published? [handler]
   (fn [{:keys [uri mode] :as request}]

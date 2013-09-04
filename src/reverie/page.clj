@@ -57,18 +57,16 @@
 
 (defn render
   "Renders a page"
-  ;; TODO: check for rights to see the page
   [{:keys [uri] :as request}]
   (if-let [[route-uri page-data] (get-route uri)]
     (case (:type page-data)
-      :normal (let [page (get (assoc request :page-id (:page-id page-data)))
+      :normal (let [page (get page-data)
                     template-options (-> page get-template :options)
-                    request (assoc request :page page)
                     template (clojure.core/get @templates (-> page :template keyword))
                     f (:fn template)]
                 (util/middleware-wrap
                  (util/middleware-merge template-options)
-                 f (assoc request :page-id (:id page))))
+                 f (assoc-in request [:reverie :page-serial] (:serial page))))
       :page (let [request (util/shorten-uri request route-uri)
                   page-options (->> route-uri (clojure.core/get @pages) :options)
                   [_ route options f] (->> route-uri
@@ -89,8 +87,10 @@
                   (util/middleware-wrap
                    (util/middleware-merge page-options options)
                    f request (clout/route-matches route request) (:params request)))))
-      (app/render (assoc request :page-data page-data
-                         :page (get (assoc request :page-id (:page-id page-data))))))))
+      (let [page (get (assoc request :page-id (:page-id page-data)))]
+        (app/render (-> request
+                        (assoc-in [:reverie :page-serial] (:serial page))
+                        (assoc-in [:reverie :app] (keyword (:app page)))))))))
 
 (defn meta [{:keys [page-id] :as request}]
   (k/select page_attributes (k/where {:page_id page-id})))
