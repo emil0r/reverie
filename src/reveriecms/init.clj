@@ -4,7 +4,8 @@
             [reverie.auth.user :as user]
             [reverie.server :as server]
             reveriecms.templates.main)
-  (:use [korma.db :only [defdb postgres]]))
+  (:use [korma.db :only [defdb postgres]]
+        [reverie.atoms :only [read-routes!]]))
 
 (defdb reveriecms-db (postgres {:db "reveriecms"
                                 :user "reveriecms"
@@ -24,6 +25,7 @@
 (defn init []
   (migrations/open-global-when-necessary lobos-db)
   (lobos.core/migrate)
+  (read-routes!)
   (server/load-views "templates"))
 
 ;;(init)
