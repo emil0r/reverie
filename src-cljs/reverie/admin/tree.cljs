@@ -43,13 +43,14 @@
 
 (defn edit-mode! [e]
   (let [serial (-> (get-active-node) .-data .-serial)]
-    (jq/xhr [:get (str "/admin/api/pages/read/" serial)]
+    (jq/xhr [:get (str "/admin/api/pages/edit/" serial)]
             nil
             (fn [data]
               (if (.-result data)
                 (do
                   (-> :.icon-edit-sign jq/$ (jq/add-class "hidden"))
-                  (-> :.icon-eye-open jq/$ (jq/remove-class "hidden"))))))))
+                  (-> :.icon-eye-open jq/$ (jq/remove-class "hidden"))
+                  (dom/reload-main!)))))))
 
 (defn view-mode! [e]
   (jq/xhr [:get "/admin/api/pages/view"]
@@ -58,7 +59,8 @@
             (if (.-result data)
               (do
                 (-> :.icon-eye-open jq/$ (jq/add-class "hidden"))
-                (-> :.icon-edit-sign jq/$ (jq/remove-class "hidden")))))))
+                (-> :.icon-edit-sign jq/$ (jq/remove-class "hidden"))
+                (dom/reload-main!))))))
 
 
 (defn listen! []

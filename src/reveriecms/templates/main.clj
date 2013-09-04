@@ -7,7 +7,10 @@
   (html5
    [:head
     [:meta {:charset "utf-8"}]
-    [:title (str (-> request :page :title) " &mdash; reverie/cms")]]
+    [:title (str (-> request :page :title) " &mdash; reverie/cms")]
+    [:style {:type "text/css"} ".reverie-area {border: 1px black solid;}"]]
    [:body
-    "area a -> " (:uri request)
+    "uri -> " (:uri request)
+    "<br/>"
+    "mode -> " (:mode request)
     (rev/area :a)]))

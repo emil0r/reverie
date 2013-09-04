@@ -65,3 +65,7 @@
             .-main
             .-framem
             .-location) uri))
+
+(defn reload-main! []
+  (let [href (-> js/window .-parent .-main .-framem .-location .-pathname)]
+    (main-uri! href)))

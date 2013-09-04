@@ -23,7 +23,7 @@
   (let [name (keyword name)]
     `(let [{:keys [~'mode]} ~'request]
        (if (= ~'mode :edit)
-         [:div.reverie-area {:id ~name :name ~name :class ~name}
+         [:div {:id ~name :name ~name :class (str (name ~name) " reverie-area")}
           (map #(area-render % ~'request) (p/objects (assoc ~'request :area ~name)))]
          (map #(area-render % ~'request) (p/objects (assoc ~'request :area ~name)))))))
 
