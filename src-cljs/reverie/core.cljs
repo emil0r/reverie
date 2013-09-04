@@ -1,9 +1,10 @@
 (ns reverie.core
   (:require [jayq.core :as jq]
             [jayq.util :as util]
-            [reverie.admin.tree :as tree]
+            [reverie.admin.area :as area]
             [reverie.admin.options :as options]
             [reverie.admin.options.page :as page]
+            [reverie.admin.tree :as tree]
             [reverie.dev :as dev]
             [reverie.meta :as meta]))
 
@@ -21,6 +22,7 @@
 (defmethod init :default []
   (meta/listen!)
   (tree/listen!)
+  (area/listen!)
   (meta/read! (fn []
                 (if (:init-root-page? @meta/data)
                   (options/new-root-page!))

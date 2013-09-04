@@ -1,15 +1,16 @@
 (ns reverie.admin.index
   ;; import defpages
-  (:require [reverie.admin.api :as api]
-            [reverie.admin.api.pages :as api-pages]
-            [reverie.admin.auth :as auth]
-            [reverie.admin.frames :as frames]
+  (:require reverie.admin.api
+            reverie.admin.api.objects
+            reverie.admin.api.pages
+            reverie.admin.auth
+            reverie.admin.frames
             ;; import rest
-            [reverie.admin.templates :as t]
-            [reverie.core :as rev]))
+            [reverie.admin.templates :as t])
+  (:use [reverie.core :only [defpage]]))
 
 
-(rev/defpage "/admin" {}
+(defpage "/admin" {}
   [:get ["/"] (t/main {:title "Admin"}
                       [:frameset {:id :top :name :top :cols "240px,*"}
                        [:frameset {:id :control :name :control}

@@ -1,3 +1,6 @@
+.reverie-area {
+  position: relative;
+}
 .reverie-area .reverie-area-panel {
   display: inline-block !important;
   padding: 5px 10px;
@@ -5,5 +8,43 @@
   color: #ffffff;
 }
 .reverie-area .reverie-area-panel:hover {
+  cursor: pointer;
+}
+.reverie-area .reverie-area-menu {
+  list-style: none;
+  position: absolute;
+  padding: 0;
+  top: 15px;
+  left: 0;
+  display: inline-block;
+  background-color: #999999;
+  border: 1px #555555 solid;
+}
+.reverie-area .reverie-area-menu li {
+  padding: 5px;
+}
+.reverie-area .reverie-area-menu .add-objects:hover {
+  cursor: pointer;
+}
+.reverie-area .reverie-area-menu .add-objects:hover ul.reverie-objects {
+  display: inline-block;
+}
+.reverie-area .reverie-area-menu ul.reverie-objects {
+  display: none;
+  position: absolute;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  top: 5px;
+  background-color: #eeeeee;
+  border: 1px #555555 solid;
+}
+.reverie-area .reverie-area-menu ul.reverie-objects li {
+  padding: 5px;
+}
+.reverie-area .reverie-area-menu ul.reverie-objects:hover {
+  display: inline-block;
+  background-color: #555555;
+  color: #ffffff;
   cursor: pointer;
 }
