@@ -36,3 +36,14 @@
             (atoms/edit! uri user-name)
             (handler (assoc request :mode :edit)))
           (handler (assoc request :mode :view)))))))
+
+(defn wrap-published? [handler]
+  (fn [{:keys [uri mode] :as request}]
+    (let [u (user/get)]
+     (if (or (= mode :edit) (= mode :edit-other) (user/admin? u) (user/staff? u))
+       (handler request)
+       (if-let [[route-uri route-data] (atoms/get-route uri)]
+         (if (or (:published? route-data) (= :page (:type route-data)))
+           (handler request)
+           r/response-404)
+         r/response-404)))))

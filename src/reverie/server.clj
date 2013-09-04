@@ -6,7 +6,7 @@
         [noir.validation :only [wrap-noir-validation]]
         [noir.util.middleware :only [wrap-strip-trailing-slash]]
         [reverie.atoms :only [get-route read-routes!]]
-        [reverie.middleware :only [wrap-admin]]
+        [reverie.middleware :only [wrap-admin wrap-edit-mode wrap-published?]]
         [reverie.util :only [generate-handler]]
         [ring.middleware.file :only [wrap-file]] ;; research for later
         [ring.middleware.file-info :only [wrap-file-info]]
@@ -37,6 +37,8 @@
         resource (or resource "public")
         handlers (apply conj (or handlers [])
                         [[wrap-admin]
+                         [wrap-published?]
+                         [wrap-edit-mode]
                          [wrap-keyword-params]
                          [wrap-nested-params]
                          [wrap-params]
