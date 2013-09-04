@@ -8,9 +8,16 @@
    [:head
     [:meta {:charset "utf-8"}]
     [:title (str (-> request :page :title) " &mdash; reverie/cms")]
-    [:style {:type "text/css"} ".reverie-area {border: 1px black solid;}"]]
+    (map include-css ["/admin/css/editing.css"])
+    (map include-js ["/admin/js/eyespy.js"
+                     "/admin/js/init.js"])]
    [:body
-    "uri -> " (:uri request)
-    "<br/>"
-    "mode -> " (:mode request)
-    (rev/area :a)]))
+    [:div {:style "margin-bottom: 100px;"}
+     "uri -> " (:uri request)
+     "<br/>"
+     "mode -> " (:mode request)]
+    [:div {:style "float: left; width: 400px;"}
+     (rev/area :a)]
+    [:div {:style "float: left; width: 400px; margin-left: 30px;"}
+     (rev/area :b)]
+    [:div {:style "clear: both;"}]]))

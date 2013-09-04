@@ -3,7 +3,9 @@
             [lobos.migrations :as migrations]
             [reverie.auth.user :as user]
             [reverie.server :as server]
-            reveriecms.templates.main)
+            reveriecms.templates.main
+            reveriecms.objects.migrations
+            reveriecms.objects.text)
   (:use [korma.db :only [defdb postgres]]
         [reverie.atoms :only [read-routes!]]))
 
@@ -25,6 +27,7 @@
 (defn init []
   (migrations/open-global-when-necessary lobos-db)
   (lobos.core/migrate)
+  (reveriecms.objects.migrations/migrate-objects)
   (read-routes!)
   (server/load-views "templates"))
 

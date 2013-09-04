@@ -1,0 +1,9 @@
+.reverie-area .reverie-area-panel {
+  display: inline-block !important;
+  padding: 5px 10px;
+  background-color: #555555;
+  color: #ffffff;
+}
+.reverie-area .reverie-area-panel:hover {
+  cursor: pointer;
+}

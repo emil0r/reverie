@@ -16,6 +16,16 @@
       jq/$
       (jq/find sel)))
 
+(defn $m-html []
+  (-> js/window
+      .-parent
+      .-main
+      .-framem
+      .-document
+      .-body
+      jq/$
+      jq/parent))
+
 (defn $o [sel]
   (-> js/window
       .-parent

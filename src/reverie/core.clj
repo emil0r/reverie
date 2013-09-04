@@ -24,6 +24,8 @@
     `(let [{:keys [~'mode]} ~'request]
        (if (= ~'mode :edit)
          [:div {:id ~name :name ~name :class (str (name ~name) " reverie-area")}
+          [:div.reverie-area-panel
+           (str "area " (name ~name))]
           (map #(area-render % ~'request) (p/objects (assoc ~'request :area ~name)))]
          (map #(area-render % ~'request) (p/objects (assoc ~'request :area ~name)))))))
 
