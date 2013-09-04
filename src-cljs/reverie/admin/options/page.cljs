@@ -24,6 +24,7 @@
       (string/replace #"[ŶŷŸýÝÿŸ]" "y")
       (string/replace #"[ŽžŽžŽžžŽ]" "z")
       (string/replace #"\s" "-")
+      (string/replace #"\&" "-")
       (string/replace #"[^a-zA-Z0-9\-\_\.]" "")
       string/lower-case))
 
