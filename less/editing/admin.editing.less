@@ -17,9 +17,10 @@
     .reverie-area-menu {
         list-style: none;
         position: absolute;
+        z-index: 99999;
         padding: 0;
         top: 15px;
-        left: 0;
+        left: 5px;
         display: inline-block;
         background-color: @gray-light;
         border: 1px @gray solid;
@@ -64,10 +65,35 @@
         margin-bottom: 5px;
     }
     .reverie-object-panel {
+        position: relative;
         background-color: @gray-light;
         padding: 5px;
         &:hover {
             cursor: pointer;
         }
+    }
+    .reverie-object-menu {
+        position: absolute;
+        z-index: 99999;
+        top: 25px;
+        left: 5px;
+        background-color: @gray-lighter;
+        border: 1px black solid;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        width: 150px;
+        li {
+            padding: 3px 5px;
+            &:hover {
+                background-color: @gray;
+                color: @white;
+                cursor: pointer;
+            }
+        }
+    }
+    li.reverie-bar {
+        border-top: 1px black solid;
+        padding: 0;
     }
 }
