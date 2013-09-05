@@ -25,4 +25,16 @@
      (if (or (user/admin? u) (user/staff? u))
        (do
          (object/add! {:page-id (:id p) :name object-name :area area} data)
-         {:result true})))])
+         {:result true})
+       {:result false}))]
+  [:get ["/delete/:object-id"]
+   (let [u (user/get)
+         o (-> reverie.entity/object
+               (k/select (k/where {:id (read-string object-id)}))
+               first)]
+     (if (or (user/admin? u) (user/staff? u))
+       (do
+         (k/delete (keyword (:name o)) (k/where {:object_id (read-string object-id)}))
+         (k/delete reverie.entity/object (k/where {:id (read-string object-id)}))
+         {:result true})
+       {:result false}))])
