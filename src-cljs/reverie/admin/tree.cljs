@@ -1,6 +1,7 @@
 (ns reverie.admin.tree
   (:require [reverie.dom :as dom]
             [reverie.meta :as meta]
+            [reverie.admin.area :as area]
             [reverie.admin.options :as options]
             [jayq.core :as jq]
             [jayq.util :as util]

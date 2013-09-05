@@ -46,7 +46,6 @@
               (dom/reload-main!)))))
 
 (defn listen! []
-  (util/log "listening on areas!")
   (-> (dom/$m-html)
       (jq/off :click hide-menu!))
   (-> (dom/$m-html)

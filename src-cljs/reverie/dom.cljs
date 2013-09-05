@@ -16,6 +16,23 @@
       jq/$
       (jq/find sel)))
 
+(defn $m-ready [func]
+  (-> js/window
+      .-parent
+      .-main
+      .-framem
+      .-document
+      jq/$
+      (.ready func)))
+
+(defn $m-loaded [func]
+  (-> js/window
+      .-parent
+      .-document
+      jq/$
+      (jq/find :#framem)
+      (jq/on :load func)))
+
 (defn $m-html []
   (-> js/window
       .-parent
@@ -79,3 +96,4 @@
 (defn reload-main! []
   (let [href (-> js/window .-parent .-main .-framem .-location .-pathname)]
     (main-uri! href)))
+
