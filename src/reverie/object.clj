@@ -36,4 +36,9 @@
     (if-let [f (or
                 (get-in @objects [obj-name (:request-method request)])
                 (get-in @objects [obj-name :any]))]
-      (f request obj))))
+      (if (util/mode? request :edit)
+        [:div.reverie-object {:object-id (:id obj)}
+         [:div.reverie-object-holder
+          [:span.reverie-object-panel (str "object " (name obj-name))]]
+         (f request obj)]
+        (f request obj)))))

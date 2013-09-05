@@ -33,8 +33,8 @@
   (.stopPropagation e)
   (let [$e (-> e .-target jq/$)
         object (jq/html $e)
-        area (-> $e jq/parent jq/parent jq/parent jq/parent (jq/attr :area))
-        serial (-> $e jq/parent jq/parent jq/parent jq/parent (jq/attr :page-serial))]
+        area (-> $e jq/parent jq/parent jq/parent jq/parent jq/parent (jq/attr :area))
+        serial (-> $e jq/parent jq/parent jq/parent jq/parent jq/parent (jq/attr :page-serial))]
     (jq/xhr [:get (str "/admin/api/objects/add/"
                        serial
                        "/"
@@ -43,7 +43,7 @@
                        object)]
             nil
             (fn [data]
-              (util/log data)))))
+              (dom/reload-main!)))))
 
 (defn listen! []
   (util/log "listening on areas!")

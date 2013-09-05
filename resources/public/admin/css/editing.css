@@ -1,6 +1,9 @@
 .reverie-area {
   position: relative;
 }
+.reverie-area .reverie-area-holder {
+  margin-bottom: 15px;
+}
 .reverie-area .reverie-area-panel {
   display: inline-block !important;
   padding: 5px 10px;
@@ -46,5 +49,18 @@
   display: inline-block;
   background-color: #555555;
   color: #ffffff;
+  cursor: pointer;
+}
+.reverie-area .reverie-object {
+  margin-bottom: 15px;
+}
+.reverie-area .reverie-object-holder {
+  margin-bottom: 5px;
+}
+.reverie-area .reverie-object-panel {
+  background-color: #999999;
+  padding: 5px;
+}
+.reverie-area .reverie-object-panel:hover {
   cursor: pointer;
 }

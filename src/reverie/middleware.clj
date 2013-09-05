@@ -25,7 +25,11 @@
 
 (defn wrap-edit-mode [handler]
   (fn [{:keys [uri] :as request}]
-    (let [user-name (:name (user/get))]
+    (let [u (user/get)
+          user-name (:name u)
+          request (assoc-in request [:reverie :editor?]
+                            (or (user/admin? u)
+                                (user/staff? u)))]
       (if (atoms/edit? uri)
         (if (atoms/edit? uri user-name)
           (handler (assoc-in request [:reverie :mode] :edit))

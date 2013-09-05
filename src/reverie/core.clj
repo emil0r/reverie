@@ -4,7 +4,7 @@
             [reverie.page :as p])
   (:use clout.core
         reverie.atoms
-        [reverie.util :only [generate-handler]]
+        [reverie.util :only [generate-handler mode?]]
         [slingshot.slingshot :only [try+ throw+]]))
 
 
@@ -21,13 +21,12 @@
 
 (defmacro area [name]
   (let [name (keyword name)]
-    `(let [~'mode (get-in ~'request [:reverie :mode])
-           ~'serial (get-in ~'request [:reverie :page-serial])
+    `(let [~'serial (get-in ~'request [:reverie :page-serial])
            ~'request (assoc-in ~'request [:reverie :area] ~name)]
-       (if (= ~'mode :edit)
+       (if (mode? ~'request :edit)
          [:div.reverie-area {:area ~name :page-serial ~'serial}
-          [:div.reverie-area-panel
-           (str "area " (name ~name))]
+          [:div.reverie-area-holder
+           [:span.reverie-area-panel (str "area " (name ~name))]]
           (map #(area-render % ~'request) (p/objects ~'request))]
          (map #(area-render % ~'request) (p/objects ~'request))))))
 

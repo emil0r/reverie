@@ -17,6 +17,9 @@
   [x]
   (= -1 (:version x)))
 
+(defn mode? [request mode]
+  (= (get-in request [:reverie :mode]) mode))
+
 (defn shorten-uri
   "shortens the uri by removing the unwanted part"
   [request remove-part-of-uri]
@@ -42,7 +45,7 @@
 (defn which-version?
   "Which version in the system are we using? 0 for the as of yet unpublished, 1 for published, everything else is a version number in ascending order"
   [request]
-  (if (= (get-in request [:reverie :mode]) :edit)
+  (if (get-in request [:reverie :editor?])
     0
     1))
 
