@@ -14,23 +14,27 @@
       (+ 1 serial)
       1)))
 
-(defn get [{:keys [object-id serial version] :as request}]
+(defn get [{:keys [object-id serial version]}]
   (let [w (if object-id
             {:id object-id}
             {:serial serial :version version})
         obj (-> object (k/select (k/where w)) first)]
-    (-> obj :name (get-object-entity)
+    (-> obj
+        :name
+        (get-object-entity)
         (k/select (k/where {:object_id (:id obj)}))
-        first (assoc :reverie-object-name (keyword (:name obj))))))
+        first
+        (assoc :reverie-object-name (keyword (:name obj))))))
 
-(defn add! [{:keys [page-id] :as request} meta obj]
-  (let [page-obj (k/insert object
+(defn add! [{:keys [page-id name area]} obj]
+  (let [name (clojure.core/name name)
+        page-obj (k/insert object
                            (k/values {:page_id page-id :updated (k/sqlfn now)
-                                      :name (:name meta)
-                                      :area (-> meta :area util/kw->str)
+                                      :name name
+                                      :area (util/kw->str area)
                                       :version 0 :serial (get-serial-object)}))
-
-        real-obj (k/insert (get-object-entity (:name meta))
+        
+        real-obj (k/insert (get-object-entity name)
                            (k/values (assoc obj :object_id (:id page-obj))))]
     page-obj))
 

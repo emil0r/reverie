@@ -10,7 +10,7 @@
 (fact
  "object/add!"
  (let [p (page/get {:serial 1 :version 0})]
-   (:name (object/add! {:page-id (:id p)} {:name "text" :area :a} {:text "testus"})))
+   (:name (object/add! {:page-id (:id p) :name "text" :area :a} {:text "testus"})))
  => "text")
 
 (fact

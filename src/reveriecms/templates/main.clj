@@ -15,8 +15,7 @@
     [:div {:style "margin-bottom: 100px;"}
      "uri -> " (:uri request)
      "<br/>"
-     "mode -> " (:mode request)
-     [:div (str request)]]
+     "mode -> " (:mode request)]
     [:div {:style "float: left; width: 400px;"}
      (rev/area :a)]
     [:div {:style "float: left; width: 400px; margin-left: 30px;"}
