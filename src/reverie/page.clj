@@ -34,7 +34,7 @@
     (-> page (k/select (k/where {:serial serial :version version})) first util/revmap->kw)
     (-> page (k/select (k/where {:id page-id})) first util/revmap->kw)))
 
-(defn- get-last-page-order [request]
+(defn- get-last-order [request]
   (let [parent (or (:parent request) (:id (get request)))]
     (+ 1
        (or
@@ -102,7 +102,7 @@
                                     :serial (or (:serial tx-data)
                                                 (get-serial-page))
                                     :order (or (:order tx-data)
-                                               (get-last-page-order request))
+                                               (get-last-order request))
                                     :version (or (:version tx-data) 0)
                                     :updated (or (:updated tx-data) (k/sqlfn now))
                                     :type type))
@@ -132,7 +132,7 @@
 
 (defn restore! [{:keys [serial]}]
   (k/update page
-            (k/set-fields {:order (get-last-page-order {:serial serial :version 0})
+            (k/set-fields {:order (get-last-order {:serial serial :version 0})
                            :version 0})
             (k/where {:serial serial :version -1})))
 
@@ -185,7 +185,7 @@
                  (k/update page
                            (k/set-fields {:order (+ order 1)})
                            (k/where {:serial anchor :version 0}))
-                 ;; update siblings after anchor and new node
+                 ;; update siblings to new position after anchor and new node
                  (doseq [s siblings]
                    (k/update page
                              (k/set-fields {:order (+ (:order s) 2)})
@@ -210,7 +210,7 @@
                 true)
       "over" (let [new-uri (util/join-uri uri (util/uri-last-part (:uri node)))]
                (k/update page
-                         (k/set-fields {:order (get-last-page-order {:parent anchor})
+                         (k/set-fields {:order (get-last-order {:parent anchor})
                                         :parent anchor
                                         :uri new-uri})
                          (k/where {:serial serial :version 0}))

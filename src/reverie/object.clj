@@ -7,6 +7,15 @@
   (:use reverie.atoms
         reverie.entity))
 
+(defn- get-last-order [{:keys [object-id area page-id]}]
+  (let [page-id (or
+                 page-id
+                 (-> object (k/select (k/where {:id object-id})) first :page_id))]
+    (+ 1
+       (or
+        (-> object (k/select (k/aggregate (max :order) :order)
+                             (k/where {:page_id page-id :area (util/kw->str area)})) first :order)
+        -1))))
 
 (defn get [request & [cmd]]
   (let [object-id (get-in request [:reverie :object-id])
@@ -25,7 +34,9 @@
         page-obj (k/insert object
                            (k/values {:page_id page-id :updated (k/sqlfn now)
                                       :name name
-                                      :area (util/kw->str area)}))
+                                      :area (util/kw->str area)
+                                      :order (get-last-order {:page-id page-id
+                                                              :area (util/kw->str area)})}))
         
         real-obj (k/insert (get-object-entity name)
                            (k/values (assoc obj :object_id (:id page-obj))))]
@@ -42,3 +53,51 @@
           [:span.reverie-object-panel (str "object " (name obj-name))]]
          (f request obj)]
         (f request obj)))))
+
+(defn move! [{:keys [object-id hit-mode anchor]}]
+  (let [page-id (-> object (k/select (k/where {:id object-id})) first :page_id)]
+    (case hit-mode
+      "last" (do
+               (k/update object
+                         (k/set-fields {:order (get-last-order {:object-id object-id
+                                                                :area (util/kw->str anchor)})
+                                        :area (util/kw->str anchor)})
+                         (k/where {:id object-id}))
+               true)
+      ;; "before" (let [{:keys [order area]} (-> object (k/select (k/where {:id anchor})) first)
+      ;;                siblings (k/select object
+      ;;                                   (k/where {:page_id page-id
+      ;;                                             :order [> order]
+      ;;                                             :id [not= object-id]}))]
+      ;;            ;; update object
+      ;;            (k/update object
+      ;;                      (k/set-fields {:order order
+      ;;                                     :area area})
+      ;;                      (k/where {:id object-id}))
+      ;;            ;; update anchor object
+      ;;            (k/update object
+      ;;                      (k/set-fields {:order (+ order 1)})
+      ;;                      (k/where {:id anchor}))
+      ;;            ;; update siblings to new position after anchor and object
+      ;;            (doseq [s siblings]
+      ;;              (k/update object
+      ;;                        (k/set-fields {:order (+ (:order s) 2)})
+      ;;                        (k/where {:id (:id s)})))
+      ;;            true)
+      ;; "after" (let [{:keys [order area]} (-> object (k/select (k/where {:id anchor})) first)
+      ;;               siblings (k/select object
+      ;;                                  (k/where {:page_id page-id
+      ;;                                            :order [> (+ order 1)]
+      ;;                                            :id [not= object-id]}))]
+      ;;           ;; update object
+      ;;           (k/update object
+      ;;                     (k/set-fields {:order (+ order 1)
+      ;;                                    :area area})
+      ;;                     (k/where {:id object-id}))
+      ;;           ;; update siblings to new position after anchor and object
+      ;;           (doseq [s siblings]
+      ;;             (k/update object
+      ;;                       (k/set-fields {:order (+ (:order s) 2)})
+      ;;                       (k/where {:id (:id s)})))
+      ;;           true)
+      false)))

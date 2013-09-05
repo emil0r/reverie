@@ -23,8 +23,8 @@
 (defmethod init :default []
   (meta/listen!)
   (tree/listen!)
-  (area/listen!)
-  (dom/$m-loaded #(dom/$m-ready area/listen!))
+  (area/init)
+  (dom/$m-loaded #(dom/$m-ready area/init))
   (meta/read! (fn []
                 (if (:init-root-page? @meta/data)
                   (options/new-root-page!))

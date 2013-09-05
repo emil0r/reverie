@@ -79,11 +79,35 @@
   width: 150px;
 }
 .reverie-area .reverie-object-menu li {
+  position: relative;
   padding: 3px 5px;
 }
 .reverie-area .reverie-object-menu li:hover {
   background-color: #555555;
   color: #ffffff;
+  cursor: pointer;
+}
+.reverie-area .reverie-object-menu .move-object:hover .move-object-to-area {
+  display: block;
+}
+.reverie-area .reverie-object-menu .move-object .move-object-to-area {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position: absolute;
+  left: 149px;
+  top: 0;
+  background-color: #555555;
+  border: 1px black solid;
+}
+.reverie-area .reverie-object-menu .move-object .move-object-to-area li {
+  padding: 3px 5px;
+  color: #222222;
+  background-color: #eeeeee;
+}
+.reverie-area .reverie-object-menu .move-object .move-object-to-area li:hover {
+  background-color: #999999;
   cursor: pointer;
 }
 .reverie-area li.reverie-bar {

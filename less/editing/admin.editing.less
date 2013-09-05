@@ -84,11 +84,37 @@
         list-style: none;
         width: 150px;
         li {
+            position: relative;
             padding: 3px 5px;
             &:hover {
                 background-color: @gray;
                 color: @white;
                 cursor: pointer;
+            }
+        }
+        .move-object {
+            &:hover .move-object-to-area {
+                display: block;
+            }
+            .move-object-to-area {
+                display: none;
+                margin: 0;
+                padding: 0;
+                list-style: none;
+                position: absolute;
+                left: 149px;
+                top: 0;
+                background-color: @gray;
+                border: 1px black solid;
+                li {
+                    padding: 3px 5px;
+                    color: @gray-darker;
+                    background-color: @gray-lighter;
+                    &:hover {
+                        background-color: @gray-light;
+                        cursor: pointer;
+                    }
+                }
             }
         }
     }

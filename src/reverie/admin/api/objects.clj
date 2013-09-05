@@ -27,6 +27,14 @@
          (object/add! {:page-id (:id p) :name object-name :area area} data)
          {:result true})
        {:result false}))]
+  [:get ["/move/:anchor/:object-id/:hit-mode"]
+   (let [u (user/get)
+         anchor (if (re-find #"[0-9]+" anchor) (read-string anchor) anchor)]
+     (if (or (user/admin? u) (user/staff? u))
+       {:result (object/move! {:object-id (read-string object-id)
+                               :anchor anchor
+                               :hit-mode hit-mode})}
+       {:result false}))]
   [:get ["/delete/:object-id"]
    (let [u (user/get)
          o (-> reverie.entity/object

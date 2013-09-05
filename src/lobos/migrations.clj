@@ -73,6 +73,7 @@
                         (timestamp :updated :not-null)
                         (varchar :name 255 :not-null)
                         (varchar :area 100 :not-null)
+                        (integer :order :not-null)
                         (integer :page_id [:refer :page :id] :not-null)
 
                         (index :object_index_serial [:serial]))))
