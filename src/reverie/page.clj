@@ -44,15 +44,9 @@
 
 (defn objects
   "Get objects associated with a page. page-id required"
-  [{:keys [page-id area version] :as request}]
-  (let [version (or version (util/which-version? request))
-        area (util/kw->str area)
-        w {:page_id page-id :version version}
-        w (cond
-           (and area version) (merge w {:area area :version version})
-           area (merge w {:area area})
-           version (merge w {:version version})
-           :else w)]
+  [{:keys [reverie] :as request}]
+  (let [{:keys [area page-id]} reverie
+        w {:page_id page-id :area (util/kw->str area)}]
     (k/select object (k/where w))))
 
 (defn render
@@ -60,13 +54,16 @@
   [{:keys [uri] :as request}]
   (if-let [[route-uri page-data] (get-route uri)]
     (case (:type page-data)
-      :normal (let [page (get page-data)
+      :normal (let [page (get {:serial (:serial page-data)
+                               :version (util/which-version? request)})
                     template-options (-> page get-template :options)
                     template (clojure.core/get @templates (-> page :template keyword))
                     f (:fn template)]
                 (util/middleware-wrap
                  (util/middleware-merge template-options)
-                 f (assoc-in request [:reverie :page-serial] (:serial page))))
+                 f (-> request
+                       (assoc-in [:reverie :page-serial] (:serial page))
+                       (assoc-in [:reverie :page-id] (:id page)))))
       :page (let [request (util/shorten-uri request route-uri)
                   page-options (->> route-uri (clojure.core/get @pages) :options)
                   [_ route options f] (->> route-uri
@@ -87,10 +84,13 @@
                   (util/middleware-wrap
                    (util/middleware-merge page-options options)
                    f request (clout/route-matches route request) (:params request)))))
-      (let [page (get (assoc request :page-id (:page-id page-data)))]
-        (app/render (-> request
-                        (assoc-in [:reverie :page-serial] (:serial page))
-                        (assoc-in [:reverie :app] (keyword (:app page)))))))))
+      :app (let [page (get {:serial (:serial page-data)
+                            :version (util/which-version? request)})]
+             (app/render (-> request
+                             (assoc-in [:reverie :page-id] (:id page))
+                             (assoc-in [:reverie :page-serial] (:serial page))
+                             (assoc-in [:reverie :app] (keyword (:app page))))))
+      r/response-404)))
 
 (defn meta [{:keys [page-id] :as request}]
   (k/select page_attributes (k/where {:page_id page-id})))

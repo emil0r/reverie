@@ -86,6 +86,7 @@
     (swap! routes assoc (:uri p) {:type (-> p :type keyword)
                                   :uri (-> p :uri)
                                   :page-id (-> p :id)
+                                  :serial (-> p :serial)
                                   :template (-> p :template keyword)
                                   :published? (published? p)})))
 

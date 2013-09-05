@@ -8,40 +8,32 @@
         reverie.entity))
 
 
-(defn- get-serial-object []
-  (let [serial (-> object (k/select (k/aggregate (max :serial) :serial)) first :serial)]
-    (if serial
-      (+ 1 serial)
-      1)))
-
-(defn get [{:keys [object-id serial version]}]
-  (let [w (if object-id
-            {:id object-id}
-            {:serial serial :version version})
-        obj (-> object (k/select (k/where w)) first)]
-    (-> obj
-        :name
-        (get-object-entity)
-        (k/select (k/where {:object_id (:id obj)}))
-        first
-        (assoc :reverie-object-name (keyword (:name obj))))))
+(defn get [request & [cmd]]
+  (let [object-id (get-in request [:reverie :object-id])
+        obj (-> object (k/select (k/where {:id object-id})) first)
+        data (-> obj
+                 :name
+                 (get-object-entity)
+                 (k/select (k/where {:object_id (:id obj)}))
+                 first)]
+    (case cmd
+      :name-object [data (keyword (:name obj))]
+      data)))
 
 (defn add! [{:keys [page-id name area]} obj]
   (let [name (clojure.core/name name)
         page-obj (k/insert object
                            (k/values {:page_id page-id :updated (k/sqlfn now)
                                       :name name
-                                      :area (util/kw->str area)
-                                      :version 0 :serial (get-serial-object)}))
+                                      :area (util/kw->str area)}))
         
         real-obj (k/insert (get-object-entity name)
                            (k/values (assoc obj :object_id (:id page-obj))))]
     page-obj))
 
 (defn render [request]
-  (let [obj (get request)]
+  (let [[obj obj-name] (get request :name-object)]
     (if-let [f (or
-                (clojure.core/get (clojure.core/get @objects (:reverie-object-name obj))
-                                  (-> request :request-method))
-                (clojure.core/get (clojure.core/get @objects (:reverie-object-name obj)) :any))]
+                (get-in @objects [obj-name (:request-method request)])
+                (get-in @objects [obj-name :any]))]
       (f request obj))))

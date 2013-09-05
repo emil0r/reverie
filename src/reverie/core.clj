@@ -17,18 +17,19 @@
 
 
 (defn area-render [obj request]
-  (o/render (assoc-in request [:reverie :object-serial] (:serial obj))))
+  (o/render (assoc-in request [:reverie :object-id] (:id obj))))
 
 (defmacro area [name]
   (let [name (keyword name)]
     `(let [~'mode (get-in ~'request [:reverie :mode])
-           ~'serial (get-in ~'request [:reverie :page-serial])]
+           ~'serial (get-in ~'request [:reverie :page-serial])
+           ~'request (assoc-in ~'request [:reverie :area] ~name)]
        (if (= ~'mode :edit)
          [:div.reverie-area {:area ~name :page-serial ~'serial}
           [:div.reverie-area-panel
            (str "area " (name ~name))]
-          (map #(area-render % (assoc-in ~'request [:reverie :area] ~name)) (p/objects ~'request))]
-         (map #(area-render % (assoc-in ~'request [:reverie :area] ~name)) (p/objects ~'request))))))
+          (map #(area-render % ~'request) (p/objects ~'request))]
+         (map #(area-render % ~'request) (p/objects ~'request))))))
 
 (defn raise-response [response]
   (throw+ {:type :ring-response :response response}))
