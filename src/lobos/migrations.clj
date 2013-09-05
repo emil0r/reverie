@@ -69,12 +69,10 @@
 (defmigration init-object
   (up [] (create (table :object
                         (integer :id :primary-key :auto-inc :not-null)
-                        (integer :serial :not-null)
                         (timestamp :created (default (now)) :not-null)
                         (timestamp :updated :not-null)
                         (varchar :name 255 :not-null)
                         (varchar :area 100 :not-null)
-                        (integer :version :not-null)
                         (integer :page_id [:refer :page :id] :not-null)
 
                         (index :object_index_serial [:serial]))))
