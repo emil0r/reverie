@@ -2186,3 +2186,6 @@ h6 {
 .container.frame .hidden {
   display: none;
 }
+.container.frame p.error {
+  color: #cc0000;
+}
