@@ -17,9 +17,8 @@
                              (k/where {:page_id page-id :area (util/kw->str area)})) first :order)
         -1))))
 
-(defn get [request & [cmd]]
-  (let [object-id (get-in request [:reverie :object-id])
-        obj (-> object (k/select (k/where {:id object-id})) first)
+(defn get [object-id & [cmd]]
+  (let [obj (-> object (k/select (k/where {:id object-id})) first)
         data (-> obj
                  :name
                  (get-object-entity)
@@ -42,8 +41,12 @@
                            (k/values (assoc obj :object_id (:id page-obj))))]
     page-obj))
 
+(defn update! [{:keys [object-id]} obj]
+  (k/update (k/set-fields obj)
+            (k/where {:object_id object-id})))
+
 (defn render [request]
-  (let [[obj obj-name] (get request :name-object)]
+  (let [[obj obj-name] (get (get-in request [:reverie :object-id]) :name-object)]
     (if-let [f (or
                 (get-in @objects [obj-name (:request-method request)])
                 (get-in @objects [obj-name :any]))]
