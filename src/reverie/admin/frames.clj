@@ -317,6 +317,11 @@
    [:td
     [:span {:name field-name :type :image} "Edit image"]
     (hidden-field field-name (or (data field-name) initial))]])
+(defmethod row-edit :number [field-name {:keys [initial input name]} data]
+  [:tr
+   [:td (label field-name name)]
+   [:td [:input {:type :number :id field-name :name field-name
+                 :value (or (data field-name) initial)}]]])
 (defmethod row-edit :default [field-name {:keys [initial input name]} data]
   [:tr
    [:td (label field-name name)]
@@ -332,8 +337,17 @@
                 (conj out (row-edit k (attributes k) data))))
             (list)
             (reverse attr-order))
-    [:tr [:td] [:td (submit-button "Save")]]])
-  )
+    [:tr [:td] [:td (submit-button "Save")]]]))
+
+(defn- process-form-data [data attributes]
+  (reduce (fn [out k]
+            (if (nil? k)
+              out
+              (case (-> k attributes :input)
+                :number (assoc out k (read-string (data k)))
+                out)))
+          data
+          (keys attributes)))
 
 (rev/defpage "/admin/frame/object/edit" {}
   [:get ["/"]
@@ -357,7 +371,7 @@
              attributes (object/get-attributes object-name)
              attr-order (object/get-attributes-order object-name)
              form-data (select-keys form-data (keys attributes))]
-         (object/update! object-id form-data)
+         (object/update! object-id (process-form-data form-data attributes))
          (t/frame
           (assoc frame-options-options
             :title "Edit object")
