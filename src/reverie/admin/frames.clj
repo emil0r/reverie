@@ -60,7 +60,7 @@
                                  "/admin/js/init.js"]})
 
 
-(defn error-item [[error]]
+(defn- error-item [[error]]
   [:p.error error])
 
 (defn- table-row
@@ -69,7 +69,7 @@
   ([options th td error]
      [:tr options [:th th] [:td td error]]))
 
-(defn page-form [{:keys [parent name title type template app uri]}]
+(defn- page-form [{:keys [parent name title type template app uri]}]
   (form-to
    [:post ""]
    [:table.table.small
@@ -321,7 +321,8 @@
   [:tr
    [:td (label field-name name)]
    [:td [:input {:type :number :id field-name :name field-name
-                 :value (or (data field-name) initial)}]]])
+                 :value (or (data field-name) initial)}]
+    (v/on-error field-name error-item)]])
 (defmethod row-edit :default [field-name {:keys [initial input name]} data]
   [:tr
    [:td (label field-name name)]
@@ -349,6 +350,12 @@
           data
           (keys attributes)))
 
+(defn- valid-form-data? [attributes form-data]
+  (doseq [[name {:keys [input]}] attributes]
+    (case input
+      :number (v/rule (v/valid-number? (form-data name)) [name "Only numbers are allowed"])))
+  (not (apply v/errors? (keys attributes))))
+
 (rev/defpage "/admin/frame/object/edit" {}
   [:get ["/"]
    (let [u (user/get)]
@@ -370,12 +377,17 @@
              [data object-name] (object/get object-id :name-object)
              attributes (object/get-attributes object-name)
              attr-order (object/get-attributes-order object-name)
-             form-data (select-keys form-data (keys attributes))]
-         (object/update! object-id (process-form-data form-data attributes))
+             form-data (select-keys form-data (keys attributes))
+             validated? (valid-form-data? attributes form-data)
+             custom-js (if validated?
+                         ["opener.reverie.dom.reload_main_BANG_();"
+                          "window.close();"]
+                         [])]
+         (if validated?
+          (object/update! object-id (process-form-data form-data attributes)))
          (t/frame
           (assoc frame-options-options
             :title "Edit object"
-            :custom-js ["opener.reverie.dom.reload_main_BANG_();"
-                        "window.close();"])
+            :custom-js custom-js)
           (get-object-table request attributes attr-order form-data)))
        [:div "You are not allowed to edit this object"]))])
