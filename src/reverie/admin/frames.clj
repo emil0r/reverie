@@ -322,38 +322,44 @@
    [:td (label field-name name)]
    [:td (text-field field-name (or (data field-name) initial))]])
 
-(defn- get-object-table [request]
-  (let [object-id (read-string (get-in request [:params :object-id]))
-        [data object-name] (object/get object-id :name-object)
-        attributes (object/get-attributes object-name)
-        attr-order (object/get-attributes-order :text)]
-    (form-to
-     [:post ""]
-     [:table.table
-      (reduce (fn [out k]
-                (if (nil? k)
-                  out
-                  (conj out (row-edit k (attributes k) data))))
-              (list)
-              (reverse attr-order))
-      [:tr [:td] [:td (submit-button "Save")]]])))
+(defn- get-object-table [request attributes attr-order data]
+  (form-to
+   [:post ""]
+   [:table.table
+    (reduce (fn [out k]
+              (if (nil? k)
+                out
+                (conj out (row-edit k (attributes k) data))))
+            (list)
+            (reverse attr-order))
+    [:tr [:td] [:td (submit-button "Save")]]])
+  )
 
 (rev/defpage "/admin/frame/object/edit" {}
   [:get ["/"]
    (let [u (user/get)]
      (if (or (user/admin? u) (user/staff? u))
-      (t/frame
-       (assoc frame-options-options
-         :title "Edit object")
-       (get-object-table request))
+       (let [object-id (read-string (get-in request [:params :object-id]))
+             [data object-name] (object/get object-id :name-object)
+             attributes (object/get-attributes object-name)
+             attr-order (object/get-attributes-order object-name)]
+         (t/frame
+          (assoc frame-options-options
+            :title "Edit object")
+          (get-object-table request attributes attr-order data)))
       [:div "You are not allowed to edit this object"]))]
-
+  
   [:post ["/" form-data]
-   (println "asdf")
-   (let [u (user/get)
-         object-id (read-string (get-in request [:params :object-id]))]
+   (let [u (user/get)]
      (if (or (user/admin? u) (user/staff? u))
-       (do
-         (println form-data)
-         ;;(object/update! object-id form-data)
-         (get-object-table request))))])
+       (let [object-id (read-string (get-in request [:params :object-id]))
+             [data object-name] (object/get object-id :name-object)
+             attributes (object/get-attributes object-name)
+             attr-order (object/get-attributes-order object-name)
+             form-data (select-keys form-data (keys attributes))]
+         (object/update! object-id form-data)
+         (t/frame
+          (assoc frame-options-options
+            :title "Edit object")
+          (get-object-table request attributes attr-order form-data)))
+       [:div "You are not allowed to edit this object"]))])
