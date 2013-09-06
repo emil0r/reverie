@@ -374,6 +374,8 @@
          (object/update! object-id (process-form-data form-data attributes))
          (t/frame
           (assoc frame-options-options
-            :title "Edit object")
+            :title "Edit object"
+            :custom-js ["opener.reverie.dom.reload_main_BANG_();"
+                        "window.close();"])
           (get-object-table request attributes attr-order form-data)))
        [:div "You are not allowed to edit this object"]))])
