@@ -43,7 +43,6 @@
     (switch-template-app nil)))
 
 (defn init []
-  (util/log "running init")
   (init-templates-app)
   (-> :#type jq/$ (jq/bind :change switch-template-app))
   (-> :#name jq/$ (jq/bind :change change-uri)))

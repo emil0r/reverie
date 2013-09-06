@@ -41,14 +41,14 @@
                [:li.copy-object {:action "cut-object"} "Cut"]
                [:li.copy-object {:action "copy-object"} "Copy"]
                [:li.move-object "Move to »"
-                [:ul.move-object-to-area
-                 (map (fn [a] [:li {:action "move-object" :area a} a])
-                      (remove #(= area %) @areas))]]
-               [:li.reverie-bar]
-               [:li.move-object-to-top {:action "move-to-top"} "Move to top"]
-               [:li.move-object-up {:action "move-up"} "Move up"]
-               [:li.move-object-down {:action "move-down"} "Move down"]
-               [:li.move-object-to-bottom {:action "move-to-bottom"} "Move to bottom"]])))
+                [:ul.move-object-to
+                 (map (fn [a] [:li {:action "move-to-area" :area a} "area " a])
+                      (remove #(= area %) @areas))
+                 [:li.reverie-bar]
+                 [:li.move-object-to-top {:action "move-to-top"} "Move to top"]
+                 [:li.move-object-up {:action "move-up"} "Move up"]
+                 [:li.move-object-down {:action "move-down"} "Move down"]
+                 [:li.move-object-to-bottom {:action "move-to-bottom"} "Move to bottom"]]]])))
 
 (defn- click-area! [e]
   (.stopPropagation e)
@@ -87,7 +87,14 @@
             (fn [data]
               (if (.-result data)
                 (dom/reload-main!))))))
-(defmethod click-object-method! "move-object" [e]
+(defmethod click-object-method! "edit" [e]
+  (let [object-id (-> e ev$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+    (.open js/window
+           (str "/admin/frame/object/edit?object-id=" object-id)
+           "_blank"
+           "height=640,width=400,location=0,menubar=0,resizable=1,scrollbars=1,status=0,titlebar=1"
+           true)))
+(defmethod click-object-method! "move-to-area" [e]
   (let [e$ (ev$ e)
         object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))
         area (-> e$ (jq/attr :area))]

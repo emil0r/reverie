@@ -1,9 +1,12 @@
 (ns reverie.admin.frames
-  (:require [noir.validation :as v]
+  (:require [korma.core :as k]
+            [noir.validation :as v]
             [reverie.admin.templates :as t]
             [reverie.atoms :as atoms]
             [reverie.auth.user :as user]
             [reverie.core :as rev]
+            reverie.entity
+            [reverie.object :as object]
             [reverie.page :as page]
             [reverie.responses :as r]
             [reverie.util :as util])
@@ -298,3 +301,59 @@
       [:h2 "New page"]
       (page-form {:parent (read-string parent) :name name :title title :type type
                   :template template :app app :uri uri})))])
+
+
+
+(defmulti row-edit (fn [_ {:keys [input]} _] input))
+(defmethod row-edit :richtext [field-name {:keys [initial input name]} data]
+  [:tr
+   [:td (label field-name name)]
+   [:td
+    [:span {:name field-name :type :richtext} "Edit text"]
+    (hidden-field field-name (or (data field-name) initial))]])
+(defmethod row-edit :image [field-name {:keys [initial input name]} data]
+  [:tr
+   [:td (label field-name name)]
+   [:td
+    [:span {:name field-name :type :image} "Edit image"]
+    (hidden-field field-name (or (data field-name) initial))]])
+(defmethod row-edit :default [field-name {:keys [initial input name]} data]
+  [:tr
+   [:td (label field-name name)]
+   [:td (text-field field-name (or (data field-name) initial))]])
+
+(defn- get-object-table [request]
+  (let [object-id (read-string (get-in request [:params :object-id]))
+        [data object-name] (object/get object-id :name-object)
+        attributes (object/get-attributes object-name)
+        attr-order (object/get-attributes-order :text)]
+    (form-to
+     [:post ""]
+     [:table.table
+      (reduce (fn [out k]
+                (if (nil? k)
+                  out
+                  (conj out (row-edit k (attributes k) data))))
+              (list)
+              (reverse attr-order))
+      [:tr [:td] [:td (submit-button "Save")]]])))
+
+(rev/defpage "/admin/frame/object/edit" {}
+  [:get ["/"]
+   (let [u (user/get)]
+     (if (or (user/admin? u) (user/staff? u))
+      (t/frame
+       (assoc frame-options-options
+         :title "Edit object")
+       (get-object-table request))
+      [:div "You are not allowed to edit this object"]))]
+
+  [:post ["/" form-data]
+   (println "asdf")
+   (let [u (user/get)
+         object-id (read-string (get-in request [:params :object-id]))]
+     (if (or (user/admin? u) (user/staff? u))
+       (do
+         (println form-data)
+         ;;(object/update! object-id form-data)
+         (get-object-table request))))])

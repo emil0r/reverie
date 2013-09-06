@@ -54,6 +54,6 @@
     (html5
      [:head
       [:meta {:charset "utf-8"}]
-      [:title ""]
+      [:title (or (:title m) "")]
       (includes m)]
      (get-body body {:class "frame container"}))))

@@ -3,6 +3,7 @@
             [jayq.util :as util]
             [reverie.admin.area :as area]
             [reverie.admin.options :as options]
+            [reverie.admin.options.object :as object]
             [reverie.admin.options.page :as page]
             [reverie.admin.tree :as tree]
             [reverie.dom :as dom]
@@ -20,6 +21,8 @@
   (page/init))
 (defmethod init "/admin/frame/options/delete" []
   (page/init))
+(defmethod init "/admin/frame/object/edit" []
+  (object/init))
 (defmethod init :default []
   (meta/listen!)
   (tree/listen!)
