@@ -56,6 +56,7 @@
   (up [] (create (table :role
                         (integer :id :primary-key :auto-inc :not-null)
                         (timestamp :created (default (now)) :not-null)
+                        (boolean :active (default true) :not-null)
                         (varchar :name 255 :not-null))))
   (down [] (drop (table :role))))
 
