@@ -4,6 +4,7 @@
             [reverie.core :as rev]
             [reverie.util :as util])
   (:use reverie.entity
+        [reverie.middleware :only [wrap-access]]
         [ring.middleware.json :only [wrap-json-params
                                      wrap-json-response]]))
 
@@ -24,6 +25,7 @@
    :apps (map util/kw->str (keys @atoms/apps))})
 
 (rev/defpage "/admin/api" {:middleware [[wrap-json-params]
-                                        [wrap-json-response]]}
+                                        [wrap-json-response]
+                                        [wrap-access :edit]]}
   [:get ["/meta"]
    (get-meta)])

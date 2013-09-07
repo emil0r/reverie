@@ -5,6 +5,7 @@
             [reverie.atoms :as atoms]
             [reverie.page :as page])
   (:use reverie.entity
+        [reverie.middleware :only [wrap-access]]
         [reverie.util :only [published?]]
         [ring.middleware.json :only [wrap-json-params
                                      wrap-json-response]]))
@@ -54,7 +55,8 @@
 
 
 (rev/defpage "/admin/api/pages" {:middleware [[wrap-json-params]
-                                              [wrap-json-response]]}
+                                              [wrap-json-response]
+                                              [wrap-access :edit]]}
   [:get ["/read"]
    (get-pages (-> (k/select page (k/where {:version 0 :parent 0})) first :serial) true)]
   [:get ["/read/:parent"]
@@ -63,21 +65,17 @@
    false]
   [:get ["/view"]
    (let [u (user/get)]
-     (if (or (user/admin? u) (user/staff? u))
-       (do
-         (atoms/view! (:name (user/get)))
-         {:result true})
-       {:result false}))]
+     (do
+       (atoms/view! (:name (user/get)))
+       {:result true}))]
   [:get ["/edit/:serial"]
    (let [p (page/get {:serial (read-string serial) :version 0})
          u (user/get)
          user-name (:name u)]
-     (if (or (user/admin? u) (user/staff? u))
-       (do
-         (atoms/view! user-name)
-         (atoms/edit! (:uri p) user-name)
-         {:result true})
-       {:result false}))]
+     (do
+       (atoms/view! user-name)
+       (atoms/edit! (:uri p) user-name)
+       {:result true}))]
   [:get ["/move/:node/:source-node/:hit-mode"]
    ;; anchor serial hit-mode in that order
    {:result (page/move! (read-string node) (read-string source-node) hit-mode)}])
