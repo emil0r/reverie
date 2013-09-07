@@ -53,7 +53,10 @@
            r/response-404)
          r/response-404)))))
 
-(defn wrap-access [handler roles]
+(defn wrap-access [handler roles & [response]]
   (fn [request]
     (let [u (user/get)]
-      )))
+      (if (or (user/admin?)
+              (user/role? u roles))
+        (handler request)
+        (r/response-401 response)))))

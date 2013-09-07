@@ -14,3 +14,6 @@
 
 (defn response-301 [uri]
   {:status 301 :headers {"Location " uri}})
+
+(defn response-401 [& [response]]
+  {:status 401 :body (or response "You are not authorized to do this!")})

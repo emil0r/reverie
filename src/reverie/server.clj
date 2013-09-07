@@ -58,6 +58,7 @@
          r/response-404)))))
 
 (defn start [{:keys [port handlers] :as options}]
+  ;; TODO: add roles understood by the system
   (cond
       (nil? port) (println "No port specified.")
       :else (do
