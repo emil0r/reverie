@@ -3,12 +3,10 @@
             [jayq.core :as jq]
             [jayq.util :as util]
             [reverie.dom :as dom]
-            [reverie.meta :as meta]))
+            [reverie.meta :as meta])
+  (:use [reverie.util :only [ev$]]))
 
 (def areas (atom #{}))
-
-(defn ev$ [e]
-  (-> e .-target jq/$))
 
 (defn- hide-area-menu! []
   (-> :.reverie-area-menu

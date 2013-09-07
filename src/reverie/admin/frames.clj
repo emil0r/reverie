@@ -87,7 +87,10 @@
 (defn- valid-uri? [uri]
   (nil? (re-find #"[^a-zA-Z0-9\.\-\_]" uri)))
 
-(defn- conflicting-uri? [parent uri]
+(defn- conflicting-uri?
+  "Is there a conflicting URI for a new page?"
+  [parent uri]
+  ;; TODO: use util to put together the compare-uri
   (let [compare-uri (str (:uri (page/get {:serial parent :version 0}))
                          "/" uri)
         pages (page/get* {:parent parent :version 0})]
@@ -306,16 +309,18 @@
 
 (defmulti row-edit (fn [_ {:keys [input]} _] input))
 (defmethod row-edit :richtext [field-name {:keys [initial input name]} data]
-  [:tr
-   [:td (label field-name name)]
-   [:td
-    [:span {:name field-name :type :richtext} "Edit text"]
-    (hidden-field field-name (or (data field-name) initial))]])
+  (let [data (or (data field-name) initial)]
+    [:tr
+     [:td (label field-name name)]
+     [:td
+      [:span {:field-name field-name :type :richtext}
+       "Edit text..."]
+      (hidden-field field-name data)]]))
 (defmethod row-edit :image [field-name {:keys [initial input name]} data]
   [:tr
    [:td (label field-name name)]
    [:td
-    [:span {:name field-name :type :image} "Edit image"]
+    [:span {:field-name field-name :type :image} "Edit image..."]
     (hidden-field field-name (or (data field-name) initial))]])
 (defmethod row-edit :number [field-name {:keys [initial input name]} data]
   [:tr
@@ -329,7 +334,7 @@
    [:td (text-field field-name (or (data field-name) initial))]])
 
 (defn- get-object-table [request attributes attr-order data]
-  (form-to
+  (form-to {:name :form_object}
    [:post ""]
    [:table.table
     (reduce (fn [out k]
@@ -391,4 +396,21 @@
             :title "Edit object"
             :custom-js custom-js)
           (get-object-table request attributes attr-order form-data)))
-       [:div "You are not allowed to edit this object"]))])
+       [:div "You are not allowed to edit this object"]))]
+
+  [:get ["/richtext"]
+   (let [u (user/get)]
+     (if (or (user/admin? u) (user/staff? u))
+       (let [field (-> request (get-in [:params :field]) keyword)
+             field-data (-> request (get-in [:params :object-id]) read-string object/get field)]
+        (t/frame
+         (-> frame-options-options
+             (assoc :title "Edit object: Richtext")
+             (assoc :js ["/admin/js/jquery-1.8.3.min.js"
+                         "/admin/js/tinymce/tinymce.min.js"
+                         "/admin/js/init.tinymce.js"]))
+         [:textarea {:style "width: 400px; height: 600px;"}
+          field-data]
+         [:div.buttons
+          [:button.btn.btn-primary {:id :save} "Save"]
+          [:button.btn.btn-warning {:id :cancel} "Cancel"]]))))])

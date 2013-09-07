@@ -1,4 +1,6 @@
-(ns reverie.util)
+(ns reverie.util
+  (:require [clojure.string :as s]
+            [jayq.core :as jq]))
 
 (defn- strip-year [y]
   (apply str (drop 2 (str y))))
@@ -30,3 +32,20 @@
            (-> d .getHours normalize)
            ":"
            (-> d .getMinutes normalize)))))
+
+(defn query-params [params & [keywordize?]]
+  (let [params (map
+                #(s/split % #"\=")
+                (-> params (s/split #"\?") last (s/split #"\&")))
+        params (if (= keywordize? :keywordize-keys)
+                 (map (fn [[k v]] [(keyword k) v]) params)
+                 params)]
+    (into {} params)))
+
+(defn params->querystring [params]
+  (s/join "&"
+          (map (fn [[k v]] (str (name k) "=" v))
+               (into [] params))))
+
+(defn ev$ [e]
+  (-> e .-target jq/$))

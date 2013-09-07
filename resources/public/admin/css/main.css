@@ -2189,3 +2189,13 @@ h6 {
 .container.frame p.error {
   color: #cc0000;
 }
+.container.frame span[type=richtext]:hover {
+  cursor: pointer;
+  text-shadow: 1px 1px 1px #999999;
+}
+.container.frame .buttons {
+  margin: 12px 0 0 12px;
+}
+.container.frame .buttons #save {
+  margin-right: 12px;
+}

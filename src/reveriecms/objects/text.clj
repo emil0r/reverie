@@ -4,7 +4,7 @@
 
 
 (defobject text {:attributes {:text {:initial ""
-                                     :input :text
+                                     :input :richtext
                                      :name "Text"}}}
   [:any]
   (str "my text->" text))
