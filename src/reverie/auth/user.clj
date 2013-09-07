@@ -46,19 +46,19 @@
                 (k/join :role_user
                         (= :role_user.role_id :role.id))
                 (k/where {:role_user.user_id (:id u)
-                          :active true})))
+                          :role.active true})))
 
       (-> role (k/subselect
                 (k/fields [:name])
                 (k/join :role_group (= :role_group.role_id :role.id))
-                (k/where {:role_group.group_id
+                (k/where {:role.active true
+                          :role_group.group_id
                           [in (k/subselect
                                group
                                (k/fields :id)
                                (k/join :user_group
                                        (= :user_group.group_id :group.id))
-                               (k/where {:user_group.user_id (:id u)
-                                         :active true}))]}))))))))
+                               (k/where {:user_group.user_id (:id u)}))]}))))))))
 
 (defn get 
   ([] (if-let [user-id (get-id)]
