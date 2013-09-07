@@ -5,6 +5,7 @@
             [reverie.admin.options :as options]
             [reverie.admin.options.object :as object]
             [reverie.admin.options.page :as page]
+            [reverie.misc :as misc]
             [reverie.admin.tree :as tree]
             [reverie.dom :as dom]
             [reverie.dev :as dev]
@@ -27,6 +28,7 @@
   (meta/listen!)
   (tree/listen!)
   (area/init)
+  (misc/listen!)
   (dom/$m-loaded #(dom/$m-ready area/init))
   (meta/read! (fn []
                 (if (:init-root-page? @meta/data)

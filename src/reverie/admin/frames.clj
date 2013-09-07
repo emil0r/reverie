@@ -35,7 +35,7 @@
                      "/admin/js/eyespy.js"
                      "/admin/js/init.js"]}
                [:div.user-info "Logged in as " [:span (-> (user/get) user-info)]
-                [:div.logout [:a {:href "/admin/logout"}
+                [:div.logout [:a {:href "#"}
                               "Logout" [:i.icon-off]]]]
                [:div.tree
                 (text-field :tree-search)
