@@ -353,7 +353,8 @@
 (defn- valid-form-data? [attributes form-data]
   (doseq [[name {:keys [input]}] attributes]
     (case input
-      :number (v/rule (v/valid-number? (form-data name)) [name "Only numbers are allowed"])))
+      :number (v/rule (v/valid-number? (form-data name)) [name "Only numbers are allowed"])
+      (v/rule true [name "Should not appear"])))
   (not (apply v/errors? (keys attributes))))
 
 (rev/defpage "/admin/frame/object/edit" {}
