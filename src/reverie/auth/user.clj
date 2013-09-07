@@ -91,7 +91,9 @@
 
 (defn logout []
   (session/clear!)
-  (cookies/put! :session nil))
+  ;;TODO: bughunt!
+  ;;(cookies/put! :session nil)
+  )
 
 (defn add! [{:keys [first-name last-name
                     name email password
