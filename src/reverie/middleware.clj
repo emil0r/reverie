@@ -52,3 +52,8 @@
            (handler request)
            r/response-404)
          r/response-404)))))
+
+(defn wrap-access [handler roles]
+  (fn [request]
+    (let [u (user/get)]
+      )))

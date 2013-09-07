@@ -59,12 +59,6 @@
                         (varchar :name 255 :not-null))))
   (down [] (drop (table :role))))
 
-(defmigration init-role-page
-  (up [] (create (table :role_page
-                        (integer :role_id [:refer :role :id] :not-null)
-                        (integer :page_id [:refer :page :id] :not-null))))
-  (down [] (drop (table :role_page))))
-
 
 (defmigration init-object
   (up [] (create (table :object

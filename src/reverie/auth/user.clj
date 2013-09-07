@@ -1,6 +1,7 @@
 (ns reverie.auth.user
   (:refer-clojure :exclude [get])
-  (:require [noir.util.crypt :as crypt]
+  (:require [clojure.set :as cset]
+            [noir.util.crypt :as crypt]
             [noir.session :as session]
             [noir.cookies :as cookies]
             [korma.core :as k])
@@ -32,22 +33,42 @@
 (defn get-id []
   (:user-id (get-session)))
 
+(defn- get-roles [u]
+  (let [group-ids (map :id (-> group (k/select
+                                      (k/join :user_group (= :user_group.group_id :group.id))
+                                      (k/where {:user_group.user_id (:id u)}))))
+        roles (k/union
+               (k/queries
+                (-> role (k/subselect
+                          (k/fields [:name])
+                          (k/join :role_user (= :role_user.role_id :role.id))
+                          (k/where {:role_user.user_id (:id u)})))
+                
+                (-> role (k/subselect
+                          (k/fields [:name])
+                          (k/join :role_group (= :role_group.role_id :role.id))
+                          (k/where {:role_group.group_id [in group-ids]})))))]
+    (into #{} (map #(keyword (:name %)) roles))))
+
 (defn get 
   ([] (if-let [user-id (get-id)]
-        (-> user (k/select (k/where {:id user-id})) first)))
+        (let [u (-> user (k/select (k/where {:id user-id})) first)]
+          (assoc u :roles (get-roles u)))))
   ([name]
-     (-> user (k/select (k/where {:name name})) first))
+     (let [u (-> user (k/select (k/where {:name name})) first)]
+       (assoc u :roles (get-roles u)))
+     )
   ([name active?]
-     (-> user (k/select (k/where {:name name :active active?})) first)))
+     (let [u (-> user (k/select (k/where {:name name :active active?})) first)]
+       (assoc u :roles (get-roles u)))))
 
 
-;; (defn get-roles []
-;;   (k/select role (k/where {:user_id (get-id)})))
-
-;; (defn has-role? [roles]
-;;   (let [user-roles (set (get-roles connection))
-;;         roles (set roles)]
-;;     (= roles (cset/intersection roles user-roles))))
+(defn role?
+  "Check if the user has the role. Accepts oney keyword or a sequence of keywords. Each keyword representing a role"
+  [user role-s]
+  (if (keyword? role-s)
+    (cset/subset? #{role-s} (:roles user))
+    (cset/subset? (set role-s) (:roles user))))
 
 (defn login [name password]
   (if-let [user (get name true)]
