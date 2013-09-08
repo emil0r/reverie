@@ -9,7 +9,9 @@ var getParameterByName = function (name) {
 $(document).ready(function(){
   tinymce.init({
     selector: "textarea",
-    height: 400
+    height: 400,
+    plugins: ["link image"],
+    toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"
   });
 
   $("#save").click(function(){
@@ -17,7 +19,7 @@ $(document).ready(function(){
     var form = getParameterByName("form");
     var text = tinyMCE.activeEditor.getContent();
 
-    opener.document.[form][field].value = text;
+    opener.document[form][field].value = text;
     window.close();
   });
   $("cancel").click(function(){
