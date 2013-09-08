@@ -12,7 +12,8 @@
             [reverie.util :as util])
   (:use [cheshire.core :only [generate-string]]
         [korma.core :only [sqlfn]]
-        [hiccup core form]))
+        [hiccup core form]
+        [reverie.middleware :only [wrap-access]]))
 
 
 (defn- user-info [user]
@@ -22,7 +23,7 @@
    (:last_name user) (:last_name user)
    :else (:name user)))
 
-(rev/defpage "/admin/frame/left" {}
+(rev/defpage "/admin/frame/left" {:middleware [[wrap-access :edit]]}
   [:get ["/"] (t/frame
                {:css ["/admin/css/font-awesome.min.css"
                       "/admin/css/main.css"
@@ -110,7 +111,7 @@
     (not (v/errors? :name :template :app :uri))))
 
 
-(rev/defpage "/admin/frame/options" {}
+(rev/defpage "/admin/frame/options" {:middleware [[wrap-access :edit]]}
   [:get ["/"] nil]
 
   [:get ["/new-root-page"]
@@ -362,55 +363,47 @@
       (v/rule true [name "Should not appear"])))
   (not (apply v/errors? (keys attributes))))
 
-(rev/defpage "/admin/frame/object/edit" {}
+(rev/defpage "/admin/frame/object/edit" {:middleware [[wrap-access :edit]]}
   [:get ["/"]
-   (let [u (user/get)]
-     (if (or (user/admin? u) (user/staff? u))
-       (let [object-id (read-string (get-in request [:params :object-id]))
-             [data object-name] (object/get object-id :name-object)
-             attributes (object/get-attributes object-name)
-             attr-order (object/get-attributes-order object-name)]
-         (t/frame
-          (assoc frame-options-options
-            :title "Edit object")
-          (get-object-table request attributes attr-order data)))
-      [:div "You are not allowed to edit this object"]))]
+   (let [object-id (read-string (get-in request [:params :object-id]))
+         [data object-name] (object/get object-id :name-object)
+         attributes (object/get-attributes object-name)
+         attr-order (object/get-attributes-order object-name)]
+     (t/frame
+      (assoc frame-options-options
+        :title "Edit object")
+      (get-object-table request attributes attr-order data)))]
   
   [:post ["/" form-data]
-   (let [u (user/get)]
-     (if (or (user/admin? u) (user/staff? u))
-       (let [object-id (read-string (get-in request [:params :object-id]))
-             [data object-name] (object/get object-id :name-object)
-             attributes (object/get-attributes object-name)
-             attr-order (object/get-attributes-order object-name)
-             form-data (select-keys form-data (keys attributes))
-             validated? (valid-form-data? attributes form-data)
-             custom-js (if validated?
-                         ["opener.reverie.dom.reload_main_BANG_();"
-                          "window.close();"]
-                         [])]
-         (if validated?
-          (object/update! object-id (process-form-data form-data attributes)))
-         (t/frame
-          (assoc frame-options-options
-            :title "Edit object"
-            :custom-js custom-js)
-          (get-object-table request attributes attr-order form-data)))
-       [:div "You are not allowed to edit this object"]))]
+   (let [object-id (read-string (get-in request [:params :object-id]))
+         [data object-name] (object/get object-id :name-object)
+         attributes (object/get-attributes object-name)
+         attr-order (object/get-attributes-order object-name)
+         form-data (select-keys form-data (keys attributes))
+         validated? (valid-form-data? attributes form-data)
+         custom-js (if validated?
+                     ["opener.reverie.dom.reload_main_BANG_();"
+                      "window.close();"]
+                     [])]
+     (if validated?
+       (object/update! object-id (process-form-data form-data attributes)))
+     (t/frame
+      (assoc frame-options-options
+        :title "Edit object"
+        :custom-js custom-js)
+      (get-object-table request attributes attr-order form-data)))]
 
   [:get ["/richtext"]
-   (let [u (user/get)]
-     (if (or (user/admin? u) (user/staff? u))
-       (let [field (-> request (get-in [:params :field]) keyword)
-             field-data (-> request (get-in [:params :object-id]) read-string object/get field)]
-        (t/frame
-         (-> frame-options-options
-             (assoc :title "Edit object: Richtext")
-             (assoc :js ["/admin/js/jquery-1.8.3.min.js"
-                         "/admin/js/tinymce/tinymce.min.js"
-                         "/admin/js/init.tinymce.js"]))
-         [:textarea {:style "width: 400px; height: 600px;"}
-          field-data]
-         [:div.buttons
-          [:button.btn.btn-primary {:id :save} "Save"]
-          [:button.btn.btn-warning {:id :cancel} "Cancel"]]))))])
+   (let [field (-> request (get-in [:params :field]) keyword)
+         field-data (-> request (get-in [:params :object-id]) read-string object/get field)]
+     (t/frame
+      (-> frame-options-options
+          (assoc :title "Edit object: Richtext")
+          (assoc :js ["/admin/js/jquery-1.8.3.min.js"
+                      "/admin/js/tinymce/tinymce.min.js"
+                      "/admin/js/init.tinymce.js"]))
+      [:textarea {:style "width: 400px; height: 600px;"}
+       field-data]
+      [:div.buttons
+       [:button.btn.btn-primary {:id :save} "Save"]
+       [:button.btn.btn-warning {:id :cancel} "Cancel"]]))])
