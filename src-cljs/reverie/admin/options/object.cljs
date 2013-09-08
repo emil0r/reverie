@@ -11,7 +11,7 @@
         field (-> e ev$ (jq/attr :field-name))]
     (.open js/window
            (str
-            "/admin/frame/object/edit/richtext?field="
+            "/admin/frame/object/edit/richtext?form=form_object&field="
             field
             "&"
             (params->querystring params))
@@ -26,5 +26,4 @@
       (jq/off "span[type=richtext]"))
   (-> js/document
       jq/$
-      (jq/on :click "span[type=richtext]" click-richtext!))
-  )
+      (jq/on :click "span[type=richtext]" click-richtext!)))

@@ -14,9 +14,10 @@ $(document).ready(function(){
 
   $("#save").click(function(){
     var field = getParameterByName("field");
+    var form = getParameterByName("form");
     var text = tinyMCE.activeEditor.getContent();
 
-    opener.document.form_object[field].value = text;
+    opener.document.[form][field].value = text;
     window.close();
   });
   $("cancel").click(function(){
