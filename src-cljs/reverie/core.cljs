@@ -8,11 +8,12 @@
             [reverie.admin.options :as options]
             [reverie.admin.options.object :as object]
             [reverie.admin.options.page :as page]
-            [reverie.misc :as misc]
+            [reverie.admin.tabs :as tabs]
             [reverie.admin.tree :as tree]
-            [reverie.dom :as dom]
             [reverie.dev :as dev]
-            [reverie.meta :as meta]))
+            [reverie.dom :as dom]
+            [reverie.meta :as meta]
+            [reverie.misc :as misc]))
 
 
 
@@ -42,8 +43,9 @@
 (defmethod init :default []
   (meta/listen!)
   (tree/listen!)
-  (area/init)
   (misc/listen!)
+  (area/init)
+  (tabs/init)
   (dom/$m-loaded #(dom/$m-ready area/init))
   (meta/read! (fn []
                 (if (:init-root-page? @meta/data)

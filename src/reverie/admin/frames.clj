@@ -2,7 +2,7 @@
   (:require reverie.admin.frames.file-picker
             reverie.admin.frames.object
             reverie.admin.frames.url-picker
-
+            
             [korma.core :as k]
             [noir.validation :as v]
             [reverie.admin.templates :as t]
@@ -43,18 +43,25 @@
                [:div.user-info "Logged in as " [:span (-> (user/get) user-info)]
                 [:div.logout [:a {:href "#"}
                               "Logout" [:i.icon-off]]]]
-               [:div.tree
-                (text-field :tree-search)
-                [:i.icon-search]
-                [:div#tree]
-                [:div.icons
-                 [:i.icon-refresh {:title "Refresh"}]
-                 [:i.icon-plus-sign {:title "Add page"}]
-                 [:i.icon-edit-sign {:title "Edit mode"}]
-                 [:i.icon-eye-open.hidden {:title "View mode"}]
-                 [:i.icon-trash {:title "Trash it"}]]]
-
-               [:div.meta])])
+               [:div#tabbar
+                [:div.goog-tab.goog-tab-selected
+                 {:tab :navigation-meta} "Navigation/meta"]
+                [:div.goog-tab {:tab :modules} "Modules"]]
+               [:div.modules.hidden
+                "my modules"]
+               [:div.navigation-meta
+                [:div.tree
+                 (text-field :tree-search)
+                 [:i.icon-search]
+                 [:div#tree]
+                 [:div.icons
+                  [:i.icon-refresh {:title "Refresh"}]
+                  [:i.icon-plus-sign {:title "Add page"}]
+                  [:i.icon-edit-sign {:title "Edit mode"}]
+                  [:i.icon-eye-open.hidden {:title "View mode"}]
+                  [:i.icon-trash {:title "Trash it"}]]]
+                
+                [:div.meta]])])
 
 
 (defn- table-row

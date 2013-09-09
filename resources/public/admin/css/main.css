@@ -2114,7 +2114,7 @@ h6 {
 }
 .user-info {
   text-align: right;
-  border-bottom: 5px dotted #ff8e00;
+  border-bottom: 1px dotted #ff8e00;
   padding: 5px 10px;
 }
 .user-info span {
@@ -2133,7 +2133,7 @@ h6 {
 }
 .tree {
   padding: 5px 5px 10px 5px;
-  border-bottom: 5px dotted #ff8e00;
+  border-bottom: 1px dotted #ff8e00;
 }
 .tree input[type=text] {
   width: 88%;
@@ -2168,6 +2168,27 @@ h6 {
 }
 .meta .meta {
   margin-left: 10px;
+}
+#tabbar {
+  margin: 5px 0;
+  padding-bottom: 5px;
+  border-bottom: 1px dotted #ff8e00;
+  outline: 0;
+}
+#tabbar .goog-tab {
+  display: inline;
+  margin-right: 5px;
+  padding: 5px;
+}
+#tabbar .goog-tab:hover {
+  background-color: #ff8e00;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
+}
+#tabbar .goog-tab-selected {
+  background-color: #ff8e00;
+  color: #ffffff;
 }
 .container.frame {
   margin: 0;
