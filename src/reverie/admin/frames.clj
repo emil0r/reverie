@@ -1,5 +1,9 @@
 (ns reverie.admin.frames
-  (:require [korma.core :as k]
+  (:require reverie.admin.frames.filemanager
+            reverie.admin.frames.object
+            reverie.admin.frames.url-picker
+
+            [korma.core :as k]
             [noir.validation :as v]
             [reverie.admin.templates :as t]
             [reverie.atoms :as atoms]
@@ -13,6 +17,7 @@
   (:use [cheshire.core :only [generate-string]]
         [korma.core :only [sqlfn]]
         [hiccup core form]
+        [reverie.admin.frames.common :only [frame-options error-item]]
         [reverie.middleware :only [wrap-access]]))
 
 
@@ -51,18 +56,6 @@
 
                [:div.meta])])
 
-
-
-
-(def frame-options-options {:css ["/admin/css/main.css"]
-                            :js ["/admin/js/jquery-1.8.3.min.js"
-                                 "/admin/js/main-dev.js"
-                                 "/admin/js/eyespy.js"
-                                 "/admin/js/init.js"]})
-
-
-(defn- error-item [[error]]
-  [:p.error error])
 
 (defn- table-row
   ([th td error]
@@ -116,7 +109,7 @@
 
   [:get ["/new-root-page"]
    (t/frame
-    frame-options-options
+    frame-options
     [:h2 "No root page exists. Please create a new one."]
     (page-form {:parent 0}))]
 
@@ -128,11 +121,11 @@
                                     :type type :template (or template "")}})]
        
        (t/frame
-        (assoc frame-options-options :custom-js
+        (assoc frame-options :custom-js
                ["parent.control.framec.reverie.admin.tree.reload();"])
         [:h2 "Root page added!"]))
      (t/frame
-      frame-options-options
+      frame-options
       [:h2 "No root page exists. Please create a new one."]
       (page-form {:parent (read-string parent) :name name :title title :type type
                   :template template :app app :uri uri})))]
@@ -140,7 +133,7 @@
   [:get ["/publish/:serial"]
    (let [p (page/get {:serial (read-string serial) :version 0})]
      (t/frame
-      frame-options-options
+      frame-options
       [:h2 "Publishing"]
       (form-to [:post ""]
                [:table.table.small
@@ -153,7 +146,7 @@
   [:post ["/publish/:serial" data]
    (let [p (page/get {:serial (read-string serial) :version 0})]
      (t/frame
-      frame-options-options
+      frame-options
       [:h2 "Publishing"]
       (if (or (user/admin?) (user/staff?))
         (do
@@ -165,7 +158,7 @@
    (let [serial (get-in request [:params :serial])
          p (page/get {:serial (read-string serial) :version -1})]
      (t/frame
-      frame-options-options
+      frame-options
       [:h2 "Restore: " (:name p)]
       (form-to [:post ""]
                [:table.table.small
@@ -178,25 +171,25 @@
    (let [serial (get-in request [:params :serial])
          p (page/get {:serial (read-string serial) :version -1})]
      (if (or (user/admin?) (user/staff?))
-        (do
-          (page/restore! {:serial (read-string serial)})
-          (t/frame
-           (assoc frame-options-options :custom-js
-                  ["parent.control.framec.reverie.admin.tree.restored("
-                   (generate-string {:serial (:serial p)
-                                     :parent (:parent p)})
-                   ");"])
-           [:h2 "Restore: " (:name p)]
-           [:div.success "Restored!"]))
-        (t/frame
-         frame-options-options
-         [:div.error "You are not allowed to restore this page"])))]
+       (do
+         (page/restore! {:serial (read-string serial)})
+         (t/frame
+          (assoc frame-options :custom-js
+                 ["parent.control.framec.reverie.admin.tree.restored("
+                  (generate-string {:serial (:serial p)
+                                    :parent (:parent p)})
+                  ");"])
+          [:h2 "Restore: " (:name p)]
+          [:div.success "Restored!"]))
+       (t/frame
+        frame-options
+        [:div.error "You are not allowed to restore this page"])))]
   
   [:get ["/delete"]
    (let [serial (get-in request [:params :serial])
          p (page/get {:serial (read-string serial) :version 0})]
      (t/frame
-      frame-options-options
+      frame-options
       [:h2 "Delete: " (:name p)]
       (form-to [:post ""]
                [:table.table.small
@@ -210,23 +203,23 @@
    (let [serial (get-in request [:params :serial])
          p (page/get {:serial (read-string serial) :version 0})]
      (if (or (user/admin?) (user/staff?))
-        (do
-          (page/delete! {:serial (read-string serial)})
-          (t/frame
-           (assoc frame-options-options :custom-js
-                  ["parent.control.framec.reverie.admin.tree.deleted("
-                   (generate-string {:serial (:serial p)})
-                   ");"])
-           [:h2 "Delete: " (:name p)]
-           [:div.success "Deleted!"]))
-        (t/frame
-         frame-options-options 
-         [:div.error "You are not allowed to delete this page"])))]
+       (do
+         (page/delete! {:serial (read-string serial)})
+         (t/frame
+          (assoc frame-options :custom-js
+                 ["parent.control.framec.reverie.admin.tree.deleted("
+                  (generate-string {:serial (:serial p)})
+                  ");"])
+          [:h2 "Delete: " (:name p)]
+          [:div.success "Deleted!"]))
+       (t/frame
+        frame-options 
+        [:div.error "You are not allowed to delete this page"])))]
   
   [:get ["/add-page"]
    (let [serial (get-in request [:params :serial])]
      (t/frame
-      frame-options-options
+      frame-options
       [:h2 "New page"]
       (page-form {:parent (read-string serial)})))]
   
@@ -240,7 +233,7 @@
                                          :title title :parent (read-string parent)
                                          :type type :template (or template "")}}))]
        (t/frame
-        (assoc frame-options-options :custom-js
+        (assoc frame-options :custom-js
                ["parent.control.framec.reverie.admin.tree.added("
                 (generate-string {:serial (:serial tx)
                                   :title name
@@ -256,7 +249,7 @@
                 ");"])
         [:h2 (str name " added!")]))
      (t/frame
-      frame-options-options
+      frame-options
       [:h2 "New page"]
       (page-form {:parent (read-string parent) :name name :title title :type type
                   :template template :app app :uri uri})))]
@@ -265,7 +258,7 @@
    (let [serial (get-in request [:params :serial])
          p (page/get {:serial (read-string serial) :version 0})]
      (t/frame
-      frame-options-options
+      frame-options
       [:h2 "Meta: " (:name p)]
       (page-form p)))]
   
@@ -285,7 +278,7 @@
                                     :template (or template "")
                                     :update (sqlfn now))}))]
        (t/frame
-        (assoc frame-options-options :custom-js
+        (assoc frame-options :custom-js
                ["parent.control.framec.reverie.admin.tree.metad("
                 (generate-string {:serial (:serial tx)
                                   :title name
@@ -301,125 +294,7 @@
                 ");"])
         [:h2 (str name " added!")]))
      (t/frame
-      frame-options-options
+      frame-options
       [:h2 "New page"]
       (page-form {:parent (read-string parent) :name name :title title :type type
                   :template template :app app :uri uri})))])
-
-
-
-(defmulti row-edit (fn [_ {:keys [input]} _] input))
-(defmethod row-edit :richtext [field-name {:keys [initial input name]} data]
-  (let [data (or (data field-name) initial)]
-    [:tr
-     [:td (label field-name name)]
-     [:td
-      [:span {:field-name field-name :type :richtext}
-       "Edit text..."]
-      (hidden-field field-name data)]]))
-(defmethod row-edit :image [field-name {:keys [initial input name]} data]
-  [:tr
-   [:td (label field-name name)]
-   [:td
-    [:span {:field-name field-name :type :image} "Edit image..."]
-    (hidden-field field-name (or (data field-name) initial))]])
-(defmethod row-edit :number [field-name {:keys [initial input name]} data]
-  [:tr
-   [:td (label field-name name)]
-   [:td [:input {:type :number :id field-name :name field-name
-                 :value (or (data field-name) initial)}]
-    (v/on-error field-name error-item)]])
-(defmethod row-edit :default [field-name {:keys [initial input name]} data]
-  [:tr
-   [:td (label field-name name)]
-   [:td (text-field field-name (or (data field-name) initial))]])
-
-(defn- get-object-table [request attributes attr-order data]
-  (form-to {:name :form_object}
-   [:post ""]
-   [:table.table
-    (reduce (fn [out k]
-              (if (nil? k)
-                out
-                (conj out (row-edit k (attributes k) data))))
-            (list)
-            (reverse attr-order))
-    [:tr [:td] [:td (submit-button "Save")]]]))
-
-(defn- process-form-data [data attributes]
-  (reduce (fn [out k]
-            (if (nil? k)
-              out
-              (case (-> k attributes :input)
-                :number (assoc out k (read-string (data k)))
-                out)))
-          data
-          (keys attributes)))
-
-(defn- valid-form-data? [attributes form-data]
-  (doseq [[name {:keys [input]}] attributes]
-    (case input
-      :number (v/rule (v/valid-number? (form-data name)) [name "Only numbers are allowed"])
-      (v/rule true [name "Should not appear"])))
-  (not (apply v/errors? (keys attributes))))
-
-(rev/defpage "/admin/frame/object/edit" {:middleware [[wrap-access :edit]]}
-  [:get ["/"]
-   (let [object-id (read-string (get-in request [:params :object-id]))
-         [data object-name] (object/get object-id :name-object)
-         attributes (object/get-attributes object-name)
-         attr-order (object/get-attributes-order object-name)]
-     (t/frame
-      (assoc frame-options-options
-        :title "Edit object")
-      (get-object-table request attributes attr-order data)))]
-  
-  [:post ["/" form-data]
-   (let [object-id (read-string (get-in request [:params :object-id]))
-         [data object-name] (object/get object-id :name-object)
-         attributes (object/get-attributes object-name)
-         attr-order (object/get-attributes-order object-name)
-         form-data (select-keys form-data (keys attributes))
-         validated? (valid-form-data? attributes form-data)
-         custom-js (if validated?
-                     ["opener.reverie.dom.reload_main_BANG_();"
-                      "window.close();"]
-                     [])]
-     (if validated?
-       (object/update! object-id (process-form-data form-data attributes)))
-     (t/frame
-      (assoc frame-options-options
-        :title "Edit object"
-        :custom-js custom-js)
-      (get-object-table request attributes attr-order form-data)))]
-
-  [:get ["/richtext"]
-   (let [field (-> request (get-in [:params :field]) keyword)
-         field-data (-> request (get-in [:params :object-id]) read-string object/get field)]
-     (t/frame
-      (-> frame-options-options
-          (assoc :title "Edit object: Richtext")
-          (assoc :js ["/admin/js/jquery-1.8.3.min.js"
-                      "/admin/js/tinymce/tinymce.min.js"
-                      "/admin/js/init.tinymce.js"]))
-      [:textarea {:style "width: 400px; height: 600px;"}
-       field-data]
-      [:div.buttons
-       [:button.btn.btn-primary {:id :save} "Save"]
-       [:button.btn.btn-warning {:id :cancel} "Cancel"]]))])
-
-
-(rev/defpage "/admin/frame/filemanager" {:middleware [[wrap-access :edit]]}
-  [:get ["/images"]
-   (t/frame
-    (-> frame-options-options
-        (assoc :title "Filemanager: Images"))
-    [:div "Filemanager: Images"])])
-
-
-(rev/defpage "/admin/frame/url-picker" {:middleware [[wrap-access :edit]]}
-  [:get ["/"]
-   (t/frame
-    (-> frame-options-options
-        (assoc :title "URL picker"))
-    [:div "URL picker!"])])
