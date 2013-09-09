@@ -407,3 +407,19 @@
       [:div.buttons
        [:button.btn.btn-primary {:id :save} "Save"]
        [:button.btn.btn-warning {:id :cancel} "Cancel"]]))])
+
+
+(rev/defpage "/admin/frame/filemanager" {:middleware [[wrap-access :edit]]}
+  [:get ["/images"]
+   (t/frame
+    (-> frame-options-options
+        (assoc :title "Filemanager: Images"))
+    [:div "Filemanager: Images"])])
+
+
+(rev/defpage "/admin/frame/url-picker" {:middleware [[wrap-access :edit]]}
+  [:get ["/"]
+   (t/frame
+    (-> frame-options-options
+        (assoc :title "URL picker"))
+    [:div "URL picker!"])])

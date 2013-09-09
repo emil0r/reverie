@@ -2,6 +2,7 @@
   (:require [jayq.core :as jq]
             [jayq.util :as util]
             [reverie.admin.area :as area]
+            [reverie.admin.filemanager :as filemanager]
             [reverie.admin.options :as options]
             [reverie.admin.options.object :as object]
             [reverie.admin.options.page :as page]
@@ -24,6 +25,8 @@
   (page/init))
 (defmethod init "/admin/frame/object/edit" []
   (object/init))
+(defmethod init "/admin/frame/filemanager/images" []
+  (filemanager/init))
 (defmethod init :default []
   (meta/listen!)
   (tree/listen!)

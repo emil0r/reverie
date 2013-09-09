@@ -33,14 +33,18 @@
            ":"
            (-> d .getMinutes normalize)))))
 
-(defn query-params [params & [keywordize?]]
-  (let [params (map
-                #(s/split % #"\=")
-                (-> params (s/split #"\?") last (s/split #"\&")))
-        params (if (= keywordize? :keywordize-keys)
-                 (map (fn [[k v]] [(keyword k) v]) params)
-                 params)]
-    (into {} params)))
+(defn query-params
+  ([]
+     (query-params (-> js/window .-location .-href)
+                   :keywordize-keys))
+  ([params & [keywordize?]]
+     (let [params (map
+                   #(s/split % #"\=")
+                   (-> params (s/split #"\?") last (s/split #"\&")))
+           params (if (= keywordize? :keywordize-keys)
+                    (map (fn [[k v]] [(keyword k) v]) params)
+                    params)]
+       (into {} params))))
 
 (defn params->querystring [params]
   (s/join "&"

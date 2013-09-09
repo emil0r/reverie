@@ -16,11 +16,10 @@
             "&"
             (params->querystring params))
            "_blank"
-           "height=640,width=400,location=0,menubar=0,resizable=1,scrollbars=1,status=0,titlebar=1"
+           "height=640,width=800,location=0,menubar=0,resizable=1,scrollbars=1,status=0,titlebar=1"
            true)))
 
 (defn init []
-  (util/log (-> js/document jq/$ (jq/find :form)))
   (-> js/document
       jq/$
       (jq/off "span[type=richtext]"))
