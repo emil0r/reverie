@@ -12,4 +12,4 @@
    (t/frame
     (-> frame-options
         (assoc :title "URL picker"))
-    [:div "URL picker!"])])
+    [:div "URL picker, not implemented yet."])])

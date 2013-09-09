@@ -2199,3 +2199,15 @@ h6 {
 .container.frame .buttons #save {
   margin-right: 12px;
 }
+.files i[class^="icon-"] {
+  margin-right: 10px;
+  font-size: 1.5em;
+  color: #ff8e00;
+}
+.files i[class=icon-folder-close] {
+  position: relative;
+  top: 3px;
+}
+.files span.download:hover {
+  cursor: pointer;
+}

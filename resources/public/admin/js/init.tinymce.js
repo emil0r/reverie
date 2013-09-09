@@ -10,12 +10,11 @@ var getParameterByName = function (name) {
 // file browser callback. see tinymce documentation about it
 var fbc = function(field_name, url, type, win){
   var base = type === "image" ? 
-    "/admin/frame/filemanager/images" :
+    "/admin/frame/file-picker/images" :
     "/admin/frame/url-picker";
      
   window.open(base
-              + "?field-name=" + field_name
-              + "&url=" + url,
+              + "?field-name=" + field_name,
               "_blank",
               "height=640,width=800,location=0,menubar=0,resizable=1,scrollbars=1,status=0,titlebar=1",
               true);

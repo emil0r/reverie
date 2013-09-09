@@ -6,11 +6,5 @@
 
 
 
-(defn set-file! [filename]
-  (set! (-> js/opener
-            .-document
-            (.getElementById (:field-name params))
-            .-value) filename))
-
 (defn init []
-  (let [params (query-params)]))
+  )

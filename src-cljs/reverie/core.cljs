@@ -1,8 +1,10 @@
 (ns reverie.core
-  (:require [jayq.core :as jq]
+  (:require [clojure.string :as s]
+            [jayq.core :as jq]
             [jayq.util :as util]
             [reverie.admin.area :as area]
             [reverie.admin.filemanager :as filemanager]
+            [reverie.admin.file-picker :as file-picker]
             [reverie.admin.options :as options]
             [reverie.admin.options.object :as object]
             [reverie.admin.options.page :as page]
@@ -14,19 +16,29 @@
 
 
 
-(defmulti init identity)
-(defmethod init "/admin/frame/options/new-root-page" []
+(defmulti init (fn [loc]
+                 (cond
+                  (= "/admin/frame/options/new-root-page" loc) :root-page
+                  (= "/admin/frame/options/add-page" loc) :add-page
+                  (= "/admin/frame/options/restore" loc) :restore
+                  (= "/admin/frame/options/delete" loc) :delete
+                  (= "/admin/frame/object/edit" loc) :object-edit
+                  (re-find #"^/admin/frame/filemanager" loc) :filemanager
+                  (re-find #"^/admin/frame/file-picker" loc) :file-picker)))
+(defmethod init :root-page []
   (page/init))
-(defmethod init "/admin/frame/options/add-page" []
+(defmethod init :add-page []
   (page/init))
-(defmethod init "/admin/frame/options/restore" []
+(defmethod init :restore []
   (page/init))
-(defmethod init "/admin/frame/options/delete" []
+(defmethod init :delete []
   (page/init))
-(defmethod init "/admin/frame/object/edit" []
+(defmethod init :object-edit []
   (object/init))
-(defmethod init "/admin/frame/filemanager/images" []
+(defmethod init :filemanager []
   (filemanager/init))
+(defmethod init :file-picker []
+  (file-picker/init))
 (defmethod init :default []
   (meta/listen!)
   (tree/listen!)

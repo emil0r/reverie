@@ -1,5 +1,5 @@
 (ns reverie.admin.frames
-  (:require reverie.admin.frames.filemanager
+  (:require reverie.admin.frames.file-picker
             reverie.admin.frames.object
             reverie.admin.frames.url-picker
 
