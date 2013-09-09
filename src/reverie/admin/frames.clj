@@ -48,7 +48,12 @@
                  {:tab :navigation-meta} "Navigation/meta"]
                 [:div.goog-tab {:tab :modules} "Modules"]]
                [:div.modules.hidden
-                "my modules"]
+                [:ul
+                 (map (fn [m] [:li {:module m}
+                              (or
+                               (:name (m @atoms/modules))
+                               (-> m clojure.string/capitalize))])
+                      (sort (keys @atoms/modules)))]]
                [:div.navigation-meta
                 [:div.tree
                  (text-field :tree-search)

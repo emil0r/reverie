@@ -94,12 +94,16 @@
 (defn get-templates
   "Get a list of the templates stringified"
   []
-  (map kw->str (keys @templates)))
+  (sort (map kw->str (keys @templates))))
 (defn get-apps
   "Get a list of the apps stringified"
   []
-  (map kw->str (keys @apps)))
+  (sort (map kw->str (keys @apps))))
+(defn get-modules
+  "Get a list of the modules stringified"
+  []
+  (sort (map kw->str (keys @modules))))
 (defn get-objects
   "Get a list of the objects stringified"
   []
-  (map kw->str (keys @objects)))
+  (sort (map kw->str (keys @objects))))

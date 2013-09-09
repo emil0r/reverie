@@ -81,3 +81,20 @@
         color: @white;
     }
 }
+
+.modules {
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        li {
+            padding: 5px;
+            &.active, &:hover {
+                background-color: @secondaryB1;
+                color: @white;
+                cursor: pointer;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+            }
+        }
+    }
+}

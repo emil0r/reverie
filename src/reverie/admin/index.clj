@@ -5,6 +5,7 @@
             reverie.admin.api.pages
             reverie.admin.auth
             reverie.admin.frames
+            reverie.admin.modules
             ;; import rest
             [reverie.admin.templates :as t])
   (:use [reverie.core :only [defpage]]))

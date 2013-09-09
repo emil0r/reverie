@@ -24,7 +24,7 @@
                   (= "/admin/frame/options/restore" loc) :restore
                   (= "/admin/frame/options/delete" loc) :delete
                   (= "/admin/frame/object/edit" loc) :object-edit
-                  (re-find #"^/admin/frame/filemanager" loc) :filemanager
+                  (re-find #"^/admin/frame/module/filemanager" loc) :filemanager
                   (re-find #"^/admin/frame/file-picker" loc) :file-picker)))
 (defmethod init :root-page []
   (page/init))

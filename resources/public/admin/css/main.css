@@ -2190,6 +2190,21 @@ h6 {
   background-color: #ff8e00;
   color: #ffffff;
 }
+.modules ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.modules ul li {
+  padding: 5px;
+}
+.modules ul li.active,
+.modules ul li:hover {
+  background-color: #ff8e00;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
 .container.frame {
   margin: 0;
   padding: 0;
