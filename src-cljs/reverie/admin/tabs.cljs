@@ -9,7 +9,27 @@
 
 
 (defn click-tab! [e]
-  (util/log e))
+  (let [tab (-> e
+                .-target
+                .-element_
+                jq/$
+                (jq/attr :tab))]
+    (if (= tab "navigation-meta")
+      (do
+        (-> :.modules
+            jq/$
+            (jq/add-class :hidden))
+        (-> :.navigation-meta
+            jq/$
+            (jq/remove-class :hidden)))
+      ;; else
+      (do
+        (-> :.modules
+            jq/$
+            (jq/remove-class :hidden))
+        (-> :.navigation-meta
+            jq/$
+            (jq/add-class :hidden))))))
 
 (defn init []
   (let [tb (goog.ui/TabBar.)]
