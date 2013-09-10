@@ -1,4 +1,6 @@
-(ns reverie.admin.modules.filemanager)
+(ns reverie.admin.modules.filemanager
+  (:use [reverie.core :only [defmodule]]))
 
 
-(defn main [])
+(defmodule filemanager {:name "File manager"}
+  )

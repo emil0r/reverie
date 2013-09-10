@@ -1,8 +1,9 @@
 (ns reverie.admin.modules
-  (:require [reverie.admin.modules.filemanager :as fm])
-  (:use [reverie.core :only [defmodule]]))
+  (:require reverie.admin.modules.filemanager))
 
 
 
-(defmodule filemanager {:fn fm/main
-                        :name "File manager"})
+(def root [:get ["/"] "Not implemented yet!"])
+
+
+(def default-module-methods [root])

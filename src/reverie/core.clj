@@ -4,6 +4,7 @@
             [reverie.page :as p])
   (:use clout.core
         reverie.atoms
+        [reverie.admin.modules :only [default-module-methods]]
         [reverie.util :only [generate-handler mode?]]
         [slingshot.slingshot :only [try+ throw+]]))
 
@@ -32,10 +33,6 @@
 
 (defn raise-response [response]
   (throw+ {:type :ring-response :response response}))
-
-(defmacro defmodule [name options]
-  (let [name (keyword name)]
-    `(swap! modules assoc ~name ~options )))
 
 
 (defmacro deftemplate [template options & body]
@@ -139,3 +136,17 @@
         (add-route! path {:type :page :uri path})
         `(swap! pages assoc ~path {:options ~options :fns ~fns}))
       (recur methods (conj fns `(request-method ~method))))))
+
+(defmacro defmodule [name options & methods]
+  (let [name (keyword name)
+        methods (if (empty? methods)
+                  default-module-methods
+                  methods)]
+    (loop [[method & methods] methods
+           fns []]
+      (if (nil? method)
+        (let [path (str "/admin/frame/module/" (clojure.core/name name))]
+          (add-route! path {:type :page :uri path})
+          `(swap! modules assoc ~name ~options)
+          `(swap! pages assoc ~path {:options ~options :fns ~fns}))
+        (recur methods (conj fns `(request-method ~method)))))))

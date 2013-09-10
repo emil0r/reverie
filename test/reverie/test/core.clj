@@ -172,3 +172,17 @@
 (fact
  "defpage /read"
  (:body (reverie.page/render (request :get "/test/defpage/read"))) => "read")
+
+(fact
+ "defmodule"
+ (rev/defmodule testus {:name "My Testus"}
+   [:get ["/"] "root"]
+   [:get ["/one"] "one level indent"])
+ [(:body (reverie.page/render (request :get "/admin/frame/module/testus")))
+  (:body (reverie.page/render (request :get "/admin/frame/module/testus/one")))] => ["root" "one level indent"])
+
+(fact
+ "defmodule/default"
+ (rev/defmodule not-implemented {:name "Not Implemented"})
+ (:body (reverie.page/render (request :get "/admin/frame/module/not-implemented")))
+ => "Not implemented yet!")
