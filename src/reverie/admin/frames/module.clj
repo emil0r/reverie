@@ -7,9 +7,8 @@
         [reverie.middleware :only [wrap-access]]))
 
 
-
-(rev/deftemplate "/admin/frame/module" {:middleware [[wrap-access :edit]]}
+(rev/defpage "/admin/frame/module" {:middleware [[wrap-access :edit]]}
   [:get ["/"]
    (t/frame
     (dissoc frame-options :js)
-    [:div "You have to pick a module"])])
+    [:h1 "You have to pick a module!"])])

@@ -5,6 +5,7 @@
             [reverie.core :as rev])
   (:use midje.sweet
         reverie.atoms
+        [reverie.helper-macros :only [object-funcs]]
         reverie.test.init
         ring.mock.request))
 
@@ -40,7 +41,7 @@
 
 (fact
  "objectfuncs simple"
- (let [obj (rev/object-funcs [] [:get :post] (clojure.string/join " " ["this" "is" "my" "function!"]))]
+ (let [obj (object-funcs [] [:get :post] (clojure.string/join " " ["this" "is" "my" "function!"]))]
    [((:get obj) :data-placeholder {})
     ((:post obj) :data-placeholder {})]) =>
     ["this is my function!"
@@ -48,14 +49,14 @@
 
 (fact
  "objectfuncs multiple method/fn"
- (let [obj (rev/object-funcs [] [:get fn-get :post fn-post]
+ (let [obj (object-funcs [] [:get fn-get :post fn-post]
                              [fn-get "my get"]
                              [fn-post "my post"])]
    [((:get obj) :data-placeholder {}) ((:post obj) :data-placeholder {})]) => ["my get" "my post"])
 
 (fact
  "objectfuncs attributes"
- (let [obj (rev/object-funcs [text] [:get] (hiccup/html [:div "this is my " text]))]
+ (let [obj (object-funcs [text] [:get] (hiccup/html [:div "this is my " text]))]
    ((:get obj) :data-placeholder {:text "text"})) => "<div>this is my text</div>")
 
 

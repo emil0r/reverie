@@ -2,5 +2,4 @@
   (:use [reverie.core :only [defmodule]]))
 
 
-(defmodule filemanager {:name "File manager"}
-  )
+(defmodule filemanager {:name "File manager"})
