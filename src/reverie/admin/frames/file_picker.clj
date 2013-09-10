@@ -1,17 +1,18 @@
 (ns reverie.admin.frames.file-picker
   (:require [clojure.string :as s]
             [me.raynes.fs :as fs]
-            [reverie.admin.templates :as t]
             [reverie.core :as rev]
             [reverie.responses :as r]
             [reverie.util :as util])
   (:use [hiccup core form]
+        
         [reverie.admin.frames.common :only [frame-options]]
         [reverie.admin.modules.filemanager :only [join-paths
                                                   list-dir
                                                   get-mod-time
                                                   get-size]]
-        [reverie.middleware :only [wrap-access]]))
+        [reverie.middleware :only [wrap-access]]
+        [reverie.admin.templates :only [frame]]))
 
 
 (defmulti row-file :type)
@@ -32,8 +33,8 @@
    [:td (get-mod-time file)]])
 (defmethod row-file :default [_ _])
 
-(defn- get-file-lister [files {:keys [qs up? path]}]
-  (t/frame
+(defn- file-lister [files {:keys [qs up? path]}]
+  (frame
    (-> frame-options
        (assoc :title "File-picker: Images")
        (assoc :css ["/admin/css/font-awesome.min.css"
@@ -50,8 +51,8 @@
 
 (rev/defpage "/admin/frame/file-picker" {:middleware [[wrap-access :edit]]}
   [:get ["/images"]
-   (get-file-lister (list-dir :images "") {:qs (:query-string request)})]
-  [:get ["/images/:path"]
-   (get-file-lister (list-dir :images path) {:qs (:query-string request)
+   (file-lister (list-dir :images "") {:qs (:query-string request)})]
+  [:get ["/images/:path" {:path #".*"}]
+   (file-lister (list-dir :images path) {:qs (:query-string request)
                                              :up? true
                                              :path (str "images/" path)})])
