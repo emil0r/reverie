@@ -4,8 +4,9 @@
             [goog.ui.Tab :as t]
             [goog.dom :as dom]
             [jayq.core :as jq]
-            [jayq.util :as util]))
-
+            [jayq.util :as util]
+            [reverie.dom :as dom2])
+  (:use [reverie.util :only [ev$]]))
 
 
 (defn click-tab! [e]
@@ -21,7 +22,9 @@
             (jq/add-class :hidden))
         (-> :.navigation-meta
             jq/$
-            (jq/remove-class :hidden)))
+            (jq/remove-class :hidden))
+        (doseq [m (-> ".modules > ul" jq/$ jq/children)]
+          (-> m jq/$ (jq/remove-class :active))))
       ;; else
       (do
         (-> :.modules
@@ -31,7 +34,23 @@
             jq/$
             (jq/add-class :hidden))))))
 
+(defn click-module! [e]
+  (let [e$ (-> e ev$)
+        module (jq/attr e$ :module)]
+    (jq/add-class e$ :active)
+    (doseq [s (jq/siblings e$)]
+      (jq/remove-class s :active))
+    
+    (dom2/options-uri! (str "/admin/frame/module/" module))
+    (dom2/show-options)))
+
+(defn listen! []
+  (-> :.modules
+      jq/$
+      (jq/on :click "ul>li" click-module!)))
+
 (defn init []
   (let [tb (goog.ui/TabBar.)]
     (.decorate tb (dom/getElement "tabbar"))
-    (events/listen tb goog.ui.Component.EventType.SELECT click-tab!)))
+    (events/listen tb goog.ui.Component.EventType.SELECT click-tab!)
+    (listen!)))
