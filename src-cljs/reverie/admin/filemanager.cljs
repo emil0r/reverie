@@ -1,6 +1,7 @@
 (ns reverie.admin.filemanager
   "This namespace is only run in the frame for the file manager"
-  (:require [crate.core :as crate]
+  (:require [clojure.string :as s]
+            [crate.core :as crate]
             [jayq.core :as jq]
             [jayq.util :as util]
             [shoreleave.browser.storage.localstorage :as localstorage])
@@ -16,17 +17,36 @@
    [:img {:src (jq/attr e$ :uri) :width 200 :height 200}]])
 (defmethod get-presentation :default [e$])
 
+(defn get-current-path []
+  (-> js/window .-location.pathname
+      (s/split #"filemanager")
+      last))
+
+(defn valid-move? [file directory]
+  (let [a (drop 1 (-> directory (s/split #"/") reverse))
+        b (drop 2 (-> file (s/split #"/") reverse))]
+    (not (= a b))))
+
 (defn get-move-button [move-file]
-  (if move-file
+  (cond
+   ;; 1
+   (and move-file
+        (valid-move? (:uri move-file) (get-current-path)))
     [:div.move-file
      [:button
       {:class "btn btn-primary"
        :id "move-file"
        :uri (:uri move-file)}
-      (str "Move " (:name move-file) " here")]]))
+      (str "Move " (:name move-file) " here")]]
+    ;; 2
+    move-file
+    [:div.move-file
+     [:button
+      {:class "btn btn-info"}
+      (str (:name move-file) " is ready to move")]]))
 
 (defn info-window []
-  (let [move-file (:move-file @files)]
+  (let [move-file (:move @files)]
     (-> :#info
         jq/$
         (jq/html (crate/html
@@ -35,7 +55,7 @@
                    [:div.drop-area "Drop files here"]])))))
 
 (defn info-file [$file]
-  (let [move-file (:move-file @files)]
+  (let [move-file (:move @files)]
      (-> :#info
          jq/$
          (jq/html (crate/html
@@ -74,20 +94,26 @@
 
 (defn click-move! [e]
   (.stopPropagation e)
-  ;; (jq/xhr [:post "/admin/api/filemanager/move"]
-  ;;         {:from nil :to nil}
-  ;;         (fn [data]
-  ;;           (if (.-result data)
-  ;;             (util/log data))))
-  )
+  (let [{:keys [name uri]} (:move @files)
+        to (str "/"
+                (s/join "/"
+                        (remove
+                         s/blank?
+                         (s/split (get-current-path) #"/")))
+                "/" name)]
+    (jq/xhr [:post "/admin/api/filemanager/move"]
+            {:from uri :to to}
+            (fn [data]
+              (if (.-result data)
+                (-> js/window .-location .reload))))))
 
 (defn click-move-initiate! [e]
   (.stopPropagation e)
-  (let [e$ (ev$ e)
-        name (jq/attr e$ :name)
-        uri (jq/attr e$ :uri)]
-    (swap! files assoc :move-file {:name name
-                                   :uri uri})
+  (let [$file (:active @files)
+        name (jq/attr $file :name)
+        uri (jq/attr $file :uri)]
+    (swap! files assoc :move {:name name
+                              :uri uri})
     (jq/xhr [:post "/admin/api/filemanager/move-initiate"]
             {:name name :uri uri}
             (fn [data]
@@ -95,7 +121,13 @@
                 (info-file (:active @files)))))))
 
 (defn init []
-  (info-window)
+  (jq/xhr [:get "/admin/api/filemanager/meta"]
+          nil
+          (fn [data]
+            (if (.-result data)
+              (do
+                (reset! files (:commands (js->clj data :keywordize-keys true)))
+                (info-window)))))
   (-> :span.file
       jq/$
       (jq/on :click click-file!))
@@ -105,4 +137,5 @@
   (-> :#info
       jq/$
       (jq/delegate :#move :click click-move-initiate!)
-      (jq/delegate :#delete :click click-delete!)))
+      (jq/delegate :#delete :click click-delete!)
+      (jq/delegate :#move-file :click click-move!)))

@@ -102,6 +102,21 @@
   [path]
   (str "/" (s/join "/" (butlast (remove s/blank? (s/split path #"/"))))))
 
+(defn get-path-info [p]
+  {:type (cond
+          (fs/directory? p) :directory
+          (fs/file? p) :file
+          :else :other)
+   :mod (fs/mod-time p)
+   :file-type (get-file-type p)
+   :uri (-> p
+            (s/replace (re-pattern
+                        (-> p (s/split #"media") first)) "")
+            (s/replace #"media" "")
+            util/join-uri)
+   :name (get-name p)
+   :size (fs/size p)})
+
 (defn list-dir [base path]
   (let [base (get-base-path base)
         listed (remove
@@ -113,20 +128,7 @@
                (if (nil? k)
                  out
                  (let [p (join-paths base path k)]
-                   (conj out
-                         {:type (cond
-                                 (fs/directory? p) :directory
-                                 (fs/file? p) :file
-                                 :else :other)
-                          :mod (fs/mod-time p)
-                          :file-type (get-file-type p)
-                          :uri (-> p
-                                   (s/replace (re-pattern
-                                               (-> p (s/split #"media") first)) "")
-                                   (s/replace #"media" "")
-                                   util/join-uri)
-                          :name (get-name p)
-                          :size (fs/size p)}))))
+                   (conj out (get-path-info p)))))
              []
              listed))))
 
@@ -181,7 +183,7 @@
 
 
 (defn- legal? [path]
-  (nil? (re-find #"\." path)))
+  (nil? (re-find #"\.\.|\/\." path)))
 
 (defpage "/admin/api/filemanager" {:middleware [[wrap-json-params]
                                                 [wrap-json-response]
@@ -209,10 +211,12 @@
                                 (not (legal? to)) "To path was not absolute"
                                 (not (fs/exists? from)) "From path does not exist"
                                 (not (fs/exists? to)) "To path does not exist"
-                                :else "Illegal operation")
-        :from from
-        :to to}))]
+                                :else "Illegal operation")}))]
   [:post ["/move-initiate" {:keys [name uri]}]
    (let [u (user/get)]
      (swap! commands assoc-in [u :move] {:name name :uri uri})
-     {:result true})])
+     {:result true})]
+  [:get ["/meta"]
+   (let [u (user/get)]
+     {:result true
+      :commands (get @commands u)})])
