@@ -23,8 +23,8 @@
       last))
 
 (defn valid-move? [file directory]
-  (let [a (drop 1 (-> directory (s/split #"/") reverse))
-        b (drop 2 (-> file (s/split #"/") reverse))]
+  (let [a (-> directory (s/split #"/") reverse)
+        b (drop 1 (-> file (s/split #"/") reverse))]
     (not (= a b))))
 
 (defn get-move-button [move-file]
@@ -43,7 +43,7 @@
     [:div.move-file
      [:button
       {:class "btn btn-info"}
-      (str (:name move-file) " is ready to move")]]))
+      (str (:name move-file) " is ready to be moved")]]))
 
 (defn info-window []
   (let [move-file (:move @files)]
