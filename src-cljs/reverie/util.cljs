@@ -53,3 +53,13 @@
 
 (defn ev$ [e]
   (-> e .-target jq/$))
+
+
+(defn activate! [elem$ & [sibling-path]]
+  (jq/add-class elem$ :active)
+  (let [file-name (jq/attr elem$ :name)
+        siblings (if sibling-path
+                   (remove #(= file-name (-> % .-attributes .-name .-value)) (jq/$ sibling-path))
+                   (jq/siblings elem$))]
+    (doseq [s siblings]
+      (jq/remove-class (jq/$ s) :active))))

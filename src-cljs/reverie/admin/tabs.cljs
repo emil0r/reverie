@@ -6,7 +6,7 @@
             [jayq.core :as jq]
             [jayq.util :as util]
             [reverie.dom :as dom2])
-  (:use [reverie.util :only [ev$]]))
+  (:use [reverie.util :only [ev$ activate!]]))
 
 
 (defn click-tab! [e]
@@ -37,9 +37,7 @@
 (defn click-module! [e]
   (let [e$ (-> e ev$)
         module (jq/attr e$ :module)]
-    (jq/add-class e$ :active)
-    (doseq [s (jq/siblings e$)]
-      (jq/remove-class s :active))
+    (activate! e$)
     
     (dom2/options-uri! (str "/admin/frame/module/" module))
     (dom2/show-options)))

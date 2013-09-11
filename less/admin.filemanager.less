@@ -1,0 +1,25 @@
+
+.filemanager {
+    #info {
+        position: fixed;
+        padding: 5px;
+        top: 0;
+        left: 800px;
+        border-bottom: 1px dotted @secondaryB1;
+        border-left: 1px dotted @secondaryB1;
+        border-right: 1px dotted @secondaryB1;
+        .drop-area {
+            color: @gray-light;
+            text-align: center;
+            opacity: 0.5;
+            font-size: 50px;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.25);
+            padding: 50px;
+            background-color: @gray-lighter;
+            &:hover {
+                opacity: 0.6;
+                text-shadow: 1px 1px 1px rgba(0,0,0,0.35);
+            }
+        }
+    }
+}

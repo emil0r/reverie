@@ -1,5 +1,5 @@
 
-.files {
+#files {
     i[class^="icon-"] {
         margin-right: 10px;
         font-size: 1.5em;
@@ -9,9 +9,22 @@
         position: relative;
         top: 3px;
     }
-    span.download {
-        &:hover {
+    span {
+        &.active, &:hover {
             cursor: pointer;
+            color: @secondaryB1;
+            i {
+                text-shadow: 1px 1px 1px @black;
+            }
+        }
+    }
+    a {
+        text-shadow: 0 0 0 @black;
+        &:hover {
+            color: @secondaryB1;
+            i {
+                text-shadow: 1px 1px 1px @black;
+            }
         }
     }
 }

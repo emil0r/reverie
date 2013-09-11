@@ -39,7 +39,7 @@
        (assoc :title "File-picker: Images")
        (assoc :css ["/admin/css/font-awesome.min.css"
                     "/admin/css/main.css"]))
-   [:div.files
+   [:div#files
     [:table.table
      [:tr
       [:th "Name"] [:th "Size"] [:th "Modified"]]

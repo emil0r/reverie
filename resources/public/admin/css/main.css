@@ -2103,6 +2103,7 @@ a {
 }
 a:hover {
   text-shadow: 0 0 2px #ff8e00;
+  text-decoration: none;
 }
 h1,
 h2,
@@ -2235,15 +2236,52 @@ h6 {
 .container.frame .buttons #save {
   margin-right: 12px;
 }
-.files i[class^="icon-"] {
+#files i[class^="icon-"] {
   margin-right: 10px;
   font-size: 1.5em;
   color: #ff8e00;
 }
-.files i[class=icon-folder-close] {
+#files i[class=icon-folder-close] {
   position: relative;
   top: 3px;
 }
-.files span.download:hover {
+#files span.active,
+#files span:hover {
   cursor: pointer;
+  color: #ff8e00;
+}
+#files span.active i,
+#files span:hover i {
+  text-shadow: 1px 1px 1px #000000;
+}
+#files a {
+  text-shadow: 0 0 0 #000000;
+}
+#files a:hover {
+  color: #ff8e00;
+}
+#files a:hover i {
+  text-shadow: 1px 1px 1px #000000;
+}
+.filemanager #info {
+  position: fixed;
+  padding: 5px;
+  top: 0;
+  left: 800px;
+  border-bottom: 1px dotted #ff8e00;
+  border-left: 1px dotted #ff8e00;
+  border-right: 1px dotted #ff8e00;
+}
+.filemanager #info .drop-area {
+  color: #999999;
+  text-align: center;
+  opacity: 0.5;
+  font-size: 50px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.25);
+  padding: 50px;
+  background-color: #eeeeee;
+}
+.filemanager #info .drop-area:hover {
+  opacity: 0.6;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.35);
 }
