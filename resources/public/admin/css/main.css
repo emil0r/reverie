@@ -2266,11 +2266,9 @@ h6 {
 .filemanager #info {
   position: fixed;
   padding: 5px;
-  top: 0;
-  left: 800px;
-  border-bottom: 1px dotted #ff8e00;
-  border-left: 1px dotted #ff8e00;
-  border-right: 1px dotted #ff8e00;
+  top: 15px;
+  left: 785px;
+  border: 1px dotted #ff8e00;
 }
 .filemanager #info .drop-area {
   color: #999999;

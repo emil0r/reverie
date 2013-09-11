@@ -1,6 +1,7 @@
 (ns reverie.admin.modules.filemanager
   (:require [clojure.string :as s]
             [me.raynes.fs :as fs]
+            [reverie.auth.user :as user]
             [reverie.util :as util])
   (:use [clj-time.coerce :only [from-long]]
         [clj-time.format :only [unparse formatter]]
@@ -11,6 +12,8 @@
         [reverie.middleware :only [wrap-access]]
         [ring.middleware.json :only [wrap-json-params
                                      wrap-json-response]]))
+
+(def commands (atom {}))
 
 
 (def ^:private time-display (formatter "YYYY-MM-dd HH:mm"))
@@ -86,10 +89,19 @@
 
 
 (defn join-paths [& paths]
-  (s/join "/" (flatten (map (fn [p]
-                              (-> p
-                                  (s/replace #"\.\." "")
-                                  (s/split #"/"))) paths))))
+  (str "/"
+       (s/join "/" (remove s/blank?
+                           (flatten 
+                            (map (fn [p]
+                                   (-> p
+                                       (s/replace #"\.\." "")
+                                       (s/split #"/"))) paths))))))
+
+(defn path-but-last
+  "Take any uri and return everything but the last part corresponding to the page"
+  [path]
+  (str "/" (s/join "/" (butlast (remove s/blank? (s/split path #"/"))))))
+
 (defn list-dir [base path]
   (let [base (get-base-path base)
         listed (remove
@@ -168,12 +180,39 @@
                                     :path path})])
 
 
+(defn- legal? [path]
+  (nil? (re-find #"\." path)))
 
 (defpage "/admin/api/filemanager" {:middleware [[wrap-json-params]
                                                 [wrap-json-response]
                                                 [wrap-access :edit]]}
-  [:get ["/delete/:path" {:path #".*"}]
+  [:post ["/delete" {:keys [path]}]
    (let [p (-> path get-base-path join-paths)]
      (if (fs/exists? p)
        {:result (fs/delete p)}
-       {:result false}))])
+       {:result false}))]
+  [:post ["/move" {:keys [from to]}]
+   (let [u (user/get)
+         from (join-paths fs/*cwd* "media" from)
+         to (join-paths fs/*cwd* "media" to)]
+     (swap! commands assoc-in [u :move] nil)
+     (if (and
+          (legal? from)
+          (legal? to)
+          (fs/exists? from)
+          (fs/exists? (path-but-last to)))
+       {:result (and
+                 (fs/copy from to)
+                 (fs/delete from))}
+       {:result :false :reason (cond
+                                (not (legal? from)) "From path was not absolute"
+                                (not (legal? to)) "To path was not absolute"
+                                (not (fs/exists? from)) "From path does not exist"
+                                (not (fs/exists? to)) "To path does not exist"
+                                :else "Illegal operation")
+        :from from
+        :to to}))]
+  [:post ["/move-initiate" {:keys [name uri]}]
+   (let [u (user/get)]
+     (swap! commands assoc-in [u :move] {:name name :uri uri})
+     {:result true})])
