@@ -20,6 +20,7 @@
       (jq/html (crate/html [:div.drop-area "Drop files here"]))))
 
 (defn info-file! [e]
+  (.stopPropagation e)
   (let [e$ (ev$ e)]
     (activate! e$ :span.active)
     (reset! active-file e$)
@@ -37,6 +38,7 @@
 
 
 (defn click-delete! [e]
+  (.stopPropagation e)
   (let [uri (jq/attr @active-file :uri)]
     (jq/xhr [:get (str "/admin/api/filemanager/delete/" uri)]
             nil
@@ -49,6 +51,7 @@
                  (info-window)))))))
 
 (defn click-move! [e]
+  (.stopPropagation e)
   (util/log (-> @active-file (jq/attr :name))))
 
 (defn init []
@@ -56,6 +59,9 @@
   (-> :span.file
       jq/$
       (jq/on :click info-file!))
+  (-> :html
+      jq/$
+      (jq/on :click info-window))
   (-> :#info
       jq/$
       (jq/delegate :#move :click click-move!)
