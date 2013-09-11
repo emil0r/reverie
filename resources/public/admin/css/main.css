@@ -2287,3 +2287,6 @@ h6 {
 .filemanager #info .move-file button {
   margin: 5px 0 25px 5px;
 }
+.filemanager #info .directory-panel button {
+  margin: 5px 15px 0 0;
+}

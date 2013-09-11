@@ -33,6 +33,30 @@
            ":"
            (-> d .getMinutes normalize)))))
 
+(defn normalize [str]
+  (-> str
+      (s/replace #"[åÅäÄĀāĀāÀÁÂÃÆàáâãæ]" "a")
+      (s/replace #"[ČčÇç]" "c")
+      (s/replace #"[Ðð]" "d")
+      (s/replace #"[ĒēĒēËëÈÉÊËèéêë]" "e")
+      (s/replace #"[Ğğ]" "g")
+      (s/replace #"[ĪīĪīÏïİıìíîïÌÍÎÏ]" "i")
+      (s/replace #"[Ĳĳ]" "ij")
+      (s/replace #"[Ññ]" "n")
+      (s/replace #"[öÖŐőŌōŌōŒœŒœòóôõöøÒÓÔÕÖØ]" "o")
+      (s/replace #"[Þþ]" "p")
+      (s/replace #"[Řř]" "r")
+      (s/replace #"[ŠšŠšŠŞşŠš]" "s")
+      (s/replace #"[ß]" "ss")
+      (s/replace #"[ŰűŪūŪūÜüÙÚÛÜùúûü]" "u")
+      (s/replace #"[ẀẁẂẃŴŵ]" "w")
+      (s/replace #"[ŶŷŸýÝÿŸ]" "y")
+      (s/replace #"[ŽžŽžŽžžŽ]" "z")
+      (s/replace #"\s" "-")
+      (s/replace #"\&" "-")
+      (s/replace #"[^a-zA-Z0-9\-\_\.]" "")
+      s/lower-case))
+
 (defn query-params
   ([]
      (query-params (-> js/window .-location .-href)
@@ -63,3 +87,23 @@
                    (jq/siblings elem$))]
     (doseq [s siblings]
       (jq/remove-class (jq/$ s) :active))))
+
+(defn join-uri
+  "Join two or more fragmets of an URI together"
+  [& uris]
+  (loop [parts []
+         [u & uris] uris]
+    (if (nil? u)
+      (str "/" (s/join "/" (flatten parts)))
+      (recur (conj parts (remove s/blank? (s/split u #"/"))) uris))))
+
+(defn uri-last
+  "Take any uri and only return the last part corresponding to the page"
+  [uri]
+  (last (remove s/blank? (s/split uri #"/"))))
+
+(defn uri-but-last
+  "Take any uri and return everything but the last part corresponding to the page"
+  [uri]
+  (s/join "/" (butlast (remove s/blank? (s/split uri #"/")))))
+

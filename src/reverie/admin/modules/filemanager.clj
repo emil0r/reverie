@@ -216,7 +216,19 @@
    (let [u (user/get)]
      (swap! commands assoc-in [u :move] {:name name :uri uri})
      {:result true})]
-  [:get ["/meta"]
-   (let [u (user/get)]
+  [:post ["/create-directory" {:keys [name path]}]
+   (let [path (join-paths fs/*cwd* "media" path name)]
+     {:result (fs/mkdir path)})]
+  [:post ["/delete-directory" {:keys [path]}]
+   (let [path (join-paths fs/*cwd* "media" path)]
+     {:result (if (empty? (fs/list-dir path))
+                (fs/delete-dir path)
+                false)})]
+  [:post ["/meta" {:keys [path]}]
+   (let [u (user/get)
+         media-path (join-paths fs/*cwd* "media" path)]
      {:result true
-      :commands (get @commands u)})])
+      :commands (get @commands u)
+      :meta {:deletable? (and
+                          (not (empty? path))
+                          (empty? (fs/list-dir media-path)))}})])
