@@ -17,7 +17,7 @@
 
 
 (def ^:private time-display (formatter "YYYY-MM-dd HH:mm"))
-(def ^:private file-type-document ["pdf" "doc" "docx" "xls" "ods" "ans" "odc" "odf" "odm" "odp" "ods" "odt" "opx" "otg" "oth" "otp" "ots" "ott" "oxt" "ppt" "pps" "ppsx" "sdc" "sdd" "sdp" "sdw" "sgf" "smd" "smf" "stc" "sti" "stw" "sxc" "sxi" "sxm" "sxw" "txt" "vcg" "vor" "xlt" "xlthtml" "docm" "dotm" "dotx" "gfs" "grv" "gsa" "kfl" "mpp" "ost" "potm" "potx" "ppsm" "ppsx" "pptm" "pptx" "pub" "sldx" "xlam" "xlsb" "xlsm" "xlsx" "xltm" "xltx" "xsf" "xsn" "accdb" "accde" "accdr" "accdt" "bdr"])
+(def ^:private file-type-document ["pdf" "doc" "docx" "xls" "ods" "ans" "odc" "odf" "odm" "odp" "ods" "odt" "opx" "otg" "oth" "otp" "ots" "ott" "oxt" "ppt" "pps" "ppsx" "sdc" "sdd" "sdp" "sdw" "sgf" "smd" "smf" "stc" "sti" "stw" "sxc" "sxi" "sxm" "sxw" "txt" "vcg" "vor" "xlt" "xlthtml" "docm" "dotm" "dotx" "gfs" "grv" "gsa" "kfl" "mpp" "ost" "potm" "potx" "ppsm" "ppsx" "pptm" "pptx" "pub" "sldx" "xlam" "xlsb" "xlsm" "xlsx" "xltm" "xltx" "xsf" "xsn" "accdb" "accde" "accdr" "accdt" "bdr" "rtf"])
 (def ^:private file-type-image ["jpg" "jpeg" "bmp" "gif" "tiff" "png"])
 (def ^:private file-type-binary ["psd" "bin" "iso" "dmg" "exe" "raw" "xcf"])
 (def ^:private file-type-compressed ["zip" "tar" "gz" "gzip" "rar"])
