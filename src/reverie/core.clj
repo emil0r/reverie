@@ -4,7 +4,7 @@
             [reverie.page :as p])
   (:use clout.core
         reverie.atoms
-        [reverie.admin.modules.default :only [default-module-methods]]
+        ;;[reverie.admin.modules.default :only [get-default-module-fns]]
         [reverie.helper-macros :only [object-funcs request-method]]
         [reverie.util :only [generate-handler mode?]]
         [slingshot.slingshot :only [try+ throw+]]))
@@ -69,17 +69,24 @@
         `(swap! pages assoc ~path {:options ~options :fns ~fns}))
       (recur methods (conj fns `(request-method ~method))))))
 
+(defn get-default-module-fns []
+  (:fns (get @pages "/admin/frame/module/reverie-default-module")))
+
 (defmacro defmodule [name options & methods]
   (let [name (keyword name)
-        methods (if (empty? methods)
-                  default-module-methods
-                  methods)]
-    (loop [[method & methods] methods
-           fns []]
-      (if (nil? method)
-        (let [path (str "/admin/frame/module/" (clojure.core/name name))]
-          (add-route! path {:type :page :uri path})
-          `(do
-             (swap! modules assoc ~name ~options)
-             (swap! pages assoc ~path {:options ~options :fns ~fns})))
-        (recur methods (conj fns `(request-method ~method)))))))
+        path (str "/admin/frame/module/" (clojure.core/name name))]
+    (if (empty? methods)
+      (do
+        (add-route! path {:type :page :uri path})
+        `(do
+           (swap! modules assoc ~name ~options)
+           (swap! pages assoc ~path {:options ~options :fns (get-default-module-fns)})))
+     (loop [[method & methods] methods
+            fns []]
+       (if (nil? method)
+         (do
+           (add-route! path {:type :page :uri path})
+           `(do
+              (swap! modules assoc ~name ~options)
+              (swap! pages assoc ~path {:options ~options :fns ~fns})))
+         (recur methods (conj fns `(request-method ~method))))))))

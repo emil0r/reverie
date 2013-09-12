@@ -23,9 +23,11 @@
 (defn shorten-uri
   "shortens the uri by removing the unwanted part"
   [request remove-part-of-uri]
-  (assoc-in request [:uri] (clojure.string/replace
-                            (:uri request)
-                            (re-pattern (s/replace remove-part-of-uri #"/$" "")) "")))
+  (-> request
+      (assoc-in [:real-uri] (:uri request))
+      (assoc-in [:uri] (clojure.string/replace
+                        (:uri request)
+                        (re-pattern (s/replace remove-part-of-uri #"/$" "")) ""))))
 
 (defn revmap->kw
   "SQL databases can't store keywords. Do a transformation"

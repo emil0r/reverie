@@ -15,6 +15,22 @@
 
 (def commands (atom {}))
 
+(defn join-paths [& paths]
+  (str "/"
+       (s/join "/" (remove s/blank?
+                           (flatten 
+                            (map (fn [p]
+                                   (-> p
+                                       (s/replace #"\.\." "")
+                                       (s/split #"/"))) paths))))))
+
+(defn path-but-last
+  "Take any uri and return everything but the last part corresponding to the page"
+  [path]
+  (str "/" (s/join "/" (butlast (remove s/blank? (s/split path #"/"))))))
+
+
+
 
 (def ^:private time-display (formatter "YYYY-MM-dd HH:mm"))
 (def ^:private file-type-document ["pdf" "doc" "docx" "xls" "ods" "ans" "odc" "odf" "odm" "odp" "ods" "odt" "opx" "otg" "oth" "otp" "ots" "ott" "oxt" "ppt" "pps" "ppsx" "sdc" "sdd" "sdp" "sdw" "sgf" "smd" "smf" "stc" "sti" "stw" "sxc" "sxi" "sxm" "sxw" "txt" "vcg" "vor" "xlt" "xlthtml" "docm" "dotm" "dotx" "gfs" "grv" "gsa" "kfl" "mpp" "ost" "potm" "potx" "ppsm" "ppsx" "pptm" "pptx" "pub" "sldx" "xlam" "xlsb" "xlsm" "xlsx" "xltm" "xltx" "xsf" "xsn" "accdb" "accde" "accdr" "accdt" "bdr" "rtf"])
@@ -87,20 +103,6 @@
 (defmethod get-icon :default [file]
   [:i.icon-file])
 
-
-(defn join-paths [& paths]
-  (str "/"
-       (s/join "/" (remove s/blank?
-                           (flatten 
-                            (map (fn [p]
-                                   (-> p
-                                       (s/replace #"\.\." "")
-                                       (s/split #"/"))) paths))))))
-
-(defn path-but-last
-  "Take any uri and return everything but the last part corresponding to the page"
-  [path]
-  (str "/" (s/join "/" (butlast (remove s/blank? (s/split path #"/"))))))
 
 (defn get-path-info [p]
   {:type (cond
