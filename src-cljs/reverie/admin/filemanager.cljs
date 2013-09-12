@@ -51,16 +51,20 @@
    [:button.btn.btn-primary {:id "create-directory"} "Create directory"]
    (if (:deletable? @meta-data)
      [:button.btn.btn-danger {:id "delete-directory"} "Delete directory"])])
+(defn get-progress-bar []
+  [:div#progress.hidden [:div#bar]])
 
 (defn info-window []
-  (let [move-file (:move @files)]
+  (let [move-file (:move @files)
+        elem (crate/html
+              [:div
+               (get-move-button move-file)
+               [:div#drop-area "Drop files here"]
+               (get-progress-bar)
+               (get-directory-panel)])]
     (-> :#info
         jq/$
-        (jq/html (crate/html
-                  [:div
-                   (get-move-button move-file)
-                   [:div.drop-area "Drop files here"]
-                   (get-directory-panel)])))))
+        (jq/html elem))))
 
 (defn info-file [$file]
   (let [move-file (:move @files)]
@@ -145,6 +149,66 @@
                          "/admin/frame/module/filemanager"
                          (-> (get-current-path) uri-but-last join-uri)))))))))
 
+(defn draw-progress [percentage]
+  (let [percentage (format "%.0f" (* 100 (float percentage)))
+        $progress (jq/$ :#progress)]
+    (jq/remove-class $progress :hidden)
+    (-> $progress (jq/find :#bar) (jq/css :width (str percentage "%")))))
+
+(defn update-drop-area! [text]
+  (-> :#drop-area
+      jq/$
+      (jq/html text)))
+
+(defn onload-upload [file total-size total-progress]
+  (fn [e]
+    (update-drop-area! (str "Uploading " (.-name file)))
+    (swap! total-progress + (.-size file))
+    (draw-progress (/ @total-progress @total-size))))
+(defn onerror-upload [file]
+  (fn [e]
+    (util/log file)))
+(defn onprogress-upload [total-size total-progress]
+  (fn [e]
+    (let [progress (+ @total-progress (.-loaded e))]
+      (draw-progress (/ progress @total-size)))))
+(defn onloadstart-upload [e])
+(defn onloadend-upload [e]
+  (update-drop-area! "Finished upload<br/>Drop files here")
+  (draw-progress 1))
+(defn upload-file [file url total-size total-progress]
+  (let [xhr (js/XMLHttpRequest.)
+        form-data (js/FormData.)]
+    (.open xhr "POST" url)
+    (-> xhr .-onload (set! (onload-upload file total-size total-progress)))
+    (-> xhr .-onerror (set! (onerror-upload file)))
+    (-> xhr .-onprogress (set! (onprogress-upload total-size total-progress)))
+    (-> xhr .-onloadstart (set! onloadstart-upload))
+    (-> xhr .-onloadend (set! onloadend-upload))
+    (.append form-data "file" file)
+    (.append form-data "path" (get-current-path))
+    (.send xhr form-data)))
+(defn process-files [files]
+  (let [total-size (atom 0)
+        total-progress (atom 0)]
+    (.forEach goog.array files
+              (fn [f]
+                (swap! total-size + (.-size f))))
+    (.forEach goog.array files
+              (fn [f]
+                (upload-file f "/admin/api/filemanager/upload"
+                             total-size
+                             total-progress)))))
+
+(defn drop-files! [e]
+  (.preventDefault e)
+  (process-files (.-originalEvent.dataTransfer.files e)))
+(defn drag-over-files! [e]
+  (.stopPropagation e)
+  (.preventDefault e)
+  (set! (.-originalEvent.dataTransfer.dropEffect e) "copy"))
+
+
 (defn init []
   (jq/xhr [:post "/admin/api/filemanager/meta"]
           {:path (get-current-path)}
@@ -166,4 +230,6 @@
       (jq/delegate :#delete :click click-delete!)
       (jq/delegate :#move-file :click click-move!)
       (jq/delegate :#create-directory :click click-create-directory!)
-      (jq/delegate :#delete-directory :click click-delete-directory!)))
+      (jq/delegate :#delete-directory :click click-delete-directory!)
+      (jq/delegate :#drop-area :drop drop-files!)
+      (jq/delegate :#drop-area :dragover drag-over-files!)))

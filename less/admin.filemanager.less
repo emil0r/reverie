@@ -6,7 +6,7 @@
         top: 15px;
         left: 785px;
         border: 1px dotted @secondaryB1;
-        .drop-area {
+        #drop-area {
             color: @gray-light;
             text-align: center;
             opacity: 0.5;
@@ -20,6 +20,21 @@
                 cursor: pointer;
             }
         }
+        
+        #progress {
+            height: 5px;
+            line-height: 0;
+            #bar {
+                display: inline-block;
+                line-height: 0;
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                width: 0%;
+                background-color: green;
+            }
+        }
+
         .move-file {
             button {
                 margin: 5px 0 25px 5px;

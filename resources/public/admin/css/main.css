@@ -2270,7 +2270,7 @@ h6 {
   left: 785px;
   border: 1px dotted #ff8e00;
 }
-.filemanager #info .drop-area {
+.filemanager #info #drop-area {
   color: #999999;
   text-align: center;
   opacity: 0.5;
@@ -2279,10 +2279,23 @@ h6 {
   padding: 50px;
   background-color: #eeeeee;
 }
-.filemanager #info .drop-area:hover {
+.filemanager #info #drop-area:hover {
   opacity: 0.6;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.35);
   cursor: pointer;
+}
+.filemanager #info #progress {
+  height: 5px;
+  line-height: 0;
+}
+.filemanager #info #progress #bar {
+  display: inline-block;
+  line-height: 0;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 0%;
+  background-color: green;
 }
 .filemanager #info .move-file button {
   margin: 5px 0 25px 5px;

@@ -224,6 +224,9 @@
      {:result (if (empty? (fs/list-dir path))
                 (fs/delete-dir path)
                 false)})]
+  [:post ["/upload" {:keys [file path]}]
+   (let [path (join-paths fs/*cwd* "media" path (:filename file))]
+     {:result (fs/copy (:tempfile file) path)})]
   [:post ["/meta" {:keys [path]}]
    (let [u (user/get)
          media-path (join-paths fs/*cwd* "media" path)]
