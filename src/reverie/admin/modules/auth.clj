@@ -38,8 +38,19 @@
                               :roles {:name "Roles"
                                       :type :m2m
                                       :table :role
-                                      :connecting-table :role_user}}}
-
+                                      :connecting-table :role_user}}
+                     :sections [{:fields [:name :password]}
+                                {:name "Personal information"
+                                 :fields [:first_name :last_name :email]}
+                                {:name "Rights"
+                                 :fields [:active :is_staff :is_admin :roles]}
+                                {:name "Groups"
+                                 :fields [:groups]}]
+                     :post (fn [data]
+                             (if (empty? (:password data))
+                               data
+                               (assoc data :password
+                                      (crypt/encrypt (:password data)))))}
               :group {:name "Group"
                       :fields {:name {:name "Name"
                                       :type :text
@@ -47,18 +58,8 @@
                                :roles {:name "Roles"
                                        :type :m2m
                                        :table :role
-                                       :connecting-table :role_group}}}}
-   :sections {:user [{:fields [:name :password]}
-                     {:name "Personal information"
-                      :fields [:first_name :last_name :email]}
-                     {:name "Rights"
-                      :fields [:active :is_staff :is_admin :roles]}
-                     {:name "Groups"
-                      :fields [:groups]}]
-              :groups [{:fields [:name]}]}
-   
-   :post (fn [data]
-           (if (empty? (:password data))
-             data
-             (assoc data :password (crypt/encrypt (:password data)))))})
+                                       :connecting-table :role_group}}
+                      :sections [{:fields [:name]}]}}
+   })
+
 
