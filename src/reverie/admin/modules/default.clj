@@ -2,6 +2,8 @@
   (:require [clojure.string :as s]
             [korma.core :as k])
   (:use [reverie.atoms :only [pages modules]]
+        reverie.batteries.breadcrumbs
+        reverie.batteries.paginator
         [reverie.core :only [defmodule]]
         [reverie.admin.templates :only [frame]]
         [reverie.admin.frames.common :only [frame-options]]))
@@ -55,12 +57,43 @@
                 (k/limit 50)
                 (k/offset offset)))))
 
+(defn get-entity-row [entity display-fields m-name e-name]
+  [:tr
+   [:td [:a {:href (str "/admin/frame/module/"
+                        (name m-name)
+                        "/"
+                        (name e-name)
+                        "/" (:id entity))} (get entity (first display-fields))]]
+   (map (fn [field] [:td (get entity field)]) (rest display-fields))])
+
+(defn get-entity-name [module entity id]
+  (if-let [display (first (get-display-fields module entity))]
+    (get (first (k/select entity (k/where {:id id}))) display)
+    id))
+
+
+(defn navbar [{:keys [uri] :as request}]
+  (let [{:keys [module module-name]} (get-module request)
+        parts (remove s/blank? (s/split uri #"/"))
+        uri-data (map
+                  (fn [uri]
+                    (cond
+                     (re-find #"^\d+$" uri) [uri (get-entity-name
+                                                  module
+                                                  (first parts)
+                                                  (read-string uri))]
+                     :else [uri (s/capitalize uri)]))
+                  parts)
+        {:keys [crumbs]} (crumb uri-data {:base-uri (str "/admin/frame/module/" (name module-name))})]
+    [:nav crumbs]))
+
 (defmodule reverie-default-module {}
   [:get ["/"]
    (let [{:keys [module-name module]} (get-module request)]
      (frame
       frame-options
       [:div.holder
+       [:nav]
        [:table.table.entities
         (map (fn [e]
                [:tr [:td [:a {:href (str "/admin/frame/module/"
@@ -77,10 +110,18 @@
      (frame
       frame-options
       [:div.holder
+       (navbar request)
        [:table.table.entity {:id entity}
         [:tr
          (map (fn [f]
                 [:th (get-field-name module entity f)])
-              display-fields)]]]))]
-  )
+              display-fields)]
+        (map #(get-entity-row % display-fields module-name entity) entities)]]))]
 
+  [:get ["/:entity/:id" {:id #"\d+"}]
+   (frame
+    frame-options
+    [:div.holder
+     (navbar request)
+     "my form"])]
+  )

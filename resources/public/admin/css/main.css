@@ -2315,8 +2315,6 @@ nav ul {
   list-style: none;
 }
 nav ul li {
-  margin-right: 15px;
-}
-.holder .table {
-  width: 960px;
+  margin-right: 5px;
+  display: inline-block;
 }

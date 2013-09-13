@@ -62,4 +62,3 @@
              data
              (assoc data :password (crypt/encrypt (:password data)))))})
 
-
