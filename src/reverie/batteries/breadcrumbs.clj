@@ -7,8 +7,8 @@
   (fn [to-crumb & _] (class to-crumb)))
 (defmethod crumb java.lang.String
   ([uri]
-     (crumb uri {:separator " › " :last? true}))
-  ([uri {:keys [separator last?]}]
+     (crumb uri {}))
+  ([uri {:keys [separator last?] :or {separator " › " last? true}}]
      (let [parts (remove s/blank? (s/split uri #"/"))
            crumbs (reduce (fn [out index]
                             (if (= index (count parts))
@@ -22,8 +22,8 @@
         :last (last parts)})))
 (defmethod crumb clojure.lang.IPersistentVector
   ([uri-data]
-     (crumb uri-data {:separator " › " :last? true}))
-  ([uri-data {:keys [separator last?]}]
+     (crumb uri-data {}))
+  ([uri-data {:keys [separator last?] :or {separator " › " last? true}}]
      (let [parts (remove (fn [[part _]] (s/blank? part)) uri-data)
            crumbs (reduce (fn [out index]
                             (if (= index (count parts))
