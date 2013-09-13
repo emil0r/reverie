@@ -1,12 +1,9 @@
 (ns reverie.batteries.breadcrumbs
-  (:require [clojure.string :as s])
-  ;;(:import [clojure.lang IPersistentVector IPersistentList ISeq])
-  )
-
+  (:require [clojure.string :as s]))
 
 
 (defmulti crumb
-  "Takes an URI or a sequence of vectors with the URI part and the name of the URI part"
+  "Takes an URI or a sequence of vectors with [URI part, name of URI]"
   (fn [to-crumb & _] (class to-crumb)))
 (defmethod crumb java.lang.String
   ([uri separator]
