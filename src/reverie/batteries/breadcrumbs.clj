@@ -1,15 +1,17 @@
 (ns reverie.batteries.breadcrumbs
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s])
+  (:use [reverie.util :only [join-uri]]))
 
 (defn- get-crumbs [{:keys [crumb-data holder holder-attrib elem elem-attrib
-                           href-attrib separator last? parts]
-                    :or {separator " &rsaquo; " last? true holder :ul elem :li}}]
+                           href-attrib separator last? parts base-uri]
+                    :or {separator " &rsaquo; " last? true holder :ul elem :li
+                         base-uri ""}}]
   [holder holder-attrib
    (butlast
     (interleave
      (map (fn [[uri name]]
             [elem elem-attrib
-             [:a (merge href-attrib {:href uri})
+             [:a (merge href-attrib {:href (join-uri base-uri uri)})
               name]]) crumb-data)
      (map (fn [_] [:li.separator separator]) (range (count crumb-data)))))
    (if (and last? (not (empty? crumb-data)))
@@ -55,9 +57,9 @@
        {:crumb-data crumb-data
         :crumbs (get-crumbs (merge data {:crumb-data crumb-data :parts parts}))
         :last (last parts)})))
-(defmethod crumb clojure.lang.IPersistentList
-  ([uri-data]
-     (crumb (vec uri-data) {:separator " › " :last? true}))
+(defmethod crumb clojure.lang.ISeq
+    ([uri-data]
+     (crumb (vec uri-data) {}))
   ([uri-data data]
      (crumb (vec uri-data) data)))
 
