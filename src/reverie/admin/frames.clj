@@ -54,7 +54,8 @@
                               (or
                                (:name (m @atoms/modules))
                                (-> m clojure.string/capitalize))])
-                      (sort (keys @atoms/modules)))]]
+                      (sort (remove #(= :reverie-default-module %)
+                                    (keys @atoms/modules))))]]
                [:div.navigation-meta
                 [:div.tree
                  (text-field :tree-search)
