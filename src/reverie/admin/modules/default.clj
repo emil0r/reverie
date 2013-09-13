@@ -23,10 +23,10 @@
 (defn get-display-fields [module entity]
   (let [e (get-in module [:entities (keyword entity)])]
     (or (:display e)
-        (sort (keys e)))))
+        (sort (keys (remove (fn [[_ x]] (= (:type x) :m2m)) (:fields e)))))))
 (defn get-field-name [module entity field]
   (or (get-in module [:entities (keyword entity) :fields (keyword field) :name])
-      (s/capitalize (name (get-in module [:entities (keyword entity) :fields (keyword field)])))))
+      (s/capitalize (name field))))
 (defn get-fields
   ([module entity]
      (into
@@ -66,25 +66,26 @@
                         "/" (:id entity))} (get entity (first display-fields))]]
    (map (fn [field] [:td (get entity field)]) (rest display-fields))])
 
-(defn get-entity-name [module entity id]
+(defn get-instance-name [module entity id]
   (if-let [display (first (get-display-fields module entity))]
     (get (first (k/select entity (k/where {:id id}))) display)
     id))
 
 
-(defn navbar [{:keys [uri] :as request}]
-  (let [{:keys [module module-name]} (get-module request)
+(defn navbar [{:keys [uri real-uri] :as request}]
+  (let [uri (last (s/split real-uri #"^/admin/frame/module"))
+        {:keys [module module-name]} (get-module request)
         parts (remove s/blank? (s/split uri #"/"))
         uri-data (map
                   (fn [uri]
                     (cond
-                     (re-find #"^\d+$" uri) [uri (get-entity-name
+                     (re-find #"^\d+$" uri) [uri (get-instance-name
                                                   module
-                                                  (first parts)
+                                                  (second parts)
                                                   (read-string uri))]
                      :else [uri (s/capitalize uri)]))
                   parts)
-        {:keys [crumbs]} (crumb uri-data {:base-uri (str "/admin/frame/module/" (name module-name))})]
+        {:keys [crumbs]} (crumb uri-data {:base-uri "/admin/frame/module/"})]
     [:nav crumbs]))
 
 (defmodule reverie-default-module {}
