@@ -3,7 +3,7 @@
 
 (defn- get-crumbs [{:keys [crumb-data holder holder-attrib elem elem-attrib
                            href-attrib separator last? parts]
-                    :or {separator " › " last? true holder :ul elem :li}}]
+                    :or {separator " &rsaquo; " last? true holder :ul elem :li}}]
   [holder holder-attrib
    (butlast
     (interleave
