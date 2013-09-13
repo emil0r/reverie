@@ -2098,11 +2098,11 @@ body {
   color: #333333;
 }
 a {
-  color: #ff8e00;
+  color: #ff7f00;
   text-decoration: none;
 }
 a:hover {
-  color: #ff8e00;
+  color: #ff7f00;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.25);
   text-decoration: none;
 }
@@ -2112,15 +2112,15 @@ h3,
 h4,
 h5,
 h6 {
-  color: #1921b1;
+  color: #ff7f00;
 }
 .user-info {
   text-align: right;
-  border-bottom: 1px dotted #ff8e00;
+  border-bottom: 1px dotted #ff7f00;
   padding: 5px 10px;
 }
 .user-info span {
-  color: #4d54d8;
+  color: #436b95;
   font-weight: bold;
 }
 .user-info .logout {
@@ -2130,23 +2130,23 @@ h6 {
   margin-left: 5px;
 }
 .user-info .logout a {
-  color: #ff8e00;
+  color: #ff7f00;
   display: inline-block;
 }
 .tree {
   padding: 5px 5px 10px 5px;
-  border-bottom: 1px dotted #ff8e00;
+  border-bottom: 1px dotted #ff7f00;
 }
 .tree input[type=text] {
   width: 88%;
 }
 .tree i {
   margin-left: 5px;
-  color: #4d54d8;
+  color: #436b95;
 }
 .tree i:hover {
   cursor: pointer;
-  text-shadow: 1px 1px 3px rgba(77, 84, 216, 0.5);
+  text-shadow: 1px 1px 3px rgba(67, 107, 149, 0.5);
 }
 .tree #tree {
   margin-top: 5px;
@@ -2174,7 +2174,7 @@ h6 {
 #tabbar {
   margin: 5px 0;
   padding-bottom: 5px;
-  border-bottom: 1px dotted #ff8e00;
+  border-bottom: 1px dotted #ff7f00;
   outline: 0;
 }
 #tabbar .goog-tab {
@@ -2183,13 +2183,13 @@ h6 {
   padding: 5px;
 }
 #tabbar .goog-tab:hover {
-  background-color: #ff8e00;
+  background-color: #ff7f00;
   color: #ffffff;
   cursor: pointer;
   box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
 }
 #tabbar .goog-tab-selected {
-  background-color: #ff8e00;
+  background-color: #ff7f00;
   color: #ffffff;
 }
 .modules ul {
@@ -2202,7 +2202,7 @@ h6 {
 }
 .modules ul li.active,
 .modules ul li:hover {
-  background-color: #ff8e00;
+  background-color: #ff7f00;
   color: #ffffff;
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
@@ -2240,7 +2240,7 @@ h6 {
 #files i[class^="icon-"] {
   margin-right: 10px;
   font-size: 1.5em;
-  color: #ff8e00;
+  color: #ff7f00;
 }
 #files i[class=icon-folder-close] {
   position: relative;
@@ -2249,7 +2249,7 @@ h6 {
 #files span.active,
 #files span:hover {
   cursor: pointer;
-  color: #ff8e00;
+  color: #ff7f00;
 }
 #files span.active i,
 #files span:hover i {
@@ -2259,7 +2259,7 @@ h6 {
   text-shadow: 0 0 0 #000000;
 }
 #files a:hover {
-  color: #ff8e00;
+  color: #ff7f00;
 }
 #files a:hover i {
   text-shadow: 1px 1px 1px #000000;
@@ -2269,7 +2269,7 @@ h6 {
   padding: 5px;
   top: 15px;
   left: 785px;
-  border: 1px dotted #ff8e00;
+  border: 1px dotted #ff7f00;
 }
 .filemanager #info #drop-area {
   color: #999999;
@@ -2303,4 +2303,20 @@ h6 {
 }
 .filemanager #info .directory-panel button {
   margin: 5px 15px 0 0;
+}
+nav {
+  background-color: #436b95;
+  color: #ffffff;
+  padding: 5px 10px;
+}
+nav ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+nav ul li {
+  margin-right: 15px;
+}
+.holder .table {
+  width: 960px;
 }
