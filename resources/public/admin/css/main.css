@@ -2367,23 +2367,23 @@ nav ul li {
 #edit-form .bottom-bar span.save-continue-editing .btn,
 #edit-form .bottom-bar span.save-only .btn {
   background-color: #436b95;
-  background-image: -webkit-gradient(linear, left 0, left 40, from(#002366), to(#436b95));
-  background-image: -webkit-linear-gradient(top, #002366, 0, #436b95, 40);
-  background-image: -moz-linear-gradient(top, #002366 0, #436b95 40);
-  background-image: linear-gradient(to bottom, #002366 0, #436b95 40);
+  background-image: -webkit-gradient(linear, left 0, left 70, from(#436b95), to(#002366));
+  background-image: -webkit-linear-gradient(top, #436b95, 0, #002366, 70);
+  background-image: -moz-linear-gradient(top, #436b95 0, #002366 70);
+  background-image: linear-gradient(to bottom, #436b95 0, #002366 70);
   background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff002366', endColorstr='#ff436b95', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff436b95', endColorstr='#ff002366', GradientType=0);
 }
 #edit-form .bottom-bar span.save-add-new .btn:hover,
 #edit-form .bottom-bar span.save-continue-editing .btn:hover,
 #edit-form .bottom-bar span.save-only .btn:hover {
   background-color: #002366;
-  background-image: -webkit-gradient(linear, left 0, left 70, from(#002366), to(#436b95));
-  background-image: -webkit-linear-gradient(top, #002366, 0, #436b95, 70);
-  background-image: -moz-linear-gradient(top, #002366 0, #436b95 70);
-  background-image: linear-gradient(to bottom, #002366 0, #436b95 70);
+  background-image: -webkit-gradient(linear, left 0, left 40, from(#436b95), to(#002366));
+  background-image: -webkit-linear-gradient(top, #436b95, 0, #002366, 40);
+  background-image: -moz-linear-gradient(top, #436b95 0, #002366 40);
+  background-image: linear-gradient(to bottom, #436b95 0, #002366 40);
   background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff002366', endColorstr='#ff436b95', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff436b95', endColorstr='#ff002366', GradientType=0);
 }
 #edit-form .bottom-bar span.delete {
   float: left;
