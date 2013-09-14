@@ -36,9 +36,7 @@
 (defn- file-lister [files {:keys [qs up? path]}]
   (frame
    (-> frame-options
-       (assoc :title "File-picker: Images")
-       (assoc :css ["/admin/css/font-awesome.min.css"
-                    "/admin/css/main.css"]))
+       (assoc :title "File-picker: Images"))
    [:div#files
     [:table.table
      [:tr
