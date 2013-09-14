@@ -8,7 +8,8 @@
         [reverie.atoms :only [modules]]
         reverie.batteries.breadcrumbs
         reverie.batteries.paginator
-        [reverie.core :only [defmodule]]))
+        [reverie.core :only [defmodule]]
+        [reverie.util :only [join-uri]]))
 
 
 (defn navbar [{:keys [uri real-uri] :as request}]
@@ -29,12 +30,11 @@
 
 (defn form-help-text [field-data]
   (if (:help field-data)
-    [:div [:i.icon-question-sign] (:help field-data)]))
+    [:div.help [:i.icon-question-sign] (:help field-data)]))
 
 (defmulti form-row (fn [[_ data] _] (:type data)))
 (defmethod form-row :m2m [[field data] {:keys [form-data module entity entity-id]}]
   (let [{:keys [options selected]} (drop-down-m2m-data module entity field (read-string entity-id))]
-    (println options selected)
     [:div.form-row
      (label field (get-field-name field data))
      (drop-down (merge {:multiple "multiple"}
@@ -62,12 +62,23 @@
      (if (:name section) [:legend (:name section)])
      (map #(form-row [% (get fields %)] data) (:fields section))]))
 
-(defn get-form [entity data]
+(defn get-form [entity {:keys [form-data entity-id real-uri] :as data}]
   (form-to
+   {:id :edit-form}
    [:post ""]
+   (hidden-field :which-save-button (:which-save-button form-data))
    (map #(form-section % entity data) (:sections entity))
-   [:tr [:th] [:td (submit-button {:class "btn btn-primary"} "Save")]]
-   ))
+   [:div.bottom-bar
+    (if entity-id
+      [:span.delete
+       [:a {:href (join-uri real-uri "delete")}
+        [:i.icon-remove] "Delete"]])
+    [:span.save-only (submit-button {:class "btn btn-primary"
+                                     :id :save-only} "Save")]
+    [:span.save-continue-editing (submit-button {:class "btn btn-primary"
+                                                 :id :save-continue-editing} "Save and continue editing")]
+    [:span.save-add-new (submit-button {:class "btn btn-primary"
+                                        :id :save-add-new} "Save and add new")]]))
 
 (defmodule reverie-default-module {}
   [:get ["/"]
@@ -112,5 +123,6 @@
                       :module module
                       :module-name module-name
                       :entity entity
-                      :entity-id id}))])]
+                      :entity-id id
+                      :real-uri (:real-uri request)}))])]
   )

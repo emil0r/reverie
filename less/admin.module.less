@@ -16,3 +16,66 @@ nav {
     .table {
     }
 }
+
+#edit-form {
+    margin: 15px 0 0 15px;
+    fieldset {
+        margin-bottom: 20px;
+        border: 1px solid @gray-lighter;
+        padding: 10px;
+        legend {
+            border: 1px solid @gray-lighter - #222;
+            background-color: @queens-blue;
+            color: @white;
+            padding: 2px 10px;
+        }
+        label {
+            margin-right: 15px;
+            min-width: 100px;
+        }
+        .form-row {
+            margin: 10px 0;
+            border-bottom: 1px solid @gray-lighter;
+            &:last-child {
+                border-bottom: 0;
+            }
+        }
+        .help {
+            i {
+                color: orange;
+                font-size: 20px;
+                margin-right: 10px;
+                position: relative;
+                top: 2px;
+            }
+            color: @gray-light;
+            margin: 5px 0;
+        }
+    }
+    .bottom-bar {
+        span.save-add-new,
+        span.save-continue-editing,
+        span.save-only {
+            float: right;
+            margin-left: 15px;
+            .btn {
+                background-color: @queens-blue;
+                #gradient .vertical(@royal-blue, @queens-blue, 0, 40);
+                &:hover {
+                    background-color: @royal-blue;
+                    #gradient .vertical(@royal-blue, @queens-blue, 0, 70);
+                }
+            }
+        }
+        margin-bottom: 20px;
+        span.delete {
+            i {
+                color: @orange;
+                font-size: 1.3em;
+                margin-right: 10px;
+            }
+            float: left;
+        }
+        .clearfix();
+    }
+}

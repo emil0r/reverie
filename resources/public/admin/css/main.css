@@ -2318,3 +2318,90 @@ nav ul li {
   margin-right: 5px;
   display: inline-block;
 }
+#edit-form {
+  margin: 15px 0 0 15px;
+}
+#edit-form fieldset {
+  margin-bottom: 20px;
+  border: 1px solid #eeeeee;
+  padding: 10px;
+}
+#edit-form fieldset legend {
+  border: 1px solid #cccccc;
+  background-color: #436b95;
+  color: #ffffff;
+  padding: 2px 10px;
+}
+#edit-form fieldset label {
+  margin-right: 15px;
+  min-width: 100px;
+}
+#edit-form fieldset .form-row {
+  margin: 10px 0;
+  border-bottom: 1px solid #eeeeee;
+}
+#edit-form fieldset .form-row:last-child {
+  border-bottom: 0;
+}
+#edit-form fieldset .help {
+  color: #999999;
+  margin: 5px 0;
+}
+#edit-form fieldset .help i {
+  color: orange;
+  font-size: 20px;
+  margin-right: 10px;
+  position: relative;
+  top: 2px;
+}
+#edit-form .bottom-bar {
+  margin-bottom: 20px;
+}
+#edit-form .bottom-bar span.save-add-new,
+#edit-form .bottom-bar span.save-continue-editing,
+#edit-form .bottom-bar span.save-only {
+  float: right;
+  margin-left: 15px;
+}
+#edit-form .bottom-bar span.save-add-new .btn,
+#edit-form .bottom-bar span.save-continue-editing .btn,
+#edit-form .bottom-bar span.save-only .btn {
+  background-color: #436b95;
+  background-image: -webkit-gradient(linear, left 0, left 40, from(#002366), to(#436b95));
+  background-image: -webkit-linear-gradient(top, #002366, 0, #436b95, 40);
+  background-image: -moz-linear-gradient(top, #002366 0, #436b95 40);
+  background-image: linear-gradient(to bottom, #002366 0, #436b95 40);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff002366', endColorstr='#ff436b95', GradientType=0);
+}
+#edit-form .bottom-bar span.save-add-new .btn:hover,
+#edit-form .bottom-bar span.save-continue-editing .btn:hover,
+#edit-form .bottom-bar span.save-only .btn:hover {
+  background-color: #002366;
+  background-image: -webkit-gradient(linear, left 0, left 70, from(#002366), to(#436b95));
+  background-image: -webkit-linear-gradient(top, #002366, 0, #436b95, 70);
+  background-image: -moz-linear-gradient(top, #002366 0, #436b95 70);
+  background-image: linear-gradient(to bottom, #002366 0, #436b95 70);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff002366', endColorstr='#ff436b95', GradientType=0);
+}
+#edit-form .bottom-bar span.delete {
+  float: left;
+}
+#edit-form .bottom-bar span.delete i {
+  color: #ff7f00;
+  font-size: 1.3em;
+  margin-right: 10px;
+}
+#edit-form .bottom-bar:before,
+#edit-form .bottom-bar:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+#edit-form .bottom-bar:after {
+  clear: both;
+}
