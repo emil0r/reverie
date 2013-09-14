@@ -1,5 +1,6 @@
 (ns reverie.admin.modules.default
   (:require [clojure.string :as s]
+            [noir.validation :as v]
             [korma.core :as k])
   (:use [hiccup core form]
         [reverie.admin.templates :only [frame]]
@@ -8,7 +9,9 @@
         [reverie.atoms :only [modules]]
         reverie.batteries.breadcrumbs
         reverie.batteries.paginator
-        [reverie.core :only [defmodule]]
+        [reverie.core :only [defmodule raise-response]]
+        [reverie.middleware :only [wrap-access]]
+        [reverie.responses :only [response-302]]
         [reverie.util :only [join-uri]]))
 
 
@@ -31,6 +34,32 @@
 (defn form-help-text [field-data]
   (if (:help field-data)
     [:div.help [:i.icon-question-sign] (:help field-data)]))
+
+(defn- valid-oform-data? [form-data fields]
+  (doseq [[field {:keys [type validation]}] fields]
+    (if validation
+      (doseq [[v? error-msg] validation]
+        (v/rule (v? (form-data field)) [field error-msg])))
+    (case type
+      :number (v/rule (v/valid-number? (form-data field)) [field "Only numbers are allowed"])
+      (v/rule true [field "Should not appear"])))
+  (not (apply v/errors? (keys fields))))
+
+(defn- process-form-data [data fields]
+  (reduce (fn [out k]
+            (if (nil? k)
+              out
+              (case (-> k fields :type)
+                :number (assoc out k (read-string (data k)))
+                :text (cond
+                       (nil? (data k)) (assoc out k "")
+                       :else out)
+                :email (cond
+                        (nil? (data k)) (assoc out k "")
+                        :else out)
+                out)))
+          data
+          (keys fields)))
 
 (defmulti form-row (fn [[_ data] _] (:type data)))
 (defmethod form-row :html [[field data] extra]
@@ -74,21 +103,23 @@
   (form-to
    {:id :edit-form}
    [:post ""]
-   (hidden-field :which-save-button (:which-save-button form-data))
    (map #(form-section % entity data) (:sections entity))
    [:div.bottom-bar
     (if entity-id
       [:span.delete
        [:a {:href (join-uri real-uri "delete")}
         [:i.icon-remove] "Delete"]])
-    [:span.save-only (submit-button {:class "btn btn-primary"
-                                     :id :save-only} "Save")]
-    [:span.save-continue-editing (submit-button {:class "btn btn-primary"
-                                                 :id :save-continue-editing} "Save and continue editing")]
-    [:span.save-add-new (submit-button {:class "btn btn-primary"
-                                        :id :save-add-new} "Save and add new")]]))
+    [:span.save-only
+     [:input {:type :submit :class "btn btn-primary"
+              :id :_save :name :_save :value "Save"}]]
+    [:span.save-continue-editing
+     [:input {:type :submit :class "btn btn-primary"
+              :id :_continue :name :_continue :value "Save and continue"}]]
+    [:span.save-add-new
+     [:input {:type :submit :class "btn btn-primary"
+              :id :_addanother :name :_addanother :value "Save and add another"}]]]))
 
-(defmodule reverie-default-module {}
+(defmodule reverie-default-module {:middleware [[wrap-access :edit]]}
   [:get ["/"]
    (let [{:keys [module-name module]} (get-module request)]
      (frame
@@ -133,4 +164,31 @@
                       :entity entity
                       :entity-id id
                       :real-uri (:real-uri request)}))])]
+  [:post ["/:entity/:id" {:id #"\d+"} wrong-form-data]
+   (frame
+    frame-options
+    (let [{:keys [module module-name]} (get-module request)
+          form-data (-> request
+                        :form-params
+                        clojure.walk/keywordize-keys
+                        (dissoc :_save :_continue :_addanother))
+          proceed (cond
+                   (get (request :form-params) "_continue") :continue
+                   (get (request :form-params) "_addanother") :add-another
+                   :else :save)
+          ent (get-in module [:entities (keyword entity)])
+          form-data (process-form-data form-data (:fields ent))]
+      (if (valid-form-data? form-data (:fields ent))
+        (case proceed
+          :continue (raise-response (response-302 (:real-uri request)))
+          :add-another (raise-response (response-302 (join-uri "/admin/frame/module/"
+                                                               (name module-name)
+                                                               entity
+                                                "add")))
+          :save (raise-response (response-302 (join-uri "/admin/frame/module/"
+                                                        (name module-name)
+                                                        entity))))
+        (do
+          ;;(println (valid-form-data? form-data (:fields ent)))
+          "fooie?"))))]
   )
