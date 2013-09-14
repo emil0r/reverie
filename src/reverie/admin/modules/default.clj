@@ -57,6 +57,10 @@
                 :email (cond
                         (nil? (data k)) (assoc out k "")
                         :else out)
+                :boolean (cond
+                          (= (data k) "true") (assoc out k true)
+                          :else (assoc out k false))
+                :m2m (dissoc out k)
                 out)))
           data
           (keys fields)))
@@ -179,15 +183,19 @@
           ent (get-in module [:entities (keyword entity)])
           form-data (process-form-data form-data (:fields ent))]
       (if (valid-form-data? form-data (:fields ent))
-        (case proceed
-          :continue (raise-response (response-302 (:real-uri request)))
-          :add-another (raise-response (response-302 (join-uri "/admin/frame/module/"
-                                                               (name module-name)
-                                                               entity
-                                                "add")))
-          :save (raise-response (response-302 (join-uri "/admin/frame/module/"
-                                                        (name module-name)
-                                                        entity))))
+        (do
+          (k/update entity
+                    (k/set-fields form-data)
+                    (k/where {:id (read-string id)}))
+          (case proceed
+            :continue (raise-response (response-302 (:real-uri request)))
+            :add-another (raise-response (response-302 (join-uri "/admin/frame/module/"
+                                                                 (name module-name)
+                                                                 entity
+                                                                 "add")))
+            :save (raise-response (response-302 (join-uri "/admin/frame/module/"
+                                                          (name module-name)
+                                                          entity)))))
         (do
           ;;(println (valid-form-data? form-data (:fields ent)))
           "fooie?"))))]
