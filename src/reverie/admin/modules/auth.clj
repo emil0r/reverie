@@ -6,6 +6,7 @@
 
 (defmodule auth
   {:name "Authentication"
+   :admin? true
    :entities {:user {:name "User"
                      :order :name
                      :display [:name :email]
@@ -70,4 +71,7 @@
                       :sections [{:fields [:name]}
                                  {:name "Rights"
                                   :fields [:roles]}]}}
-   })
+   }
+  [:get ["/:entity/:id/password"]
+   "mah password"])
+

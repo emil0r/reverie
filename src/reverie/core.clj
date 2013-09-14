@@ -74,19 +74,14 @@
 
 (defmacro defmodule [name options & methods]
   (let [name (keyword name)
-        path (str "/admin/frame/module/" (clojure.core/name name))]
-    (if (empty? methods)
-      (do
-        (add-route! path {:type :page :uri path})
-        `(do
-           (swap! modules assoc ~name ~options)
-           (swap! pages assoc ~path {:options ~options :fns (get-default-module-fns)})))
-     (loop [[method & methods] methods
-            fns []]
-       (if (nil? method)
-         (do
-           (add-route! path {:type :page :uri path})
-           `(do
-              (swap! modules assoc ~name ~options)
-              (swap! pages assoc ~path {:options ~options :fns ~fns})))
-         (recur methods (conj fns `(request-method ~method))))))))
+        path (str "/admin/frame/module/" (clojure.core/name name))
+        fns (if (:admin? options) (get-default-module-fns) [])]
+    (loop [[method & methods] methods
+           fns fns]
+      (if (nil? method)
+        (do
+          (add-route! path {:type :page :uri path})
+          `(do
+             (swap! modules assoc ~name ~options)
+             (swap! pages assoc ~path {:options ~options :fns ~fns})))
+        (recur methods (conj fns `(request-method ~method)))))))
