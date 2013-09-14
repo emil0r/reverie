@@ -53,6 +53,11 @@
    (label field (get-field-name field data))
    (password-field (get-field-attribs data) field (form-data field))
    (form-help-text data)])
+(defmethod form-row :email [[field data] {:keys [form-data]}]
+  [:div.form-row
+   (label field (get-field-name field data))
+   (email-field (get-field-attribs data) field (form-data field))
+   (form-help-text data)])
 (defmethod form-row :default [[field data] {:keys [form-data]}]
   [:div.form-row
    (label field (get-field-name field data))

@@ -2324,7 +2324,7 @@ nav ul li {
 #edit-form fieldset {
   margin-bottom: 20px;
   border: 1px solid #eeeeee;
-  padding: 10px;
+  padding: 10px 10px 0 10px;
 }
 #edit-form fieldset legend {
   border: 1px solid #cccccc;
@@ -2338,10 +2338,12 @@ nav ul li {
 }
 #edit-form fieldset .form-row {
   margin: 10px 0;
+  padding-bottom: 10px;
   border-bottom: 1px solid #eeeeee;
 }
 #edit-form fieldset .form-row:last-child {
   border-bottom: 0;
+  padding-bottom: 0;
 }
 #edit-form fieldset .help {
   color: #999999;
@@ -2353,6 +2355,19 @@ nav ul li {
   margin-right: 10px;
   position: relative;
   top: 2px;
+}
+#edit-form fieldset input[type=text],
+#edit-form fieldset input[type=email],
+#edit-form fieldset input[type=password] {
+  width: 250px;
+}
+#edit-form fieldset input[type=checkbox] {
+  position: relative;
+  top: -1px;
+}
+#edit-form fieldset select {
+  width: 200px;
+  height: 100px;
 }
 #edit-form .bottom-bar {
   margin-bottom: 20px;
