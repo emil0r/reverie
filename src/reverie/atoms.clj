@@ -102,7 +102,7 @@
 (defn get-modules
   "Get a list of the modules stringified"
   []
-  (sort (map kw->str (keys @modules))))
+  (sort (map kw->str (remove #(= % :reverie-default-module) (keys @modules)))))
 (defn get-objects
   "Get a list of the objects stringified"
   []
