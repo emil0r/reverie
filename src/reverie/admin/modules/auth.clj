@@ -11,16 +11,17 @@
                      ;; :display [[:o2m-table :field-to-show] fn-to-run]
                      :fields {:first_name {:name "First name"
                                            :type :text
-                                           :limit 255}
+                                           :max 255}
                               :last_name {:name "Last name"
                                           :type :text
-                                          :limit 255}
+                                          :max 255}
                               :name {:name "Username"
                                      :type :text
-                                     :limit 255}
+                                     :max 255
+                                     :help "A maximum of 255 characters may be used"}
                               :email {:name "Email"
                                       :type :email
-                                      :limit 255}
+                                      :max 255}
                               :password {:name "Password"
                                          :type :password}
                               :active {:name "Active?"
@@ -34,11 +35,13 @@
                                          :default false}
                               :groups {:name "Groups"
                                        :type :m2m
-                                       :table :group}
+                                       :table :group
+                                       :options [:id :name]}
                               :roles {:name "Roles"
                                       :type :m2m
                                       :table :role
-                                      :connecting-table :role_user}}
+                                      :connecting-table :role_user
+                                      :options [:id :name]}}
                      :sections [{:fields [:name :password]}
                                 {:name "Personal information"
                                  :fields [:first_name :last_name :email]}
@@ -54,12 +57,12 @@
               :group {:name "Group"
                       :fields {:name {:name "Name"
                                       :type :text
-                                      :limit 255}
+                                      :max 255}
                                :roles {:name "Roles"
                                        :type :m2m
                                        :table :role
                                        :connecting-table :role_group}}
-                      :sections [{:fields [:name]}]}}
+                      :sections [{:fields [:name]}
+                                 {:name "Rights"
+                                  :fields [:roles]}]}}
    })
-
-
