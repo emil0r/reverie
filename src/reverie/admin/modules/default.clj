@@ -33,6 +33,9 @@
     [:div.help [:i.icon-question-sign] (:help field-data)]))
 
 (defmulti form-row (fn [[_ data] _] (:type data)))
+(defmethod form-row :html [[field data] extra]
+  (let [func (:html data)]
+    (func [field data] extra)))
 (defmethod form-row :m2m [[field data] {:keys [form-data module entity entity-id]}]
   (let [{:keys [options selected]} (drop-down-m2m-data module entity field (read-string entity-id))]
     [:div.form-row

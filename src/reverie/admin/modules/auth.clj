@@ -1,6 +1,7 @@
 (ns reverie.admin.modules.auth
   (:require [noir.util.crypt :as crypt])
-  (:use [reverie.core :only [defmodule]]))
+  (:use [reverie.core :only [defmodule]]
+        [reverie.util :only [join-uri]]))
 
 
 (defmodule auth
@@ -23,7 +24,11 @@
                                       :type :email
                                       :max 255}
                               :password {:name "Password"
-                                         :type :password}
+                                         :type :html
+                                         :html (fn [[field _] {:keys [real-uri]}]
+                                                 [:div.form-row
+                                                  [:label "Password"]
+                                                  [:a {:href (join-uri real-uri "/password")} "Change password"]])}
                               :active {:name "Active?"
                                        :type :boolean
                                        :default true}
