@@ -124,6 +124,7 @@
                                :roles {:name "Roles"
                                        :type :m2m
                                        :table :role
+                                       :options [:id :name]
                                        :connecting-table :role_group}}
                       :sections [{:fields [:name]}
                                  {:name "Rights"
