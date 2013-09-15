@@ -9,15 +9,30 @@ nav {
         li {
             margin-right: 5px;
             display: inline-block;
+            a {
+                color: @orange + #111;
+            }
         }
     }
 }
-.holder {
-    .table {
+.admin-interface {
+    .options {
+        margin: 20px 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px @queens-blue solid;
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .btn-primary {
+            background-color: @orange;
+            border: 1px solid @orange - #222;
+        }
     }
 }
 
-#edit-form {
+#edit-form, #password-form {
     margin: 15px 0 0 15px;
     fieldset {
         margin-bottom: 20px;
@@ -106,9 +121,25 @@ nav {
 #delete-form {
     margin: 15px 0 0 15px;
     .buttons {
-        margin-top: 20px;
+        margin: 20px 0 0 0;
         #_cancel {
-            margin: 0 25px 0 75px;
+            margin-right: 25px;
+        }
+    }
+}
+#password-form {
+    .buttons {
+        margin: 20px 0 0 0;
+        #_cancel {
+            margin-right: 25px;
+        }
+        #_change {
+            background-color: @orange;
+            border: 1px solid @orange - #222;
+            &:hover {
+                background-color: @orange - #111;
+                border: 1px solid @orange - #333;
+            }
         }
     }
 }

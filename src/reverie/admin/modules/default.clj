@@ -3,9 +3,9 @@
             [noir.validation :as v]
             [korma.core :as k])
   (:use [hiccup core form]
-        [reverie.admin.templates :only [frame]]
         [reverie.admin.frames.common :only [frame-options error-item]]
         reverie.admin.modules.helpers
+        [reverie.admin.templates :only [frame]]
         [reverie.atoms :only [modules]]
         [reverie.core :only [defmodule raise-response]]
         [reverie.middleware :only [wrap-access]]
@@ -28,8 +28,10 @@
 (defn- valid-form-data? [form-data fields]
   (doseq [[field {:keys [type validation]}] fields]
     (if validation
-      (doseq [[v? error-msg] validation]
-        (v/rule (v? form-data) [field error-msg])))
+      (doseq [[v? error-msg send-form-data?] validation]
+        (if send-form-data?
+          (v/rule (v? form-data) [field error-msg])
+          (v/rule (v? (form-data field)) [field error-msg]))))
     (case type
       :number (v/rule (v/valid-number? (form-data field)) [field "Only numbers are allowed"])
       (v/rule true [field "Should not appear"])))
@@ -138,7 +140,7 @@
    (let [{:keys [module-name module]} (get-module request)]
      (frame
       frame-options
-      [:div.holder
+      [:div.admin-interface
        [:nav "&nbsp;"]
        [:table.table.entities
         (map (fn [e]
@@ -156,8 +158,12 @@
          entities (get-entities module entity page)]
      (frame
       frame-options
-      [:div.holder
+      [:div.admin-interface
        (navbar request)
+       [:div.options
+        [:ul
+         [:li [:a.btn.btn-primary {:href (frame-join-uri module-name entity "add")}
+               (str "Add " (get-entity-name module entity))]]]]
        [:table.table.entity {:id entity}
         [:tr
          (map (fn [f]
@@ -165,43 +171,14 @@
               display-fields)]
         (map #(get-entity-row % display-fields module-name entity) entities)]]))]
 
-  [:get ["/:entity/:id/delete" {:id #"\d+"}]
-   (frame
-    frame-options
-    [:div.holder
-     (navbar request)
-     (let [{:keys [module-name module]} (get-module request)
-           ent-data (-> entity
-                         (k/select (k/where {:id (read-string id)}))
-                         first)]
-       (form-to
-        {:id :delete-form}
-        [:post ""]
-        [:h2 "Really delete " "mumbo jumbo" "?"]
-        [:div.buttons
-         [:input {:type :submit :class "btn btn-primary"
-                  :id :_cancel :name :_cancel :value "Cancel"}]
-         [:input {:type :submit :class "btn btn-danger"
-                  :id :_delete :name :_delete :value "Delete"}]]))])]
-
-  [:post ["/:entity/:id/delete" {:id #"\d+"} form-data]
-   (frame
-    frame-options
-    (let [{:keys [module-name module]} (get-module request)]
-      (if (:_delete form-data)
-        (println :delete)
-        (raise-response (response-302 (join-uri "/admin/frame/module/"
-                                                (name module-name)
-                                                entity
-                                                id))))))]
-  
   [:get ["/:entity/:id" {:id #"\d+"}]
    (frame
     frame-options
-    [:div.holder
+    [:div.admin-interface
      (navbar request)
      (let [{:keys [module-name module]} (get-module request)
            form-data (-> entity
+                         (get-entity-table module)
                          (k/select (k/where {:id (read-string id)}))
                          first
                          (pre-process-data :edit module entity))
@@ -228,7 +205,7 @@
       (if (valid-form-data? form-data (:fields ent))
         (do
           (save-m2m-data module entity (read-string id) form-data)
-          (k/update entity
+          (k/update (get-entity-table entity module)
                     (k/set-fields (into
                                    {}
                                    (remove
@@ -241,14 +218,12 @@
                     (k/where {:id (read-string id)}))
           (case proceed
             :continue (raise-response (response-302 (:real-uri request)))
-            :add-another (raise-response (response-302 (join-uri "/admin/frame/module/"
-                                                                 (name module-name)
-                                                                 entity
-                                                                 "add")))
-            :save (raise-response (response-302 (join-uri "/admin/frame/module/"
-                                                          (name module-name)
-                                                          entity)))))
-        [:div.holder
+            :add-another (raise-response (response-302 (frame-join-uri module-name
+                                                                       entity
+                                                                       "add")))
+            :save (raise-response (response-302 (frame-join-uri module-name
+                                                                entity)))))
+        [:div.admin-interface
          (navbar request)
          (get-form ent {:form-data form-data
                         :module module
@@ -256,14 +231,51 @@
                         :entity entity
                         :entity-id id
                         :real-uri (:real-uri request)})])))]
+
+  [:get ["/:entity/:id/delete" {:id #"\d+"}]
+   (frame
+    frame-options
+    [:div.admin-interface
+     (navbar request)
+     (let [{:keys [module-name module]} (get-module request)
+           ent-data (-> entity
+                        (get-entity-table module)
+                        (k/select (k/where {:id (read-string id)}))
+                        first)]
+       (form-to
+        {:id :delete-form}
+        [:post ""]
+        [:h2 "Really delete " "mumbo jumbo" "?"]
+        [:div.buttons
+         [:input {:type :submit :class "btn btn-primary"
+                  :id :_cancel :name :_cancel :value "Cancel"}]
+         [:input {:type :submit :class "btn btn-danger"
+                  :id :_delete :name :_delete :value "Delete"}]]))])]
+
+  [:post ["/:entity/:id/delete" {:id #"\d+"} form-data]
+   (frame
+    frame-options
+    (let [{:keys [module-name module]} (get-module request)]
+      (if (:_delete form-data)
+        (do
+          (-> entity
+              (get-entity-table module)
+              (k/delete (k/where {:id (read-string id)})))
+          (raise-response (response-302 (frame-join-uri module-name
+                                                        entity))))
+        (raise-response (response-302 (frame-join-uri module-name
+                                                      entity
+                                                      id))))))]
   
   [:get ["/:entity/add"]
    (frame
     frame-options
-    [:div.holder
+    [:div.admin-interface
      (navbar request)
      (let [{:keys [module-name module]} (get-module request)
-           form-data (pre-process-data {} :add module entity)
+           form-data (pre-process-data (get-entity-default-data entity
+                                                                module)
+                                       :add module entity)
            ent (get-in module [:entities (keyword entity)])]
        (get-form ent {:form-data form-data
                       :module module
@@ -283,9 +295,10 @@
                           (filter
                            (field-type? :m2m)
                            (get-in module [:entities (keyword entity) :fields])))]
+
       (if (valid-form-data? form-data (:fields ent))
         (let [{:keys [id]} (k/insert
-                            entity
+                            (get-entity-table entity module)
                             (k/values (into
                                        {}
                                        (remove
@@ -298,18 +311,15 @@
           
           (save-m2m-data module entity id form-data)
           (case proceed
-            :continue (raise-response (response-302 (join-uri "/admin/frame/module/"
-                                                              (name module-name)
-                                                              entity
-                                                              (str id))))
-            :add-another (raise-response (response-302 (join-uri "/admin/frame/module/"
-                                                                 (name module-name)
-                                                                 entity
-                                                                 "add")))
-            :save (raise-response (response-302 (join-uri "/admin/frame/module/"
-                                                          (name module-name)
-                                                          entity)))))
-        [:div.holder
+            :continue (raise-response (response-302 (frame-join-uri module-name
+                                                                    entity
+                                                                    (str id))))
+            :add-another (raise-response (response-302 (frame-join-uri module-name
+                                                                       entity
+                                                                       "add")))
+            :save (raise-response (response-302 (frame-join-uri module-name
+                                                                entity)))))
+        [:div.admin-interface
          (navbar request)
          (get-form ent {:form-data form-data
                         :module module

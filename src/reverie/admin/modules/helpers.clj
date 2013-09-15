@@ -3,8 +3,11 @@
             [korma.core :as k])
   (:use [reverie.atoms :only [modules]]
         reverie.batteries.breadcrumbs
-        reverie.batteries.paginator))
+        reverie.batteries.paginator
+        [reverie.util :only [join-uri]]))
 
+(defn frame-join-uri [& uris]
+  (apply join-uri "/admin/frame/module/" (map name uris)))
 
 (defn navbar [{:keys [uri real-uri] :as request}]
   (let [uri (last (s/split real-uri #"^/admin/frame/module"))
@@ -35,6 +38,21 @@
                  keyword)]
     {:module-name name
      :module (@modules name)}))
+
+(defn get-entity-table [entity module]
+  (or (get-in module [:entities entity :table])
+      (keyword entity)))
+
+(defn get-entity-default-data [entity module]
+  (let [fields (get-in module [:entities (keyword entity) :fields])]
+    (reduce (fn [out [field data]]
+              (if (nil? field)
+                out
+                (if (:default data)
+                  (assoc out field (:default data))
+                  out)))
+            {}
+            fields)))
 
 (defn field-type? [type]
   (fn [[_ v]]

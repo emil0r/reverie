@@ -2318,39 +2318,64 @@ nav ul li {
   margin-right: 5px;
   display: inline-block;
 }
-#edit-form {
+nav ul li a {
+  color: #ff9011;
+}
+.admin-interface .options {
+  margin: 20px 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px #436b95 solid;
+}
+.admin-interface .options ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.admin-interface .options .btn-primary {
+  background-color: #ff7f00;
+  border: 1px solid #dd5d00;
+}
+#edit-form,
+#password-form {
   margin: 15px 0 0 15px;
 }
-#edit-form fieldset {
+#edit-form fieldset,
+#password-form fieldset {
   margin-bottom: 20px;
   border: 1px solid #eeeeee;
   padding: 10px 10px 0 10px;
 }
-#edit-form fieldset legend {
+#edit-form fieldset legend,
+#password-form fieldset legend {
   border: 1px solid #cccccc;
   background-color: #436b95;
   color: #ffffff;
   padding: 2px 10px;
   font-size: 1.35em;
 }
-#edit-form fieldset label {
+#edit-form fieldset label,
+#password-form fieldset label {
   margin-right: 15px;
   width: 130px;
 }
-#edit-form fieldset .form-row {
+#edit-form fieldset .form-row,
+#password-form fieldset .form-row {
   margin: 10px 0;
   padding-bottom: 10px;
   border-bottom: 1px solid #eeeeee;
 }
-#edit-form fieldset .form-row:last-child {
+#edit-form fieldset .form-row:last-child,
+#password-form fieldset .form-row:last-child {
   border-bottom: 0;
   padding-bottom: 0;
 }
-#edit-form fieldset .help {
+#edit-form fieldset .help,
+#password-form fieldset .help {
   color: #999999;
   margin: 5px 0;
 }
-#edit-form fieldset .help i {
+#edit-form fieldset .help i,
+#password-form fieldset .help i {
   color: orange;
   font-size: 20px;
   margin-right: 10px;
@@ -2358,30 +2383,42 @@ nav ul li {
   top: 2px;
 }
 #edit-form fieldset input[type=text],
+#password-form fieldset input[type=text],
 #edit-form fieldset input[type=email],
-#edit-form fieldset input[type=password] {
+#password-form fieldset input[type=email],
+#edit-form fieldset input[type=password],
+#password-form fieldset input[type=password] {
   width: 250px;
 }
-#edit-form fieldset input[type=checkbox] {
+#edit-form fieldset input[type=checkbox],
+#password-form fieldset input[type=checkbox] {
   position: relative;
   top: -1px;
 }
-#edit-form fieldset select {
+#edit-form fieldset select,
+#password-form fieldset select {
   width: 200px;
   height: 100px;
 }
-#edit-form .bottom-bar {
+#edit-form .bottom-bar,
+#password-form .bottom-bar {
   margin-bottom: 20px;
 }
 #edit-form .bottom-bar span.save-add-new,
+#password-form .bottom-bar span.save-add-new,
 #edit-form .bottom-bar span.save-continue-editing,
-#edit-form .bottom-bar span.save-only {
+#password-form .bottom-bar span.save-continue-editing,
+#edit-form .bottom-bar span.save-only,
+#password-form .bottom-bar span.save-only {
   float: right;
   margin-left: 15px;
 }
 #edit-form .bottom-bar span.save-add-new .btn,
+#password-form .bottom-bar span.save-add-new .btn,
 #edit-form .bottom-bar span.save-continue-editing .btn,
-#edit-form .bottom-bar span.save-only .btn {
+#password-form .bottom-bar span.save-continue-editing .btn,
+#edit-form .bottom-bar span.save-only .btn,
+#password-form .bottom-bar span.save-only .btn {
   background-color: #436b95;
   background-image: -webkit-gradient(linear, left 0, left 70, from(#436b95), to(#002366));
   background-image: -webkit-linear-gradient(top, #436b95, 0, #002366, 70);
@@ -2391,8 +2428,11 @@ nav ul li {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff436b95', endColorstr='#ff002366', GradientType=0);
 }
 #edit-form .bottom-bar span.save-add-new .btn:hover,
+#password-form .bottom-bar span.save-add-new .btn:hover,
 #edit-form .bottom-bar span.save-continue-editing .btn:hover,
-#edit-form .bottom-bar span.save-only .btn:hover {
+#password-form .bottom-bar span.save-continue-editing .btn:hover,
+#edit-form .bottom-bar span.save-only .btn:hover,
+#password-form .bottom-bar span.save-only .btn:hover {
   background-color: #002366;
   background-image: -webkit-gradient(linear, left 0, left 40, from(#436b95), to(#002366));
   background-image: -webkit-linear-gradient(top, #436b95, 0, #002366, 40);
@@ -2401,16 +2441,20 @@ nav ul li {
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff436b95', endColorstr='#ff002366', GradientType=0);
 }
-#edit-form .bottom-bar span.delete {
+#edit-form .bottom-bar span.delete,
+#password-form .bottom-bar span.delete {
   float: left;
 }
-#edit-form .bottom-bar span.delete i {
+#edit-form .bottom-bar span.delete i,
+#password-form .bottom-bar span.delete i {
   color: #ff7f00;
   font-size: 1.3em;
   margin-right: 10px;
 }
 #edit-form .bottom-bar:before,
-#edit-form .bottom-bar:after {
+#password-form .bottom-bar:before,
+#edit-form .bottom-bar:after,
+#password-form .bottom-bar:after {
   content: " ";
   /* 1 */
 
@@ -2418,10 +2462,12 @@ nav ul li {
   /* 2 */
 
 }
-#edit-form .bottom-bar:after {
+#edit-form .bottom-bar:after,
+#password-form .bottom-bar:after {
   clear: both;
 }
-#edit-form div.error {
+#edit-form div.error,
+#password-form div.error {
   color: #ffffff;
   background-color: #cc0000;
   padding: 2px 5px 2px 10px;
@@ -2432,8 +2478,22 @@ nav ul li {
   margin: 15px 0 0 15px;
 }
 #delete-form .buttons {
-  margin-top: 20px;
+  margin: 20px 0 0 0;
 }
 #delete-form .buttons #_cancel {
-  margin: 0 25px 0 75px;
+  margin-right: 25px;
+}
+#password-form .buttons {
+  margin: 20px 0 0 0;
+}
+#password-form .buttons #_cancel {
+  margin-right: 25px;
+}
+#password-form .buttons #_change {
+  background-color: #ff7f00;
+  border: 1px solid #dd5d00;
+}
+#password-form .buttons #_change:hover {
+  background-color: #ee6e00;
+  border: 1px solid #cc4c00;
 }
