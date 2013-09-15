@@ -165,7 +165,10 @@
     [:div.holder
      (navbar request)
      (let [{:keys [module-name module]} (get-module request)
-           form-data (first (k/select entity (k/where {:id (read-string id)})))
+           form-data (-> entity
+                         (k/select (k/where {:id (read-string id)}))
+                         first
+                         (pre-process-data module entity))
            ent (get-in module [:entities (keyword entity)])]
        (get-form ent {:form-data form-data
                       :module module
@@ -190,7 +193,9 @@
       (if (valid-form-data? form-data (:fields ent))
         (do
           (k/update entity
-                    (k/set-fields form-data)
+                    (k/set-fields (post-process-data form-data
+                                                     module
+                                                     entity))
                     (k/where {:id (read-string id)}))
           (case proceed
             :continue (raise-response (response-302 (:real-uri request)))

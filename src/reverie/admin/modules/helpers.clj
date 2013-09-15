@@ -88,12 +88,12 @@
 
 
 
-(defn pre-process-data [module entity data]
+(defn pre-process-data [data module entity]
   (if-let [pre (get-in module [:entities (keyword entity) :pre])]
     (pre data)
     data))
 
-(defn post-process-data [module entity data]
+(defn post-process-data [data module entity]
   (if-let [post (get-in module [:entities (keyword entity) :post])]
     (post data)
     data))

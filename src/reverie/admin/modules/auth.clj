@@ -20,8 +20,6 @@
                               :name {:name "Username"
                                      :type :text
                                      :max 255
-                                     :validation [[(fn [_] false) "my error message"]]
-                                     
                                      :help "A maximum of 255 characters may be used"}
                               :email {:name "Email"
                                       :type :email
@@ -56,12 +54,7 @@
                                 {:name "Rights"
                                  :fields [:active :is_staff :is_admin :roles]}
                                 {:name "Groups"
-                                 :fields [:groups]}]
-                     :post (fn [data]
-                             (if (empty? (:password data))
-                               data
-                               (assoc data :password
-                                      (crypt/encrypt (:password data)))))}
+                                 :fields [:groups]}]}
               :group {:name "Group"
                       :fields {:name {:name "Name"
                                       :type :text
