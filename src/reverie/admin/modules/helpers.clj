@@ -1,7 +1,31 @@
 (ns reverie.admin.modules.helpers
   (:require [clojure.string :as s]
             [korma.core :as k])
-  (:use [reverie.atoms :only [modules]]))
+  (:use [reverie.atoms :only [modules]]
+        reverie.batteries.breadcrumbs
+        reverie.batteries.paginator))
+
+
+(defn navbar [{:keys [uri real-uri] :as request}]
+  (let [uri (last (s/split real-uri #"^/admin/frame/module"))
+        {:keys [module module-name]} (get-module request)
+        parts (remove s/blank? (s/split uri #"/"))
+        uri-data (map
+                  (fn [uri]
+                    (cond
+                     (re-find #"^\d+$" uri) [uri (get-instance-name
+                                                  module
+                                                  (second parts)
+                                                  (read-string uri))]
+                     :else [uri (s/capitalize uri)]))
+                  parts)
+        {:keys [crumbs]} (crumb uri-data {:base-uri "/admin/frame/module/"})]
+    [:nav crumbs]))
+
+(defn form-help-text [field-data]
+  (if (:help field-data)
+    [:div.help [:i.icon-question-sign] (:help field-data)]))
+
 
 (defn get-module [{:keys [real-uri]}]
   (let [name (-> real-uri
@@ -92,14 +116,14 @@
 
 
 
-(defn pre-process-data [data module entity]
+(defn pre-process-data [data mode module entity]
   (if-let [pre (get-in module [:entities (keyword entity) :pre])]
-    (pre data)
+    (pre data mode)
     data))
 
-(defn post-process-data [data module entity]
+(defn post-process-data [data mode module entity]
   (if-let [post (get-in module [:entities (keyword entity) :post])]
-    (post data)
+    (post data mode)
     data))
 
 (defn get-field-attribs [data]
@@ -122,7 +146,7 @@
                (name field)
                (name extra)))))
 
-(defn drop-down-m2m-data [module entity m2m entity-id]
+(defn drop-down-m2m-data [module entity m2m form-data entity-id]
   (let [entity (keyword entity)
         m2m-data (get-in module [:entities entity :fields (keyword m2m)])
         m2m-table (or (:table m2m-data) (keyword m2m))
@@ -137,17 +161,23 @@
                (map
                 #(select-keys % options)
                 (k/select m2m-table)))
-     :selected (map
-                :id
-                (k/select m2m-table
-                          (k/fields :id)
-                          (k/join connecting-table (= (table-field connecting-table
-                                                                   m2m-table
-                                                                   :_id)
-                                                      :id))
-                          (k/where {(table-field connecting-table
-                                                 entity-table
-                                                 :_id) entity-id})))}))
+     :selected (or
+                (get form-data m2m)
+                (if entity-id
+                  (let [entity-id (read-string entity-id)]
+                    (map
+                     :id
+                     (k/select m2m-table
+                               (k/fields :id)
+                               (k/join connecting-table (= (table-field connecting-table
+                                                                        m2m-table
+                                                                        :_id)
+                                                           :id))
+                               (k/where {(table-field connecting-table
+                                                      entity-table
+                                                      :_id) entity-id}))))
+                  
+                  []))}))
 
 
 

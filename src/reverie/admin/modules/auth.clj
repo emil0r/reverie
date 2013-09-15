@@ -1,6 +1,10 @@
 (ns reverie.admin.modules.auth
-  (:require [noir.util.crypt :as crypt])
-  (:use [reverie.core :only [defmodule]]
+  (:require [noir.validation :as v]
+            [noir.util.crypt :as crypt])
+  (:use [hiccup form]
+        [reverie.core :only [defmodule]]
+        [reverie.admin.frames.common :only [error-item]]
+        [reverie.admin.modules.helpers :only [form-help-text]]
         [reverie.util :only [join-uri]]))
 
 
@@ -26,10 +30,26 @@
                                       :max 255}
                               :password {:name "Password"
                                          :type :html
-                                         :html (fn [[field _] {:keys [real-uri]}]
-                                                 [:div.form-row
-                                                  [:label "Password"]
-                                                  [:a {:href (join-uri real-uri "/password")} "Change password"]])}
+                                         :validation [[(fn [{:keys [password repeat-password]}]
+                                                         (= password repeat-password))
+                                                       "The passwords don't match. Please type them in again."]
+                                                      [v/has-value? "A password is mandatory"]]
+                                         :html (fn [[field data] {:keys [form-data real-uri entity-id]}]
+                                                 (if entity-id
+                                                   [:div.form-row
+                                                    [:label "Password"]
+                                                    [:a {:href (join-uri real-uri "/password")} "Change password"]]
+                                                   (list
+                                                    [:div.form-row
+                                                     (v/on-error field error-item)
+                                                     (label field "Password")
+                                                     (password-field field (form-data field))
+                                                     (form-help-text {})]
+                                                    [:div.form-row
+                                                     (v/on-error :repeat-password error-item)
+                                                     (label :repeat-password "Repeat password")
+                                                     (password-field :repeat-password (form-data :repeat-password))
+                                                     (form-help-text {:help "Make sure the password is the same"})])))}
                               :active {:name "Active?"
                                        :type :boolean
                                        :default true}
@@ -55,8 +75,10 @@
                                  :fields [:active :is_staff :is_admin :roles]}
                                 {:name "Groups"
                                  :fields [:groups]}]
-                     :post (fn [data]
-                             (dissoc data :password))}
+                     :post (fn [data mode]
+                             (if (= mode :edit)
+                               (dissoc data :password)
+                               (dissoc data :repeat-password)))}
               :group {:name "Group"
                       :fields {:name {:name "Name"
                                       :type :text

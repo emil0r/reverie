@@ -7,39 +7,29 @@
         [reverie.admin.frames.common :only [frame-options error-item]]
         reverie.admin.modules.helpers
         [reverie.atoms :only [modules]]
-        reverie.batteries.breadcrumbs
-        reverie.batteries.paginator
         [reverie.core :only [defmodule raise-response]]
         [reverie.middleware :only [wrap-access]]
         [reverie.responses :only [response-302]]
         [reverie.util :only [join-uri]]))
 
 
-(defn navbar [{:keys [uri real-uri] :as request}]
-  (let [uri (last (s/split real-uri #"^/admin/frame/module"))
-        {:keys [module module-name]} (get-module request)
-        parts (remove s/blank? (s/split uri #"/"))
-        uri-data (map
-                  (fn [uri]
-                    (cond
-                     (re-find #"^\d+$" uri) [uri (get-instance-name
-                                                  module
-                                                  (second parts)
-                                                  (read-string uri))]
-                     :else [uri (s/capitalize uri)]))
-                  parts)
-        {:keys [crumbs]} (crumb uri-data {:base-uri "/admin/frame/module/"})]
-    [:nav crumbs]))
+(defn- get-form-data [request]
+  (-> request
+      :form-params
+      clojure.walk/keywordize-keys
+      (dissoc :_save :_continue :_addanother)))
 
-(defn form-help-text [field-data]
-  (if (:help field-data)
-    [:div.help [:i.icon-question-sign] (:help field-data)]))
+(defn- get-proceed [request]
+  (cond
+   (get (request :form-params) "_continue") :continue
+   (get (request :form-params) "_addanother") :add-another
+   :else :save))
 
-(defn- valid-oform-data? [form-data fields]
+(defn- valid-form-data? [form-data fields]
   (doseq [[field {:keys [type validation]}] fields]
     (if validation
       (doseq [[v? error-msg] validation]
-        (v/rule (v? (form-data field)) [field error-msg])))
+        (v/rule (v? form-data) [field error-msg])))
     (case type
       :number (v/rule (v/valid-number? (form-data field)) [field "Only numbers are allowed"])
       (v/rule true [field "Should not appear"])))
@@ -77,7 +67,7 @@
   (let [f (:html data)]
     (f [field data] extra)))
 (defmethod form-row :m2m [[field data] {:keys [form-data module entity entity-id]}]
-  (let [{:keys [options selected]} (drop-down-m2m-data module entity field (read-string entity-id))]
+  (let [{:keys [options selected]} (drop-down-m2m-data module entity field form-data entity-id)]
     [:div.form-row
      (v/on-error field error-item)
      (label field (get-field-name field data))
@@ -184,7 +174,7 @@
            form-data (-> entity
                          (k/select (k/where {:id (read-string id)}))
                          first
-                         (pre-process-data module entity))
+                         (pre-process-data :edit module entity))
            ent (get-in module [:entities (keyword entity)])]
        (get-form ent {:form-data form-data
                       :module module
@@ -197,14 +187,8 @@
    (frame
     frame-options
     (let [{:keys [module module-name]} (get-module request)
-          form-data (-> request
-                        :form-params
-                        clojure.walk/keywordize-keys
-                        (dissoc :_save :_continue :_addanother))
-          proceed (cond
-                   (get (request :form-params) "_continue") :continue
-                   (get (request :form-params) "_addanother") :add-another
-                   :else :save)
+          form-data (get-form-data request)
+          proceed (get-proceed request)
           ent (get-in module [:entities (keyword entity)])
           form-data (process-form-data form-data (:fields ent))
           m2m-fields (map first
@@ -221,6 +205,7 @@
                                     (fn [[k _]]
                                       (some #(= k %) m2m-fields))
                                     (post-process-data form-data
+                                                       :edit
                                                        module
                                                        entity))))
                     (k/where {:id (read-string id)}))
@@ -240,5 +225,65 @@
                         :module-name module-name
                         :entity entity
                         :entity-id id
+                        :real-uri (:real-uri request)})])))]
+  
+  [:get ["/:entity/add"]
+   (frame
+    frame-options
+    [:div.holder
+     (navbar request)
+     (let [{:keys [module-name module]} (get-module request)
+           form-data (pre-process-data {} :add module entity)
+           ent (get-in module [:entities (keyword entity)])]
+       (get-form ent {:form-data form-data
+                      :module module
+                      :module-name module-name
+                      :entity entity
+                      :real-uri (:real-uri request)}))])]
+
+  [:post ["/:entity/add" wrong-form-data]
+   (frame
+    frame-options
+    (let [{:keys [module module-name]} (get-module request)
+          form-data (get-form-data request)
+          proceed (get-proceed request)
+          ent (get-in module [:entities (keyword entity)])
+          form-data (process-form-data form-data (:fields ent))
+          m2m-fields (map first
+                          (filter
+                           (field-type? :m2m)
+                           (get-in module [:entities (keyword entity) :fields])))]
+      (if (valid-form-data? form-data (:fields ent))
+        (let [{:keys [id]} (k/insert
+                            entity
+                            (k/values (into
+                                       {}
+                                       (remove
+                                        (fn [[k _]]
+                                          (some #(= k %) m2m-fields))
+                                        (post-process-data form-data
+                                                           :add
+                                                           module
+                                                           entity)))))]
+          
+          (save-m2m-data module entity id form-data)
+          (case proceed
+            :continue (raise-response (response-302 (join-uri "/admin/frame/module/"
+                                                              (name module-name)
+                                                              entity
+                                                              (str id))))
+            :add-another (raise-response (response-302 (join-uri "/admin/frame/module/"
+                                                                 (name module-name)
+                                                                 entity
+                                                                 "add")))
+            :save (raise-response (response-302 (join-uri "/admin/frame/module/"
+                                                          (name module-name)
+                                                          entity)))))
+        [:div.holder
+         (navbar request)
+         (get-form ent {:form-data form-data
+                        :module module
+                        :module-name module-name
+                        :entity entity
                         :real-uri (:real-uri request)})])))]
   )
