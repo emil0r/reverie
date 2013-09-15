@@ -12,6 +12,10 @@
     {:module-name name
      :module (@modules name)}))
 
+(defn field-type? [type]
+  (fn [[_ v]]
+    (= (:type v) type)))
+
 (defn get-entity-name [module entity]
   (or (get-in module [:entities (keyword entity) :name])
       (s/capitalize (name entity))))
@@ -108,6 +112,16 @@
           {}
           [:max]))
 
+(defn table-field
+  ([table field]
+     (table-field table field ""))
+  ([table field extra]
+     (keyword (str
+               (name table)
+               "."
+               (name field)
+               (name extra)))))
+
 (defn drop-down-m2m-data [module entity m2m entity-id]
   (let [entity (keyword entity)
         m2m-data (get-in module [:entities entity :fields (keyword m2m)])
@@ -122,31 +136,38 @@
                  [(get a (second options)) (get a (first options))])
                (map
                 #(select-keys % options)
-                  (k/select m2m-table
-                            (k/join connecting-table (= (keyword (str
-                                                                  (name connecting-table)
-                                                                  "."
-                                                                  (name m2m-table)
-                                                                  "_id"))
-                                                        :id))
-                            (k/where {(keyword (str
-                                                (name connecting-table)
-                                                "."
-                                                (name entity-table)
-                                                "_id")) entity-id}))))
+                (k/select m2m-table)))
      :selected (map
                 :id
                 (k/select m2m-table
                           (k/fields :id)
-                          (k/join connecting-table (= (keyword (str
-                                                                (name connecting-table)
-                                                                "."
-                                                                (name m2m-table)
-                                                                "_id"))
+                          (k/join connecting-table (= (table-field connecting-table
+                                                                   m2m-table
+                                                                   :_id)
                                                       :id))
-                          (k/where {(keyword (str
-                                              (name connecting-table)
-                                              "."
-                                              (name entity-table)
-                                              "_id")) entity-id})))}))
+                          (k/where {(table-field connecting-table
+                                                 entity-table
+                                                 :_id) entity-id})))}))
+
+
+
+(defn save-m2m-data [module entity entity-id form-data]
+  (let [entity (keyword entity)
+        entity-table (or (get-in module [:entities entity :table])
+                         entity)]
+    (doseq [[field field-data] (filter (field-type? :m2m)
+                                       (get-in module [:entities entity :fields]))]
+      (let [field-table (or (:table field-data) field)
+            connecting-table (or (:connecting-table field-data)
+                                 (keyword (str (name entity) "_" (name field-table))))
+            ce_id (table-field connecting-table entity-table :_id)
+            insert-data (map (fn [v] {(keyword (str (name entity-table) "_id"))
+                                     entity-id
+                                     (keyword (str (name field-table) "_id"))
+                                     v}) (form-data field))]
+        (k/delete connecting-table
+                  (k/where {ce_id entity-id}))
+        (if (not (empty? insert-data))
+          (k/insert connecting-table
+                    (k/values insert-data)))))))
 

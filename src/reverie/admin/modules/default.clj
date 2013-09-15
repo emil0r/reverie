@@ -60,14 +60,22 @@
                 :boolean (cond
                           (= (data k) "true") (assoc out k true)
                           :else (assoc out k false))
+                :m2m (cond
+                      (nil? (data k)) (assoc out k [])
+                      (sequential? (data k)) (assoc out k (vec (map
+                                                                #(if (re-find #"^\d+$" %)
+                                                                   (read-string %)
+                                                                   %) (data k))))
+                      (re-find #"^\d+$" (data k)) (assoc out k [(read-string (data k))])
+                      :else out)
                 out)))
           data
           (keys fields)))
 
 (defmulti form-row (fn [[_ data] _] (:type data)))
 (defmethod form-row :html [[field data] extra]
-  (let [func (:html data)]
-    (func [field data] extra)))
+  (let [f (:html data)]
+    (f [field data] extra)))
 (defmethod form-row :m2m [[field data] {:keys [form-data module entity entity-id]}]
   (let [{:keys [options selected]} (drop-down-m2m-data module entity field (read-string entity-id))]
     [:div.form-row
@@ -141,6 +149,7 @@
                                          "/" (name e))}
                           (get-entity-name module e)]]])
              (keys (:entities module)))]]))]
+  
   [:get ["/:entity"]
    (let [{:keys [module-name module]} (get-module request)
          display-fields (get-display-fields module entity)
@@ -157,7 +166,7 @@
                 [:th (get-field-name module entity f)])
               display-fields)]
         (map #(get-entity-row % display-fields module-name entity) entities)]]))]
-
+  
   [:get ["/:entity/:id" {:id #"\d+"}]
    (frame
     frame-options
@@ -175,6 +184,7 @@
                       :entity entity
                       :entity-id id
                       :real-uri (:real-uri request)}))])]
+  
   [:post ["/:entity/:id" {:id #"\d+"} wrong-form-data]
    (frame
     frame-options
@@ -188,17 +198,23 @@
                    (get (request :form-params) "_addanother") :add-another
                    :else :save)
           ent (get-in module [:entities (keyword entity)])
-          form-data (process-form-data form-data (:fields ent))]
+          form-data (process-form-data form-data (:fields ent))
+          m2m-fields (map first
+                          (filter
+                           (field-type? :m2m)
+                           (get-in module [:entities (keyword entity) :fields])))]
       (if (valid-form-data? form-data (:fields ent))
         (do
+          (save-m2m-data module entity (read-string id) form-data)
           (k/update entity
-                    (k/set-fields (post-process-data (into
-                                                      {}
-                                                      (remove
-                                                       (fn [[k v]] (= :m2m (:type v)))
-                                                       form-data))
-                                                     module
-                                                     entity))
+                    (k/set-fields (into
+                                   {}
+                                   (remove
+                                    (fn [[k _]]
+                                      (some #(= k %) m2m-fields))
+                                    (post-process-data form-data
+                                                       module
+                                                       entity))))
                     (k/where {:id (read-string id)}))
           (case proceed
             :continue (raise-response (response-302 (:real-uri request)))
@@ -209,10 +225,12 @@
             :save (raise-response (response-302 (join-uri "/admin/frame/module/"
                                                           (name module-name)
                                                           entity)))))
-        (get-form ent {:form-data form-data
-                       :module module
-                       :module-name module-name
-                       :entity entity
-                       :entity-id id
-                       :real-uri (:real-uri request)}))))]
+        [:div.holder
+         (navbar request)
+         (get-form ent {:form-data form-data
+                        :module module
+                        :module-name module-name
+                        :entity entity
+                        :entity-id id
+                        :real-uri (:real-uri request)})])))]
   )

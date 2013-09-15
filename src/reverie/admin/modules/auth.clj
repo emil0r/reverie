@@ -54,7 +54,9 @@
                                 {:name "Rights"
                                  :fields [:active :is_staff :is_admin :roles]}
                                 {:name "Groups"
-                                 :fields [:groups]}]}
+                                 :fields [:groups]}]
+                     :post (fn [data]
+                             (dissoc data :password))}
               :group {:name "Group"
                       :fields {:name {:name "Name"
                                       :type :text
