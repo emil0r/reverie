@@ -4,7 +4,7 @@
             [korma.core :as k])
   (:use [hiccup core form]
         [reverie.admin.templates :only [frame]]
-        [reverie.admin.frames.common :only [frame-options]]
+        [reverie.admin.frames.common :only [frame-options error-item]]
         reverie.admin.modules.helpers
         [reverie.atoms :only [modules]]
         reverie.batteries.breadcrumbs
@@ -72,27 +72,32 @@
 (defmethod form-row :m2m [[field data] {:keys [form-data module entity entity-id]}]
   (let [{:keys [options selected]} (drop-down-m2m-data module entity field (read-string entity-id))]
     [:div.form-row
+     (v/on-error field error-item)
      (label field (get-field-name field data))
      (drop-down (merge {:multiple "multiple"}
                        (get-field-attribs data)) field options selected)
      (form-help-text data)]))
 (defmethod form-row :boolean [[field data] {:keys [form-data]}]
   [:div.form-row
+   (v/on-error field error-item)
    (label field (get-field-name field data))
    (check-box (get-field-attribs data) field (form-data field))
    (form-help-text data)])
 (defmethod form-row :password [[field data] {:keys [form-data]}]
   [:div.form-row
+   (v/on-error field error-item)
    (label field (get-field-name field data))
    (password-field (get-field-attribs data) field (form-data field))
    (form-help-text data)])
 (defmethod form-row :email [[field data] {:keys [form-data]}]
   [:div.form-row
+   (v/on-error field error-item)
    (label field (get-field-name field data))
    (email-field (get-field-attribs data) field (form-data field))
    (form-help-text data)])
 (defmethod form-row :default [[field data] {:keys [form-data]}]
   [:div.form-row
+   (v/on-error field error-item)
    (label field (get-field-name field data))
    (text-field (get-field-attribs data) field (form-data field))
    (form-help-text data)])
@@ -196,7 +201,10 @@
             :save (raise-response (response-302 (join-uri "/admin/frame/module/"
                                                           (name module-name)
                                                           entity)))))
-        (do
-          ;;(println (valid-form-data? form-data (:fields ent)))
-          "fooie?"))))]
+        (get-form ent {:form-data form-data
+                       :module module
+                       :module-name module-name
+                       :entity entity
+                       :entity-id id
+                       :real-uri (:real-uri request)}))))]
   )

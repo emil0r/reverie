@@ -2224,7 +2224,7 @@ h6 {
 .container.frame .hidden {
   display: none;
 }
-.container.frame p.error {
+.container.frame div.error {
   color: #cc0000;
 }
 .container.frame span[type=richtext]:hover {
@@ -2420,4 +2420,11 @@ nav ul li {
 }
 #edit-form .bottom-bar:after {
   clear: both;
+}
+#edit-form div.error {
+  color: #ffffff;
+  background-color: #cc0000;
+  padding: 2px 5px 2px 10px;
+  margin-bottom: 5px;
+  border-radius: 5px;
 }

@@ -9,4 +9,4 @@
                          "/admin/js/init.js"]})
 
 (defn error-item [[error]]
-  [:p.error error])
+  [:div.error error])

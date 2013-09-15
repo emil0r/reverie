@@ -20,6 +20,8 @@
                               :name {:name "Username"
                                      :type :text
                                      :max 255
+                                     :validation [[(fn [_] false) "my error message"]]
+                                     
                                      :help "A maximum of 255 characters may be used"}
                               :email {:name "Email"
                                       :type :email
