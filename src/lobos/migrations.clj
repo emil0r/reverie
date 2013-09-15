@@ -86,7 +86,8 @@
                         (varchar :password 100 :not-null)
                         (boolean :active :not-null (default true))
                         (boolean :is_staff :not-null (default false))
-                        (boolean :is_admin :not-null (default false)))))
+                        (boolean :is_admin :not-null (default false)))
+                 (index :user_name_unique [:name] :unique)))
   (down [] (drop (table :user))))
 
 (defmigration init-group
@@ -106,13 +107,15 @@
 (defmigration init-role-user
   (up [] (create (table :role_user
                         (integer :role_id [:refer :role :id] :not-null)
-                        (integer :user_id [:refer :user :id] :not-null))))
+                        (integer :user_id [:refer :user :id] :not-null))
+                 (index :role_user_unique [:user_id :role_id] :unique)))
   (down [] (drop (table :role_user))))
 
 (defmigration init-role-group
   (up [] (create (table :role_group
                         (integer :role_id [:refer :role :id] :not-null)
-                        (integer :group_id [:refer :group :id] :not-null))))
+                        (integer :group_id [:refer :group :id] :not-null))
+                 (index :role_group_unique [:role_id :group_id] :unique)))
   (down [] (drop (table :role_group))))
 
 (defmigration init-dev-text
