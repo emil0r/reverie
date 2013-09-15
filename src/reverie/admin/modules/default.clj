@@ -164,6 +164,36 @@
                 [:th (get-field-name module entity f)])
               display-fields)]
         (map #(get-entity-row % display-fields module-name entity) entities)]]))]
+
+  [:get ["/:entity/:id/delete" {:id #"\d+"}]
+   (frame
+    frame-options
+    [:div.holder
+     (navbar request)
+     (let [{:keys [module-name module]} (get-module request)
+           ent-data (-> entity
+                         (k/select (k/where {:id (read-string id)}))
+                         first)]
+       (form-to
+        {:id :delete-form}
+        [:post ""]
+        [:h2 "Really delete " "mumbo jumbo" "?"]
+        [:div.buttons
+         [:input {:type :submit :class "btn btn-primary"
+                  :id :_cancel :name :_cancel :value "Cancel"}]
+         [:input {:type :submit :class "btn btn-danger"
+                  :id :_delete :name :_delete :value "Delete"}]]))])]
+
+  [:post ["/:entity/:id/delete" {:id #"\d+"} form-data]
+   (frame
+    frame-options
+    (let [{:keys [module-name module]} (get-module request)]
+      (if (:_delete form-data)
+        (println :delete)
+        (raise-response (response-302 (join-uri "/admin/frame/module/"
+                                                (name module-name)
+                                                entity
+                                                id))))))]
   
   [:get ["/:entity/:id" {:id #"\d+"}]
    (frame

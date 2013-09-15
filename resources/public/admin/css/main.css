@@ -2428,3 +2428,12 @@ nav ul li {
   margin-bottom: 5px;
   border-radius: 5px;
 }
+#delete-form {
+  margin: 15px 0 0 15px;
+}
+#delete-form .buttons {
+  margin-top: 20px;
+}
+#delete-form .buttons #_cancel {
+  margin: 0 25px 0 75px;
+}

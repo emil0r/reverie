@@ -93,4 +93,3 @@
    }
   [:get ["/:entity/:id/password"]
    "mah password"])
-
