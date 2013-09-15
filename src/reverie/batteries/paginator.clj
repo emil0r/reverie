@@ -2,7 +2,9 @@
 
 
 
-(defmulti paginate (fn [coll? _ _] (sequential? coll?)))
+(defmulti paginate
+  "Paginate the incoming collection/length"
+  (fn [coll? _ _] (sequential? coll?)))
 (defmethod paginate true [coll count-per-page page]
   (paginate (count coll) count-per-page page))
 (defmethod paginate :default [length count-per-page page]
@@ -16,7 +18,24 @@
               :else page)
         next (+ page 1)
         prev (- page 1)]
-   {:pages pages
-    :page page
-    :next (if (> next pages) nil next)
-    :prev (if (or (neg? prev) (zero? prev)) nil prev)}))
+    (reduce (fn [out k]
+              (if (nil? k)
+                out
+                (cond
+                 ;;
+                 (and (= k :next-seq)
+                      (not (nil? (:next out))))
+                 (assoc out k (range (+ 1 (:next out))
+                                     (:pages out)))
+                 ;;
+                 (and (= k :prev-seq)
+                      (not (nil? (:prev out))))
+                 (assoc out k (reverse (range 2
+                                              (:prev out))))
+                 ;;
+                 :else out)))
+            {:pages pages
+             :page page
+             :next (if (> next pages) nil next)
+             :prev (if (or (neg? prev) (zero? prev)) nil prev)}
+            [:next-seq :prev-seq])))
