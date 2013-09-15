@@ -60,7 +60,6 @@
                 :boolean (cond
                           (= (data k) "true") (assoc out k true)
                           :else (assoc out k false))
-                :m2m (dissoc out k)
                 out)))
           data
           (keys fields)))
@@ -193,7 +192,11 @@
       (if (valid-form-data? form-data (:fields ent))
         (do
           (k/update entity
-                    (k/set-fields (post-process-data form-data
+                    (k/set-fields (post-process-data (into
+                                                      {}
+                                                      (remove
+                                                       (fn [[k v]] (= :m2m (:type v)))
+                                                       form-data))
                                                      module
                                                      entity))
                     (k/where {:id (read-string id)}))
