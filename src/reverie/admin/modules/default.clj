@@ -102,6 +102,14 @@
    (label field (get-field-name field data))
    (email-field (get-field-attribs data) field (form-data field))
    (form-help-text data)])
+(defmethod form-row :number [[field data] {:keys [form-data]}]
+  [:div.form-row
+   (v/on-error field error-item)
+   (label field (get-field-name field data))
+   [:input (merge (get-field-attribs data)
+                  {:name field :id field :type :number
+                   :value (form-data field)})]
+   (form-help-text data)])
 (defmethod form-row :default [[field data] {:keys [form-data]}]
   [:div.form-row
    (v/on-error field error-item)
