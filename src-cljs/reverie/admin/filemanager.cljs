@@ -3,8 +3,7 @@
   (:require [clojure.string :as s]
             [crate.core :as crate]
             [jayq.core :as jq]
-            [jayq.util :as util]
-            [shoreleave.browser.storage.localstorage :as localstorage])
+            [jayq.util :as util])
   (:use [reverie.util :only [ev$ activate! normalize uri-but-last join-uri]]))
 
 (def ^:private files (atom {}))
