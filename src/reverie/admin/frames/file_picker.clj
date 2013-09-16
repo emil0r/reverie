@@ -5,7 +5,6 @@
             [reverie.responses :as r]
             [reverie.util :as util])
   (:use [hiccup core form]
-        
         [reverie.admin.frames.common :only [frame-options]]
         [reverie.admin.modules.filemanager :only [join-paths
                                                   list-dir
@@ -20,7 +19,7 @@
   [:tr
    [:td 
     [:a {:href (str
-                (util/join-uri "/admin/frame/file-picker" (:url dir))
+                (util/join-uri "/admin/frame/file-picker" (:uri dir))
                 "?" qs)}
      [:i.icon-folder-close]
      (:name dir)]]
@@ -28,7 +27,7 @@
    [:td (get-mod-time dir)]])
 (defmethod row-file :file [file qs]
   [:tr
-   [:td [:span.download {:url (:url file)} [:i.icon-download] (:name file)]]
+   [:td [:span {:uri (:uri file) :class :download} [:i.icon-download] (:name file)]]
    [:td (get-size file)]
    [:td (get-mod-time file)]])
 (defmethod row-file :default [_ _])
@@ -44,7 +43,7 @@
      (if up?
        (row-file {:type :directory
                   :name ".."
-                  :url (str "/" (util/uri-but-last-part path))} qs))
+                  :uri (str "/" (util/uri-but-last-part path))} qs))
      (map #(row-file % qs) files)]]))
 
 (rev/defpage "/admin/frame/file-picker" {:middleware [[wrap-access :edit]]}

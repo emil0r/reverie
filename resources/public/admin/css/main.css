@@ -2247,12 +2247,14 @@ h6 {
   top: 3px;
 }
 #files span.active,
-#files span:hover {
+#files span:hover,
+#files span.selected {
   cursor: pointer;
   color: #ff7f00;
 }
 #files span.active i,
-#files span:hover i {
+#files span:hover i,
+#files span.selected i {
   text-shadow: 1px 1px 1px #000000;
 }
 #files a {
