@@ -13,7 +13,7 @@
 
 (defmacro object-funcs [attributes methods & body]
   (if (every? keyword? methods)
-    `(let [~'func (fn [~'data {:keys [~@attributes]}] ~@body)]
+    `(let [~'func (fn [~'request {:keys [~@attributes]}] ~@body)]
        (into {} (map vector ~methods (repeat ~'func))))
     (let [paired (into {} (map (fn [[method fn-name]] {(keyword fn-name) method}) (partition 2 methods)))
           bodies (map (fn [[fn-name & fn-body]] [(keyword fn-name) fn-body]) (filter vector? body))]
