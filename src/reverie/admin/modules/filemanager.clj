@@ -176,9 +176,7 @@
 (defmodule filemanager {:name "File manager"
                         :middleware [[wrap-access :edit]]}
   [:get ["/"]
-   (frame
-    frame-options
-    (file-lister (list-dir "" "") {}))]
+   (file-lister (list-dir "" "") {})]
   [:get ["/:path" {:path #".*"}]
    (file-lister (list-dir "" path) {:up? true
                                     :path path})])
