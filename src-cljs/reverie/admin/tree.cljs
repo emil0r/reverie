@@ -1,11 +1,12 @@
 (ns reverie.admin.tree
-  (:require [reverie.dom :as dom]
-            [reverie.meta :as meta]
-            [reverie.admin.area :as area]
-            [reverie.admin.options :as options]
+  (:require [clojure.string :as s]
+            [crate.core :as crate]
             [jayq.core :as jq]
             [jayq.util :as util]
-            [crate.core :as crate]))
+            [reverie.dom :as dom]
+            [reverie.meta :as meta]
+            [reverie.admin.area :as area]
+            [reverie.admin.options :as options]))
 
 
 (defn- on-drag-start [node]
@@ -63,8 +64,33 @@
                 (-> :.icon-edit-sign jq/$ (jq/remove-class "hidden"))
                 (dom/reload-main!))))))
 
+(defn- load-key-path-cb [node status]
+  (case status
+    "loaded" (.expand node)
+    "ok" (.activate node)
+    "notfound" (util/log "Search: Node not found!")))
+
+(defn- search! [e]
+  (let [serial (s/replace (-> :#tree-search jq/$ jq/val) #"\s" "")]
+    (if (re-find #"^\d+$" serial)
+      (jq/xhr [:post "/admin/api/pages/search"]
+              {:serial serial}
+              (fn [data]
+                (if (.-result data)
+                  (-> :#tree
+                      jq/$
+                      (.dynatree "getTree")
+                      (.loadKeyPath (str "/" (s/join "/" (.-path data)))
+                                    load-key-path-cb)))))))
+  false)
 
 (defn listen! []
+  (-> :#tree-search-form
+      jq/$
+      (jq/on :submit search!))
+  (-> :#tree-search-icon
+      jq/$
+      (jq/on :click search!))
   (-> :.icons
       jq/$
       (jq/off :click :.icon-refresh)

@@ -53,6 +53,17 @@
      root? [(assoc (page->data p false false) :children children) (get-trash)]
      :else children)))
 
+(defn- get-parent [serial]
+  (:parent (first (k/select page (k/where {:serial serial})))))
+
+(defn- get-search-path
+  "Add first serial in out if you want it as part of the search path"
+  [serial out]
+  (let [parent (get-parent serial)]
+    (if (or (nil? parent) (zero? parent))
+      (vec (reverse out))
+      (recur parent (conj out parent)))))
+
 
 (rev/defpage "/admin/api/pages" {:middleware [[wrap-json-params]
                                               [wrap-json-response]
@@ -61,8 +72,10 @@
    (get-pages (-> (k/select page (k/where {:version 0 :parent 0})) first :serial) true)]
   [:get ["/read/:parent"]
    (get-pages (read-string parent) false)]
-  [:post ["/search" data]
-   false]
+  [:post ["/search" {:keys [serial]}]
+   (let [serial (read-string serial)]
+     {:path (get-search-path serial [serial])
+      :result true})]
   [:get ["/view"]
    (let [u (user/get)]
      (do

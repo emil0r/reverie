@@ -58,8 +58,9 @@
                                     (keys @atoms/modules))))]]
                [:div.navigation-meta
                 [:div.tree
-                 (text-field :tree-search)
-                 [:i.icon-search]
+                 [:form#tree-search-form
+                  (text-field :tree-search)
+                  [:i#tree-search-icon.icon-search]]
                  [:div#tree]
                  [:div.icons
                   [:i.icon-refresh {:title "Refresh"}]
