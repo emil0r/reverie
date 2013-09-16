@@ -38,7 +38,7 @@ $(document).ready(function(){
     opener.document[form][field].value = text;
     window.close();
   });
-  $("cancel").click(function(){
+  $("#cancel").click(function(){
     window.close();
   });
 });
