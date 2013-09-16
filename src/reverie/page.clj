@@ -47,7 +47,7 @@
   [{:keys [reverie] :as request}]
   (let [{:keys [area page-id]} reverie
         w {:page_id page-id :area (util/kw->str area)}]
-    (k/select object (k/where w))))
+    (k/select object (k/where w) (k/order :order))))
 
 (defn render
   "Renders a page"

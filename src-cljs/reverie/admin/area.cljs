@@ -60,7 +60,7 @@
         object (jq/html $e)
         area (-> $e (jq/parents :.reverie-area) (jq/attr :area))
         serial (-> $e (jq/parents :.reverie-area) (jq/attr :page-serial))]
-    (jq/xhr [:get (str "/admin/api/objects/add/"
+    (jq/xhr [:post (str "/admin/api/objects/add/"
                        serial
                        "/"
                        area
@@ -80,8 +80,8 @@
 (defmulti click-object-method! (fn [e] (-> e .-target jq/$ (jq/attr :action))))
 (defmethod click-object-method! "delete" [e]
   (let [object-id (-> e ev$ (jq/parents :.reverie-object) (jq/attr :object-id))]
-    (jq/xhr [:get (str "/admin/api/objects/delete/" object-id)]
-            nil
+    (jq/xhr [:post "/admin/api/objects/delete/"]
+            {:object-id object-id}
             (fn [data]
               (if (.-result data)
                 (dom/reload-main!))))))
@@ -96,8 +96,40 @@
   (let [e$ (ev$ e)
         object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))
         area (-> e$ (jq/attr :area))]
-    (jq/xhr [:get (str "/admin/api/objects/move/" area "/" object-id "/last")]
-            nil
+    (jq/xhr [:post "/admin/api/objects/move/area"]
+            {:anchor area :object-id object-id :hit-mode "area"}
+            (fn [data]
+              (if (.-result data)
+                (dom/reload-main!))))))
+(defmethod click-object-method! "move-to-top" [e]
+  (let [e$ (ev$ e)
+        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+    (jq/xhr [:post "/admin/api/objects/move"]
+            {:object-id object-id :hit-mode "top"}
+            (fn [data]
+              (if (.-result data)
+                (dom/reload-main!))))))
+(defmethod click-object-method! "move-to-bottom" [e]
+  (let [e$ (ev$ e)
+        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+    (jq/xhr [:post "/admin/api/objects/move"]
+            {:object-id object-id :hit-mode "bottom"}
+            (fn [data]
+              (if (.-result data)
+                (dom/reload-main!))))))
+(defmethod click-object-method! "move-up" [e]
+  (let [e$ (ev$ e)
+        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+    (jq/xhr [:post "/admin/api/objects/move"]
+            {:object-id object-id :hit-mode "up"}
+            (fn [data]
+              (if (.-result data)
+                (dom/reload-main!))))))
+(defmethod click-object-method! "move-down" [e]
+  (let [e$ (ev$ e)
+        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+    (jq/xhr [:post "/admin/api/objects/move"]
+            {:object-id object-id :hit-mode "down"}
             (fn [data]
               (if (.-result data)
                 (dom/reload-main!))))))

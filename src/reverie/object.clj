@@ -74,47 +74,78 @@
 (defn move! [{:keys [object-id hit-mode anchor]}]
   (let [page-id (-> object (k/select (k/where {:id object-id})) first :page_id)]
     (case hit-mode
-      "last" (do
+      "area" (do
                (k/update object
                          (k/set-fields {:order (get-last-order {:object-id object-id
                                                                 :area (util/kw->str anchor)})
                                         :area (util/kw->str anchor)})
                          (k/where {:id object-id}))
                true)
-      ;; "before" (let [{:keys [order area]} (-> object (k/select (k/where {:id anchor})) first)
-      ;;                siblings (k/select object
-      ;;                                   (k/where {:page_id page-id
-      ;;                                             :order [> order]
-      ;;                                             :id [not= object-id]}))]
-      ;;            ;; update object
-      ;;            (k/update object
-      ;;                      (k/set-fields {:order order
-      ;;                                     :area area})
-      ;;                      (k/where {:id object-id}))
-      ;;            ;; update anchor object
-      ;;            (k/update object
-      ;;                      (k/set-fields {:order (+ order 1)})
-      ;;                      (k/where {:id anchor}))
-      ;;            ;; update siblings to new position after anchor and object
-      ;;            (doseq [s siblings]
-      ;;              (k/update object
-      ;;                        (k/set-fields {:order (+ (:order s) 2)})
-      ;;                        (k/where {:id (:id s)})))
-      ;;            true)
-      ;; "after" (let [{:keys [order area]} (-> object (k/select (k/where {:id anchor})) first)
-      ;;               siblings (k/select object
-      ;;                                  (k/where {:page_id page-id
-      ;;                                            :order [> (+ order 1)]
-      ;;                                            :id [not= object-id]}))]
-      ;;           ;; update object
-      ;;           (k/update object
-      ;;                     (k/set-fields {:order (+ order 1)
-      ;;                                    :area area})
-      ;;                     (k/where {:id object-id}))
-      ;;           ;; update siblings to new position after anchor and object
-      ;;           (doseq [s siblings]
-      ;;             (k/update object
-      ;;                       (k/set-fields {:order (+ (:order s) 2)})
-      ;;                       (k/where {:id (:id s)})))
-      ;;           true)
+      "top" (let [siblings (k/select object
+                                     (k/where {:page_id page-id
+                                               :id [not= object-id]}))]
+              ;; update object
+              (k/update object
+                        (k/set-fields {:order 1})
+                        (k/where {:id object-id}))
+              ;; update siblings to new position after anchor and object
+              (doseq [s siblings]
+                (k/update object
+                          (k/set-fields {:order (+ (:order s) 1)})
+                          (k/where {:id (:id s)})))
+              true)
+      "bottom" (let [{:keys [order]} (-> object
+                                         (k/select (k/where {:id object-id})) first)
+                     siblings (k/select object
+                                        (k/where {:page_id page-id
+                                                  :order [> order]
+                                                  :id [not= object-id]}))]
+                 ;; update object
+                 (k/update object
+                           (k/set-fields {:order (or
+                                                  (:order (last siblings))
+                                                  order)})
+                           (k/where {:id object-id}))
+                 ;; update siblings to new position after anchor and object
+                 (doseq [s siblings]
+                   (k/update object
+                             (k/set-fields {:order (- (:order s) 1)})
+                             (k/where {:id (:id s)})))
+                 true)
+      "up" (let [{:keys [order]} (-> object
+                                     (k/select (k/where {:id object-id})) first)
+                 above (-> object
+                           (k/select (k/where {:order [< order]})
+                                     (k/order :order)
+                                     (k/limit 1))
+                           first)]
+             ;; update object
+             (k/update object
+                       (k/set-fields {:order (or
+                                              (:order above)
+                                              order)})
+                       (k/where {:id object-id}))
+             ;; uppdate object above
+             (if above
+               (k/update object
+                         (k/set-fields {:order order})
+                         (k/where {:id (:id above)}))))
+      "down" (let [{:keys [order]} (-> object
+                                       (k/select (k/where {:id object-id})) first)
+                   below (-> object
+                             (k/select (k/where {:order [> order]})
+                                       (k/order :order)
+                                       (k/limit 1))
+                             first)]
+               ;; update object
+               (k/update object
+                         (k/set-fields {:order (or
+                                                (:order below)
+                                                order)})
+                         (k/where {:id object-id}))
+               ;; uppdate object above
+               (if below
+                 (k/update object
+                           (k/set-fields {:order order})
+                           (k/where {:id (:id below)}))))
       false)))

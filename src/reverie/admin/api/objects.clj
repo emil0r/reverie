@@ -20,20 +20,24 @@
 (rev/defpage "/admin/api/objects" {:middleware [[wrap-json-params]
                                                 [wrap-json-response]
                                                 [wrap-access :edit]]}
-  [:get ["/add/:page-serial/:area/:object-name"]
+  [:post ["/add/:page-serial/:area/:object-name" _]
    (let [u (user/get)
          p (page/get {:serial (read-string page-serial) :version 0})
          data (default-data object-name)]
      (do
        (object/add! {:page-id (:id p) :name object-name :area area} data)
        {:result true}))]
-  [:get ["/move/:anchor/:object-id/:hit-mode"]
-   (let [u (user/get)
-         anchor (if (re-find #"[0-9]+" anchor) (read-string anchor) anchor)]
+  [:post ["/move/area" {:keys [object-id hit-mode anchor]}]
+   (let [u (user/get)]
      {:result (object/move! {:object-id (read-string object-id)
                              :anchor anchor
                              :hit-mode hit-mode})})]
-  [:get ["/delete/:object-id"]
+  [:post ["/move" {:keys [object-id hit-mode]}]
+   (let [u (user/get)]
+     {:result (object/move! {:object-id (read-string object-id)
+                             :anchor nil
+                             :hit-mode hit-mode})})]
+  [:post ["/delete" {:keys [object-id]}]
    (let [u (user/get)
          o (-> reverie.entity/object
                (k/select (k/where {:id (read-string object-id)}))
