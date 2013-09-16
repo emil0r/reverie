@@ -67,7 +67,9 @@
 (defn- load-key-path-cb [node status]
   (case status
     "loaded" (.expand node)
-    "ok" (.activate node)
+    "ok" (do
+           (.activate node)
+           (dom/main-uri! (.-data.uri node)))
     "notfound" (util/log "Search: Node not found!")))
 
 (defn- search! [e]
