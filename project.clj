@@ -10,9 +10,10 @@
                  [clj-time "0.6.0"]
                  [korma "0.3.0-RC5"]
                  [me.raynes/fs "1.4.5"]
+                 [local/hiccup "1.0.3a"]
                  [clout "1.1.0"]
                  [slingshot "0.10.3"]
-                 [bultitude "0.1.5"]
+                 [bultitude "0.1.7"]
                  [lobos "1.0.0-beta1"]
                  [lib-noir "0.6.6"]]
   :ring {:handler reveriecms.dev/app}
@@ -22,12 +23,12 @@
                                   [org.postgresql/postgresql "9.2-1002-jdbc4"]
                                   [crate "0.2.4"]
                                   [jayq "2.4.0"]
-                                  [cljsbuild "0.3.2"]
+                                  [cljsbuild "0.3.3"]
                                   [org.clojure/clojurescript "0.0-1853" :exclusions [[org.apache.ant/ant]]]
                                   [org.clojure/google-closure-library-third-party "0.0-2029"]
                                   [org.clojure/tools.trace "0.7.5"]
                                   [com.cemerick/piggieback "0.1.0"]]
-                   :plugins [[lein-cljsbuild "0.3.2"]]}}
+                   :plugins [[lein-cljsbuild "0.3.3"]]}}
   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
   :cljsbuild {:builds {:prod {:source-paths ["src-cljs"]
                               :compiler {:output-to "resources/public/admin/js/main.js"
