@@ -25,6 +25,35 @@
         {:keys [crumbs]} (crumb uri-data {:base-uri "/admin/frame/module/"})]
     [:nav crumbs]))
 
+(defn- page-url [base-uri current? page]
+  (if page
+    [:li.page
+     (if current?
+       [:span page]
+       [:a {:href (str base-uri "?page=" (str page))} page])]))
+
+(defn plural? [length singular plural]
+  (if (> length 1)
+    (str length " " plural)
+    (str length " " singular)))
+
+(defn pagination [length count-per-page page base-uri]
+  (let [paginated (paginate length count-per-page page)]
+    
+    [:div.pagination
+     [:div.num-pages
+      (str (plural? (:pages paginated) "page" "pages")
+           ", "
+           (plural? length "item" "items"))]
+     (if (> (:pages paginated) 1)
+      [:ul
+       (map (partial page-url base-uri false) (reverse (take 4 (:prev-seq paginated))))
+       (page-url base-uri false (:prev paginated))
+       (page-url base-uri true (if page page 1))
+       (page-url base-uri false (:next paginated))
+       (map (partial page-url base-uri false) (take 4 (:next-seq paginated)))])]))
+
+
 (defn form-help-text [field-data]
   (if (:help field-data)
     [:div.help [:i.icon-question-sign] (:help field-data)]))

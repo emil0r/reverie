@@ -169,7 +169,12 @@
          (map (fn [f]
                 [:th (get-field-name module entity f)])
               display-fields)]
-        (map #(get-entity-row % display-fields module-name entity) entities)]]))]
+        (map #(get-entity-row % display-fields module-name entity) entities)]
+       (pagination (-> (get-entity-table entity module)
+                       (k/select (k/aggregate (count :*) :count))
+                       first
+                       :count)
+                   50 page (:real-uri request))]))]
 
   [:get ["/:entity/:id" {:id #"\d+"}]
    (frame

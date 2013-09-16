@@ -12,7 +12,12 @@
                  (if (zero? (mod length count-per-page))
                    0
                    1))
+        page (if (and (string? page)
+                      (not= page ""))
+               (read-string page)
+               page)
         page (cond
+              (nil? page) 1
               (or (neg? page) (zero? page)) 1
               (> page pages) pages
               :else page)
@@ -26,11 +31,11 @@
                  (and (= k :next-seq)
                       (not (nil? (:next out))))
                  (assoc out k (range (+ 1 (:next out))
-                                     (:pages out)))
+                                     (+ 1 (:pages out))))
                  ;;
                  (and (= k :prev-seq)
                       (not (nil? (:prev out))))
-                 (assoc out k (reverse (range 2
+                 (assoc out k (reverse (range 1
                                               (:prev out))))
                  ;;
                  :else out)))

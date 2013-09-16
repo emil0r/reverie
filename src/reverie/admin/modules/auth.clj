@@ -148,6 +148,3 @@
        (navbar request)
        (get-password-form))))])
 
-
-
-

@@ -16,8 +16,11 @@ nav {
     }
 }
 .admin-interface {
+    .table {
+        margin-left: 2px;
+    }
     .options {
-        margin: 20px 10px;
+        margin: 20px 10px 60px 10px;
         padding-bottom: 10px;
         border-bottom: 1px @queens-blue solid;
         ul {
@@ -28,6 +31,37 @@ nav {
         .btn-primary {
             background-color: @orange;
             border: 1px solid @orange - #222;
+        }
+    }
+    .pagination {
+        margin: 40px 0 0 10px;
+        .num-pages {
+            margin-bottom: 10px;
+            color: @gray-light;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            li {
+                display: inline-block;
+                margin-right: 10px;
+                span {
+                    padding: 3px 6px;
+                }
+                a {
+                    padding: 3px 6px;
+                    background-color: @orange;
+                    border: 1px solid @orange - #111;
+                    color: @white;
+                    border-radius: 3px;
+                    &:hover {
+                        background-color: @orange - #222;
+                        border: 1px solid @orange - #333;
+                        box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
+                    }
+                }
+            }
         }
     }
 }

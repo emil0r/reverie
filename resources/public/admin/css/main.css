@@ -2321,8 +2321,11 @@ nav ul li {
 nav ul li a {
   color: #ff9011;
 }
+.admin-interface .table {
+  margin-left: 2px;
+}
 .admin-interface .options {
-  margin: 20px 10px;
+  margin: 20px 10px 60px 10px;
   padding-bottom: 10px;
   border-bottom: 1px #436b95 solid;
 }
@@ -2334,6 +2337,37 @@ nav ul li a {
 .admin-interface .options .btn-primary {
   background-color: #ff7f00;
   border: 1px solid #dd5d00;
+}
+.admin-interface .pagination {
+  margin: 40px 0 0 10px;
+}
+.admin-interface .pagination .num-pages {
+  margin-bottom: 10px;
+  color: #999999;
+}
+.admin-interface .pagination ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.admin-interface .pagination ul li {
+  display: inline-block;
+  margin-right: 10px;
+}
+.admin-interface .pagination ul li span {
+  padding: 3px 6px;
+}
+.admin-interface .pagination ul li a {
+  padding: 3px 6px;
+  background-color: #ff7f00;
+  border: 1px solid #ee6e00;
+  color: #ffffff;
+  border-radius: 3px;
+}
+.admin-interface .pagination ul li a:hover {
+  background-color: #dd5d00;
+  border: 1px solid #cc4c00;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
 }
 #edit-form,
 #password-form {
