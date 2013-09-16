@@ -18,11 +18,20 @@
     first
     :count)))
 
+(defn- get-root-serial []
+  (->  page
+       (k/select
+        (k/where {:parent 0 :version 0}))
+       first
+       :serial))
+
+
 (defn- get-meta []
   {:init-root-page? (init-root-page?)
    :templates (map util/kw->str (keys @atoms/templates))
    :objects (map util/kw->str (keys @atoms/objects))
-   :apps (map util/kw->str (keys @atoms/apps))})
+   :apps (map util/kw->str (keys @atoms/apps))
+   :pages {:root (get-root-serial)}})
 
 (rev/defpage "/admin/api" {:middleware [[wrap-json-params]
                                         [wrap-json-response]

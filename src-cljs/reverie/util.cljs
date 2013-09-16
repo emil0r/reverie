@@ -1,11 +1,12 @@
 (ns reverie.util
   (:require [clojure.string :as s]
-            [jayq.core :as jq]))
+            [jayq.core :as jq]
+            [jayq.util :as util]))
 
 (defn- strip-year [y]
   (apply str (drop 2 (str y))))
 
-(defn- normalize [x]
+(defn- normalize-number [x]
   (if (< x 10)
     (str "0" x)
     x))
@@ -15,23 +16,23 @@
     (case type
       :yymmdd (str (-> d .getFullYear strip-year)
                    "-"
-                   (-> d .getMonth normalize)
+                   (-> d .getMonth normalize-number)
                    "-"
-                   (-> d .getDate normalize))
+                   (-> d .getDate normalize-number))
       :yyyymmdd (str (.getFullYear d)
                      "-"
-                     (-> d .getMonth normalize)
+                     (-> d .getMonth normalize-number)
                      "-"
-                     (-> d .getDate normalize))
+                     (-> d .getDate normalize-number))
       (str (.getFullYear d)
            "-"
-           (-> d .getMonth normalize)
+           (-> d .getMonth normalize-number)
            "-"
-           (-> d .getDate normalize)
+           (-> d .getDate normalize-number)
            " "
-           (-> d .getHours normalize)
+           (-> d .getHours normalize-number)
            ":"
-           (-> d .getMinutes normalize)))))
+           (-> d .getMinutes normalize-number)))))
 
 (defn normalize [str]
   (-> str

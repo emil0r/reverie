@@ -86,13 +86,21 @@
                                             (if-let [serial (-> node .-data .-serial)]
                                               (options/delete! serial))))))
 
-(defn on-lazy-read [node]
+(defn- on-lazy-read [node]
   (let [serial (-> node .-data .-serial)]
    (.appendAjax node (clj->js {:url (str "/admin/api/pages/read/" serial)}))))
 
-(defn on-activation [e]
-  (let [data (js->clj (.-data e) :keywordize-keys true)]
-    (meta/display data)))
+(defn- on-activation [node]
+  (let [data (js->clj (.-data node) :keywordize-keys true)]
+    (-> :#tree-search
+        jq/$
+        (jq/val (:serial data)))
+    (meta/display data)
+    node))
+
+(defn- on-post-init [reloading? error?]
+  (if-not error?
+    (.activate (get-node (get-in @meta/data [:pages :root])))))
 
 (defn- get-settings []
   (clj->js
@@ -103,6 +111,7 @@
     :keyboard false
     :onLazyRead on-lazy-read
     :onActivate on-activation
+    :onPostInit on-post-init
     :dnd {
           :onDragStart on-drag-start
           :onDragEnter on-drag-enter
