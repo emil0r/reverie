@@ -6,59 +6,6 @@
         reverie.batteries.paginator
         [reverie.util :only [join-uri]]))
 
-(defn frame-join-uri [& uris]
-  (apply join-uri "/admin/frame/module/" (map name uris)))
-
-(defn navbar [{:keys [uri real-uri] :as request}]
-  (let [uri (last (s/split real-uri #"^/admin/frame/module"))
-        {:keys [module module-name]} (get-module request)
-        parts (remove s/blank? (s/split uri #"/"))
-        uri-data (map
-                  (fn [uri]
-                    (cond
-                     (re-find #"^\d+$" uri) [uri (get-instance-name
-                                                  module
-                                                  (second parts)
-                                                  (read-string uri))]
-                     :else [uri (s/capitalize uri)]))
-                  parts)
-        {:keys [crumbs]} (crumb uri-data {:base-uri "/admin/frame/module/"})]
-    [:nav crumbs]))
-
-(defn- page-url [base-uri current? page]
-  (if page
-    [:li.page
-     (if current?
-       [:span page]
-       [:a {:href (str base-uri "?page=" (str page))} page])]))
-
-(defn plural? [length singular plural]
-  (if (> length 1)
-    (str length " " plural)
-    (str length " " singular)))
-
-(defn pagination [length count-per-page page base-uri]
-  (let [paginated (paginate length count-per-page page)]
-    
-    [:div.pagination
-     [:div.num-pages
-      (str (plural? (:pages paginated) "page" "pages")
-           ", "
-           (plural? length "item" "items"))]
-     (if (> (:pages paginated) 1)
-      [:ul
-       (map (partial page-url base-uri false) (reverse (take 4 (:prev-seq paginated))))
-       (page-url base-uri false (:prev paginated))
-       (page-url base-uri true (if page page 1))
-       (page-url base-uri false (:next paginated))
-       (map (partial page-url base-uri false) (take 4 (:next-seq paginated)))])]))
-
-
-(defn form-help-text [field-data]
-  (if (:help field-data)
-    [:div.help [:i.icon-question-sign] (:help field-data)]))
-
-
 (defn get-module [{:keys [real-uri]}]
   (let [name (-> real-uri
                  (s/replace #"/admin/frame/module/" "")
@@ -67,6 +14,7 @@
                  keyword)]
     {:module-name name
      :module (@modules name)}))
+
 
 (defn get-entity-table [entity module]
   (or (get-in module [:entities entity :table])
@@ -248,3 +196,59 @@
           (k/insert connecting-table
                     (k/values insert-data)))))))
 
+
+
+
+
+;; html and stuff
+(defn frame-join-uri [& uris]
+  (apply join-uri "/admin/frame/module/" (map name uris)))
+
+(defn navbar [{:keys [uri real-uri] :as request}]
+  (let [uri (last (s/split real-uri #"^/admin/frame/module"))
+        {:keys [module module-name]} (get-module request)
+        parts (remove s/blank? (s/split uri #"/"))
+        uri-data (map
+                  (fn [uri]
+                    (cond
+                     (re-find #"^\d+$" uri) [uri (get-instance-name
+                                                  module
+                                                  (second parts)
+                                                  (read-string uri))]
+                     :else [uri (s/capitalize uri)]))
+                  parts)
+        {:keys [crumbs]} (crumb uri-data {:base-uri "/admin/frame/module/"})]
+    [:nav crumbs]))
+
+(defn- page-url [base-uri current? page]
+  (if page
+    [:li.page
+     (if current?
+       [:span page]
+       [:a {:href (str base-uri "?page=" (str page))} page])]))
+
+(defn plural? [length singular plural]
+  (if (> length 1)
+    (str length " " plural)
+    (str length " " singular)))
+
+(defn pagination [length count-per-page page base-uri]
+  (let [paginated (paginate length count-per-page page)]
+    
+    [:div.pagination
+     [:div.num-pages
+      (str (plural? (:pages paginated) "page" "pages")
+           ", "
+           (plural? length "item" "items"))]
+     (if (> (:pages paginated) 1)
+      [:ul
+       (map (partial page-url base-uri false) (reverse (take 4 (:prev-seq paginated))))
+       (page-url base-uri false (:prev paginated))
+       (page-url base-uri true (if page page 1))
+       (page-url base-uri false (:next paginated))
+       (map (partial page-url base-uri false) (take 4 (:next-seq paginated)))])]))
+
+
+(defn form-help-text [field-data]
+  (if (:help field-data)
+    [:div.help [:i.icon-question-sign] (:help field-data)]))
