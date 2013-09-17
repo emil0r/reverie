@@ -36,8 +36,8 @@
                [:li.edit-object {:action "edit"} "Edit"]
                [:li.delete-object {:action "delete"} "Delete"]
                [:li.reverie-bar]
-               [:li.copy-object {:action "cut-object"} "Cut"]
-               [:li.copy-object {:action "copy-object"} "Copy"]
+               ;; [:li.copy-object {:action "cut"} "Cut"]
+               ;; [:li.copy-object {:action "copy"} "Copy"]
                [:li.move-object "Move to »"
                 [:ul.move-object-to
                  (map (fn [a] [:li {:action "move-to-area" :area a} "area " a])
@@ -133,6 +133,35 @@
             (fn [data]
               (if (.-result data)
                 (dom/reload-main!))))))
+(defmethod click-object-method! "cut" [e]
+  (let [e$ (ev$ e)
+        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+    (jq/xhr [:post "/admin/api/objects/cut"]
+            {:object-id object-id}
+            (fn [data]
+              (if (.-result data)
+                (do
+                  (doseq [obj (-> :.reverie-object dom/$m)]
+                    (jq/remove-class (jq/$ obj) :reverie-ready-for-copy)
+                    (jq/remove-class (jq/$ obj) :reverie-ready-for-cut))
+                  (-> (str "div[object-id='" object-id "']")
+                      dom/$m
+                      (jq/add-class :reverie-ready-for-cut))))))))
+(defmethod click-object-method! "copy" [e]
+  (let [e$ (ev$ e)
+        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+    (jq/xhr [:post "/admin/api/objects/copy"]
+            {:object-id object-id}
+            (fn [data]
+              (if (.-result data)
+                (do
+                  (swap! atom/data update-in [:edits :object :copy ])
+                  (doseq [obj (-> :.reverie-object dom/$m)]
+                    (jq/remove-class (jq/$ obj) :reverie-ready-for-copy)
+                    (jq/remove-class (jq/$ obj) :reverie-ready-for-cut))
+                  (-> (str "div[object-id='" object-id "']")
+                      dom/$m
+                      (jq/add-class :reverie-ready-for-copy))))))))
 (defmethod click-object-method! :default [e]
   (js/alert "No method defined"))
 

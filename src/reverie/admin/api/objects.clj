@@ -1,5 +1,6 @@
 (ns reverie.admin.api.objects
-  (:require [korma.core :as k]
+  (:require [clj-time.core :as time]
+            [korma.core :as k]
             [reverie.auth.user :as user]
             [reverie.core :as rev]
             [reverie.atoms :as atoms]
@@ -21,25 +22,45 @@
                                                 [wrap-json-response]
                                                 [wrap-access :edit]]}
   [:post ["/add/:page-serial/:area/:object-name" _]
-   (let [u (user/get)
-         p (page/get {:serial (read-string page-serial) :version 0})
+   (let [p (page/get {:serial (read-string page-serial) :version 0})
          data (default-data object-name)]
      (do
        (object/add! {:page-id (:id p) :name object-name :area area} data)
        {:result true}))]
   [:post ["/move/area" {:keys [object-id hit-mode anchor]}]
-   (let [u (user/get)]
-     {:result (object/move! {:object-id (read-string object-id)
-                             :anchor anchor
-                             :hit-mode hit-mode})})]
+   {:result (object/move! {:object-id (read-string object-id)
+                           :anchor anchor
+                           :hit-mode hit-mode})}]
   [:post ["/move" {:keys [object-id hit-mode]}]
-   (let [u (user/get)]
-     {:result (object/move! {:object-id (read-string object-id)
-                             :anchor nil
-                             :hit-mode hit-mode})})]
-  [:post ["/delete" {:keys [object-id]}]
+   {:result (object/move! {:object-id (read-string object-id)
+                           :anchor nil
+                           :hit-mode hit-mode})}]
+  [:post ["/cut" {:keys [object-id]}]
+   (let [object-id (read-string object-id)
+         obj (object/get object-id)]
+     (swap! atoms/settings assoc-in [:edits :objects object-id] {:time (time/now)
+                                                                 :user (:name (user/get))
+                                                                 :page-id (:page_id obj)
+                                                                 :action :cut})
+     {:result true
+      :object (select-keys obj :page_id :id)})]
+  [:post ["/copy" {:keys [object-id]}]
+   (let [object-id (read-string object-id)
+         obj (object/get object-id)]
+     (swap! atoms/settings assoc-in [:edits :objects object-id] {:time (time/now)
+                                                                 :user (:name (user/get))
+                                                                 :page-id (:page_id obj)
+                                                                 :action :copy})
+     {:result true
+      :object (select-keys obj :page_id :id)})]
+  [:post ["/paste" {:keys [object-id area page-serial]}]
    (let [u (user/get)
-         o (-> reverie.entity/object
+         obj (get-in @atoms/settings [:edits :objects object-id])]
+     (if (= (:name u) (:user obj))
+       {:result true}
+       {:result false}))]
+  [:post ["/delete" {:keys [object-id]}]
+   (let [o (-> reverie.entity/object
                (k/select (k/where {:id (read-string object-id)}))
                first)]
      (do

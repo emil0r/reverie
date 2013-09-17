@@ -1,6 +1,7 @@
 (ns reverie.admin.api
   (:require [korma.core :as k]
             [reverie.atoms :as atoms]
+            [reverie.auth.user :as user]
             [reverie.core :as rev]
             [reverie.util :as util])
   (:use reverie.entity
@@ -25,13 +26,31 @@
        first
        :serial))
 
+(defn- get-edit-actions [u]
+  {:page (ffirst (filter (fn [[uri data]] (= (:user data) (:name u)))
+                         (remove keyword?
+                                 (get-in @atoms/settings [:edits]))))
+   :object {:cut (ffirst (filter (fn [[object-id data]]
+                                   (and
+                                    (= (:user data) (:name u))
+                                    (= :cut (:action data))))
+                                 (get-in @atoms/settings [:edits :objects])))
+            :copy (ffirst (filter (fn [[object-id data]]
+                                    (and
+                                     (= (:user data) (:name u))
+                                     (= :copy (:action data))))
+                                  (get-in @atoms/settings [:edits :objects])))}})
 
 (defn- get-meta []
-  {:init-root-page? (init-root-page?)
-   :templates (map util/kw->str (keys @atoms/templates))
-   :objects (map util/kw->str (keys @atoms/objects))
-   :apps (map util/kw->str (keys @atoms/apps))
-   :pages {:root (get-root-serial)}})
+  (let [root-serial (get-root-serial)
+        u (user/get)]
+   {:init-root-page? (init-root-page?)
+    :templates (map util/kw->str (keys @atoms/templates))
+    :objects (map util/kw->str (keys @atoms/objects))
+    :apps (map util/kw->str (keys @atoms/apps))
+    :edits (get-edit-actions u)
+    :pages {:root root-serial
+            :current root-serial}}))
 
 (rev/defpage "/admin/api" {:middleware [[wrap-json-params]
                                         [wrap-json-response]

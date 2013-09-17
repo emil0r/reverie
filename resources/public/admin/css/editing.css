@@ -55,6 +55,12 @@
 .reverie-area .reverie-object {
   margin-bottom: 15px;
 }
+.reverie-area .reverie-ready-for-cut {
+  border: 3px dotted #1553ad;
+}
+.reverie-area .reverie-ready-for-copy {
+  border: 3px dotted #00c12b;
+}
 .reverie-area .reverie-object-holder {
   margin-bottom: 5px;
 }
