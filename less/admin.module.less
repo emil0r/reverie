@@ -1,5 +1,5 @@
 nav {
-    background-color: @queens-blue;
+    background-color: @secondary;
     color: @white;
     padding: 5px 10px;
     ul {
@@ -10,7 +10,7 @@ nav {
             margin-right: 5px;
             display: inline-block;
             a {
-                color: @orange + #111;
+                color: @primary + #111;
             }
         }
     }
@@ -22,15 +22,15 @@ nav {
     .options {
         margin: 20px 10px 60px 10px;
         padding-bottom: 10px;
-        border-bottom: 1px @queens-blue solid;
+        border-bottom: 1px @secondary solid;
         ul {
             list-style: none;
             padding: 0;
             margin: 0;
         }
         .btn-primary {
-            background-color: @orange;
-            border: 1px solid @orange - #222;
+            background-color: @primary;
+            border: 1px solid @primary - #222;
         }
     }
     .pagination {
@@ -51,13 +51,13 @@ nav {
                 }
                 a {
                     padding: 3px 6px;
-                    background-color: @orange;
-                    border: 1px solid @orange - #111;
+                    background-color: @primary;
+                    border: 1px solid @primary - #111;
                     color: @white;
                     border-radius: 3px;
                     &:hover {
-                        background-color: @orange - #222;
-                        border: 1px solid @orange - #333;
+                        background-color: @primary - #222;
+                        border: 1px solid @primary - #333;
                         box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
                     }
                 }
@@ -74,7 +74,7 @@ nav {
         padding: 10px 10px 0 10px;
         legend {
             border: 1px solid @gray-lighter - #222;
-            background-color: @queens-blue;
+            background-color: @secondary;
             color: @white;
             padding: 2px 10px;
             font-size: 1.35em;
@@ -94,7 +94,7 @@ nav {
         }
         .help {
             i {
-                color: orange;
+                color: primary;
                 font-size: 20px;
                 margin-right: 10px;
                 position: relative;
@@ -124,18 +124,18 @@ nav {
             float: right;
             margin-left: 15px;
             .btn {
-                background-color: @queens-blue;
-                #gradient .vertical(@queens-blue, @royal-blue, 0, 70);
+                background-color: @secondary;
+                #gradient .vertical(@secondary, @secondary - #222, 0, 70);
                 &:hover {
-                    background-color: @royal-blue;
-                    #gradient .vertical(@queens-blue, @royal-blue, 0, 40);
+                    background-color: @secondary - #111;
+                    #gradient .vertical(@secondary, @secondary - #333, 0, 40);
                 }
             }
         }
         margin-bottom: 20px;
         span.delete {
             i {
-                color: @orange;
+                color: @primary;
                 font-size: 1.3em;
                 margin-right: 10px;
             }
@@ -168,11 +168,11 @@ nav {
             margin-right: 25px;
         }
         #_change {
-            background-color: @orange;
-            border: 1px solid @orange - #222;
+            background-color: @primary;
+            border: 1px solid @primary - #222;
             &:hover {
-                background-color: @orange - #111;
-                border: 1px solid @orange - #333;
+                background-color: @primary - #111;
+                border: 1px solid @primary - #333;
             }
         }
     }

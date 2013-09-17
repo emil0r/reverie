@@ -1,18 +1,20 @@
 .user-info {
     text-align: right;
-    border-bottom: 1px dotted @orange;
+    border-bottom: 1px dotted @primary;
     padding: 5px 10px;
     span {
-        color: @queens-blue;
+        color: @secondary;
         font-weight: bold;
     }
     .logout {
         margin-top: 5px;
+        font-size: 15px;
         i {
             margin-left: 5px;
+            font-size: 20px;
         }
         a {
-            color: @orange;
+            color: @primary;
             display: inline-block;
         }
     }
@@ -20,22 +22,27 @@
 
 .tree {
     padding: 5px 5px 10px 5px;
-    border-bottom: 1px dotted @orange;
+    border-bottom: 1px dotted @primary;
     input[type=text] {
         width: 88%;
     }
     i {
         margin-left: 5px;
-        color: @queens-blue;
+        color: @primary;
         &:hover {
             cursor: pointer;
-            text-shadow: 1px 1px 3px fade(@queens-blue, 50%);
+            text-shadow: 1px 1px 1px @black;
         }
     }
     #tree {
         margin-top: 5px;
         min-height: 250px;
         border: 1px @gray-light solid;
+    }
+    #tree-search-form {
+        i {
+            font-size: 20px;
+        }
     }
     .icons {
         i {
@@ -63,21 +70,21 @@
 #tabbar {
     margin: 5px 0;
     padding-bottom: 5px;
-    border-bottom: 1px dotted @orange;
+    border-bottom: 1px dotted @primary;
     outline: 0;
     .goog-tab {
         display: inline;
         margin-right: 5px;
         padding: 5px;
         &:hover {
-            background-color: @orange;
+            background-color: @primary;
             color: @white;
             cursor: pointer;
             box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
         }
     }
     .goog-tab-selected {
-        background-color: @orange;
+        background-color: @primary;
         color: @white;
     }
 }
@@ -90,7 +97,7 @@
         li {
             padding: 5px;
             &.active, &:hover {
-                background-color: @orange;
+                background-color: @primary;
                 color: @white;
                 cursor: pointer;
                 box-shadow: 0 2px 5px rgba(0,0,0,0.25);

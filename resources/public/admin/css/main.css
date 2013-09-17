@@ -270,12 +270,12 @@ textarea {
   background-image: none;
 }
 a {
-  color: #428bca;
+  color: #1553ad;
   text-decoration: none;
 }
 a:hover,
 a:focus {
-  color: #2a6496;
+  color: #0d3269;
   text-decoration: underline;
 }
 a:focus {
@@ -349,7 +349,7 @@ cite {
   color: #999999;
 }
 .text-primary {
-  color: #428bca;
+  color: #1553ad;
 }
 .text-warning {
   color: #c09853;
@@ -1838,8 +1838,8 @@ fieldset[disabled] .btn-default.active {
 }
 .btn-primary {
   color: #ffffff;
-  background-color: #428bca;
-  border-color: #357ebd;
+  background-color: #1553ad;
+  border-color: #124896;
 }
 .btn-primary:hover,
 .btn-primary:focus,
@@ -1847,8 +1847,8 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
   color: #ffffff;
-  background-color: #3276b1;
-  border-color: #285e8e;
+  background-color: #114289;
+  border-color: #0c2e60;
 }
 .btn-primary:active,
 .btn-primary.active,
@@ -1870,8 +1870,8 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
-  background-color: #428bca;
-  border-color: #357ebd;
+  background-color: #1553ad;
+  border-color: #124896;
 }
 .btn-warning {
   color: #ffffff;
@@ -1912,8 +1912,8 @@ fieldset[disabled] .btn-warning.active {
 }
 .btn-danger {
   color: #ffffff;
-  background-color: #d9534f;
-  border-color: #d43f3a;
+  background-color: #cc0000;
+  border-color: #b30000;
 }
 .btn-danger:hover,
 .btn-danger:focus,
@@ -1921,8 +1921,8 @@ fieldset[disabled] .btn-warning.active {
 .btn-danger.active,
 .open .dropdown-toggle.btn-danger {
   color: #ffffff;
-  background-color: #d2322d;
-  border-color: #ac2925;
+  background-color: #a30000;
+  border-color: #750000;
 }
 .btn-danger:active,
 .btn-danger.active,
@@ -1944,13 +1944,13 @@ fieldset[disabled] .btn-danger:active,
 .btn-danger.disabled.active,
 .btn-danger[disabled].active,
 fieldset[disabled] .btn-danger.active {
-  background-color: #d9534f;
-  border-color: #d43f3a;
+  background-color: #cc0000;
+  border-color: #b30000;
 }
 .btn-success {
   color: #ffffff;
-  background-color: #5cb85c;
-  border-color: #4cae4c;
+  background-color: #00c12b;
+  border-color: #00a825;
 }
 .btn-success:hover,
 .btn-success:focus,
@@ -1958,8 +1958,8 @@ fieldset[disabled] .btn-danger.active {
 .btn-success.active,
 .open .dropdown-toggle.btn-success {
   color: #ffffff;
-  background-color: #47a447;
-  border-color: #398439;
+  background-color: #009822;
+  border-color: #006a18;
 }
 .btn-success:active,
 .btn-success.active,
@@ -1981,8 +1981,8 @@ fieldset[disabled] .btn-success:active,
 .btn-success.disabled.active,
 .btn-success[disabled].active,
 fieldset[disabled] .btn-success.active {
-  background-color: #5cb85c;
-  border-color: #4cae4c;
+  background-color: #00c12b;
+  border-color: #00a825;
 }
 .btn-info {
   color: #ffffff;
@@ -2022,7 +2022,7 @@ fieldset[disabled] .btn-info.active {
   border-color: #46b8da;
 }
 .btn-link {
-  color: #428bca;
+  color: #1553ad;
   font-weight: normal;
   cursor: pointer;
   border-radius: 0;
@@ -2043,7 +2043,7 @@ fieldset[disabled] .btn-link {
 }
 .btn-link:hover,
 .btn-link:focus {
-  color: #2a6496;
+  color: #0d3269;
   text-decoration: underline;
   background-color: transparent;
 }
@@ -2103,7 +2103,7 @@ a {
 }
 a:hover {
   color: #ff7f00;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.25);
+  text-shadow: 1px 1px 1px #000000;
   text-decoration: none;
 }
 h1,
@@ -2120,14 +2120,16 @@ h6 {
   padding: 5px 10px;
 }
 .user-info span {
-  color: #436b95;
+  color: #1553ad;
   font-weight: bold;
 }
 .user-info .logout {
   margin-top: 5px;
+  font-size: 15px;
 }
 .user-info .logout i {
   margin-left: 5px;
+  font-size: 20px;
 }
 .user-info .logout a {
   color: #ff7f00;
@@ -2142,16 +2144,19 @@ h6 {
 }
 .tree i {
   margin-left: 5px;
-  color: #436b95;
+  color: #ff7f00;
 }
 .tree i:hover {
   cursor: pointer;
-  text-shadow: 1px 1px 3px rgba(67, 107, 149, 0.5);
+  text-shadow: 1px 1px 1px #000000;
 }
 .tree #tree {
   margin-top: 5px;
   min-height: 250px;
   border: 1px #999999 solid;
+}
+.tree #tree-search-form i {
+  font-size: 20px;
 }
 .tree .icons i {
   margin: 10px 5px;
@@ -2307,7 +2312,7 @@ h6 {
   margin: 5px 15px 0 0;
 }
 nav {
-  background-color: #436b95;
+  background-color: #1553ad;
   color: #ffffff;
   padding: 5px 10px;
 }
@@ -2329,7 +2334,7 @@ nav ul li a {
 .admin-interface .options {
   margin: 20px 10px 60px 10px;
   padding-bottom: 10px;
-  border-bottom: 1px #436b95 solid;
+  border-bottom: 1px #1553ad solid;
 }
 .admin-interface .options ul {
   list-style: none;
@@ -2384,7 +2389,7 @@ nav ul li a {
 #edit-form fieldset legend,
 #password-form fieldset legend {
   border: 1px solid #cccccc;
-  background-color: #436b95;
+  background-color: #1553ad;
   color: #ffffff;
   padding: 2px 10px;
   font-size: 1.35em;
@@ -2412,7 +2417,7 @@ nav ul li a {
 }
 #edit-form fieldset .help i,
 #password-form fieldset .help i {
-  color: orange;
+  color: primary;
   font-size: 20px;
   margin-right: 10px;
   position: relative;
@@ -2455,13 +2460,13 @@ nav ul li a {
 #password-form .bottom-bar span.save-continue-editing .btn,
 #edit-form .bottom-bar span.save-only .btn,
 #password-form .bottom-bar span.save-only .btn {
-  background-color: #436b95;
-  background-image: -webkit-gradient(linear, left 0, left 70, from(#436b95), to(#002366));
-  background-image: -webkit-linear-gradient(top, #436b95, 0, #002366, 70);
-  background-image: -moz-linear-gradient(top, #436b95 0, #002366 70);
-  background-image: linear-gradient(to bottom, #436b95 0, #002366 70);
+  background-color: #1553ad;
+  background-image: -webkit-gradient(linear, left 0, left 70, from(#1553ad), to(#00318b));
+  background-image: -webkit-linear-gradient(top, #1553ad, 0, #00318b, 70);
+  background-image: -moz-linear-gradient(top, #1553ad 0, #00318b 70);
+  background-image: linear-gradient(to bottom, #1553ad 0, #00318b 70);
   background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff436b95', endColorstr='#ff002366', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff1553ad', endColorstr='#ff00318b', GradientType=0);
 }
 #edit-form .bottom-bar span.save-add-new .btn:hover,
 #password-form .bottom-bar span.save-add-new .btn:hover,
@@ -2469,13 +2474,13 @@ nav ul li a {
 #password-form .bottom-bar span.save-continue-editing .btn:hover,
 #edit-form .bottom-bar span.save-only .btn:hover,
 #password-form .bottom-bar span.save-only .btn:hover {
-  background-color: #002366;
-  background-image: -webkit-gradient(linear, left 0, left 40, from(#436b95), to(#002366));
-  background-image: -webkit-linear-gradient(top, #436b95, 0, #002366, 40);
-  background-image: -moz-linear-gradient(top, #436b95 0, #002366 40);
-  background-image: linear-gradient(to bottom, #436b95 0, #002366 40);
+  background-color: #04429c;
+  background-image: -webkit-gradient(linear, left 0, left 40, from(#1553ad), to(#00207a));
+  background-image: -webkit-linear-gradient(top, #1553ad, 0, #00207a, 40);
+  background-image: -moz-linear-gradient(top, #1553ad 0, #00207a 40);
+  background-image: linear-gradient(to bottom, #1553ad 0, #00207a 40);
   background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff436b95', endColorstr='#ff002366', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff1553ad', endColorstr='#ff00207a', GradientType=0);
 }
 #edit-form .bottom-bar span.delete,
 #password-form .bottom-bar span.delete {
