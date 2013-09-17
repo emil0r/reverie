@@ -21,6 +21,7 @@
                  (cond
                   (= "/admin/frame/options/new-root-page" loc) :root-page
                   (= "/admin/frame/options/add-page" loc) :add-page
+                  (= "/admin/frame/options/meta" loc) :meta
                   (= "/admin/frame/options/restore" loc) :restore
                   (= "/admin/frame/options/delete" loc) :delete
                   (= "/admin/frame/object/edit" loc) :object-edit
@@ -30,6 +31,8 @@
 (defmethod init :root-page []
   (page/init))
 (defmethod init :add-page []
+  (page/init))
+(defmethod init :meta []
   (page/init))
 (defmethod init :restore []
   (page/init))

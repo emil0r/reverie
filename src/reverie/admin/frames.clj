@@ -78,19 +78,25 @@
   ([options th td error]
      [:tr options [:th th] [:td td error]]))
 
-(defn- page-form [{:keys [parent name title type template app uri]}]
+(defn- page-form [{:keys [id serial parent name title type template app uri] :as p}]
   (form-to
    [:post ""]
    [:table.table.small
     (hidden-field :parent parent)
+    (hidden-field :serial serial)
     (table-row (label :name "Name") (text-field :name name) (v/on-error :name error-item))
     (table-row (label :title "Title") (text-field :title title) nil)
     (if (pos? parent)
-      (table-row (label :uri "Uri") (text-field :uri uri) (v/on-error :uri error-item)))
-    (table-row (label :type "Type") (drop-down :type ["normal" "app"] type) nil)
+      (table-row (label :uri "Uri") (text-field :uri (if uri
+                                                       (util/uri-last-part uri)
+                                                       "")) (v/on-error :uri error-item)))
+    (table-row (label :type "Type") (drop-down :type ["normal" "app"] (clojure.core/name type)) nil)
     (table-row {:class "template"} (label :template "Template") (drop-down :template (atoms/get-templates) template) (v/on-error :template error-item))
     (table-row {:class "hidden app"} (label :app "App") (drop-down :app (atoms/get-apps) app) (v/on-error :app error-item))
-    (table-row nil (submit-button {:class "btn btn-primary"} "Create") nil)]))
+    (table-row nil (submit-button {:class "btn btn-primary"}
+                                  (if serial
+                                    "Save"
+                                    "Create")) nil)]))
 
 
 (defn- valid-uri? [uri]
@@ -98,14 +104,18 @@
 
 (defn- conflicting-uri?
   "Is there a conflicting URI for a new page?"
-  [parent uri]
+  [serial parent uri]
   ;; TODO: use util to put together the compare-uri
   (let [compare-uri (str (:uri (page/get {:serial parent :version 0}))
                          "/" uri)
-        pages (page/get* {:parent parent :version 0})]
+        pages (if serial
+                (k/select reverie.entity/page (k/where {:parent parent
+                                                        :version 0
+                                                        :serial [not= (read-string serial)]}))
+                (page/get* {:parent parent :version 0}))]
     (empty? (filter #(= compare-uri (:uri %)) pages))))
 
-(defn valid-page? [{:keys [parent name type template app uri]}]
+(defn valid-page? [{:keys [serial parent name type template app uri]}]
   (let [parent (read-string parent)]
     (v/rule (v/has-value? name) [:name "Name is required"])
     (if (= type "normal")
@@ -114,7 +124,7 @@
     (if (not (zero? parent))
       (do
         (v/rule (valid-uri? uri) [:uri "The URI is not valid. Only a-zA-Z0-9.-_ is allowed."])
-        (v/rule (conflicting-uri? parent uri) [:uri "The URI conflicts with another page using the same URI."])
+        (v/rule (conflicting-uri? serial parent uri) [:uri "The URI conflicts with another page using the same URI."])
         (v/rule (v/has-value? uri) [:uri "The URI must have a path"])))
     (not (v/errors? :name :template :app :uri))))
 
@@ -274,42 +284,45 @@
          p (page/get {:serial (read-string serial) :version 0})]
      (t/frame
       frame-options
-      [:h2 "Meta: " (:name p)]
+      [:nav "Meta"]
+      [:h2 (:name p)]
       (page-form p)))]
   
   [:post ["/meta" {:keys [parent name title type template app uri] :as data}]
-   (if (valid-page? data)
-     (let [serial (get-in request [:params :serial])
-           p (page/get {:serial (read-string serial) :version 0})
-           parent (page/get {:serial (read-string parent) :version 0})
-           base-uri (:uri parent)
-           tx (:tx (page/update! {:tx-data
-                                  (assoc p
-                                    :uri (util/join-uri base-uri uri) :order 0
-                                    :name name
-                                    :title title
-                                    :type type
-                                    :app (or app "")
-                                    :template (or template "")
-                                    :update (sqlfn now))}))]
-       (t/frame
-        (assoc frame-options :custom-js
-               ["parent.control.framec.reverie.admin.tree.metad("
-                (generate-string {:serial (:serial tx)
-                                  :title name
-                                  :real-title title
-                                  :uri (:uri tx)
-                                  :updated (:updated tx)
-                                  :created (:created tx)
-                                  :id (:id tx)
-                                  :key (:serial tx)
-                                  :published? false
-                                  :isLazy false
-                                  :order (:order tx)})
-                ");"])
-        [:h2 (str name " added!")]))
+   (let [serial (read-string (get-in request [:params :serial]))
+         p (page/get {:serial serial :version 0})
+         parent (page/get {:serial (read-string parent) :version 0})
+         base-uri (:uri parent)
+         tx (:tx (page/update! {:serial serial
+                                :version 0
+                                :tx-data
+                                (assoc p
+                                  :uri (util/join-uri base-uri uri) :order 0
+                                  :name name
+                                  :title title
+                                  :type type
+                                  :app (or app "")
+                                  :template (or template "")
+                                  :updated (sqlfn now))}))]
+     (if (valid-page? data)
+      (t/frame
+       (assoc frame-options :custom-js
+              ["parent.control.framec.reverie.admin.tree.metad("
+               (generate-string {:serial (:serial tx)
+                                 :title name
+                                 :real-title title
+                                 :uri (:uri tx)
+                                 :updated (:updated tx)
+                                 :created (:created tx)
+                                 :id (:id tx)
+                                 :key (:serial tx)
+                                 :published? false
+                                 :isLazy false
+                                 :order (:order tx)})
+               ");"])
+       [:h2 (str name " added!")]))
      (t/frame
       frame-options
-      [:h2 "New page"]
-      (page-form {:parent (read-string parent) :name name :title title :type type
-                  :template template :app app :uri uri})))])
+      [:nav "Meta"]
+      [:h2 "Updated "(:name p)]
+      (page-form (page/get {:serial serial :version 0}))))])

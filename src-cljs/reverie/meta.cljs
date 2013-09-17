@@ -46,7 +46,8 @@
                                [:tr [:th "Name"] [:td (:title data)]]
                                [:tr [:th "Title"] [:td (:real-title data)]]
                                [:tr [:th "Created"] [:td (util2/date-format (:created data))]]
-                               [:tr [:th "Updated"] [:td (util2/date-format (:updated data))]]]
+                               [:tr [:th "Updated"] [:td (util2/date-format (:updated data))]]
+                               [:tr [:th "Published?"] [:td (:published? data)]]]
                               [:div.buttons
                                [:div.btn.btn-primary.publish
                                 {:serial (:serial data)
