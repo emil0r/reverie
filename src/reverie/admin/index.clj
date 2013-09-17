@@ -13,10 +13,10 @@
 
 (defpage "/admin" {}
   [:get ["/"] (t/main {:title "Admin"}
-                      [:frameset {:id :top :name :top :cols "240px,*"}
-                       [:frameset {:id :control :name :control}
+                      [:frameset {:id :top :name :top :cols "240px,*" :frameborder "0"}
+                       [:frameset {:id :control :name :control :framborder "0"}
                         [:frame {:src "/admin/frame/left" :noresize "noresize" :frameborder "no" :id :framec :name :framec}]]
-                       [:frameset {:id :main :name :main :cols "*,0"}
+                       [:frameset {:id :main :name :main :cols "*,0" :frameborder "0"}
                         [:frame {:src "/" :frameborder "no" :id :framem :name :framem}]
                         [:frame {:src "/admin/frame/options" :frameborder "no" :id :frameo :name :frameo}]]])
    ])
