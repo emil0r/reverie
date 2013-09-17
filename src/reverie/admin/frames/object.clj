@@ -26,6 +26,12 @@
    [:td
     [:span {:field-name field-name :type :image} "Edit image..."]
     (hidden-field field-name (or (data field-name) initial))]])
+(defmethod row-edit :dropdown [field-name {:keys [initial input name options]} data]
+  (let [options (if (fn? options) (options) options)]
+   [:tr
+    [:td (label field-name name)]
+    [:td (drop-down field-name options (or (data field-name) initial))
+     (v/on-error field-name error-item)]]))
 (defmethod row-edit :number [field-name {:keys [initial input name]} data]
   [:tr
    [:td (label field-name name)]
