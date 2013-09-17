@@ -17,6 +17,12 @@
                              (k/where {:page_id page-id :area (util/kw->str area)})) first :order)
         -1))))
 
+(defn- get-serial-object []
+  (let [serial (-> object (k/select (k/aggregate (max :serial) :serial)) first :serial)]
+    (if serial
+      (+ 1 serial)
+      1)))
+
 (defn get-attributes [name]
   (let [name (keyword name)]
     (-> @objects name :options :attributes)))
@@ -46,6 +52,7 @@
                            (k/values {:page_id page-id :updated (k/sqlfn now)
                                       :name name
                                       :area (util/kw->str area)
+                                      :serial (get-serial-object)
                                       :order (get-last-order {:page-id page-id
                                                               :area (util/kw->str area)})}))
         
