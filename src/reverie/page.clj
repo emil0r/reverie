@@ -18,6 +18,9 @@
     (assoc tx :template (-> tx :template keyword))
     tx))
 
+(defn- clean-save-data [data]
+  (dissoc data :id :serial))
+
 (defn- get-serial-page []
   (let [serial (-> page (k/select (k/aggregate (max :serial) :serial)) first :serial)]
     (if serial
@@ -115,7 +118,8 @@
   (let [p (get request)
         old-uri (:uri p)
         new-uri (:uri tx-data)
-        result (k/update page (k/set-fields (util/revmap->str tx-data))
+        result (k/update page
+                         (k/set-fields (clean-save-data (util/revmap->str tx-data)))
                          (k/where {:id (:id p)}))]
     (if (and
          (not (nil? new-uri))
