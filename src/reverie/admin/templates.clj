@@ -45,8 +45,9 @@
     (html5
      [:head
       [:meta {:charset "utf-8"}]
-      [:title (get-title m)]]
-     (get-body body))))
+      [:title (get-title m)]
+      (include-css "/admin/css/main.css")]
+     (get-body body {:id :auth}))))
 
 
 (defn frame [m & body]
