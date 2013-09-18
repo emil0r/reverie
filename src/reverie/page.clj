@@ -142,17 +142,50 @@
 
 (defn publish! [request]
   (let [p (get (assoc request :version 0))
-        pages (k/select page (k/where {:serial (:serial p)
-                                       :version [>= 1]}))]
-    (doseq [p pages]
-      (k/update page
-                (k/set-fields {:version (+ 1 (:version p))})
-                (k/where {:id (:id p)})))
-    (k/insert page
-              (k/values (-> p
-                            util/revmap->str
-                            (dissoc :id :version)
-                            (assoc :version 1))))
+        objs-to-copy (group-by
+                      #(:name %)
+                      (k/select object
+                                (k/where {:page_id (:id p)})
+                                (k/order :id)))]
+    ;; delete the published version
+    (if-let [p-published (get {:serial (:serial p) :version 1})]
+      (let [objs-to-delete (group-by
+                            #(:name %)
+                            (k/select object (k/where {:page_id (:id p-published)})))]
+        (doseq [[table objs] objs-to-delete]
+          (k/delete table
+                    (k/where {:object_id [in (map :id objs)]})))
+        (k/delete object (k/where {:page_id (:id p-published)}))
+        (k/delete page
+                  (k/where {:serial (:serial p) :version 1}))))
+    ;; publish the edited version
+    (let [p-new (k/insert page
+                          (k/values (-> p
+                                        util/revmap->str
+                                        (dissoc :id :version)
+                                        (assoc :version 1))))]
+      (doseq [[table objs] objs-to-copy]
+        (let [obj-data (k/select table
+                                 (k/where {:object_id [in (map :id objs)]})
+                                 (k/order :object_id))
+              copied (reduce (fn [out obj]
+                               (if (nil? obj)
+                                 out
+                                 (conj out (k/insert
+                                            object
+                                            (k/values (-> obj
+                                                          (dissoc :id)
+                                                          (assoc :page_id (:id p-new))))))))
+                             []
+                            objs)]
+         (k/insert table (k/values (map
+                                    (fn [t-data o-data]
+                                      (-> t-data
+                                          (dissoc :id)
+                                          (assoc :object_id (:id o-data))))
+                                    obj-data copied)))
+         )))
+    
     (update-route! (:uri p) (assoc (second (get-route (:uri p))) :published? true))
     request))
 
