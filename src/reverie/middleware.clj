@@ -30,7 +30,7 @@
           user-name (:name u)
           request (assoc-in request [:reverie :editor?]
                             (or (user/admin? u)
-                                (user/staff? u)))]
+                                (user/role? u :edit)))]
       (if (atoms/edit? uri)
         (if (atoms/edit? uri user-name)
           (handler (assoc-in request [:reverie :mode] :edit))
