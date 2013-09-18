@@ -90,7 +90,9 @@
       (table-row (label :uri "Uri") (text-field :uri (if uri
                                                        (util/uri-last-part uri)
                                                        "")) (v/on-error :uri error-item)))
-    (table-row (label :type "Type") (drop-down :type ["normal" "app"] (clojure.core/name type)) nil)
+    (table-row (label :type "Type") (drop-down :type ["normal" "app"] (if (nil? type)
+                                                                        type
+                                                                        (clojure.core/name type))) nil)
     (table-row {:class "template"} (label :template "Template") (drop-down :template (atoms/get-templates) template) (v/on-error :template error-item))
     (table-row {:class "hidden app"} (label :app "App") (drop-down :app (atoms/get-apps) app) (v/on-error :app error-item))
     (table-row nil (submit-button {:class "btn btn-primary"}
