@@ -9,14 +9,14 @@
   (:use [korma.db :only [defdb postgres]]
         [reverie.atoms :only [read-routes!]]))
 
-(defdb reveriedev-db (postgres {:db "reveriecms"
+(defdb reveriedev-db (postgres {:db "reveriedev"
                                 :user "reveriecms"
                                 :password "reveriecms"}))
 
 
 (def lobos-db {:classname "org.postgresql.Driver"
                :subprotocol "postgresql"
-               :subname "//localhost:5432/reveriecms"
+               :subname "//localhost:5432/reveriedev"
                :user "reveriecms"
                :password "reveriecms"})
 

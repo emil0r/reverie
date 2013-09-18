@@ -8,7 +8,7 @@
                         (integer :id :primary-key :auto-inc :not-null)
                         (text :text :not-null (default ""))
                         (integer :object_id [:refer :object :id] :not-null))))
-  (down [] (drop (table :test))))
+  (down [] (drop (table :text))))
 
 
 (defn migrate-objects []
