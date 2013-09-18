@@ -28,7 +28,7 @@
       1)))
 
 (defn get* [w]
-  (k/select page (k/where w) (k/order? :order)))
+  (k/select page (k/where w) (k/order :order)))
 
 (defn get
   "Get a page. serial + version overrides page-id"
