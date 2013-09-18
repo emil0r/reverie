@@ -1,5 +1,5 @@
-(ns reveriecms.dev
-  (:require [reveriecms.init :as init]
+(ns reveriedev.dev
+  (:require [reveriedev.init :as init]
             [reverie.server :as server]))
 
 

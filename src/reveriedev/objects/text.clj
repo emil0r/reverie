@@ -1,4 +1,4 @@
-(ns reveriecms.objects.text
+(ns reveriedev.objects.text
   (:use [reverie.core :only [defobject]]))
 
 
@@ -7,4 +7,7 @@
                                      :input :richtext
                                      :name "Text"}}}
   [:any]
-  (str "my text->" text))
+  (list
+   [:div "object-id->" (get-in request [:reverie :object-id])]
+   [:div
+    text]))

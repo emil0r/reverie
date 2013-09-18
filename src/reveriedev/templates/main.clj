@@ -1,4 +1,4 @@
-(ns reveriecms.templates.main
+(ns reveriedev.templates.main
   (:require [reverie.core :as rev])
   (:use [hiccup core page]))
 
@@ -7,7 +7,7 @@
   (html5
    [:head
     [:meta {:charset "utf-8"}]
-    [:title (str (-> request :page :title) " &mdash; reverie/cms")]
+    [:title (str (-> request :page :title) " &mdash; reverie/dev")]
     (map include-css ["/admin/css/editing.css"])
     (map include-js ["/admin/js/eyespy.js"
                      "/admin/js/init.js"])]

@@ -1,4 +1,4 @@
-(ns reveriecms.objects.migrations
+(ns reveriedev.objects.migrations
   (:refer-clojure :exclude [alter defonce drop bigint boolean char double float time])
   (:use (lobos [migration :only [defmigration]] core schema)))
 
@@ -12,6 +12,6 @@
 
 
 (defn migrate-objects []
-  (binding [lobos.migration/*migrations-namespace* 'reveriecms.objects.migrations]
+  (binding [lobos.migration/*migrations-namespace* 'reveriedev.objects.migrations]
     (lobos.core/migrate))
   (binding [lobos.migration/*migrations-namespace* 'lobos.migrations]))

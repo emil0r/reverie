@@ -1,6 +1,6 @@
-(ns reveriecms.core
+(ns reveriedev.core
   (:require [reverie.server :as server]
-            [reveriecms.init :as init]))
+            [reveriedev.init :as init]))
 
 
 

@@ -1,15 +1,15 @@
-(ns reveriecms.init
+(ns reveriedev.init
   (:require [lobos.core :as lobos]
             [lobos.migrations :as migrations]
             [reverie.auth.user :as user]
             [reverie.server :as server]
-            reveriecms.templates.main
-            reveriecms.objects.migrations
-            reveriecms.objects.text)
+            reveriedev.templates.main
+            reveriedev.objects.migrations
+            reveriedev.objects.text)
   (:use [korma.db :only [defdb postgres]]
         [reverie.atoms :only [read-routes!]]))
 
-(defdb reveriecms-db (postgres {:db "reveriecms"
+(defdb reveriedev-db (postgres {:db "reveriecms"
                                 :user "reveriecms"
                                 :password "reveriecms"}))
 
@@ -27,7 +27,7 @@
 (defn init []
   (migrations/open-global-when-necessary lobos-db)
   (lobos.core/migrate)
-  (reveriecms.objects.migrations/migrate-objects)
+  (reveriedev.objects.migrations/migrate-objects)
   (read-routes!)
   (server/load-views "templates"))
 
