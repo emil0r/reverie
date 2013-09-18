@@ -20,7 +20,7 @@
 
 (defn migrate
   ([]
-     (migrate 'reverie.migrations))
+     (migrate 'reverie.migration))
   ([ns]
      (binding [lobos.migration/*migrations-namespace* ns]
        (lobos.core/migrate))))
