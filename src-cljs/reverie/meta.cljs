@@ -52,9 +52,7 @@
                                [:div.btn.btn-primary.publish
                                 {:serial (:serial data)
                                  :page-id (:id data)}
-                                (if (:published? data)
-                                  "Unpublish"
-                                  "Publish")]
+                                "Publish"]
                                [:div.btn.btn-primary.meta
                                 {:serial (:serial data)
                                  :page-id (:id data)}

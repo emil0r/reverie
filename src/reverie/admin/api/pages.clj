@@ -6,9 +6,13 @@
             [reverie.page :as page])
   (:use reverie.entity
         [reverie.middleware :only [wrap-access]]
-        [reverie.util :only [published?]]
+        ;;[reverie.util :only [published?]]
         [ring.middleware.json :only [wrap-json-params
                                      wrap-json-response]]))
+
+
+(defn- published? [p]
+  (:published? (get @atoms/routes (:uri p))))
 
 (defn- page->data [p & [lazy? draggable?]]
   {:title (:name p)
