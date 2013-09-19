@@ -38,6 +38,10 @@
    [:td [:input {:type :number :id field-name :name field-name
                  :value (or (data field-name) initial)}]
     (v/on-error field-name error-item)]])
+(defmethod row-edit :textarea [field-name {:keys [initial input name]} data]
+  [:tr
+   [:td (label field-name name)]
+   [:td (text-area field-name (or (data field-name) initial))]])
 (defmethod row-edit :default [field-name {:keys [initial input name]} data]
   [:tr
    [:td (label field-name name)]
