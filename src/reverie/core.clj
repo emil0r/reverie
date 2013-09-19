@@ -75,7 +75,7 @@
 (defmacro defmodule [name options & methods]
   (let [name (keyword name)
         path (str "/admin/frame/module/" (clojure.core/name name))
-        fns (if (:admin? options) (get-default-module-fns) [])]
+        fns (if (:admin-interface? options) (get-default-module-fns) [])]
     (loop [[method & methods] methods
            fns fns]
       (if (nil? method)

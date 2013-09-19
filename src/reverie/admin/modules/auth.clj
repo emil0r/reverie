@@ -43,7 +43,7 @@
 
 (defmodule auth
   {:name "Authentication"
-   :admin? true
+   :admin-interface? true
    :entities {:user {:name "User"
                      :order :name
                      :display [:name :email]
