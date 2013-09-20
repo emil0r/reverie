@@ -78,17 +78,23 @@
 (defn read-routes!
   "Read in the routes in the database"
   []
-  (doseq [p (select page
-                    (where (and
-                            {:version [>= 0]}
-                            {:version [<= 1]}))
-                    (order :version :ASC))]
-    (swap! routes assoc (:uri p) {:type (-> p :type keyword)
-                                  :uri (-> p :uri)
-                                  :page-id (-> p :id)
-                                  :serial (-> p :serial)
-                                  :template (-> p :template keyword)
-                                  :published? (published? p)})))
+  ;; BUG:
+  ;; read in pages again. for some reason when running an uberjar the
+  ;; routes atom is cleared while the pages atom is still ok
+  (do
+    (doseq [path (keys @pages)]
+      (swap! routes assoc path {:type :page :uri path}))
+    (doseq [p (select page
+                      (where (and
+                              {:version [>= 0]}
+                              {:version [<= 1]}))
+                      (order :version :ASC))]
+      (swap! routes assoc (:uri p) {:type (-> p :type keyword)
+                                    :uri (-> p :uri)
+                                    :page-id (-> p :id)
+                                    :serial (-> p :serial)
+                                    :template (-> p :template keyword)
+                                    :published? (published? p)}))))
 
 
 (defn get-templates
