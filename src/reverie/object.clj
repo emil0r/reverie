@@ -1,6 +1,7 @@
 (ns reverie.object
   (:refer-clojure :exclude [get meta])
   (:require [clojure.string :as s]
+            [clojure.zip :as zip]
             [clout.core :as clout]
             [korma.core :as k]
             [reverie.util :as util])
@@ -22,6 +23,16 @@
     (if serial
       (+ 1 serial)
       1)))
+
+(defn- beginning?
+  "Used for move!"
+  [loc]
+  (= (zip/node loc) (zip/node (zip/leftmost loc))))
+(defn- end?
+  "Used for move!"
+  [loc]
+  (= (zip/node loc) (zip/node (zip/rightmost loc))))
+
 
 (defn get-attributes [name]
   (let [name (keyword name)]
@@ -79,7 +90,9 @@
         (f request obj)))))
 
 (defn move! [{:keys [object-id hit-mode anchor]}]
-  (let [page-id (-> object (k/select (k/where {:id object-id})) first :page_id)]
+  (let [page-id (-> object (k/select (k/where {:id object-id})) first :page_id)
+        objs (vec (map :id (k/select object
+                                     (k/where {:page_id page-id}))))]
     (case hit-mode
       "area" (do
                (k/update object
@@ -88,71 +101,81 @@
                                         :area (util/kw->str anchor)})
                          (k/where {:id object-id}))
                true)
-      "top" (let [siblings (k/select object
-                                     (k/where {:page_id page-id
-                                               :id [not= object-id]}))]
-              ;; update object
-              (k/update object
-                        (k/set-fields {:order 1})
-                        (k/where {:id object-id}))
-              ;; update siblings to new position after anchor and object
-              (doseq [s siblings]
-                (k/update object
-                          (k/set-fields {:order (+ (:order s) 1)})
-                          (k/where {:id (:id s)})))
-              true)
-      "bottom" (let [{:keys [order]} (-> object
-                                         (k/select (k/where {:id object-id})) first)
-                     siblings (k/select object
-                                        (k/where {:page_id page-id
-                                                  :order [> order]
-                                                  :id [not= object-id]}))]
-                 ;; update object
-                 (k/update object
-                           (k/set-fields {:order (or
-                                                  (:order (last siblings))
-                                                  order)})
-                           (k/where {:id object-id}))
-                 ;; update siblings to new position after anchor and object
-                 (doseq [s siblings]
-                   (k/update object
-                             (k/set-fields {:order (- (:order s) 1)})
-                             (k/where {:id (:id s)})))
-                 true)
-      "up" (let [{:keys [order]} (-> object
-                                     (k/select (k/where {:id object-id})) first)
-                 above (-> object
-                           (k/select (k/where {:order [< order]})
-                                     (k/order :order)
-                                     (k/limit 1))
-                           first)]
-             ;; update object
-             (k/update object
-                       (k/set-fields {:order (or
-                                              (:order above)
-                                              order)})
-                       (k/where {:id object-id}))
-             ;; uppdate object above
-             (if above
+      "up" (let [new-order (loop [loc (zip/vector-zip objs)]
+                             (let [next-loc (zip/next loc)]
+                               (if (nil? next-loc)
+                                 (zip/root loc)
+                                 (let [node-value (zip/node next-loc)]
+                                   (if (= object-id node-value)
+                                     (if (beginning? next-loc)
+                                       (zip/root next-loc)
+                                       (-> next-loc
+                                           zip/remove
+                                           (zip/insert-left node-value)
+                                           zip/root))
+                                     (recur next-loc))))))]
+             (doseq [[obj-id order] (map vector new-order (range 1 (+ 1 (count new-order))))]
                (k/update object
                          (k/set-fields {:order order})
-                         (k/where {:id (:id above)}))))
-      "down" (let [{:keys [order]} (-> object
-                                       (k/select (k/where {:id object-id})) first)
-                   below (-> object
-                             (k/select (k/where {:order [> order]})
-                                       (k/order :order)
-                                       (k/limit 1))
-                             first)]
-               ;; update object
-               (k/update object
-                         (k/set-fields {:order (or
-                                                (:order below)
-                                                order)})
-                         (k/where {:id object-id}))
-               ;; uppdate object above
-               (if below
+                         (k/where {:id obj-id})))
+             true)
+      "down" (let [new-order (loop [loc (zip/vector-zip objs)]
+                               (let [next-loc (zip/next loc)]
+                                 (if (nil? next-loc)
+                                   (zip/root loc)
+                                   (let [node-value (zip/node next-loc)]
+                                     (if (= object-id node-value)
+                                       (if (end? next-loc)
+                                         (zip/root next-loc)
+                                         (-> next-loc
+                                             zip/remove
+                                             zip/next
+                                             (zip/insert-right node-value)
+                                             zip/root))
+                                       (recur next-loc))))))]
+               (doseq [[obj-id order] (map vector new-order (range 1 (+ 1 (count new-order))))]
                  (k/update object
                            (k/set-fields {:order order})
-                           (k/where {:id (:id below)}))))
+                           (k/where {:id obj-id})))
+               true)
+      "top" (let [new-order (loop [loc (zip/vector-zip objs)]
+                              (let [next-loc (zip/next loc)]
+                                (if (nil? next-loc)
+                                  (zip/root loc)
+                                  (let [node-value (zip/node next-loc)]
+                                    (if (= object-id node-value)
+                                      (if (beginning? next-loc)
+                                        (zip/root next-loc)
+                                        (-> next-loc
+                                            zip/remove
+                                            zip/leftmost
+                                            (zip/insert-left node-value)
+                                            zip/root))
+                                      (recur next-loc))))))]
+              (doseq [[obj-id order] (map vector new-order (range 1 (+ 1 (count new-order))))]
+                (k/update object
+                          (k/set-fields {:order order})
+                          (k/where {:id obj-id})))
+              true)
+      "bottom" (let [new-order (loop [loc (zip/vector-zip objs)]
+                                 (let [next-loc (zip/next loc)]
+                                   (if (nil? next-loc)
+                                     (zip/root loc)
+                                     (let [node-value (zip/node next-loc)]
+                                       (if (= object-id node-value)
+                                         (do
+                                           (if (end? next-loc)
+                                             (zip/root next-loc)
+                                             (-> next-loc
+                                                 zip/remove
+                                                 zip/next
+                                                 zip/rightmost
+                                                 (zip/insert-right node-value)
+                                                 zip/root)))
+                                         (recur next-loc))))))]
+                 (doseq [[obj-id order] (map vector new-order (range 1 (+ 1 (count new-order))))]
+                   (k/update object
+                             (k/set-fields {:order order})
+                             (k/where {:id obj-id})))
+                 true)
       false)))
