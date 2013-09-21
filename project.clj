@@ -10,7 +10,7 @@
                  [clj-time "0.6.0"]
                  [korma "0.3.0-RC5"]
                  [me.raynes/fs "1.4.5"]
-                 [local/hiccup "1.0.3a"]
+                 [org.clojars.emil0r/hiccup "1.0.3a"]
                  [clout "1.1.0"]
                  [slingshot "0.10.3"]
                  [bultitude "0.1.7"]
