@@ -16,7 +16,7 @@
        (or
         (-> object (k/select (k/aggregate (max :order) :order)
                              (k/where {:page_id page-id :area (util/kw->str area)})) first :order)
-        -1))))
+        0))))
 
 (defn- get-serial-object []
   (let [serial (-> object (k/select (k/aggregate (max :serial) :serial)) first :serial)]
@@ -90,9 +90,10 @@
         (f request obj)))))
 
 (defn move! [{:keys [object-id hit-mode anchor]}]
-  (let [page-id (-> object (k/select (k/where {:id object-id})) first :page_id)
+  (let [{page-id :page_id area :area} (-> object (k/select (k/where {:id object-id})) first)
         objs (vec (map :id (k/select object
-                                     (k/where {:page_id page-id}))))]
+                                     (k/where {:page_id page-id
+                                               :area area}))))]
     (case hit-mode
       "area" (do
                (k/update object
