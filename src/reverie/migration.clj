@@ -127,10 +127,3 @@
                  (index :role_group_unique [:role_id :group_id] :unique)))
   (down [] (drop (table :role_group))))
 
-(defmigration init-dev-text
-  (up [] (create (table :test_text
-                        (integer :id :primary-key :auto-inc :not-null)
-                        (text :text :not-null (default ""))
-                        (integer :object_id [:refer :object :id] :not-null))))
-  (down [] (drop (table :test_text))))
-
