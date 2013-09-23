@@ -4,11 +4,9 @@
             [reverie.page :as p])
   (:use clout.core
         reverie.atoms
-        ;;[reverie.admin.modules.default :only [get-default-module-fns]]
         [reverie.helper-macros :only [object-funcs request-method]]
         [reverie.util :only [generate-handler mode?]]
         [slingshot.slingshot :only [try+ throw+]]))
-
 
 
 (defn- get-attributes [options]
