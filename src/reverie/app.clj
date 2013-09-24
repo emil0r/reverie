@@ -22,7 +22,7 @@
                                                (clout/route-matches route request))))
                                    first)]
       (if (nil? f)
-        r/response-404
+        (r/response-404)
         (if (= :get (:request-method request))
           (util/middleware-wrap
            (util/middleware-merge app-options options)

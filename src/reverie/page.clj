@@ -78,7 +78,7 @@
                                                        (clout/route-matches route request))))
                                            first)]
               (if (nil? f)
-                r/response-404
+                (r/response-404)
                 (if (= :get (:request-method request))
                   (util/middleware-wrap
                    (util/middleware-merge page-options options)
@@ -93,7 +93,7 @@
                              (assoc-in [:reverie :page-id] (:id page))
                              (assoc-in [:reverie :page-serial] (:serial page))
                              (assoc-in [:reverie :app] (keyword (:app page))))))
-      r/response-404)))
+      (r/response-404))))
 
 (defn meta [{:keys [page-id] :as request}]
   (k/select page_attributes (k/where {:page_id page-id})))

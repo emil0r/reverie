@@ -56,7 +56,7 @@
      (fn [request]
        (if-let [[_ route] (get-route (:uri request))]
          (page/render (assoc request :page-type (:page-type route)))
-         r/response-404)))))
+         (r/response-404))))))
 
 (defn start [{:keys [port handlers] :as options}]
   (add-roles :edit :publish)

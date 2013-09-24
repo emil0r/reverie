@@ -50,8 +50,8 @@
        (if-let [[route-uri route-data] (atoms/get-route uri)]
          (if (or (:published? route-data) (= :page (:type route-data)))
            (handler request)
-           r/response-404)
-         r/response-404)))))
+           (r/response-404))
+         (r/response-404))))))
 
 (defn wrap-access [handler roles & [response]]
   (fn [request]
