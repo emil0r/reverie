@@ -6,8 +6,9 @@
 (defobject text {:attributes {:text {:initial ""
                                      :input :richtext
                                      :name "Text"}}}
-  [:any]
-  (list
-   [:div "object-id->" (get-in request [:reverie :object-id])]
-   [:div
-    text]))
+  [:any
+   (list
+    [:div "object-id->" (get-in request [:reverie :object-id])]
+    [:div "params->" (str params)]
+    [:div
+     text])])

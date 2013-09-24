@@ -86,8 +86,8 @@
         [:div.reverie-object {:object-id (:object_id obj)}
          [:div.reverie-object-holder
           [:span.reverie-object-panel (str "object " (name obj-name))]]
-         (f request obj)]
-        (f request obj)))))
+         (f request obj (:params request))]
+        (f request obj (:params request))))))
 
 (defn move! [{:keys [object-id hit-mode anchor]}]
   (let [{page-id :page_id area :area} (-> object (k/select (k/where {:id object-id})) first)

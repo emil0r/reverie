@@ -11,20 +11,18 @@
   [route]
   (clojure.string/replace route #"/$" ""))
 
-(defmacro object-funcs [attributes methods & body]
-  (if (every? keyword? methods)
-    `(let [~'func (fn [~'request {:keys [~@attributes]}] ~@body)]
-       (into {} (map vector ~methods (repeat ~'func))))
-    (let [paired (into {} (map (fn [[method fn-name]] {(keyword fn-name) method}) (partition 2 methods)))
-          bodies (map (fn [[fn-name & fn-body]] [(keyword fn-name) fn-body]) (filter vector? body))]
-      (loop [[func-vector & r] bodies
-             m {}]
-        (if (nil? func-vector)
-          m
-          (let [[fn-name fn-body] func-vector]
-            (if-let [method (paired (first func-vector))]
-              (recur r (assoc m method `(fn [~'request {:keys [~@attributes]}] ~@fn-body)))
-              (recur r m))))))))
+(defmacro object-funcs [attributes methods]
+  (reduce (fn [out [method & body]]
+            (if (nil? method)
+              out
+              (if (map? (first body))
+                (let [[attr-map & body] body]
+                  (assoc out method
+                         `(fn [~'request {:keys [~@attributes]} ~attr-map] ~@body)))
+                (assoc out method
+                       `(fn [~'request {:keys [~@attributes]} ~'params] ~@body)))))
+          {}
+          methods))
 
 (defmacro request-method
   "Pick apart the request methods specified in other macros"

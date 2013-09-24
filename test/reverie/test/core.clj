@@ -41,23 +41,18 @@
 
 (fact
  "objectfuncs simple"
- (let [obj (object-funcs [] [:get :post] (clojure.string/join " " ["this" "is" "my" "function!"]))]
-   [((:get obj) :data-placeholder {})
-    ((:post obj) :data-placeholder {})]) =>
+ (let [obj (object-funcs [] [[:get (clojure.string/join " " ["this" "is" "my" "function!"])]
+                             [:post (clojure.string/join " " ["this" "is" "my" "function!"])]])]
+   [((:get obj) :data-placeholder {} {})
+    ((:post obj) :data-placeholder {} {})]) =>
     ["this is my function!"
      "this is my function!"])
 
 (fact
- "objectfuncs multiple method/fn"
- (let [obj (object-funcs [] [:get fn-get :post fn-post]
-                             [fn-get "my get"]
-                             [fn-post "my post"])]
-   [((:get obj) :data-placeholder {}) ((:post obj) :data-placeholder {})]) => ["my get" "my post"])
-
-(fact
  "objectfuncs attributes"
- (let [obj (object-funcs [text] [:get] (hiccup/html [:div "this is my " text]))]
-   ((:get obj) :data-placeholder {:text "text"})) => "<div>this is my text</div>")
+ (let [obj (object-funcs [text] [[:get (hiccup/html [:div "this is my " text])]])
+       params {}]
+   ((:get obj) :data-placeholder {:text "text"} params)) => "<div>this is my text</div>")
 
 
 (fact
@@ -69,8 +64,7 @@
                         :attributes {:text {:initial ""
                                             :input :text
                                             :name "Text"}}}
-     [:get]
-     "")
+     [:get ""])
    (-> @objects :text nil?)) => false)
 
 (fact
@@ -78,16 +72,16 @@
  (reset-objects!)
  (rev/defobject text {:areas [:a :b]
                       :table :test_text
-                      :attributes {:text {:initial "" :input :text :name "Text" :description ""}}} [:get] text)
+                      :attributes {:text {:initial "" :input :text :name "Text" :description ""}}} [:get text])
  (let [f (-> @objects :text :get)]
-   (f {:uri "/"} {:text "my text"})) => "my text")
+   (f {:uri "/"} {:text "my text"} {})) => "my text")
 
 (fact
  "defobject and korma"
  (reset-objects!)
  (rev/defobject text {:areas [:a :b]
                       :table :test_text
-                      :attributes {:text {:initial "" :input :text :name "Text" :description ""}}} [:get] text)
+                      :attributes {:text {:initial "" :input :text :name "Text" :description ""}}} [:get text])
  (korma/as-sql (korma/select* (-> @objects :text :entity)))
  => "SELECT \"test_text\".* FROM \"test_text\"")
 
@@ -182,8 +176,3 @@
  [(:body (reverie.page/render (request :get "/admin/frame/module/testus")))
   (:body (reverie.page/render (request :get "/admin/frame/module/testus/one")))] => ["root" "one level indent"])
 
-(fact
- "defmodule/default"
- (rev/defmodule not-implemented {:name "Not Implemented"})
- (:body (reverie.page/render (request :get "/admin/frame/module/not-implemented")))
- => "Not implemented yet!")

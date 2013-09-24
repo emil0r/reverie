@@ -39,13 +39,12 @@
                                                                 (catch [:type :ring-response] {:keys [~'response ~'type]}
                                                                   ~'response)))})))
 
-
-(defmacro defobject [object options methods & args]
+(defmacro defobject [object options & methods]
    (let [object (keyword object)
          settings {}
          attributes (get-attributes options)
          table-symbol (or (:table options) object)
-         body `(object-funcs ~attributes ~methods ~@args)]
+         body `(object-funcs ~attributes ~methods)]
      `(swap! objects assoc ~object (merge {:options ~options
                                            :entity ~table-symbol} ~body))))
 
