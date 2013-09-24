@@ -7,6 +7,7 @@
         [noir.util.middleware :only [wrap-strip-trailing-slash]]
         [reverie.atoms :only [get-route read-routes!]]
         [reverie.middleware :only [wrap-admin wrap-edit-mode wrap-published?]]
+        [reverie.role :only [add-roles]]
         [reverie.util :only [generate-handler]]
         [ring.middleware.file :only [wrap-file]] ;; research for later
         [ring.middleware.file-info :only [wrap-file-info]]
@@ -17,7 +18,7 @@
         [ring.middleware.resource :only [wrap-resource]]
         [ring.middleware.session.memory :only [memory-store]])
   (:require [me.raynes.fs :as fs]
-            [reverie.admin.index :as admin-index]
+            reverie.admin.index
             [reverie.page :as page]
             [reverie.responses :as r])
   (:import org.apache.commons.io.FilenameUtils))
@@ -58,7 +59,7 @@
          r/response-404)))))
 
 (defn start [{:keys [port handlers] :as options}]
-  ;; TODO: add initation of roles understood by the system
+  (add-roles :edit :publish)
   (cond
       (nil? port) (println "No port specified.")
       :else (do
