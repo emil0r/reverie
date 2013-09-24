@@ -13,7 +13,7 @@
             reverie.entity
             [reverie.object :as object]
             [reverie.page :as page]
-            [reverie.responses :as r]
+            [reverie.response :as r]
             [reverie.util :as util])
   (:use [cheshire.core :only [generate-string]]
         [korma.core :only [sqlfn]]

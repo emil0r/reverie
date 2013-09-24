@@ -4,7 +4,7 @@
             [reverie.core :as rev]
             reverie.entity
             [reverie.object :as object]
-            [reverie.responses :as r]
+            [reverie.response :as r]
             [reverie.util :as util])
   (:use [hiccup core form]
         [reverie.admin.frames.common :only [frame-options error-item]]

@@ -1,7 +1,7 @@
 (ns reverie.admin.frames.url-picker
   (:require [reverie.admin.templates :as t]
             [reverie.core :as rev]
-            [reverie.responses :as r]
+            [reverie.response :as r]
             [reverie.util :as util])
   (:use [hiccup core form]
         [reverie.admin.frames.common :only [frame-options]]

@@ -5,7 +5,7 @@
             [korma.core :as k]
             [reverie.app :as app]
             [reverie.util :as util]
-            [reverie.responses :as r])
+            [reverie.response :as r])
   (:use [reverie.atoms :exclude [objects]]
         reverie.entity))
 

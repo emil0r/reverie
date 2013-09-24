@@ -3,8 +3,7 @@
             [reverie.admin.templates :as t]
             [reverie.auth.user :as user]
             [reverie.core :as rev]
-            [reverie.responses :as r]
-            ))
+            [reverie.response :as r]))
 
 
 (rev/defpage "/admin/login" {}

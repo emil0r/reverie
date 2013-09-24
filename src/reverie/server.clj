@@ -20,7 +20,7 @@
   (:require [me.raynes.fs :as fs]
             reverie.admin.index
             [reverie.page :as page]
-            [reverie.responses :as r])
+            [reverie.response :as r])
   (:import org.apache.commons.io.FilenameUtils))
 
 (defn load-views [& dirs]

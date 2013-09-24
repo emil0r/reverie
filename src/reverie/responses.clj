@@ -1,4 +1,4 @@
-(ns reverie.responses)
+(ns reverie.response)
 
 (def response-403
   {:status 403 :body "Forbidden"})

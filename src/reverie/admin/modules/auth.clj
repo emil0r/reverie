@@ -7,7 +7,7 @@
         [reverie.admin.frames.common :only [error-item frame-options]]
         reverie.admin.modules.helpers
         [reverie.admin.templates :only [frame]]
-        [reverie.responses :only [response-302]]
+        [reverie.response :only [response-302]]
         [reverie.util :only [join-uri]]))
 
 (def required-field "This field is required")

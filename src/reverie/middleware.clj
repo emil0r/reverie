@@ -2,7 +2,7 @@
   (:require [korma.core :as k]
             [reverie.atoms :as atoms]
             [reverie.auth.user :as user]
-            [reverie.responses :as r])
+            [reverie.response :as r])
   (:use reverie.entity))
 
 (defn wrap-admin [handler]

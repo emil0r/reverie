@@ -2,7 +2,7 @@
   (:require [clojure.string :as s]
             [clout.core :as clout]
             [korma.core :as k]
-            [reverie.responses :as r]
+            [reverie.response :as r]
             [reverie.util :as util])
   (:use [reverie.atoms :exclude [objects]]
         reverie.entity))

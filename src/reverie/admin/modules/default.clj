@@ -9,7 +9,7 @@
         [reverie.atoms :only [modules]]
         [reverie.core :only [defmodule raise-response]]
         [reverie.middleware :only [wrap-access]]
-        [reverie.responses :only [response-302]]
+        [reverie.response :only [response-302]]
         [reverie.util :only [join-uri]]))
 
 
