@@ -4,4 +4,5 @@
 
 
 (init/init)
+(server/init)
 (def app (server/server-handler {}))

@@ -17,7 +17,8 @@
         [ring.middleware.params :only [wrap-params]]
         [ring.middleware.resource :only [wrap-resource]]
         [ring.middleware.session.memory :only [memory-store]])
-  (:require [me.raynes.fs :as fs]
+  (:require [ez-image.core :as ez]
+            [me.raynes.fs :as fs]
             reverie.admin.index
             [reverie.page :as page]
             [reverie.response :as r])
@@ -58,8 +59,15 @@
          (page/render (assoc request :page-type (:page-type route)))
          (r/response-404))))))
 
-(defn start [{:keys [port handlers] :as options}]
+(defn init []
   (add-roles :edit :publish)
+  (fs/mkdirs "media/images")
+  (fs/mkdirs "media/files")
+  (fs/mkdirs "media/cache/images")
+  (ez/setup! "media/cache/images/" "/cache/images/"))
+
+(defn start [{:keys [port handlers] :as options}]
+  (init)
   (cond
       (nil? port) (println "No port specified.")
       :else (do

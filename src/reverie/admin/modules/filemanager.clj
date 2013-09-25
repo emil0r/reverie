@@ -1,5 +1,6 @@
 (ns reverie.admin.modules.filemanager
   (:require [clojure.string :as s]
+            [ez-image.core :as ez]
             [me.raynes.fs :as fs]
             [reverie.auth.user :as user]
             [reverie.util :as util])
@@ -103,6 +104,11 @@
 (defmethod get-icon :default [file]
   [:i.icon-file])
 
+(defn get-image-src [{:keys [uri] :as file}]
+  (let [file-type (s/lower-case (-> uri (s/split #"\.") last))]
+    (if (some #(= file-type %) ["jpg" "jpeg" "png"])
+      (ez/cache (str "media" uri) [:constrain 200]))))
+
 
 (defn get-path-info [p]
   {:type (cond
@@ -120,9 +126,13 @@
    :size (fs/size p)})
 
 (defn list-dir [base path]
-  (let [base (get-base-path base)
+  (let [base? (s/blank? base)
+        base (get-base-path base)
         listed (remove
-                #(re-find #"^\." %)
+                #(or
+                  (and base?
+                       (= "cache" %))
+                  (re-find #"^\." %))
                 (-> base (join-paths path) fs/list-dir))]
     (sort
      compare-listed
@@ -145,14 +155,20 @@
    [:td]
    [:td (get-mod-time dir)]])
 (defmethod row-file :file [file]
-  [:tr
-   [:td [:span.file {:uri (:uri file)
-                     :mod (get-mod-time file)
-                     :size (get-size file)
-                     :file-type (-> file :uri get-file-type)
-                     :name (:name file)} (get-icon file) (:name file)]]
-   [:td (get-size file)]
-   [:td (get-mod-time file)]])
+  (let [src (get-image-src file)]
+   [:tr
+    [:td [:span.file {:uri (:uri file)
+                      :mod (get-mod-time file)
+                      :size (get-size file)
+                      :file-type (-> file :uri get-file-type)
+                      :img-src src
+                      :name (:name file)}
+          (get-icon file)
+          (:name file)
+          (if src
+            [:img {:src src}])]]
+    [:td (get-size file)]
+    [:td (get-mod-time file)]]))
 (defmethod row-file :default [_ _])
 
 (defn- file-lister [files {:keys [up? path]}]

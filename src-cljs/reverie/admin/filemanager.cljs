@@ -14,7 +14,9 @@
 (defmethod get-presentation :image [e$]
   [:tr
    [:th "Image"]
-   [:img {:src (jq/attr e$ :uri) :width 200 :height 200}]])
+   (if-let [src (jq/attr e$ :img-src)]
+     [:img {:src src}]
+     "Unable to show image")])
 (defmethod get-presentation :default [e$])
 
 (defn get-current-path []
@@ -85,6 +87,13 @@
 (defn click-file! [e]
   (.stopPropagation e)
   (let [e$ (ev$ e)]
+    (activate! e$ :span.active)
+    (swap! files assoc :active e$)
+    (info-file e$)))
+
+(defn click-file-img! [e]
+  (.stopPropagation e)
+  (let [e$ (jq/parent (ev$ e))]
     (activate! e$ :span.active)
     (swap! files assoc :active e$)
     (info-file e$)))
@@ -220,6 +229,9 @@
   (-> :span.file
       jq/$
       (jq/on :click click-file!))
+  (-> :span.file>img
+      jq/$
+      (jq/on :click click-file-img!))
   (-> :html
       jq/$
       (jq/on :click info-window))

@@ -14,6 +14,7 @@
                  [org.clojars.emil0r/hiccup "1.0.3a"]
                  [org.clojars.emil0r/lobos "1.0.0-beta1"]
                  ;; DO NOT WANT
+                 [ez-image "1.0"]
                  [clout "1.1.0"]
                  [slingshot "0.10.3"]
                  [bultitude "0.1.7"]

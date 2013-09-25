@@ -2255,6 +2255,9 @@ h6 {
   position: relative;
   top: 3px;
 }
+#files span {
+  display: block;
+}
 #files span.active,
 #files span:hover,
 #files span.selected {
@@ -2265,6 +2268,9 @@ h6 {
 #files span:hover i,
 #files span.selected i {
   text-shadow: 1px 1px 1px #000000;
+}
+#files span img {
+  margin-left: 15px;
 }
 #files a {
   text-shadow: 0 0 0 #000000;

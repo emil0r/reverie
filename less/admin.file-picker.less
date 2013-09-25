@@ -10,12 +10,16 @@
         top: 3px;
     }
     span {
+        display: block;
         &.active, &:hover, &.selected {
             cursor: pointer;
             color: @primary;
             i {
                 text-shadow: 1px 1px 1px @black;
             }
+        }
+        img {
+            margin-left: 15px;
         }
     }
     a {
