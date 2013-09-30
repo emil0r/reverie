@@ -72,8 +72,8 @@
     page-obj))
 
 (defn update! [object-id obj-data]
-  (let [table-name (-> object (k/select (k/where {:id object-id})) first :name keyword)]
-    (k/update table-name
+  (let [table (-> object (k/select (k/where {:id object-id})) first :name get-object-entity)]
+    (k/update table
               (k/set-fields obj-data)
               (k/where {:object_id object-id}))))
 
