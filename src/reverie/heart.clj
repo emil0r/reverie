@@ -1,7 +1,5 @@
 (ns reverie.heart
-  (:require [clojure.core.async :as async :refer [go >! <! <!! chan timeout close!]]
-            [clj-time.core :as time]
-            [reverie.atoms :as atoms]))
+  (:require [clojure.core.async :as async :refer [go >! <! <!! chan timeout close!]]))
 
 
 (defn beat [f ms]
