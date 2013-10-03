@@ -7,10 +7,11 @@
 (defn clear-cut [seconds]
   (fn []
    (let [objects (filter (fn [[_ {:keys [action]}]] (= action :cut))
-                         (get-in @atoms/settings [:edits :objects]))]
+                         (get-in @atoms/settings [:edits :objects]))
+         now (time/now)]
      (doseq [[obj-id {when :time}] objects]
        (if (time/before? (time/plus when (time/seconds seconds))
-                         (time/now))
+                         now)
          (swap! atoms/settings update-in [:edits :objects] dissoc obj-id))))))
 
 
@@ -18,8 +19,9 @@
 (defn clear-copy [seconds]
   (fn []
    (let [objects (filter (fn [[_ {:keys [action]}]] (= action :copy))
-                         (get-in @atoms/settings [:edits :objects]))]
+                         (get-in @atoms/settings [:edits :objects]))
+         now (time/now)]
      (doseq [[obj-id {when :time}] objects]
        (if (time/before? (time/plus when (time/seconds seconds))
-                         (time/now))
+                         now)
          (swap! atoms/settings update-in [:edits :objects] dissoc obj-id))))))

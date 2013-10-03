@@ -6,10 +6,9 @@
 
 (defn clear-edit [seconds]
   (fn []
-    ;; (let [objects (filter (fn [[_ {:keys [action]}]] (= action :copy))
-    ;;                      (get-in @atoms/settings [:edits :objects]))]
-    ;;  (doseq [[obj-id {when :time}] objects]
-    ;;    (if (time/before? (time/plus when (time/seconds seconds))
-    ;;                      (time/now))
-    ;;      (swap! atoms/settings update-in [:edits :objects] dissoc obj-id))))
-    ))
+    (let [pages (dissoc (:edits @atoms/settings) :objects)
+          now (time/now)]
+      (doseq [[uri {when :time}] pages]
+        (if (time/before? (time/plus when (time/seconds seconds))
+                          now)
+          (swap! atoms/settings update-in [:edits] dissoc uri))))))

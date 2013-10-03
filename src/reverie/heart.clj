@@ -1,5 +1,7 @@
 (ns reverie.heart
-  (:require [clojure.core.async :as async :refer [go >! <! <!! chan timeout close!]]))
+  (:require [clojure.core.async :as async :refer [go >! <! <!! chan timeout close!]]
+            [reverie.beats.objects :as objects]
+            [reverie.beats.pages :as pages]))
 
 
 (defn beat [f ms]
@@ -18,3 +20,9 @@
                 (close! c))))))
     (go (>! c true))
     c))
+
+
+(defn start []
+  (beat (objects/clear-cut (* 60 20)) (* 60 1000))
+  (beat (objects/clear-copy (* 60 20)) (* 60 1000))
+  (beat (pages/clear-edit (* 60 20)) (* 60 1000)))

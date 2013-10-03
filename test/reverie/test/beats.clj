@@ -7,14 +7,14 @@
 
 
 (swap! atoms/settings assoc-in [:edits :objects 1] {:time (time/now)
-                                                    :user "emil"
-                                                    :page-id 1
+                                                       :user "emil"
+                                                       :page-id 1
                                                     :action :cut})
 
 (swap! atoms/settings assoc-in [:edits :objects 2] {:time (time/now)
                                                     :user "emil"
                                                     :page-id 1
                                                     :action :copy})
+(objects/clear-cut 1)
+(objects/clear-copy 1)
 
-
-(objects/clear-cuts)
