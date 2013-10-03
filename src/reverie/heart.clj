@@ -4,7 +4,9 @@
             [reverie.beats.pages :as pages]))
 
 
-(defn beat [f ms]
+(defn beat
+  "One heartbeat. Returns channel. Send in false to the channel to stop the beat."
+  [f ms]
   (let [c (chan)
         continue? (atom true)]
     (go (while @continue?
