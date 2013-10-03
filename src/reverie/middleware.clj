@@ -35,7 +35,9 @@
         (if (atoms/edit? uri user-name)
           (handler (assoc-in request [:reverie :mode] :edit))
           (handler (assoc-in request [:reverie :mode] :edit-other)))
-        (if (atoms/editing? user-name)
+        (if (and
+             (atoms/editing? user-name)
+             (not (re-find #"^/admin" uri)))
           (do
             (atoms/view! user-name)
             (atoms/edit! uri user-name)
