@@ -10,16 +10,15 @@
   (let [c (chan)
         continue? (atom true)]
     (go (while @continue?
-          (let [v (<! c)]
-            (if v
-              (do
-                (f)
-                (go
-                 (<! (timeout ms))
-                 (>! c true)))
-              (do
-                (reset! continue? false)
-                (close! c))))))
+          (if-let [v (<! c)]
+            (do
+              (f)
+              (go
+               (<! (timeout ms))
+               (>! c true)))
+            (do
+              (reset! continue? false)
+              (close! c)))))
     (go (>! c true))
     c))
 
