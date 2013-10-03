@@ -10,10 +10,13 @@
                  [clj-time "0.6.0"]
                  [korma "0.3.0-RC5"]
                  [me.raynes/fs "1.4.5"]
+                 
                  ;; DO NOT WANT
                  [org.clojars.emil0r/hiccup "1.0.3a"]
                  [org.clojars.emil0r/lobos "1.0.0-beta1"]
                  ;; DO NOT WANT
+                 
+                 [org.clojure/core.async "0.1.242.0-44b1e3-alpha"]
                  [ez-image "1.0"]
                  [clout "1.1.0"]
                  [slingshot "0.10.3"]
