@@ -20,6 +20,7 @@
   (:require [ez-image.core :as ez]
             [me.raynes.fs :as fs]
             reverie.admin.index
+            [reverie.heart :as heart]
             [reverie.page :as page]
             [reverie.response :as r])
   (:import org.apache.commons.io.FilenameUtils))
@@ -64,7 +65,8 @@
   (fs/mkdirs "media/images")
   (fs/mkdirs "media/files")
   (fs/mkdirs "media/cache/images")
-  (ez/setup! "media/cache/images/" "/cache/images/"))
+  (ez/setup! "media/cache/images/" "/cache/images/")
+  (heart/start))
 
 (defn start [{:keys [port handlers] :as options}]
   (init)
