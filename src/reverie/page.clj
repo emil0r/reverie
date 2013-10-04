@@ -206,9 +206,8 @@
         p (k/update page
                     (k/set-fields {:updated (k/sqlfn now)})
                     (k/where w))]
-    (clojure.pprint/pprint @settings)
     (if-let [{:keys [user]} (get-in @settings [:edits (:uri p)])]
-      (println (edit! (:uri p) user)))))
+      (edit! (:uri p) user))))
 
 
 (defn move! [anchor serial hit-mode]

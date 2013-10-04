@@ -3,8 +3,8 @@
             [reverie.object :as r-object]))
 
 
-(defn page [page-id]
+(defn via-page [page-id]
   (r-page/updated! {:page-id page-id}))
 
-(defn object [object-id]
-  (r-page/updated! {:page-id (:page_id (r-object/get* {:id object-id}))}))
+(defn via-object [object-id]
+  (r-page/updated! {:page-id (:page_id (first (r-object/get* {:id object-id})))}))

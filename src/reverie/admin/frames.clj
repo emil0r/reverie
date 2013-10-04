@@ -7,6 +7,7 @@
             [korma.core :as k]
             [noir.validation :as v]
             [reverie.admin.templates :as t]
+            [reverie.admin.updated :as updated]
             [reverie.atoms :as atoms]
             [reverie.auth.user :as user]
             [reverie.core :as rev]
@@ -307,24 +308,30 @@
                                   :template (or template "")
                                   :updated (sqlfn now))}))]
      (if (valid-page? data)
-      (t/frame
-       (assoc frame-options :custom-js
-              ["parent.control.framec.reverie.admin.tree.metad("
-               (generate-string {:serial (:serial tx)
-                                 :title name
-                                 :real-title title
-                                 :uri (:uri tx)
-                                 :updated (:updated tx)
-                                 :created (:created tx)
-                                 :id (:id tx)
-                                 :key (:serial tx)
-                                 :published? false
-                                 :isLazy false
-                                 :order (:order tx)})
-               ");"])
-       [:h2 (str name " added!")]))
-     (t/frame
-      frame-options
-      [:nav "Meta"]
-      [:h2 "Updated "(:name p)]
-      (page-form (page/get {:serial serial :version 0}))))])
+       (do
+         (updated/via-page (:id p))
+         (t/frame
+          (assoc frame-options :custom-js
+                 ["parent.control.framec.reverie.admin.tree.metad("
+                  (generate-string {:serial (:serial tx)
+                                    :title name
+                                    :real-title title
+                                    :uri (:uri tx)
+                                    :updated (:updated tx)
+                                    :created (:created tx)
+                                    :id (:id tx)
+                                    :key (:serial tx)
+                                    :published? false
+                                    :isLazy false
+                                    :order (:order tx)})
+                  ");"])
+          [:nav "Meta"]
+          [:h2 "Updated" (:name p)]))
+       (t/frame
+        frame-options
+        [:nav "Meta"]
+        [:h2 (:name p)]
+        (page-form {:parent (read-string (:parent data))
+                    :serial serial
+                    :name name :title title :type type
+                    :template template :app app :uri uri}))))])

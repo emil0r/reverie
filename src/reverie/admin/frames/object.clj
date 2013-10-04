@@ -1,6 +1,7 @@
 (ns reverie.admin.frames.object
   (:require [noir.validation :as v]
             [reverie.admin.templates :as t]
+            [reverie.admin.updated :as updated]
             [reverie.core :as rev]
             reverie.entity
             [reverie.object :as object]
@@ -99,7 +100,9 @@
                       "window.close();"]
                      [])]
      (if validated?
-       (object/update! object-id (process-form-data form-data attributes)))
+       (do
+         (object/update! object-id (process-form-data form-data attributes))
+         (updated/via-object object-id)))
      (t/frame
       (assoc frame-options
         :title "Edit object"
