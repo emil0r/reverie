@@ -46,6 +46,9 @@
      (-> @objects name :options :attributes-order)
      (sort (keys (get-attributes name))))))
 
+(defn get* [w]
+  (k/select object (k/where w) (k/order :order)))
+
 (defn get [object-id & [cmd]]
   (let [obj (-> object (k/select (k/where {:id object-id})) first)
         data (-> obj

@@ -201,6 +201,15 @@
     (update-route! (:uri p) (assoc (get-route (:uri p)) :published? false))
     request))
 
+(defn updated! [{:keys [page-id serial]}]
+  (let [w (if serial {:serial serial :version 0} {:id page-id})
+        p (k/update page
+                    (k/set-fields {:updated (k/sqlfn now)})
+                    (k/where w))]
+    (clojure.pprint/pprint @settings)
+    (if-let [{:keys [user]} (get-in @settings [:edits (:uri p)])]
+      (println (edit! (:uri p) user)))))
+
 
 (defn move! [anchor serial hit-mode]
   (let [{:keys [parent order uri name]} (get {:serial anchor :version 0})
