@@ -14,10 +14,16 @@
                 .-target
                 .-element_
                 jq/$
-                (jq/attr :tab))
-        $e (ev$ e)]))
+                (jq/attr :tab))]
+    (doseq [t (-> :.tab jq/$)]
+      (-> t jq/$ (jq/add-class :hidden)))
+    (-> (str "#" tab) jq/$ (jq/remove-class :hidden))))
 
 (defn init []
   (let [tb (goog.ui/TabBar.)]
     (.decorate tb (dom/getElement "tabbar"))
     (events/listen tb goog.ui.Component.EventType.SELECT click-tab!)))
+
+
+(defn init-files []
+  (js/alert "wohoo!"))

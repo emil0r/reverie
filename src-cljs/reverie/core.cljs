@@ -29,6 +29,7 @@
                   (re-find #"^/admin/frame/module/filemanager" loc) :filemanager
                   (re-find #"^/admin/frame/file-picker" loc) :file-picker
                   (re-find #"^/admin/frame/url-picker" loc) :url-picker
+                  (re-find #"^/admin/frame/url-picker/files" loc) :url-picker-files
                   (re-find #"^/admin/frame/module" loc) :module)))
 (defmethod init :root-page []
   (page/init))
@@ -48,6 +49,8 @@
   (file-picker/init))
 (defmethod init :url-picker []
   (url-picker/init))
+(defmethod init :url-picker-files []
+  (url-picker/init-files))
 (defmethod init :module [])
 (defmethod init :default []
   (meta/listen!)

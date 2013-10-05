@@ -27,22 +27,27 @@
        [:div.goog-tab {:tab :file} "File"]
        [:div.goog-tab {:tab :page} "Page"]]
       
-      [:div#freestyle
-       (text-field :freestyle value)]
-      [:div#page
-       (drop-down :page-dropdown (cons ["-- Pick a URL --" ""] (list-pages)) value)]
-      [:div#file
-       [:iframe {:src (str "/admin/frame/url-picker/files?value=" value)}]]
-      (hidden-field :value value)
-      [:button {:class "btn btn-primary"} "Save"]))]
+      [:div#url-picker
+       [:div {:class "tab" :id :freestyle}
+        (text-field :freestyle value)]
+       [:div {:class "hidden tab" :id :file}
+        (if (re-find #"^/[\.]+$" value)
+          [:iframe {:src (str "/admin/frame/url-picker/files" value) :frameborder "0"}]
+          [:iframe {:src "/admin/frame/url-picker/files" :frameborder "0"}])]
+       [:div {:class "hidden tab" :id :page}
+        (drop-down :page-dropdown (cons ["-- Pick a URL --" ""] (list-pages)) value)]
+       (hidden-field :value value)
+       [:button {:class "btn btn-primary"} "Save"]]))]
   [:get ["/files"]
+   (t/frame
+    frame-options
+    (file-lister (list-dir "" "") {:qs (:query-string request)
+                                   :up? false
+                                   :path ""}))]
+  [:get ["/files/:path" {:path ".*"}]
    (let [value (-> request :params :value)]
      (t/frame
       frame-options
-      (if (fs/exists? (join-paths "media" value))
-        (file-lister (list-dir "" value) {:qs (:query-string request)
-                                          :up? true
-                                          :path value})
-        (file-lister (list-dir "" "") {:qs (:query-string request)
-                                       :up? false
-                                       :path value}))))])
+      (file-lister (list-dir "" path) {:qs (:query-string request)
+                                       :up? true
+                                       :path path})))])
