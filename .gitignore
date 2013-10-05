@@ -21,3 +21,4 @@ resources/public/admin/js/main.js
 media
 *.org
 blackboard/
+/pom.xml.asc

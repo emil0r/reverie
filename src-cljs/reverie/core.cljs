@@ -5,6 +5,7 @@
             [reverie.admin.area :as area]
             [reverie.admin.filemanager :as filemanager]
             [reverie.admin.file-picker :as file-picker]
+            [reverie.admin.url-picker :as url-picker]
             [reverie.admin.options :as options]
             [reverie.admin.options.object :as object]
             [reverie.admin.options.page :as page]
@@ -27,6 +28,7 @@
                   (= "/admin/frame/object/edit" loc) :object-edit
                   (re-find #"^/admin/frame/module/filemanager" loc) :filemanager
                   (re-find #"^/admin/frame/file-picker" loc) :file-picker
+                  (re-find #"^/admin/frame/url-picker" loc) :url-picker
                   (re-find #"^/admin/frame/module" loc) :module)))
 (defmethod init :root-page []
   (page/init))
@@ -44,6 +46,8 @@
   (filemanager/init))
 (defmethod init :file-picker []
   (file-picker/init))
+(defmethod init :url-picker []
+  (url-picker/init))
 (defmethod init :module [])
 (defmethod init :default []
   (meta/listen!)

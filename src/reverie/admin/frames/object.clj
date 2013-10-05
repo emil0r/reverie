@@ -25,7 +25,17 @@
   [:tr
    [:td (label field-name name)]
    [:td
-    [:span {:field-name field-name :type :image} "Edit image..."]
+    [:span {:field-name field-name :type :image} (if (data field-name)
+                                                   (str "Image: " (data field-name))
+                                                   "Edit image...")]
+    (hidden-field field-name (or (data field-name) initial))]])
+(defmethod row-edit :url [field-name {:keys [initial input name]} data]
+  [:tr
+   [:td (label field-name name)]
+   [:td
+    [:span {:field-name field-name :type :url} (if (data field-name)
+                                                   (str "URL: " (data field-name))
+                                                   "Edit URL...")]
     (hidden-field field-name (or (data field-name) initial))]])
 (defmethod row-edit :dropdown [field-name {:keys [initial input name options]} data]
   (let [options (if (fn? options) (options) options)]

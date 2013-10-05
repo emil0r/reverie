@@ -32,10 +32,10 @@
    [:td (get-mod-time file)]])
 (defmethod row-file :default [_ _])
 
-(defn- file-lister [files {:keys [qs up? path]}]
+(defn file-lister [files {:keys [qs up? path]}]
   (frame
    (-> frame-options
-       (assoc :title "File-picker: Images"))
+       (assoc :title "File picker: Images"))
    [:div#files
     [:table.table
      [:tr
@@ -48,8 +48,8 @@
 
 (rev/defpage "/admin/frame/file-picker" {:middleware [[wrap-access :edit]]}
   [:get ["/images"]
-   (file-lister (list-dir :images "") {:qs (:query-string request)})]
+   (file-lister (list-dir "images" "") {:qs (:query-string request)})]
   [:get ["/images/:path" {:path #".*"}]
-   (file-lister (list-dir :images path) {:qs (:query-string request)
-                                             :up? true
-                                             :path (str "images/" path)})])
+   (file-lister (list-dir "images" path) {:qs (:query-string request)
+                                          :up? true
+                                          :path (str "images/" path)})])

@@ -25,7 +25,17 @@
         value (-> (str "#" field) jq/$ jq/val)
         url (apply join-uri "/admin/frame/file-picker/images"
                    (butlast (rest (remove s/blank? (s/split value #"/")))))]
-    (util/log url)
+    (.open js/window
+           (str
+            url "?form=form_object&field-name=" field "&value=" value)
+           "_blank"
+           "height=640,width=800,location=0,menubar=0,resizable=1,scrollbars=1,status=0,titlebar=1"
+           true)))
+
+(defn click-url! [e]
+  (let [field (-> e ev$ (jq/attr :field-name))
+        value (-> (str "#" field) jq/$ jq/val)
+        url "/admin/frame/url-picker"]
     (.open js/window
            (str
             url "?form=form_object&field-name=" field "&value=" value)
@@ -37,8 +47,10 @@
   (-> js/document
       jq/$
       (jq/off "span[type=richtext]")
-      (jq/off "span[type=image]"))
+      (jq/off "span[type=image]")
+      (jq/off "span[type=url]"))
   (-> js/document
       jq/$
       (jq/on :click "span[type=richtext]" click-richtext!)
-      (jq/on :click "span[type=image]" click-image!)))
+      (jq/on :click "span[type=image]" click-image!)
+      (jq/on :click "span[type=url]" click-url!)))
