@@ -1,5 +1,6 @@
 (ns reverie.admin.frames.url-picker
-  (:require [me.raynes.fs :as fs]
+  (:require [clojure.string :as s]
+            [me.raynes.fs :as fs]
             [reverie.admin.templates :as t]
             [reverie.atoms :as atoms]
             [reverie.core :as rev]
@@ -31,23 +32,21 @@
        [:div {:class "tab" :id :freestyle}
         (text-field :freestyle value)]
        [:div {:class "hidden tab" :id :file}
-        (if (re-find #"^/[\.]+$" value)
-          [:iframe {:src (str "/admin/frame/url-picker/files" value) :frameborder "0"}]
+        (if (re-find #"^/[^\.]+\.[^\.]+$" value)
+          [:iframe {:src (str "/admin/frame/url-picker/files"
+                              (s/replace value #"/([^\/]+?)\.[^\.]+$" "")) :frameborder "0"}]
           [:iframe {:src "/admin/frame/url-picker/files" :frameborder "0"}])]
        [:div {:class "hidden tab" :id :page}
         (drop-down :page-dropdown (cons ["-- Pick a URL --" ""] (list-pages)) value)]
        (hidden-field :value value)
        [:button {:class "btn btn-primary"} "Save"]]))]
   [:get ["/files"]
-   (t/frame
-    frame-options
-    (file-lister (list-dir "" "") {:qs (:query-string request)
-                                   :up? false
-                                   :path ""}))]
-  [:get ["/files/:path" {:path ".*"}]
-   (let [value (-> request :params :value)]
-     (t/frame
-      frame-options
-      (file-lister (list-dir "" path) {:qs (:query-string request)
-                                       :up? true
-                                       :path path})))])
+   (file-lister (list-dir "" "") {:qs (:query-string request)
+                                  :up? false
+                                  :base-path "/admin/frame/url-picker/files"
+                                  :path ""})]
+  [:get ["/files/:path" {:path #".*"}]
+   (file-lister (list-dir "" path) {:qs (:query-string request)
+                                    :up? true
+                                    :base-path "/admin/frame/url-picker/files"
+                                    :path path})])

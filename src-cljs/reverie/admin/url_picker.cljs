@@ -26,4 +26,4 @@
 
 
 (defn init-files []
-  (js/alert "wohoo!"))
+  (util/log "wohoo!"))

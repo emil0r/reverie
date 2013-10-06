@@ -14,37 +14,38 @@
         [reverie.admin.templates :only [frame]]))
 
 
-(defmulti row-file :type)
-(defmethod row-file :directory [dir qs]
+(defmulti row-file (fn [x & _] (:type x)))
+(defmethod row-file :directory [dir qs path]
   [:tr
    [:td 
     [:a {:href (str
-                (util/join-uri "/admin/frame/file-picker" (:uri dir))
+                (util/join-uri path (:uri dir))
                 "?" qs)}
      [:i.icon-folder-close]
      (:name dir)]]
    [:td]
    [:td (get-mod-time dir)]])
-(defmethod row-file :file [file qs]
+(defmethod row-file :file [file qs _]
   [:tr
    [:td [:span {:uri (:uri file) :class :download} [:i.icon-download] (:name file)]]
    [:td (get-size file)]
    [:td (get-mod-time file)]])
-(defmethod row-file :default [_ _])
+(defmethod row-file :default [_ _ _])
 
-(defn file-lister [files {:keys [qs up? path]}]
-  (frame
-   (-> frame-options
-       (assoc :title "File picker: Images"))
-   [:div#files
-    [:table.table
-     [:tr
-      [:th "Name"] [:th "Size"] [:th "Modified"]]
-     (if up?
-       (row-file {:type :directory
-                  :name ".."
-                  :uri (str "/" (util/uri-but-last-part path))} qs))
-     (map #(row-file % qs) files)]]))
+(defn file-lister [files {:keys [qs up? path base-path]}]
+  (let [base-path (or base-path "/admin/frame/file-picker")]
+    (frame
+     (-> frame-options
+         (assoc :title "File picker: Images"))
+     [:div#files
+      [:table.table
+       [:tr
+        [:th "Name"] [:th "Size"] [:th "Modified"]]
+       (if up?
+         (row-file {:type :directory
+                    :name ".."
+                    :uri (str "/" (util/uri-but-last-part path))} qs base-path))
+       (map #(row-file % qs base-path) files)]])))
 
 (rev/defpage "/admin/frame/file-picker" {:middleware [[wrap-access :edit]]}
   [:get ["/images"]
