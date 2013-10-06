@@ -19,11 +19,50 @@
       (-> t jq/$ (jq/add-class :hidden)))
     (-> (str "#" tab) jq/$ (jq/remove-class :hidden))))
 
-(defn init []
-  (let [tb (goog.ui/TabBar.)]
-    (.decorate tb (dom/getElement "tabbar"))
-    (events/listen tb goog.ui.Component.EventType.SELECT click-tab!)))
+(defn changed! [e]
+  (let [value (-> e ev$ jq/val)]
+    (-> :#value jq/$ (jq/val value))))
 
+(defn save! [e]
+  (let [params (query-params)
+        value (-> :#value jq/$ jq/val)]
+    (set! (-> js/opener
+              .-document
+              (.getElementById (:field-name params))
+              .-value) value)
+    (.close js/window)))
+
+(defn init []
+  (let [params (query-params)
+        tb (goog.ui/TabBar.)]
+    (.decorate tb (dom/getElement "tabbar"))
+    (events/listen tb goog.ui.Component.EventType.SELECT click-tab!))
+  (-> :#freestyle
+      jq/$
+      (jq/on :change changed!))
+  (-> :#page-dropdown
+      jq/$
+      (jq/on :change changed!))
+  (-> :#save
+      jq/$
+      (jq/on :click save!)))
+
+
+(defn set-file! [e]
+  (let [url (-> e .-target jq/$ (jq/attr :uri))
+        params (query-params)]
+    (set! (-> js/parent
+              .-document
+              (.getElementById (:field-name params))
+              .-value) url)
+    (-> :.selected jq/$ (jq/remove-class :selected))
+    (-> e ev$ (jq/add-class :selected))))
 
 (defn init-files []
-  (util/log "wohoo!"))
+  (let [params (query-params)]
+    (-> (str "span[uri='" (:value params) "']")
+        jq/$
+        (jq/add-class :selected))
+    (-> :span.download
+        jq/$
+        (jq/on :click set-file!))))

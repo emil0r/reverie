@@ -19,27 +19,39 @@
 
 (rev/defpage "/admin/frame/url-picker" {:middleware [[wrap-access :edit]]}
   [:get ["/"]
-   (let [value (-> request :params :value)]
+   (let [value (-> request :params :value)
+         type? (cond
+                (re-find #"^/[^\.]+\.[^\.]+$" value) :file
+                (re-find #"^/.+$" value) :page
+                :else :freestyle)]
      (t/frame
       (-> frame-options
           (assoc :title "URL picker"))
       [:div#tabbar
-       [:div.goog-tab.goog-tab-selected {:tab :freestyle} "Free style"]
-       [:div.goog-tab {:tab :file} "File"]
-       [:div.goog-tab {:tab :page} "Page"]]
+       [:div {:class (if (= type? :freestyle)
+                       "goog-tab goog-tab-selected"
+                       "goog-tab") :tab :freestyle} "Free style"]
+       [:div{:class (if (= type? :file)
+                       "goog-tab goog-tab-selected"
+                       "goog-tab") :tab :file} "File"]
+       [:div {:class (if (= type? :page)
+                       "goog-tab goog-tab-selected"
+                       "goog-tab") :tab :page} "Page"]]
       
       [:div#url-picker
-       [:div {:class "tab" :id :freestyle}
+       [:div {:class (if (= type? :freestyle) "tab" "tab hidden") :id :freestyle}
         (text-field :freestyle value)]
-       [:div {:class "hidden tab" :id :file}
+       [:div {:class (if (= type? :file) "tab" "hidden tab") :id :file}
         (if (re-find #"^/[^\.]+\.[^\.]+$" value)
           [:iframe {:src (str "/admin/frame/url-picker/files"
-                              (s/replace value #"/([^\/]+?)\.[^\.]+$" "")) :frameborder "0"}]
-          [:iframe {:src "/admin/frame/url-picker/files" :frameborder "0"}])]
-       [:div {:class "hidden tab" :id :page}
+                              (s/replace value #"/([^\/]+?)\.[^\.]+$" "")
+                              "?field-name=value&value=" value) :frameborder "0"}]
+          [:iframe {:src (str "/admin/frame/url-picker/files?field-name=value&value="
+                              value) :frameborder "0"}])]
+       [:div {:class (if (= type? :page) "tab" "hidden tab") :id :page}
         (drop-down :page-dropdown (cons ["-- Pick a URL --" ""] (list-pages)) value)]
        (hidden-field :value value)
-       [:button {:class "btn btn-primary"} "Save"]]))]
+       [:button#save {:class "btn btn-primary"} "Save"]]))]
   [:get ["/files"]
    (file-lister (list-dir "" "") {:qs (:query-string request)
                                   :up? false
