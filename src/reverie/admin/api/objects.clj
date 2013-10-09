@@ -49,7 +49,7 @@
                                                                  :page-id (:page_id obj)
                                                                  :action :cut})
      {:result true
-      :object (select-keys obj :page_id :id)})]
+      :object (select-keys obj [:page_id :id])})]
   [:post ["/copy" {:keys [object-id]}]
    (let [object-id (read-string object-id)
          obj (object/get object-id)]
@@ -58,21 +58,23 @@
                                                                  :page-id (:page_id obj)
                                                                  :action :copy})
      {:result true
-      :object (select-keys obj :page_id :id)})]
-  [:post ["/paste" {:keys [object-id area page-serial]}]
+      :object (select-keys obj [:page_id :id])})]
+  [:post ["/paste-area" {:keys [object-id area page-serial]}]
    (let [u (user/get)
+         [object-id page-serial] [(read-string object-id) (read-string page-serial)]
          obj (get-in @atoms/settings [:edits :objects object-id])]
      (if (= (:name u) (:user obj))
        (do
-         (updated/via-object (read-string object-id))
+         (updated/via-object object-id)
          {:result true})
        {:result false}))]
   [:post ["/delete" {:keys [object-id]}]
-   (let [o (-> reverie.entity/object
-               (k/select (k/where {:id (read-string object-id)}))
+   (let [object-id (read-string object-id)
+         o (-> reverie.entity/object
+               (k/select (k/where {:id object-id}))
                first)]
      (do
-       (updated/via-object (read-string object-id))
-       (k/delete (keyword (:name o)) (k/where {:object_id (read-string object-id)}))
-       (k/delete reverie.entity/object (k/where {:id (read-string object-id)}))
+       (updated/via-object object-id)
+       (k/delete (keyword (:name o)) (k/where {:object_id object-id}))
+       (k/delete reverie.entity/object (k/where {:id object-id}))
        {:result true}))])

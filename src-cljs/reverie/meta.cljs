@@ -7,6 +7,12 @@
 
 (def data (atom {}))
 
+(defn sync! []
+  (jq/xhr [:get "/admin/api/meta"] {}
+          (fn [json-data]
+            (let [edn-data (js->clj json-data :keywordize-keys true)]
+              (reset! data edn-data)))))
+
 (defn read! [f]
   (jq/xhr [:get "/admin/api/meta"] {}
           (fn [json-data]

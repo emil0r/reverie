@@ -18,6 +18,10 @@
       dom/$m
       jq/remove))
 
+(defn- paste? []
+  (or (-> @meta/data :edits :object :cut)
+      (-> @meta/data :edits :object :copy)))
+
 (defn- create-area-menu! [$elem]
   (hide-area-menu!)
   (let [objects (:objects @meta/data)]
@@ -26,7 +30,11 @@
                 [:ul.reverie-area-menu
                  [:li.add-objects "Add object"
                   [:ul.reverie-objects
-                   (map (fn [o] [:li o]) objects)]]]))))
+                   (map (fn [o] [:li o]) objects)]]
+                 (if (paste?)
+                   (list
+                    [:li.reverie-bar]
+                    [:li.paste-object {:action "paste-area"} "Paste"]))]))))
 
 (defn- create-object-menu! [$elem {:keys [area]}]
   (hide-object-menu!)
@@ -35,9 +43,13 @@
               [:ul.reverie-object-menu
                [:li.edit-object {:action "edit"} "Edit"]
                [:li.delete-object {:action "delete"} "Delete"]
+               (if (paste?)
+                 (list
+                  [:li.reverie-bar]
+                  [:li.paste-object {:action "paste"} "Paste"]))
                [:li.reverie-bar]
-               ;; [:li.copy-object {:action "cut"} "Cut"]
-               ;; [:li.copy-object {:action "copy"} "Copy"]
+               [:li.copy-object {:action "cut"} "Cut"]
+               [:li.copy-object {:action "copy"} "Copy"]
                [:li.move-object "Move to »"
                 [:ul.move-object-to
                  (map (fn [a] [:li {:action "move-to-area" :area a} "area " a])
@@ -141,6 +153,7 @@
             (fn [data]
               (if (.-result data)
                 (do
+                  (meta/sync!)
                   (doseq [obj (-> :.reverie-object dom/$m)]
                     (jq/remove-class (jq/$ obj) :reverie-ready-for-copy)
                     (jq/remove-class (jq/$ obj) :reverie-ready-for-cut))
@@ -155,7 +168,24 @@
             (fn [data]
               (if (.-result data)
                 (do
-                  (swap! atom/data update-in [:edits :object :copy ])
+                  (meta/sync!)
+                  (doseq [obj (-> :.reverie-object dom/$m)]
+                    (jq/remove-class (jq/$ obj) :reverie-ready-for-copy)
+                    (jq/remove-class (jq/$ obj) :reverie-ready-for-cut))
+                  (-> (str "div[object-id='" object-id "']")
+                      dom/$m
+                      (jq/add-class :reverie-ready-for-copy))))))))
+(defmethod click-object-method! "paste-area" [e]
+  (let [e$ (ev$ e)
+        object-id (or (-> @meta/data :edits :object :cut)
+                      (-> @meta/data :edits :object :copy))
+        area nil]
+    (jq/xhr [:post "/admin/api/objects/copy"]
+            {:object-id object-id}
+            (fn [data]
+              (if (.-result data)
+                (do
+                  (meta/sync!)
                   (doseq [obj (-> :.reverie-object dom/$m)]
                     (jq/remove-class (jq/$ obj) :reverie-ready-for-copy)
                     (jq/remove-class (jq/$ obj) :reverie-ready-for-cut))
