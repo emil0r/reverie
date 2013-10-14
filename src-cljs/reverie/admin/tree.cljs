@@ -37,6 +37,9 @@
                              (.expand source-node true)
                              (.move source-node node hit-mode)))))))
 
+(defn- get-node-data [node]
+  (js->clj (.-data node) :keywordize-keys true))
+
 (defn- get-active-node []
   (-> :#tree jq/$ (.dynatree "getActiveNode")))
 
@@ -104,7 +107,13 @@
       jq/$
       (jq/on :click :.icon-refresh nil #(if-let [node (get-active-node)]
                                           (if-let [uri (-> node .-data .-uri)]
-                                            (options/refresh! uri))))
+                                            (do
+                                              (swap! meta/data assoc-in
+                                                     [:pages :current]
+                                                     (-> (get-active-node)
+                                                         get-node-data
+                                                         :serial))
+                                              (options/refresh! uri)))))
       (jq/on :click :.icon-plus-sign nil #(if-let [node (get-active-node)]
                                             (if-let [serial (-> node .-data .-serial)]
                                               (options/add-page! serial))))
@@ -119,7 +128,7 @@
    (.appendAjax node (clj->js {:url (str "/admin/api/pages/read/" serial)}))))
 
 (defn- on-activation [node]
-  (let [data (js->clj (.-data node) :keywordize-keys true)]
+  (let [data (get-node-data node)]
     (-> :#tree-search
         jq/$
         (jq/val (:serial data)))

@@ -59,7 +59,7 @@
                                                                  :action :copy})
      {:result true
       :object (select-keys obj [:page_id :id])})]
-  [:post ["/paste-area" {:keys [object-id area page-serial]}]
+  [:post ["/paste" {:keys [object-id area page-serial type]}]
    (let [u (user/get)
          [object-id page-serial] [(read-string object-id) (read-string page-serial)]
          obj (get-in @atoms/settings [:edits :objects object-id])]

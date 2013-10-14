@@ -24,7 +24,8 @@
 
 (defn- create-area-menu! [$elem]
   (hide-area-menu!)
-  (let [objects (:objects @meta/data)]
+  (let [area (jq/attr $elem :area)
+        objects (:objects @meta/data)]
     (jq/append $elem
                (crate/html
                 [:ul.reverie-area-menu
@@ -34,7 +35,7 @@
                  (if (paste?)
                    (list
                     [:li.reverie-bar]
-                    [:li.paste-object {:action "paste-area"} "Paste"]))]))))
+                    [:li.paste-object {:action "paste" :area area :type "area"} "Paste"]))]))))
 
 (defn- create-object-menu! [$elem {:keys [area]}]
   (hide-object-menu!)
@@ -46,7 +47,7 @@
                (if (paste?)
                  (list
                   [:li.reverie-bar]
-                  [:li.paste-object {:action "paste"} "Paste"]))
+                  [:li.paste-object {:action "paste" :area area :type "object"} "Paste"]))
                [:li.reverie-bar]
                [:li.copy-object {:action "cut"} "Cut"]
                [:li.copy-object {:action "copy"} "Copy"]
@@ -105,49 +106,49 @@
            "height=640,width=400,location=0,menubar=0,resizable=1,scrollbars=1,status=0,titlebar=1"
            true)))
 (defmethod click-object-method! "move-to-area" [e]
-  (let [e$ (ev$ e)
-        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))
-        area (-> e$ (jq/attr :area))]
+  (let [$e (ev$ e)
+        object-id (-> $e (jq/parents :.reverie-object) (jq/attr :object-id))
+        area (-> $e (jq/attr :area))]
     (jq/xhr [:post "/admin/api/objects/move/area"]
             {:anchor area :object-id object-id :hit-mode "area"}
             (fn [data]
               (if (.-result data)
                 (dom/reload-main!))))))
 (defmethod click-object-method! "move-to-top" [e]
-  (let [e$ (ev$ e)
-        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+  (let [$e (ev$ e)
+        object-id (-> $e (jq/parents :.reverie-object) (jq/attr :object-id))]
     (jq/xhr [:post "/admin/api/objects/move"]
             {:object-id object-id :hit-mode "top"}
             (fn [data]
               (if (.-result data)
                 (dom/reload-main!))))))
 (defmethod click-object-method! "move-to-bottom" [e]
-  (let [e$ (ev$ e)
-        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+  (let [$e (ev$ e)
+        object-id (-> $e (jq/parents :.reverie-object) (jq/attr :object-id))]
     (jq/xhr [:post "/admin/api/objects/move"]
             {:object-id object-id :hit-mode "bottom"}
             (fn [data]
               (if (.-result data)
                 (dom/reload-main!))))))
 (defmethod click-object-method! "move-up" [e]
-  (let [e$ (ev$ e)
-        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+  (let [$e (ev$ e)
+        object-id (-> $e (jq/parents :.reverie-object) (jq/attr :object-id))]
     (jq/xhr [:post "/admin/api/objects/move"]
             {:object-id object-id :hit-mode "up"}
             (fn [data]
               (if (.-result data)
                 (dom/reload-main!))))))
 (defmethod click-object-method! "move-down" [e]
-  (let [e$ (ev$ e)
-        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+  (let [$e (ev$ e)
+        object-id (-> $e (jq/parents :.reverie-object) (jq/attr :object-id))]
     (jq/xhr [:post "/admin/api/objects/move"]
             {:object-id object-id :hit-mode "down"}
             (fn [data]
               (if (.-result data)
                 (dom/reload-main!))))))
 (defmethod click-object-method! "cut" [e]
-  (let [e$ (ev$ e)
-        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+  (let [$e (ev$ e)
+        object-id (-> $e (jq/parents :.reverie-object) (jq/attr :object-id))]
     (jq/xhr [:post "/admin/api/objects/cut"]
             {:object-id object-id}
             (fn [data]
@@ -161,8 +162,8 @@
                       dom/$m
                       (jq/add-class :reverie-ready-for-cut))))))))
 (defmethod click-object-method! "copy" [e]
-  (let [e$ (ev$ e)
-        object-id (-> e$ (jq/parents :.reverie-object) (jq/attr :object-id))]
+  (let [$e (ev$ e)
+        object-id (-> $e (jq/parents :.reverie-object) (jq/attr :object-id))]
     (jq/xhr [:post "/admin/api/objects/copy"]
             {:object-id object-id}
             (fn [data]
@@ -175,23 +176,25 @@
                   (-> (str "div[object-id='" object-id "']")
                       dom/$m
                       (jq/add-class :reverie-ready-for-copy))))))))
-(defmethod click-object-method! "paste-area" [e]
-  (let [e$ (ev$ e)
+(defmethod click-object-method! "paste" [e]
+  (let [$e (ev$ e)
         object-id (or (-> @meta/data :edits :object :cut)
                       (-> @meta/data :edits :object :copy))
-        area nil]
-    (jq/xhr [:post "/admin/api/objects/copy"]
-            {:object-id object-id}
+        area (jq/attr $e :area)
+        type (jq/attr $e :type)
+        data (merge {:area area
+                     :type type}
+                    (case type
+                      "object" {:object-id object-id}
+                      "area" {:page-serial (get-in @meta/data [:pages :current])}
+                      {}))]
+    (jq/xhr [:post "/admin/api/objects/paste"]
+            data
             (fn [data]
               (if (.-result data)
                 (do
                   (meta/sync!)
-                  (doseq [obj (-> :.reverie-object dom/$m)]
-                    (jq/remove-class (jq/$ obj) :reverie-ready-for-copy)
-                    (jq/remove-class (jq/$ obj) :reverie-ready-for-cut))
-                  (-> (str "div[object-id='" object-id "']")
-                      dom/$m
-                      (jq/add-class :reverie-ready-for-copy))))))))
+                  (dom/reload-main!)))))))
 (defmethod click-object-method! :default [e]
   (js/alert "No method defined"))
 
