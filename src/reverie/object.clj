@@ -58,6 +58,7 @@
                  first)]
     (case cmd
       :name-object [data (keyword (:name obj))]
+      :data-object [data obj]
       data)))
 
 (defn add! [{:keys [page-id name area]} obj]
@@ -73,6 +74,10 @@
         real-obj (k/insert (get-object-entity name)
                            (k/values (assoc obj :object_id (:id page-obj))))]
     page-obj))
+
+(defn copy! [object-id]
+  (let [[obj {:keys [name area page_id]}] (get object-id :data-object)]
+    (add! {:page-id page_id :name name :area area} (dissoc obj :object_id))))
 
 (defn update! [object-id obj-data]
   (let [table (-> object (k/select (k/where {:id object-id})) first :name get-object-entity)]
@@ -92,12 +97,45 @@
          (f request obj (:params request))]
         (f request obj (:params request))))))
 
-(defn move! [{:keys [object-id hit-mode anchor]}]
+(defn move! [{:keys [object-id hit-mode anchor page-serial after-object-id]}]
   (let [{page-id :page_id area :area} (-> object (k/select (k/where {:id object-id})) first)
         objs (vec (map :id (k/select object
                                      (k/where {:page_id page-id
                                                :area area}))))]
+    (println hit-mode)
     (case hit-mode
+      "object-paste" (let [{page-id :page_id} (first (k/select object
+                                                               (k/where {:id after-object-id})))
+                           objs (vec (map :id (k/select object
+                                                        (k/where {:page_id page-id
+                                                                  :area (util/kw->str anchor)}))))
+                           new-order (loop [loc (zip/vector-zip objs)]
+                                       (let [next-loc (zip/next loc)]
+                                         (if (zip/end? next-loc)
+                                           (zip/root (zip/append-child (zip/vector-zip objs) object-id))
+                                           (let [node-value (zip/node next-loc)]
+                                             (if (= node-value after-object-id)
+                                               (zip/root (zip/insert-right next-loc object-id))
+                                               (recur next-loc))))))]
+                       (k/update object
+                               (k/set-fields {:area (util/kw->str anchor)
+                                              :page_id page-id})
+                               (k/where {:id object-id}))
+                       (doseq [[obj-id order] (map vector new-order (range 1 (+ 1 (count new-order))))]
+                         (k/update object
+                                   (k/set-fields {:order order})
+                                   (k/where {:id obj-id})))
+                       true)
+      "area-paste" (let [{page-id :id} (first (k/select page
+                                                        (k/where {:serial page-serial
+                                                                  :version 0})))]
+                     (k/update object
+                               (k/set-fields {:order (get-last-order {:object-id object-id
+                                                                      :area (util/kw->str anchor)})
+                                              :area (util/kw->str anchor)
+                                              :page_id page-id})
+                               (k/where {:id object-id}))
+                     true)
       "area" (do
                (k/update object
                          (k/set-fields {:order (get-last-order {:object-id object-id
@@ -107,7 +145,7 @@
                true)
       "up" (let [new-order (loop [loc (zip/vector-zip objs)]
                              (let [next-loc (zip/next loc)]
-                               (if (nil? next-loc)
+                               (if (zip/end? next-loc)
                                  (zip/root loc)
                                  (let [node-value (zip/node next-loc)]
                                    (if (= object-id node-value)
@@ -125,7 +163,7 @@
              true)
       "down" (let [new-order (loop [loc (zip/vector-zip objs)]
                                (let [next-loc (zip/next loc)]
-                                 (if (nil? next-loc)
+                                 (if (zip/end? next-loc)
                                    (zip/root loc)
                                    (let [node-value (zip/node next-loc)]
                                      (if (= object-id node-value)
@@ -144,7 +182,7 @@
                true)
       "top" (let [new-order (loop [loc (zip/vector-zip objs)]
                               (let [next-loc (zip/next loc)]
-                                (if (nil? next-loc)
+                                (if (zip/end? next-loc)
                                   (zip/root loc)
                                   (let [node-value (zip/node next-loc)]
                                     (if (= object-id node-value)
@@ -163,7 +201,7 @@
               true)
       "bottom" (let [new-order (loop [loc (zip/vector-zip objs)]
                                  (let [next-loc (zip/next loc)]
-                                   (if (nil? next-loc)
+                                   (if (zip/end? next-loc)
                                      (zip/root loc)
                                      (let [node-value (zip/node next-loc)]
                                        (if (= object-id node-value)

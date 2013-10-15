@@ -59,14 +59,28 @@
                                                                  :action :copy})
      {:result true
       :object (select-keys obj [:page_id :id])})]
-  [:post ["/paste" {:keys [object-id area page-serial type]}]
+  [:post ["/paste" {:keys [object-id area page-serial type after-object-id action]}]
    (let [u (user/get)
-         [object-id page-serial] [(read-string object-id) (read-string page-serial)]
+         object-id (read-string object-id)
          obj (get-in @atoms/settings [:edits :objects object-id])]
      (if (= (:name u) (:user obj))
-       (do
-         (updated/via-object object-id)
-         {:result true})
+       (case type
+         "object" (do
+                    (updated/via-object object-id)
+                    (swap! atoms/settings update-in [:edits :objects] dissoc object-id)
+                    {:result (object/move! {:object-id object-id
+                                            :hit-mode "object-paste"
+                                            :anchor area
+                                            :after-object-id (read-string after-object-id)})})
+         "area" (let [page-serial (read-string page-serial)
+                      p (page/get {:serial page-serial :version 0})]
+                  (updated/via-page (:id p))
+                  (swap! atoms/settings update-in [:edits :objects] dissoc object-id)
+                  {:result (object/move! {:object-id object-id
+                                          :page-serial page-serial
+                                          :hit-mode "area-paste"
+                                          :anchor area})})
+         {:result false})
        {:result false}))]
   [:post ["/delete" {:keys [object-id]}]
    (let [object-id (read-string object-id)

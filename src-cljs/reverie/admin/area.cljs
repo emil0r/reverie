@@ -37,7 +37,7 @@
                     [:li.reverie-bar]
                     [:li.paste-object {:action "paste" :area area :type "area"} "Paste"]))]))))
 
-(defn- create-object-menu! [$elem {:keys [area]}]
+(defn- create-object-menu! [$elem {:keys [area object-id]}]
   (hide-object-menu!)
   (jq/append $elem
              (crate/html
@@ -47,7 +47,7 @@
                (if (paste?)
                  (list
                   [:li.reverie-bar]
-                  [:li.paste-object {:action "paste" :area area :type "object"} "Paste"]))
+                  [:li.paste-object {:action "paste" :area area :type "object" :object-id object-id} "Paste"]))
                [:li.reverie-bar]
                [:li.copy-object {:action "cut"} "Cut"]
                [:li.copy-object {:action "copy"} "Copy"]
@@ -85,10 +85,15 @@
 
 (defn- click-object! [e]
   (.stopPropagation e)
-  (-> e ev$
-      (create-object-menu! {:area (-> e ev$
-                                      (jq/parents :.reverie-area)
-                                      (jq/attr :area))})))
+  (let [$e (ev$ e)]
+    (create-object-menu!
+     $e
+     {:object-id (-> $e
+                     (jq/parents :.reverie-object)
+                     (jq/attr :object-id))
+      :area (-> $e
+                (jq/parents :.reverie-area)
+                (jq/attr :area))})))
 
 (defmulti click-object-method! (fn [e] (-> e .-target jq/$ (jq/attr :action))))
 (defmethod click-object-method! "delete" [e]
@@ -178,16 +183,22 @@
                       (jq/add-class :reverie-ready-for-copy))))))))
 (defmethod click-object-method! "paste" [e]
   (let [$e (ev$ e)
-        object-id (or (-> @meta/data :edits :object :cut)
-                      (-> @meta/data :edits :object :copy))
+        cut-id (-> @meta/data :edits :object :cut)
+        copy-id (-> @meta/data :edits :object :copy)
+        object-id (or cut-id
+                      copy-id)
         area (jq/attr $e :area)
         type (jq/attr $e :type)
         data (merge {:area area
-                     :type type}
+                     :type type
+                     :object-id object-id
+                     :action (if cut-id "cut" "copy")}
                     (case type
-                      "object" {:object-id object-id}
+                      "object" {:after-object-id (jq/attr $e :object-id)}
                       "area" {:page-serial (get-in @meta/data [:pages :current])}
                       {}))]
+    (util/log $e)
+    (util/log type)
     (jq/xhr [:post "/admin/api/objects/paste"]
             data
             (fn [data]
@@ -219,7 +230,8 @@
       (jq/on :click :.reverie-area-panel nil click-area!)
       (jq/delegate ".reverie-objects>li" :click click-area-menu-objects!)
       (jq/delegate :.reverie-object-panel :click click-object!)
-      (jq/delegate ".reverie-object-menu>li" :click click-object-method!)))
+      (jq/delegate ".reverie-object-menu>li" :click click-object-method!)
+      (jq/delegate ".reverie-area-menu>li.paste-object" :click click-object-method!)))
 
 (defn init []
   (doseq [area (-> :.reverie-area dom/$m)]
