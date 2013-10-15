@@ -183,8 +183,21 @@
                                       (-> t-data
                                           (dissoc :id)
                                           (assoc :object_id (:id o-data))))
-                                    obj-data copied)))
-         )))
+                                    obj-data copied)))))
+      ;; delete objects that are published elsewhere after a cut->paste operation
+      (doseq [[table objs] objs-to-copy]
+        (let [serial (:serial (first objs))
+              other-pages (map :id (k/select page
+                                             (k/fields :id)
+                                             (k/where {:serial (:serial p-new)})))
+              objs-to-delete (k/select object
+                                       (k/where {:serial serial
+                                                 :page_id [not-in other-pages]}))
+              data-to-delete (k/select table
+                                       (k/where {:object_id [in (map :id objs-to-delete)]}))]
+          (k/delete table (k/where {:id [in (map :id data-to-delete)]}))
+          (k/delete object (k/where {:id [in (map :id objs-to-delete)]})))))
+    
     
     (update-route! (:uri p) (assoc (second (get-route (:uri p))) :published? true))
     request))

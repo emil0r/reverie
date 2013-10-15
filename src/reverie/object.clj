@@ -77,7 +77,7 @@
 
 (defn copy! [object-id]
   (let [[obj {:keys [name area page_id]}] (get object-id :data-object)]
-    (add! {:page-id page_id :name name :area area} (dissoc obj :object_id))))
+    (add! {:page-id page_id :name name :area area} (dissoc obj :object_id :id))))
 
 (defn update! [object-id obj-data]
   (let [table (-> object (k/select (k/where {:id object-id})) first :name get-object-entity)]
@@ -102,7 +102,6 @@
         objs (vec (map :id (k/select object
                                      (k/where {:page_id page-id
                                                :area area}))))]
-    (println hit-mode)
     (case hit-mode
       "object-paste" (let [{page-id :page_id} (first (k/select object
                                                                (k/where {:id after-object-id})))
