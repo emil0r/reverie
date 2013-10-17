@@ -25,7 +25,7 @@ $(document).ready(function(){
     selector: "textarea",
     height: 450,
     width: 798,
-    plugins: ["link image charmap contextmenu table"],
+    plugins: ["link image charmap contextmenu table code"],
     toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
     file_browser_callback: fbc
   });
