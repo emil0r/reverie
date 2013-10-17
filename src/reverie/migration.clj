@@ -57,6 +57,7 @@
                         (varchar :name 255 :not-null)
                         (varchar :key 100 :not-null)
                         (varchar :value 255 :not-null)
+                        (varchar :type 50 :not-null)
                         (integer :page_id [:refer :page :id] :not-null))))
   (down [] (drop (table :page_attributes))))
 
