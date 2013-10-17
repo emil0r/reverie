@@ -1,5 +1,7 @@
 (ns reverie.admin.frames.object
-  (:require [noir.validation :as v]
+  (:require [clojure.java.io :as io]
+            [clojure.string :as s]
+            [noir.validation :as v]
             [reverie.admin.templates :as t]
             [reverie.admin.updated :as updated]
             [reverie.core :as rev]
@@ -7,7 +9,8 @@
             [reverie.object :as object]
             [reverie.response :as r]
             [reverie.util :as util])
-  (:use [hiccup core form]
+  (:use [cheshire.core :only [encode]]
+        [hiccup core form]
         [reverie.admin.frames.common :only [frame-options error-item]]
         [reverie.middleware :only [wrap-access]]))
 
@@ -121,17 +124,27 @@
 
   [:get ["/richtext"]
    (let [field (-> request (get-in [:params :field]) keyword)
-         field-data (-> request (get-in [:params :object-id]) read-string object/get field)]
-     (t/frame
-      (-> frame-options
-          (assoc :title "Edit object: Richtext")
-          (assoc :js ["/admin/js/jquery-1.8.3.min.js"
-                      "/admin/js/tinymce/tinymce.min.js"
-                      "/admin/js/init.tinymce.js"]))
-      [:textarea {:style "width: 400px; height: 600px;"}
-       field-data]
-      [:div.buttons
-       [:button.btn.btn-primary {:id :save} "Save"]
-       [:button.btn.btn-warning {:id :cancel} "Cancel"]]))])
+         object-id (read-string (get-in request [:params :object-id]))
+         [data object-name] (object/get object-id :name-object)
+         format (-> object-name object/get-attributes field :format)
+         field-data (data field)]
+     (let [init-tinymce-js (slurp (io/resource "public/admin/js/init.tinymce.js"))]
+      (t/frame
+       (-> frame-options
+           (assoc :title "Edit object: Richtext")
+           (assoc :js ["/admin/js/jquery-1.8.3.min.js"
+                       "/admin/js/tinymce/tinymce.min.js"]))
+       [:textarea {:style "width: 400px; height: 600px;"}
+        field-data]
+       [:div.buttons
+        [:button.btn.btn-primary {:id :save} "Save"]
+        [:button.btn.btn-warning {:id :cancel} "Cancel"]]
+       ;; add custom formats if they are specified
+       (str "<script type=\"text/javascript\">"
+            (s/replace init-tinymce-js #"\|\|extra-formats\|\|"
+                       (if format
+                         (str ", " (encode {:title "Custom", :items format}))
+                         ""))
+            "</script>"))))])
 
 
