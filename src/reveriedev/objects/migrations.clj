@@ -10,8 +10,13 @@
                         (integer :object_id [:refer :object :id] :not-null))))
   (down [] (drop (table :text))))
 
+(defmigration alter-object-text
+  (up [] (alter :add (table :text
+                       (integer :a :not-null (default 0)))))
+  (down [] (alter :drop (table :text
+                               (column :a)))))
+
 
 (defn migrate-objects []
   (binding [lobos.migration/*migrations-namespace* 'reveriedev.objects.migrations]
-    (lobos.core/migrate))
-  (binding [lobos.migration/*migrations-namespace* 'lobos.migrations]))
+    (lobos.core/migrate)))
