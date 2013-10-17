@@ -32,10 +32,14 @@
                             (or (user/admin? u)
                                 (user/role? u :edit)))]
       (if (atoms/edit? uri)
-        (if (atoms/edit? uri user-name)
+        (if (and
+             user-name
+             uri
+             (atoms/edit? uri user-name))
           (handler (assoc-in request [:reverie :mode] :edit))
           (handler (assoc-in request [:reverie :mode] :edit-other)))
         (if (and
+             user-name
              (atoms/editing? user-name)
              (not (re-find #"^/admin" uri)))
           (do
