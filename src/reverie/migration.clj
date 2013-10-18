@@ -54,7 +54,6 @@
   (up [] (create (table :page_attributes
                         (integer :id :primary-key :auto-inc :not-null)
                         (timestamp :created (default (now)) :not-null)
-                        (varchar :name 255 :not-null)
                         (varchar :key 100 :not-null)
                         (varchar :value 255 :not-null)
                         (varchar :type 50 :not-null)

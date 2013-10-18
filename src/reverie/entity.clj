@@ -1,9 +1,9 @@
 (ns reverie.entity
-  (:use [korma.core :only [defentity many-to-many belongs-to]]))
+  (:use [korma.core :only [defentity table]]))
 
 (defentity role)
 (defentity page)
-(defentity page_attributes)
+(defentity page-attributes (table :page_attributes))
 (defentity object)
 (defentity app)
 (defentity group)

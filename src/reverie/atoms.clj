@@ -1,7 +1,7 @@
 (ns reverie.atoms
   (:require [clj-time.core :as time])
   (:use [korma.core :only [select where order]]
-        [reverie.entity :only [page]]
+        [reverie.entity :only [page page-attributes]]
         [reverie.util :only [kw->str published?]]))
 
 (defonce apps (atom {}))
@@ -9,8 +9,23 @@
 (defonce objects (atom {}))
 (defonce pages (atom {}))
 (defonce routes (atom {}))
-(defonce settings (atom {:edits {}}))
+(defonce settings (atom {:edits {}
+                         :page-attributes {:hide-in-menu {:name "Hide in menu"
+                                                          :value false
+                                                          :type :boolean}
+                                           :redirect {:name "Redirect"
+                                                      :value ""
+                                                      :type :string}
+                                           :redirect-permanent {:name "Permanent redirect"
+                                                                :value ""
+                                                                :type :string}
+                                           }}))
 (defonce templates (atom {}))
+
+(defn- list-page-attributes []
+  (:page-attributes @settings))
+
+
 
 (defn edit! [uri user]
   (swap! settings assoc-in [:edits uri] {:time (time/now)
