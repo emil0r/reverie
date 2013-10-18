@@ -111,6 +111,7 @@
                                     :type type))
         tx (k/insert page (k/values (template->str tx-data)))]
     (add-route! uri {:page-id (:id tx) :type (keyword type)
+                     :serial (:serial tx)
                      :template (:template tx-data) :published? false})
     (assoc request :page-id (:id tx) :tx tx)))
 
