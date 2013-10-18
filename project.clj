@@ -1,4 +1,4 @@
-(defproject reverie "0.5.0-beta1"
+(defproject reverie "0.5.0-SNAPSHOT"
   :description "A sane CMS"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
