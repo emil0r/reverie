@@ -4,8 +4,9 @@
             [clout.core :as clout]
             [korma.core :as k]
             [reverie.app :as app]
-            [reverie.util :as util]
-            [reverie.response :as r])
+            [reverie.page.helpers :as helpers]
+            [reverie.response :as r]
+            [reverie.util :as util])
   (:use [reverie.atoms :exclude [objects]]
         reverie.entity))
 
@@ -33,9 +34,15 @@
 (defn get
   "Get a page. serial + version overrides page-id"
   [{:keys [page-id serial version] :as request}]
-  (if (and serial version)
-    (-> page (k/select (k/where {:serial serial :version version})) first util/revmap->kw)
-    (-> page (k/select (k/where {:id page-id})) first util/revmap->kw)))
+  (let [page (if (and serial version)
+               (-> page (k/select
+                         (k/where {:serial serial :version version}))
+                   first util/revmap->kw)
+               (-> page (k/select
+                         (k/where {:id page-id}))
+                   first util/revmap->kw))
+        attributes (k/select page-attributes (k/where {:page_serial (:serial page)}))]
+    (assoc page :attributes (helpers/transform-attributes attributes))))
 
 (defn- get-last-order [request]
   (let [parent (or (:parent request) (:id (get request)))]
