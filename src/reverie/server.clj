@@ -6,7 +6,11 @@
         [noir.validation :only [wrap-noir-validation]]
         [noir.util.middleware :only [wrap-strip-trailing-slash]]
         [reverie.atoms :only [get-route read-routes!]]
-        [reverie.middleware :only [wrap-admin wrap-edit-mode wrap-published?]]
+        [reverie.middleware :only [wrap-admin
+                                   wrap-edit-mode
+                                   wrap-published?
+                                   wrap-reverie-data
+                                   wrap-redirects]]
         [reverie.role :only [add-roles]]
         [reverie.util :only [generate-handler]]
         [ring.middleware.file :only [wrap-file]] ;; research for later
@@ -42,6 +46,8 @@
                         [[wrap-admin]
                          [wrap-published?]
                          [wrap-edit-mode]
+                         [wrap-redirects]
+                         [wrap-reverie-data]
                          [wrap-keyword-params]
                          [wrap-nested-params]
                          [wrap-params]
@@ -56,9 +62,8 @@
     (generate-handler
      handlers
      (fn [request]
-       (if-let [[_ route] (get-route (:uri request))]
-         (page/render (assoc request :page-type (:page-type route)))
-         (r/response-404))))))
+       (let [{{route-data :route-data} :reverie} request]
+         (page/render (assoc request :page-type (:page-type route-data))))))))
 
 (defn init []
   (add-roles :edit :publish)

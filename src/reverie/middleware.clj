@@ -1,7 +1,8 @@
 (ns reverie.middleware
-  (:require [korma.core :as k]
+  (:require [clojure.string :as s]
             [reverie.atoms :as atoms]
             [reverie.auth.user :as user]
+            [reverie.page :as page]
             [reverie.response :as r])
   (:use reverie.entity))
 
@@ -27,10 +28,7 @@
 (defn wrap-edit-mode [handler]
   (fn [{:keys [uri] :as request}]
     (let [u (user/get)
-          user-name (:name u)
-          request (assoc-in request [:reverie :editor?]
-                            (or (user/admin? u)
-                                (user/role? u :edit)))]
+          user-name (:name u)]
       (if (atoms/edit? uri)
         (if (and
              user-name
@@ -66,3 +64,42 @@
               (user/role? u roles))
         (handler request)
         (r/response-401 response)))))
+
+(defn wrap-reverie-data
+  "Add interesting reverie data into the request map for functions further down the stream. Handle 404's here as well"
+  [handler]
+  (fn [{:keys [uri] :as request}]
+    (if-let [[_ route-data] (atoms/get-route uri)]
+      (let [u (user/get)
+            editor? (or (user/admin? u)
+                        (user/role? u :edit))
+            p (page/get {:serial (:serial route-data)
+                         :version (if editor? 0 1)})]
+        (handler (-> request
+                     (assoc-in [:reverie :editor?] editor?)
+                     (assoc-in [:reverie :route-data] route-data)
+                     (assoc-in [:reverie :page] p)
+                     (assoc-in [:reverie :page-id] (:id p))
+                     (assoc-in [:reverie :page-serial] (:serial p)))))
+      r/response-404)))
+
+(defn wrap-redirects
+  "Take care of redirects"
+  [handler]
+  (fn [{:keys [uri] :as request}]
+    (if-let [[_ {:keys [serial]}] (atoms/get-route uri)]
+      (let [{p :page editor? :editor?} (:reverie request)
+            {:keys [redirect redirect-permanent]} (:attributes p)
+            redirect (s/trim (:value redirect))
+            redirect-permanent (s/trim (:value redirect-permanent))]
+        (cond
+         (re-find #"^\d+$" redirect) (let [p (page/get {:serial (read-string redirect)
+                                                        :version (if editor? 0 1)})]
+                                       (r/response-302 (:uri p)))
+         (not (s/blank? redirect)) (r/response-302 redirect)
+         (re-find #"^\d+$" redirect-permanent) (let [p (page/get {:serial (read-string redirect-permanent)
+                                                                  :version (if editor? 0 1)})]
+                                                 (r/response-301 (:uri p)))
+         (not (s/blank? redirect-permanent)) (r/response-301 redirect-permanent)
+         :else (handler request)))
+      (handler request))))

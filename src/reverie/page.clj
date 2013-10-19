@@ -82,9 +82,7 @@
                     f (:fn template)]
                 (util/middleware-wrap
                  (util/middleware-merge template-options)
-                 f (-> request
-                       (assoc-in [:reverie :page-serial] (:serial page))
-                       (assoc-in [:reverie :page-id] (:id page)))))
+                 f request))
       :page (let [request (util/shorten-uri request route-uri)
                   page-options (->> route-uri (clojure.core/get @pages) :options)
                   [_ route options f] (->> route-uri
@@ -108,8 +106,6 @@
       :app (let [page (get {:serial (:serial page-data)
                             :version (util/which-version? request)})]
              (app/render (-> request
-                             (assoc-in [:reverie :page-id] (:id page))
-                             (assoc-in [:reverie :page-serial] (:serial page))
                              (assoc-in [:reverie :app] (keyword (:app page))))))
       (r/response-404))))
 
