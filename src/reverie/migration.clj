@@ -53,10 +53,8 @@
 (defmigration init-page-attributes
   (up [] (create (table :page_attributes
                         (integer :id :primary-key :auto-inc :not-null)
-                        (timestamp :created (default (now)) :not-null)
                         (varchar :key 100 :not-null)
                         (varchar :value 255 :not-null)
-                        (varchar :type 50 :not-null)
                         (integer :page_serial :not-null))))
   (down [] (drop (table :page_attributes))))
 

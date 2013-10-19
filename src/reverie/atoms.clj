@@ -12,17 +12,20 @@
 (defonce settings (atom {:edits {}
                          :page-attributes {:hide-in-menu {:name "Hide in menu"
                                                           :value false
+                                                          :input :checkbox
                                                           :type :boolean}
                                            :redirect {:name "Redirect"
                                                       :value ""
+                                                      :input :text
                                                       :type :string}
                                            :redirect-permanent {:name "Permanent redirect"
                                                                 :value ""
+                                                                :input :text
                                                                 :type :string}
                                            }}))
 (defonce templates (atom {}))
 
-(defn- list-page-attributes []
+(defn list-page-attributes []
   (:page-attributes @settings))
 
 

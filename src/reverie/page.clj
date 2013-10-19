@@ -114,7 +114,7 @@
       (r/response-404))))
 
 (defn meta [{:keys [page-id] :as request}]
-  (k/select page_attributes (k/where {:page_id page-id})))
+  (k/select page-attributes (k/where {:page_id page-id})))
 
 (defn add! [{:keys [tx-data] :as request}]
   (let [uri (:uri tx-data)

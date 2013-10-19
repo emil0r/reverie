@@ -3,7 +3,9 @@
             reverie.admin.frames.module
             reverie.admin.frames.object
             reverie.admin.frames.url-picker
-            
+
+            [clojure.set :as cset]
+            [clojure.string :as s]
             [korma.core :as k]
             [noir.validation :as v]
             [reverie.admin.templates :as t]
@@ -79,7 +81,24 @@
   ([options th td error]
      [:tr options [:th th] [:td td error]]))
 
-(defn- page-form [{:keys [id serial parent name title type template app uri] :as p}]
+(defmulti ^:private table-row-attribute (fn [[_ {:keys [input]}]] input))
+(defmethod ^:private table-row-attribute :checkbox [[key {:keys [name value]}]]
+  (let [key (str "attribute-" (clojure.core/name key))]
+    (table-row (label key name) (check-box key value) nil)))
+(defmethod ^:private table-row-attribute :number [[key {:keys [name value]}]]
+  (let [key (str "attribute-" (clojure.core/name key))]
+    (table-row (label key name)
+               [:input {:type :number :id key :name key :value value}]
+               nil)))
+(defmethod ^:private table-row-attribute :dropdown [[key {:keys [name value options]}]]
+  (let [key (str "attribute-" (clojure.core/name key))
+        options (if (fn? options) (options) options)]
+    (table-row (label key name) (drop-down key options value) nil)))
+(defmethod ^:private table-row-attribute :default [[key {:keys [name value]}]]
+  (let [key (str "attribute-" (clojure.core/name key))]
+    (table-row (label key name) (text-field key value) nil)))
+
+(defn- page-form [{:keys [id serial parent name title type template app uri attributes] :as p}]
   (form-to
    [:post ""]
    [:table.table.small
@@ -96,6 +115,10 @@
                                                                         (clojure.core/name type))) nil)
     (table-row {:class "template"} (label :template "Template") (drop-down :template (atoms/get-templates) template) (v/on-error :template error-item))
     (table-row {:class "hidden app"} (label :app "App") (drop-down :app (atoms/get-apps) app) (v/on-error :app error-item))
+    (if-not (empty? attributes)
+      (list
+       (table-row nil [:strong "Attributes"] nil)
+       (map table-row-attribute (sort attributes))))
     (table-row nil (submit-button {:class "btn btn-primary"}
                                   (if serial
                                     "Save"
@@ -130,6 +153,22 @@
         (v/rule (conflicting-uri? serial parent uri) [:uri "The URI conflicts with another page using the same URI."])
         (v/rule (v/has-value? uri) [:uri "The URI must have a path"])))
     (not (v/errors? :name :template :app :uri))))
+
+(defn split-data [data]
+  (let [ks (filter #(not (.startsWith (name %) "attribute-")) (keys data))
+        attribute-ks (filter #(.startsWith (name %) "attribute-") (keys data))]
+    [(select-keys data ks) (into {}
+                                 (map
+                                  (fn [[key data]]
+                                    [(keyword (s/replace (name key) #"^attribute-" "")) data])
+                                  (select-keys data attribute-ks)))]))
+
+(defn post-process-attributes [attributes]
+  (let [ks (cset/intersection
+            (set (map first (filter (fn [[_ data]] (= (:type data) :boolean)) (atoms/list-page-attributes))))
+            (cset/difference (set (keys (atoms/list-page-attributes))) (set (keys attributes))))]
+    (merge attributes (into {}
+                            (map (fn [k] [k "false"]) ks)))))
 
 
 (rev/defpage "/admin/frame/options" {:middleware [[wrap-access :edit]]}
@@ -295,20 +334,34 @@
    (let [serial (read-string (get-in request [:params :serial]))
          p (page/get {:serial serial :version 0})
          parent (page/get {:serial (read-string parent) :version 0})
-         base-uri (:uri parent)
-         tx (:tx (page/update! {:serial serial
-                                :version 0
-                                :tx-data
-                                (assoc p
-                                  :uri (util/join-uri base-uri uri) :order 0
-                                  :name name
-                                  :title title
-                                  :type type
-                                  :app (or app "")
-                                  :template (or template "")
-                                  :updated (sqlfn now))}))]
+         base-uri (:uri parent)]
      (if (valid-page? data)
-       (do
+       (let [[_ attributes] (split-data data)
+             tx (:tx (page/update! {:serial serial
+                                    :version 0
+                                    :tx-data
+                                    (->
+                                     p
+                                     (dissoc :attributes)
+                                     (assoc
+                                         :uri (util/join-uri base-uri uri) :order 0
+                                         :name name
+                                         :title title
+                                         :type type
+                                         :app (or app "")
+                                         :template (or template "")
+                                         :updated (sqlfn now)))}))]
+         ;; delete page attributes and add new ones
+         (k/delete reverie.entity/page-attributes (k/where {:page_serial (:serial p)}))
+         (k/insert reverie.entity/page-attributes
+                   (k/values
+                    (map
+                     (fn [[key value]]
+                       {:key (util/kw->str key)
+                        :value value
+                        :page_serial (:serial p)})
+                     (post-process-attributes attributes))))
+         ;; update 'updated' field in page
          (updated/via-page (:id p))
          (t/frame
           (assoc frame-options :custom-js
@@ -326,7 +379,8 @@
                                     :order (:order tx)})
                   ");"])
           [:nav "Meta"]
-          [:h2 "Updated" (:name p)]))
+          [:h2 "Updated: " (:name p)]
+          (page-form (page/get {:serial serial :version 0}))))
        (t/frame
         frame-options
         [:nav "Meta"]
