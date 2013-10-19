@@ -160,7 +160,7 @@
             (k/where {:serial serial :version -1})))
 
 (defn publish! [request]
-  (let [p (get (assoc request :version 0))
+  (let [p (dissoc (get (assoc request :version 0)) :attributes)
         objs-to-copy (group-by
                       #(:name %)
                       (k/select object
@@ -222,14 +222,8 @@
     request))
 
 (defn unpublish! [request]
-  (let [p (get (assoc request :version 0))
-        pages (k/select page (k/where {:serial (:serial p)
-                                       :active true
-                                       :version [> 0]}))]
-    (doseq [p pages]
-      (k/update page
-                (k/set-fields {:version (+ 1 (:version p))})
-                (k/where {:id (:id p)})))
+  (let [p (get (assoc request :version 0))]
+    (k/delete page (k/where {:serial (:serial p) :version 1}))
     (update-route! (:uri p) (assoc (get-route (:uri p)) :published? false))
     request))
 
