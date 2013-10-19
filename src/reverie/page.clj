@@ -31,6 +31,17 @@
 (defn get* [w]
   (k/select page (k/where w) (k/order :order)))
 
+(defn children
+  "Get the children of a page including page attributes"
+  [{:keys [serial version]}]
+  (let [children (k/select page (k/where {:parent serial :version version}))
+        attributes (k/select page-attributes (k/where
+                                              {:page_serial [in (map :serial children)]}))]
+    (map (fn [c]
+           (assoc c :attributes (helpers/transform-attributes
+                                 (filter #(= (:page_serial %) (:serial c))
+                                         attributes)))) children)))
+
 (defn get
   "Get a page. serial + version overrides page-id"
   [{:keys [page-id serial version] :as request}]
