@@ -294,7 +294,7 @@
    (if (valid-page? data)
      (let [p (page/get {:serial (read-string parent) :version 0})
            base-uri (:uri p)
-           tx (:tx (page/add! {:parent (:id p)
+           tx (:tx (page/add! {:parent (:serial p)
                                :tx-data {:uri (util/join-uri base-uri uri)
                                          :name name :app (or app "")
                                          :title title :parent (read-string parent)

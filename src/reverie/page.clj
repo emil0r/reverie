@@ -56,12 +56,12 @@
     (assoc page :attributes (helpers/transform-attributes attributes))))
 
 (defn- get-last-order [request]
-  (let [parent (or (:parent request) (:id (get request)))]
+  (let [parent (or (:parent request) (:serial (get request)))]
     (+ 1
        (or
         (-> page (k/select (k/aggregate (max :order) :order)
                            (k/where {:parent parent})) first :order)
-        -1))))
+        0))))
 
 (defn objects
   "Get objects associated with a page. page-id required"
