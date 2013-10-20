@@ -81,7 +81,7 @@
                      (assoc-in [:reverie :page] p)
                      (assoc-in [:reverie :page-id] (:id p))
                      (assoc-in [:reverie :page-serial] (:serial p)))))
-      r/response-404)))
+      (r/response-404))))
 
 (defn wrap-redirects
   "Take care of redirects"
