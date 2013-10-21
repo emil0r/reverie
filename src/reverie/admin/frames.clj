@@ -24,12 +24,17 @@
         [reverie.admin.frames.common :only [frame-options error-item]]
         [reverie.middleware :only [wrap-access]]))
 
+(defn- exists? [x]
+  (not (s/blank? x)))
 
 (defn- user-info [user]
   (cond
-   (and (:first_name user) (:last_name user)) (str (:first_name user) " " (:last_name user))
-   (:first_name user) (:first_name user)
-   (:last_name user) (:last_name user)
+   (and (exists? (:first_name user))
+        (exists? (:last_name user))) (str (:first_name user)
+                                          " "
+                                          (:last_name user))
+   (exists? (:first_name user)) (:first_name user)
+   (exists? (:last_name user)) (:last_name user)
    :else (:name user)))
 
 (rev/defpage "/admin/frame/left" {:middleware [[wrap-access :edit]]}
