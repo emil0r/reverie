@@ -58,7 +58,7 @@
                                [:div.btn.btn-primary.publish
                                 {:serial (:serial data)
                                  :page-id (:id data)}
-                                "Publish"]
+                                "Publishing"]
                                [:div.btn.btn-primary.meta
                                 {:serial (:serial data)
                                  :page-id (:id data)}

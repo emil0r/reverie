@@ -155,6 +155,20 @@
                            :version 0})
             (k/where {:serial serial :version -1})))
 
+(defn- delete-published!
+  "Delete the published page. Only for internal use"
+  [p]
+  (if-let [p-published (get {:serial (:serial p) :version 1})]
+    (let [objs-to-delete (group-by
+                          #(:name %)
+                          (k/select object (k/where {:page_id (:id p-published)})))]
+      (doseq [[table objs] objs-to-delete]
+        (k/delete table
+                  (k/where {:object_id [in (map :id objs)]})))
+      (k/delete object (k/where {:page_id (:id p-published)}))
+      (k/delete page
+                (k/where {:serial (:serial p) :version 1})))))
+
 (defn publish! [request]
   (let [p (dissoc (get (assoc request :version 0)) :attributes)
         objs-to-copy (group-by
@@ -163,16 +177,7 @@
                                 (k/where {:page_id (:id p)})
                                 (k/order :id)))]
     ;; delete the published version
-    (if-let [p-published (get {:serial (:serial p) :version 1})]
-      (let [objs-to-delete (group-by
-                            #(:name %)
-                            (k/select object (k/where {:page_id (:id p-published)})))]
-        (doseq [[table objs] objs-to-delete]
-          (k/delete table
-                    (k/where {:object_id [in (map :id objs)]})))
-        (k/delete object (k/where {:page_id (:id p-published)}))
-        (k/delete page
-                  (k/where {:serial (:serial p) :version 1}))))
+    (delete-published! p)
     ;; publish the edited version
     (let [p-new (k/insert page
                           (k/values (-> p
@@ -219,9 +224,15 @@
 
 (defn unpublish! [request]
   (let [p (get (assoc request :version 0))]
-    (k/delete page (k/where {:serial (:serial p) :version 1}))
-    (update-route! (:uri p) (assoc (get-route (:uri p)) :published? false))
+    (delete-published! p)
+    (update-route! (:uri p) (assoc (second (get-route (:uri p))) :published? false))
     request))
+
+(defn published? [{:keys [serial id page-id]}]
+  (let [id (or page-id id)]
+    (if serial
+      (not (zero? (count (k/select page (k/where {:serial serial :version 1})))))
+      (= 1 (-> page (k/select (k/where {:id id})) first :version)))))
 
 (defn updated! [{:keys [page-id serial]}]
   (let [w (if serial {:serial serial :version 0} {:id page-id})

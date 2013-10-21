@@ -198,7 +198,9 @@
                   :template template :app app :uri uri})))]
 
   [:get ["/publish/:serial"]
-   (let [p (page/get {:serial (read-string serial) :version 0})]
+   (let [serial (read-string serial)
+         p (page/get {:serial serial :version 0})
+         published? (page/published? {:serial serial})]
      (t/frame
       frame-options
       [:h2 "Publishing"]
@@ -208,17 +210,27 @@
                 [:tr [:th "Title"] [:td (:title p)]]
                 [:tr [:th "Created"] [:td (:created p)]]
                 [:tr [:th "Updated"] [:td (:updated p)]]
-                [:tr [:th "Published?"] [:td (util/published? p)]]
-                [:tr [:th] [:td (submit-button {:class "btn btn-primary"} "Publish")]]])))]
+                [:tr [:th "Published?"] [:td published?]]
+                [:tr [:th] [:td [:input {:type :submit :name :_publish :id :_publish
+                                         :value "Publish" :class "btn btn-primary"}]]]
+                (if published?
+                    [:tr [:th] [:td [:input {:type :submit :name :_unpublish :id :_unpublish
+                                             :value "Unpublish" :class "btn btn-warning"}]]])])))]
   [:post ["/publish/:serial" data]
-   (let [p (page/get {:serial (read-string serial) :version 0})]
+   (let [serial (read-string serial)
+         p (page/get {:serial serial :version 0})
+         u (user/get)]
      (t/frame
       frame-options
       [:h2 "Publishing"]
-      (if (or (user/admin?) (user/staff?))
-        (do
-          (page/publish! {:serial (read-string serial)})
-          [:div.success "Published!"])
+      (if (or (user/admin? u) (user/role? u :publish))
+        (cond
+         (:_publish data) (do
+                            (page/publish! {:serial serial})
+                            [:div.success "Published!"])
+         (:_unpublish data) (do
+                              (page/unpublish! {:serial serial})
+                              [:div.success "Unpublished!"]))
         [:div.error "You are not allowed to publish"])))]
 
   [:get ["/restore"]
