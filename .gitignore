@@ -22,3 +22,4 @@ media
 *.org
 blackboard/
 /pom.xml.asc
+/resources/public/admin/js/main-simple.js

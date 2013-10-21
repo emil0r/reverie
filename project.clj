@@ -39,7 +39,14 @@
   :cljsbuild {:builds {:prod {:source-paths ["src-cljs"]
                               :compiler {:output-to "resources/public/admin/js/main.js"
                                          :optimizations :advanced
-                                         :pretty-print false}
+                                         :pretty-print false
+                                         :externs ["externs/jquery-1.8.js"
+                                                   "externs/dynatree.js"]}
+                              :jar true}
+                       :prod-simple {:source-paths ["src-cljs"]
+                                     :compiler {:output-to "resources/public/admin/js/main-simple.js"
+                                                :optimizations :simple
+                                                :pretty-print false}
                               :jar true}
                        :dev {:source-paths ["src-cljs"]
                              :compiler {:output-to "resources/public/admin/js/main-dev.js"
