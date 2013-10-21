@@ -62,8 +62,7 @@
   (meta/read! (fn []
                 (if (:init-root-page? @meta/data)
                   (options/new-root-page!))
-                (tree/init)
-                (dev/start-repl))))
+                (tree/init))))
 
 (jq/document-ready
  (fn []
