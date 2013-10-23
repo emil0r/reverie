@@ -86,12 +86,18 @@
      reverse
      first)))
 (defn update-route!
-  "Update the route. This means remove old route and plug in new route"
+  "Update the route. Remove old route and add new route"
   [new-uri {:keys [uri] :as route}]
   (remove-route! uri)
   (add-route! new-uri route))
+(defn replace-route-data!
+  "Replace the route data for the specified URI"
+  [uri data]
+  (if-let [[uri route-data] (get-route uri)]
+    (swap! routes assoc uri data)))
+
 (defn update-route-data!
-  "Update the route data associated with the specific uri"
+  "Update the route data associated with the specific URI"
   [uri k v]
   (if-let [[uri route-data] (get-route uri)]
     (swap! routes assoc uri (assoc route-data k v))))

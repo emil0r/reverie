@@ -129,17 +129,28 @@
                      :template (:template tx-data) :published? false})
     (assoc request :page-id (:id tx) :tx tx)))
 
-(defn update! [{:keys [tx-data] :as request}]
+(defn update!
+  "Update a page with the tx-data. Also updates control structures"
+  [{:keys [tx-data] :as request}]
   (let [p (get request)
         old-uri (:uri p)
         new-uri (:uri tx-data)
+        tx-data (util/revmap->kw tx-data)
+        route-data (-> old-uri
+                       get-route
+                       second
+                       (assoc :type (:type tx-data))
+                       (assoc :template (:template tx-data))
+                       (assoc :app (:app tx-data)))
+        tx-data (clean-save-data (util/revmap->str tx-data))
         result (k/update page
-                         (k/set-fields (clean-save-data (util/revmap->str tx-data)))
+                         (k/set-fields tx-data)
                          (k/where {:id (:id p)}))]
     (if (and
          (not (nil? new-uri))
          (not= new-uri old-uri))
-      (update-route! new-uri (get-route old-uri)))
+      (update-route! new-uri route-data)
+      (replace-route-data! old-uri route-data))
     {:tx result}))
 
 (defn delete! [{:keys [serial]}]

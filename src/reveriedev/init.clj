@@ -4,6 +4,7 @@
             [reverie.auth.user :as user]
             [reverie.server :as server]
             reveriedev.templates.main
+            reveriedev.apps.gallery
             reveriedev.objects.migrations
             reveriedev.objects.text)
   (:use [korma.db :only [defdb postgres]]
