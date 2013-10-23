@@ -16,10 +16,11 @@ pom.xml
 /.repl
 .nrepl-port
 out
-resources/public/admin/js/main-dev.js
-resources/public/admin/js/main.js
 media
 *.org
 blackboard/
 /pom.xml.asc
+/resources/public/admin/js/main-dev.js
+/resources/public/admin/js/main.js
 /resources/public/admin/js/main-simple.js
+/resources/public/admin/css/main.css
