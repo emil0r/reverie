@@ -9,7 +9,8 @@
 (defonce objects (atom {}))
 (defonce pages (atom {}))
 (defonce routes (atom {}))
-(defonce settings (atom {:edits {}
+(defonce settings (atom {:server-mode :prod
+                         :edits {}
                          :page-attributes {:hide-in-menu {:name "Hide in menu"
                                                           :value false
                                                           :input :checkbox
@@ -25,10 +26,12 @@
                                            }}))
 (defonce templates (atom {}))
 
+
+(defn server-mode? [mode]
+  (= (:server-mode @settings) mode))
+
 (defn list-page-attributes []
   (:page-attributes @settings))
-
-
 
 (defn edit! [uri user]
   (swap! settings assoc-in [:edits uri] {:time (time/now)

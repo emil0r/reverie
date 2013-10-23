@@ -42,13 +42,18 @@
                {:css ["/admin/css/font-awesome.min.css"
                       "/admin/css/main.css"
                       "/admin/css/dyna-skin/ui.dynatree.css"]
-                :js ["/admin/js/jquery-1.8.3.min.js"
-                     "/admin/js/jquery-ui.custom.js"
-                     "/admin/js/jquery.dynatree-1.2.4.js"
-                     "/admin/js/main-dev.js"
-                     "/admin/js/dev.js"
-                     "/admin/js/eyespy.js"
-                     "/admin/js/init.js"]}
+                :js (if (atoms/server-mode? :debug)
+                      ["/admin/js/jquery-1.8.3.min.js"
+                       "/admin/js/jquery-ui.custom.js"
+                       "/admin/js/jquery.dynatree-1.2.4.js"
+                       "/admin/js/main-dev.js"
+                       "/admin/js/dev.js"
+                       "/admin/js/eyespy.js"
+                       "/admin/js/init.js"]
+                      ["/admin/js/jquery-1.8.3.min.js"
+                       "/admin/js/jquery-ui.custom.js"
+                       "/admin/js/jquery.dynatree.min.js"
+                       "/admin/js/main.js"])}
                [:div.user-info "Logged in as " [:span (-> (user/get) user-info)]
                 [:div.logout [:a {:href "#"}
                               "Logout" [:i.icon-off]]]]

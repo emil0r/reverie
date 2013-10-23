@@ -17,7 +17,9 @@
   [x]
   (= -1 (:version x)))
 
-(defn mode? [request mode]
+(defn mode?
+  "Mode in editing [:edit, :edit-other, :view]"
+  [request mode]
   (= (get-in request [:reverie :mode]) mode))
 
 (defn shorten-uri

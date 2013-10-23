@@ -22,7 +22,8 @@
                  [slingshot "0.10.3"]
                  [bultitude "0.1.7"]
                  [lib-noir "0.6.6"]]
-  :ring {:handler reveriedev.dev/app}
+  :ring {:init reveriedev.dev/init
+         :handler reveriedev.dev/app}
   :profiles {:dev {:dependencies [[midje "1.6-alpha1"]
                                   [com.stuartsierra/lazytest "1.2.3"]
                                   [ring-mock "0.1.3"]
@@ -41,13 +42,11 @@
                                          :optimizations :advanced
                                          :pretty-print false
                                          :externs ["externs/jquery-1.8.js"
-                                                   "externs/dynatree.js"]}
-                              :jar true}
+                                                   "externs/dynatree.js"]}}
                        :prod-simple {:source-paths ["src-cljs"]
                                      :compiler {:output-to "resources/public/admin/js/main-simple.js"
                                                 :optimizations :simple
-                                                :pretty-print false}
-                              :jar true}
+                                                :pretty-print false}}
                        :dev {:source-paths ["src-cljs"]
                              :compiler {:output-to "resources/public/admin/js/main-dev.js"
                                         :optimizations :whitespace

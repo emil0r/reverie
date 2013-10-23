@@ -13,7 +13,7 @@ pom.xml
 /projects
 .DS_Store
 /.lein-repl-history
-.repl
+/.repl
 .nrepl-port
 out
 resources/public/admin/js/main-dev.js
