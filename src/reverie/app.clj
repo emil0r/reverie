@@ -12,7 +12,8 @@
   "Renders the app"
   [{:keys [reverie] :as request}]
   (if-let [app (@apps (:app reverie))]
-    (let [request (util/shorten-uri request (:uri page))
+    (let [p (:page reverie)
+          request (util/shorten-uri request (:uri p))
           app-options (:options app)
           [_ route options f] (->> app
                                    :fns

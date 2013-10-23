@@ -103,8 +103,7 @@
                   (util/middleware-wrap
                    (util/middleware-merge page-options options)
                    f request (clout/route-matches route request) (:params request)))))
-      :app (let [page (get {:serial (:serial page-data)
-                            :version (util/which-version? request)})]
+      :app (let [page (get-in request [:reverie :page])]
              (app/render (-> request
                              (assoc-in [:reverie :app] (keyword (:app page))))))
       (r/response-404))))

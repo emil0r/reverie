@@ -5,4 +5,6 @@
 
 (defapp gallery {}
   [:get ["/"]
-   (html5 "my gallery")])
+   (html5 "my gallery")]
+  [:get ["/:gallery"]
+   (html5 gallery)])
