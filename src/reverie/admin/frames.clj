@@ -207,13 +207,13 @@
       (page-form {:parent (read-string parent) :name name :title title :type type
                   :template template :app app :uri uri})))]
 
-  [:get ["/publish/:serial"]
+  [:get ["/publish/:serial" {:middleware [[wrap-access :publish]]}]
    (let [serial (read-string serial)
          p (page/get {:serial serial :version 0})
          published? (page/published? {:serial serial})]
      (t/frame
       frame-options
-      [:h2 "Publishing"]
+      [:h2 "Publishing: " (:name p)]
       (form-to [:post ""]
                [:table.table.small
                 [:tr [:th "Name"] [:td (:name p)]]
@@ -226,22 +226,20 @@
                 (if published?
                     [:tr [:th] [:td [:input {:type :submit :name :_unpublish :id :_unpublish
                                              :value "Unpublish" :class "btn btn-warning"}]]])])))]
-  [:post ["/publish/:serial" data]
+  [:post ["/publish/:serial" {:middleware [[wrap-access :publish]]} data]
    (let [serial (read-string serial)
          p (page/get {:serial serial :version 0})
          u (user/get)]
      (t/frame
       frame-options
-      [:h2 "Publishing"]
-      (if (or (user/admin? u) (user/role? u :publish))
-        (cond
-         (:_publish data) (do
-                            (page/publish! {:serial serial})
-                            [:div.success "Published!"])
-         (:_unpublish data) (do
-                              (page/unpublish! {:serial serial})
-                              [:div.success "Unpublished!"]))
-        [:div.error "You are not allowed to publish"])))]
+      [:h2 "Publishing: " (:name p)]
+      (cond
+       (:_publish data) (do
+                          (page/publish! {:serial serial})
+                          [:div.success "Published!"])
+       (:_unpublish data) (do
+                            (page/unpublish! {:serial serial})
+                            [:div.success "Unpublished!"]))))]
 
   [:get ["/restore"]
    (let [serial (get-in request [:params :serial])
