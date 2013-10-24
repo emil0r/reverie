@@ -15,16 +15,27 @@
 (defn area-render [obj request]
   (o/render (assoc-in request [:reverie :object-id] (:id obj))))
 
+(defn with-template
+  "Used for defapp, defmodule, defpage when you want to reuse a defined template"
+  [template request areas]
+  (let [template-fn (:fn (@templates template))]
+    (:body (template-fn (-> request
+                            (assoc-in [:reverie :overriden] :with-template)
+                            (assoc-in [:reverie :overridden-areas] areas))))))
+
 (defmacro area [name]
   (let [name (keyword name)]
     `(let [~'serial (get-in ~'request [:reverie :page-serial])
            ~'request (assoc-in ~'request [:reverie :area] ~name)]
-       (if (mode? ~'request :edit)
-         [:div.reverie-area {:area ~name :page-serial ~'serial}
-          [:div.reverie-area-holder
-           [:span.reverie-area-panel (str "area " (name ~name))]]
-          (map #(area-render % ~'request) (p/objects ~'request))]
-         (map #(area-render % ~'request) (p/objects ~'request))))))
+       (case (get-in ~'request [:reverie :overriden])
+         :with-template (let [~'areas (get-in ~'request [:reverie :overridden-areas])]
+                          (get ~'areas ~name))
+         (if (mode? ~'request :edit)
+           [:div.reverie-area {:area ~name :page-serial ~'serial}
+            [:div.reverie-area-holder
+             [:span.reverie-area-panel (str "area " (name ~name))]]
+            (map #(area-render % ~'request) (p/objects ~'request))]
+           (map #(area-render % ~'request) (p/objects ~'request)))))))
 
 (defn raise-response [response]
   (throw+ {:type :ring-response :response response}))
