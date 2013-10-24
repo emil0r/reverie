@@ -3,6 +3,7 @@
             [reverie.object :as o]
             [reverie.page :as p])
   (:use clout.core
+        [hiccup.core :only [html]]
         reverie.atoms
         [reverie.helper-macros :only [object-funcs request-method]]
         [reverie.util :only [generate-handler mode?]]
@@ -31,11 +32,11 @@
          :with-template (let [~'areas (get-in ~'request [:reverie :overridden-areas])]
                           (get ~'areas ~name))
          (if (mode? ~'request :edit)
-           [:div.reverie-area {:area ~name :page-serial ~'serial}
-            [:div.reverie-area-holder
-             [:span.reverie-area-panel (str "area " (name ~name))]]
-            (map #(area-render % ~'request) (p/objects ~'request))]
-           (map #(area-render % ~'request) (p/objects ~'request)))))))
+           (html [:div.reverie-area {:area ~name :page-serial ~'serial}
+                  [:div.reverie-area-holder
+                   [:span.reverie-area-panel (str "area " (name ~name))]]
+                  (map #(area-render % ~'request) (p/objects ~'request))])
+           (html (map #(area-render % ~'request) (p/objects ~'request))))))))
 
 (defn raise-response [response]
   (throw+ {:type :ring-response :response response}))
