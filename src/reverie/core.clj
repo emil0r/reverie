@@ -46,7 +46,9 @@
   (let [template (keyword template)]
     `(swap! templates assoc ~template {:options ~options
                                        :fn (fn [~'request] (try+ {:status 200
-                                                                 :headers (or (:headers ~options) {})
+                                                                 :headers (merge
+                                                                           {"Content-Type" "text/html; charset=utf-8"}
+                                                                           (:headers ~options))
                                                                  :body ~@body}
                                                                 (catch [:type :ring-response] {:keys [~'response ~'type]}
                                                                   ~'response)))})))
@@ -66,7 +68,7 @@
            fns []]
       (if (nil? method)
         `(swap! apps assoc ~app {:options ~options :fns ~fns})
-        (recur methods (conj fns `(request-method ~method)))))))
+        (recur methods (conj fns `(request-method ~options ~method)))))))
 
 
 (defmacro defpage [path options & methods]
@@ -76,7 +78,7 @@
       (do
         (add-route! path {:type :page :uri path})
         `(swap! pages assoc ~path {:options ~options :fns ~fns}))
-      (recur methods (conj fns `(request-method ~method))))))
+      (recur methods (conj fns `(request-method ~options ~method))))))
 
 (defn get-default-module-fns []
   (:fns (get @pages "/admin/frame/module/reverie-default-module")))
@@ -93,4 +95,4 @@
           `(do
              (swap! modules assoc ~name ~options)
              (swap! pages assoc ~path {:options ~options :fns ~fns})))
-        (recur methods (conj fns `(request-method ~method)))))))
+        (recur methods (conj fns `(request-method ~options ~method)))))))

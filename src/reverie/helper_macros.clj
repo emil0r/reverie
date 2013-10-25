@@ -26,7 +26,7 @@
 
 (defmacro request-method
   "Pick apart the request methods specified in other macros"
-  [[method options & body]]
+  [def-options [method options & body]]
   (case method
     :get (let [[route _2 _3] options
                route (clean-route route)
@@ -38,7 +38,10 @@
                keys (vec (map #(-> % name symbol) (:keys route)))
                func `(fn [~'request {:keys ~keys}]
                         (try+ {:status 200
-                               :headers (or (:headers ~method-options) {})
+                               :headers (merge
+                                         {"Content-Type" "text/html; charset=utf-8"}
+                                         (:headers ~def-options)
+                                         (:headers ~method-options))
                                :body ~@body}
                               (catch [:type :ring-response] {:keys [~'response]}
                                 ~'response)))]
@@ -59,7 +62,10 @@
           keys (vec (map #(-> % name symbol) (:keys route)))
           func `(fn [~'request {:keys ~keys} ~form-data]
                    (try+ {:status 200
-                          :headers (or (:headers ~method-options) {})
+                          :headers (merge
+                                    {"Content-Type" "text/html; charset=utf-8"}
+                                    (:headers ~def-options)
+                                    (:headers ~method-options))
                           :body ~@body}
                          (catch [:type :ring-response] {:keys [~'response]}
                            ~'response)))]
