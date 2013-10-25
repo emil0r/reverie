@@ -13,6 +13,7 @@
                                    wrap-redirects]]
         [reverie.role :only [add-roles]]
         [reverie.util :only [generate-handler]]
+        [ring.middleware.content-type :only [wrap-content-type]]
         [ring.middleware.file :only [wrap-file]] ;; research for later
         [ring.middleware.file-info :only [wrap-file-info]]
         [ring.middleware.keyword-params :only [wrap-keyword-params]]
@@ -48,6 +49,7 @@
                          [wrap-edit-mode]
                          [wrap-redirects]
                          [wrap-reverie-data]
+                         [wrap-content-type]
                          [wrap-keyword-params]
                          [wrap-nested-params]
                          [wrap-params]
