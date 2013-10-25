@@ -34,7 +34,9 @@
 (defn children
   "Get the children of a page including page attributes"
   [{:keys [serial version]}]
-  (let [children (k/select page (k/where {:parent serial :version version}))
+  (let [children (k/select page
+                           (k/where {:parent serial :version version})
+                           (k/order :order))
         attributes (k/select page-attributes (k/where
                                               {:page_serial [in (map :serial children)]}))]
     (map (fn [c]
