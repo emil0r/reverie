@@ -203,6 +203,7 @@
                           (k/values (-> p
                                         util/revmap->str
                                         (dissoc :id :version)
+                                        (assoc :published (k/sqlfn now))
                                         (assoc :version 1))))]
       (doseq [[table objs] objs-to-copy]
         (let [obj-data (k/select table
