@@ -183,8 +183,9 @@
                           #(:name %)
                           (k/select object (k/where {:page_id (:id p-published)})))]
       (doseq [[table objs] objs-to-delete]
-        (k/delete table
-                  (k/where {:object_id [in (map :id objs)]})))
+        (let [table (get-object-entity table)]
+         (k/delete table
+                   (k/where {:object_id [in (map :id objs)]}))))
       (k/delete object (k/where {:page_id (:id p-published)}))
       (k/delete page
                 (k/where {:serial (:serial p) :version 1})))))
@@ -206,7 +207,8 @@
                                         (assoc :published (k/sqlfn now))
                                         (assoc :version 1))))]
       (doseq [[table objs] objs-to-copy]
-        (let [obj-data (k/select table
+        (let [table (get-object-entity table)
+              obj-data (k/select table
                                  (k/where {:object_id [in (map :id objs)]})
                                  (k/order :object_id))
               copied (reduce (fn [out obj]
@@ -227,7 +229,8 @@
                                     obj-data copied)))))
       ;; delete objects that are published elsewhere after a cut->paste operation
       (doseq [[table objs] objs-to-copy]
-        (let [serial (:serial (first objs))
+        (let [table (get-object-entity table)
+              serial (:serial (first objs))
               other-pages (map :id (k/select page
                                              (k/fields :id)
                                              (k/where {:serial (:serial p-new)})))
