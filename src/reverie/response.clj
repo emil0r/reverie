@@ -2,13 +2,16 @@
 
 (def ^:private responses
   (atom
-   {:401 {:body "You are not authorized to do this!" :headers nil}
-    :403 {:body "Forbidden" :headers nil}
-    :404 {:body "Page Not Found" :headers nil}
-    :500 {:body "Internal Server Error" :headers nil}}))
+   {:401 {:body "You are not authorized to do this!" :headers {"Content-Type" "text/html; charset=utf-8"}}
+    :403 {:body "Forbidden" :headers {"Content-Type" "text/html; charset=utf-8"}}
+    :404 {:body "Page Not Found" :headers {"Content-Type" "text/html; charset=utf-8"}}
+    :500 {:body "Internal Server Error" :headers {"Content-Type" "text/html; charset=utf-8"}}}))
 
-(defn update-response! [{:keys [code body headers]}]
-  (swap! responses assoc code {:body body :headers headers}))
+(defn update-response! [code {:keys [body headers]}]
+  (if body
+    (swap! responses assoc-in [code :body] body))
+  (if headers
+    (swap! responses assoc-in [code :headers] headers)))
 
 (defn response-301 [uri]
   {:status 301 :headers {"Location " uri} :body ""})
