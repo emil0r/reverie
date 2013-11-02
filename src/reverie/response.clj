@@ -13,11 +13,11 @@
   (if headers
     (swap! responses assoc-in [code :headers] headers)))
 
-(defn response-301 [uri]
-  {:status 301 :headers {"Location " uri} :body ""})
+(defn response-301 [url]
+  {:status 301 :headers {"Location" url} :body ""})
 
-(defn response-302 [uri]
-  {:status 302 :headers {"Location " uri} :body ""})
+(defn response-302 [url]
+  {:status 302 :headers {"Location" url} :body ""})
 
 (defn response-401
   ([]
