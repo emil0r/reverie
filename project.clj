@@ -1,5 +1,5 @@
 (defproject reverie "0.5.0"
-  :description "A friendly CMS"
+  :description "A friendly CMS for the web"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
