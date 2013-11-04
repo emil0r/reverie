@@ -1,10 +1,13 @@
 # reverie
 
-An attempt to produce a sane CMS
+A friendly CMS for the web
+
+## CMS?
+Content Management System. Useful if you don't want to fill in the same pieces of information again, and again, and again, and ...
 
 ## Usage
 
-FIXME
+http://reveriecms.org
 
 ## License
 
