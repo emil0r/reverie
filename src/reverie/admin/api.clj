@@ -45,9 +45,9 @@
   (let [root-serial (get-root-serial)
         u (user/get)]
    {:init-root-page? (init-root-page?)
-    :templates (map util/kw->str (keys @atoms/templates))
-    :objects (map util/kw->str (keys @atoms/objects))
-    :apps (map util/kw->str (keys @atoms/apps))
+    :templates (sort (map util/kw->str (keys @atoms/templates)))
+    :objects (sort (map util/kw->str (keys @atoms/objects)))
+    :apps (sort (map util/kw->str (keys @atoms/apps)))
     :edits (get-edit-actions u)
     :pages {:root root-serial
             :current root-serial}}))
