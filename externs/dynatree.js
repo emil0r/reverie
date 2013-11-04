@@ -15,6 +15,7 @@ DynaTreeNode.loadKeyPath = function(arg1, arg2) {}
 DynaTreeNode.expand = function(arg1) {}
 DynaTreeNode.activate = function() {}
 DynaTreeNode.appendAjax = function(arg1) {}
+DynaTreeNode.addChild = function(arg1) {}
 DynaTreeNode.move = function(arg1, arg2) {}
 DynaTreeNode.data.draggable;
 DynaTreeNode.data.parent;
@@ -24,6 +25,9 @@ DynaTreeNode.data.version;
 
 var data;
 data.result;
+data.version;
+data.serial;
+data.parent;
 
 window.parent.main;
 window.parent.main.framem;

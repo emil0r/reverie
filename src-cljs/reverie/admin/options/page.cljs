@@ -13,7 +13,6 @@
 
 (defn change-uri []
   (let [name (-> :#name jq/$ jq/val)]
-    (util/log name)
     (-> :#uri jq/$ (jq/val (normalize name)))))
 
 (defn init-templates-app []
