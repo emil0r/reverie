@@ -13,7 +13,7 @@
                  
                  ;; DO NOT WANT
                  [org.clojars.emil0r/hiccup "1.0.3a"]
-                 [org.clojars.emil0r/lobos "1.0.0-beta1"]
+                 [org.clojars.emil0r/lobos "1.0.0-beta2"]
                  ;; DO NOT WANT
                  
                  [org.clojure/core.async "0.1.242.0-44b1e3-alpha"]
