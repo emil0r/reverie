@@ -90,12 +90,7 @@
     (if-let [f (or
                 (get-in @objects [obj-name (:request-method request)])
                 (get-in @objects [obj-name :any]))]
-      (if (util/mode? request :edit)
-        [:div.reverie-object {:object-id (:object_id obj)}
-         [:div.reverie-object-holder
-          [:span.reverie-object-panel (str "object " (name obj-name))]]
-         (f request obj (:params request))]
-        (f request obj (:params request))))))
+      (f request obj (:params request)))))
 
 (defn move! [{:keys [object-id hit-mode anchor page-serial after-object-id]}]
   (let [{page-id :page_id area :area} (-> object (k/select (k/where {:id object-id})) first)

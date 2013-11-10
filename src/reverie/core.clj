@@ -13,9 +13,6 @@
 (defn- get-attributes [options]
   (map symbol (map name (keys (:attributes options)))))
 
-(defn area-render [obj request]
-  (o/render (assoc-in request [:reverie :object-id] (:id obj))))
-
 (defn with-template
   "Used for defapp, defmodule, defpage when you want to reuse a defined template"
   [template request areas]
@@ -23,6 +20,19 @@
     (:body (template-fn (-> request
                             (assoc-in [:reverie :overriden] :with-template)
                             (assoc-in [:reverie :overridden-areas] areas))))))
+
+(defn ->html [parts]
+  (if-let [area-fn (-> @settings :core :area-fn)]
+    (html (apply area-fn parts))
+    (html parts)))
+
+(defn area-render [obj request]
+  (if (mode? request :edit)
+    [:div.reverie-object {:object-id (:id obj)}
+     [:div.reverie-object-holder
+      [:span.reverie-object-panel (str "object " (:name obj))]]
+     (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))))]
+    (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))))))
 
 (defmacro area [name]
   (let [name (keyword name)]
