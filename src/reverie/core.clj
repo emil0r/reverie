@@ -1,5 +1,6 @@
 (ns reverie.core
-  (:require [korma.core :as korma]
+  (:require [clojure.zip :as zip]
+            [korma.core :as korma]
             [reverie.object :as o]
             [reverie.page :as p])
   (:use clout.core
@@ -63,9 +64,23 @@
                                                                 (catch [:type :ring-response] {:keys [~'response ~'type]}
                                                                   ~'response)))})))
 
+(defmacro override!
+  "Override already defined objects' options and/or methods"
+  [what which options & methods]
+  (case what
+    :object (if-let [obj (get @objects which)]
+              (let [attributes (get-attributes (:options obj))
+                    new-fns `(object-funcs ~attributes ~methods)]
+                
+                `(swap! objects assoc ~which (merge ~obj
+                                                    {:options (merge (:options ~obj)
+                                                                     ~options)}
+                                                    ~new-fns)))
+              (throw (Exception. (str "Unable to find " which))))
+    (throw (Exception. (str "No implementation to handle " what)))))
+
 (defmacro defobject [object options & methods]
    (let [object (keyword object)
-         settings {}
          attributes (get-attributes options)
          table-symbol (or (:table options) object)
          body `(object-funcs ~attributes ~methods)]
