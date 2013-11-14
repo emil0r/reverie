@@ -112,6 +112,22 @@
    (label field (get-field-name field data))
    (check-box (get-field-attribs data) field (form-data field))
    (form-help-text data)])
+(defmethod form-row :image [[field data] {:keys [form-data]}]
+  [:div.form-row
+   (v/on-error field error-item)
+   (label field (get-field-name field data))
+   (hidden-field field (form-data field))
+   [:span {:field-name field :type :image} (if (data field)
+                                             (str "Image: " (data field))
+                                             "Edit image...")]
+   (form-help-text data)])
+(defmethod form-row :richtext [[field data] {:keys [form-data]}]
+  [:div.form-row
+   (v/on-error field error-item)
+   (label field (get-field-name field data))
+   (hidden-field field (form-data field))
+   [:span {:field-name field :type :richtext} "Edit text..."]
+   (form-help-text data)])
 (defmethod form-row :password [[field data] {:keys [form-data]}]
   [:div.form-row
    (v/on-error field error-item)

@@ -7,6 +7,7 @@
             [reverie.admin.file-picker :as file-picker]
             [reverie.admin.url-picker :as url-picker]
             [reverie.admin.options :as options]
+            [reverie.admin.options.module :as module]
             [reverie.admin.options.object :as object]
             [reverie.admin.options.page :as page]
             [reverie.admin.tabs :as tabs]
@@ -54,7 +55,8 @@
   (url-picker/init))
 (defmethod init :url-picker-files []
   (url-picker/init-files))
-(defmethod init :module [])
+(defmethod init :module []
+  (module/init))
 (defmethod init :default []
   (meta/listen!)
   (tree/listen!)
