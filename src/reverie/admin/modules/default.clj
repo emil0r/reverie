@@ -113,6 +113,7 @@
   (let [fields (get-fields entity (:fields section))]
     [:fieldset
      (if (:name section) [:legend (:name section)])
+     (if (:help section) [:div.section.help [:i.icon-question-sign] (:help section)])
      (map #(form-row [% (get fields %)] data) (:fields section))]))
 
 (defn get-form [entity {:keys [form-data entity-id real-uri] :as data}]
