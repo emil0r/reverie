@@ -215,7 +215,7 @@
                                                   module
                                                   (second parts)
                                                   (read-string uri))]
-                     :else [uri (s/capitalize uri)]))
+                     :else [uri (get-entity-name module uri)]))
                   parts)
         {:keys [crumbs]} (crumb uri-data {:base-uri "/admin/frame/module/"})]
     [:nav crumbs]))
