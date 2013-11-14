@@ -148,7 +148,7 @@
                                          (name module-name)
                                          "/" (name e))}
                           (get-entity-name module e)]]])
-             (keys (:entities module)))]]))]
+             (sort (keys (:entities module))))]]))]
   
   [:get ["/:entity"]
    (let [{:keys [module-name module]} (get-module request)
