@@ -183,7 +183,8 @@
 (defn onloadstart-upload [e])
 (defn onloadend-upload [e]
   (update-drop-area! "Finished upload<br/>Drop files here")
-  (draw-progress 1))
+  (draw-progress 1)
+  (.location.reload js/window true))
 (defn upload-file [file url total-size total-progress]
   (let [xhr (js/XMLHttpRequest.)
         form-data (js/FormData.)]
