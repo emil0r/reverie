@@ -1,5 +1,8 @@
 (ns reverie.admin.modules.default
-  (:require [clojure.string :as s]
+  (:require [clj-time.core :as time]
+            [clj-time.coerce :as coerce]
+            [clj-time.format :as format]
+            [clojure.string :as s]
             [noir.validation :as v]
             [korma.core :as k])
   (:use [hiccup core form]
@@ -12,6 +15,15 @@
         [reverie.response :only [response-302]]
         [reverie.util :only [join-uri]]))
 
+(defn- string->timestamp [timestamp]
+  (let [timestamp (s/trim timestamp)
+        timestamp (case (count timestamp)
+                    16 (str timestamp ":00")
+                    13 (str timestamp ":00:00")
+                    10 (str timestamp "00:00:00")
+                    timestamp)
+        fmt (format/formatters :mysql)]
+    (->> timestamp (format/parse fmt) coerce/to-sql-date)))
 
 (defn- get-form-data [request]
   (-> request
@@ -37,31 +49,39 @@
       (v/rule true [field "Should not appear"])))
   (not (apply v/errors? (keys fields))))
 
-(defn- process-form-data [data fields]
+(defn- process-form-data [form-data fields]
   (reduce (fn [out k]
             (if (nil? k)
               out
               (case (-> k fields :type)
-                :number (assoc out k (read-string (data k)))
+                :number (assoc out k (read-string (form-data k)))
                 :text (cond
-                       (nil? (data k)) (assoc out k "")
+                       (nil? (form-data k)) (assoc out k "")
                        :else out)
                 :email (cond
-                        (nil? (data k)) (assoc out k "")
+                        (nil? (form-data k)) (assoc out k "")
                         :else out)
                 :boolean (cond
-                          (= (data k) "true") (assoc out k true)
+                          (= (form-data k) "true") (assoc out k true)
                           :else (assoc out k false))
+                :o2m (cond
+                      (nil? (form-data k)) (assoc out k nil)
+                      (s/blank? (form-data k)) (assoc out k nil)
+                      :else (assoc out k (read-string (form-data k))))
+                :datetime (cond
+                           (nil? (form-data k)) (assoc out k nil)
+                           (s/blank? (form-data k)) (assoc out k nil)
+                           :else (assoc out k (string->timestamp (form-data k))))
                 :m2m (cond
-                      (nil? (data k)) (assoc out k [])
-                      (sequential? (data k)) (assoc out k (vec (map
+                      (nil? (form-data k)) (assoc out k [])
+                      (sequential? (form-data k)) (assoc out k (vec (map
                                                                 #(if (re-find #"^\d+$" %)
                                                                    (read-string %)
-                                                                   %) (data k))))
-                      (re-find #"^\d+$" (data k)) (assoc out k [(read-string (data k))])
+                                                                   %) (form-data k))))
+                      (re-find #"^\d+$" (form-data k)) (assoc out k [(read-string (form-data k))])
                       :else out)
                 out)))
-          data
+          form-data
           (keys fields)))
 
 (defmulti form-row (fn [[_ data] _] (:type data)))
@@ -75,6 +95,16 @@
      (label field (get-field-name field data))
      (drop-down (merge {:multiple "multiple"}
                        (get-field-attribs data)) field options selected)
+     (form-help-text data)]))
+(defmethod form-row :o2m [[field data] {:keys [form-data module entity entity-id]}]
+  (let [{:keys [options selected]} (drop-down-o2m-data module entity field form-data entity-id)
+        options (if (:null? data)
+                  (vec (cons ["- Nothing selected -" ""] options))
+                  options)]
+    [:div.form-row
+     (v/on-error field error-item)
+     (label field (get-field-name field data))
+     (drop-down (get-field-attribs data) field options selected)
      (form-help-text data)]))
 (defmethod form-row :boolean [[field data] {:keys [form-data]}]
   [:div.form-row

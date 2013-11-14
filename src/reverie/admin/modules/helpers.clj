@@ -174,6 +174,29 @@
                   
                   []))}))
 
+(defn drop-down-o2m-data [module entity o2m form-data entity-id]
+  (let [entity (keyword entity)
+        o2m-data (get-in module [:entities entity :fields (keyword o2m)])
+        o2m-table (or (:table o2m-data) (keyword o2m))
+        entity-table (or (get-in module [:entities entity :table])
+                         entity)
+        options (:options o2m-data)]
+    {:options (map
+               (fn [a]
+                 [(get a (second options)) (get a (first options))])
+               (map
+                #(select-keys % options)
+                (k/select o2m-table)))
+     :selected (or
+                (get form-data o2m)
+                (if entity-id
+                  (let [entity-id (read-string entity-id)]
+                    (k/select entity-table
+                              (k/fields (keyword o2m))
+                              (k/where {:id entity-id})))
+                  
+                  []))}))
+
 
 
 (defn save-m2m-data [module entity entity-id form-data]
