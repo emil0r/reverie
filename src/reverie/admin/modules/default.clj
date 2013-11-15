@@ -3,6 +3,7 @@
             [clj-time.coerce :as coerce]
             [clj-time.format :as format]
             [clojure.string :as s]
+            [ez-image.core :as ez]
             [noir.validation :as v]
             [korma.core :as k])
   (:use [hiccup core form]
@@ -117,8 +118,10 @@
    (v/on-error field error-item)
    (label field (get-field-name field data))
    (hidden-field field (form-data field))
-   [:span {:field-name field :type :image} (if (data field)
-                                             (str "Image: " (data field))
+   [:span {:field-name field :type :image} (if-not (s/blank? (form-data field))
+                                             [:image {:src (ez/cache
+                                                            (str "media"(form-data field))
+                                                            [:constrain 100])}]
                                              "Edit image...")]
    (form-help-text data)])
 (defmethod form-row :richtext [[field data] {:keys [form-data]}]
@@ -133,6 +136,16 @@
    (v/on-error field error-item)
    (label field (get-field-name field data))
    (password-field (get-field-attribs data) field (form-data field))
+   (form-help-text data)])
+(defmethod form-row :datetime [[field data] {:keys [form-data]}]
+  [:div.form-row
+   (v/on-error field error-item)
+   (label field (get-field-name field data))
+   [:input (merge (get-field-attribs data) {:type :text
+                                            :_type :datetime
+                                            :name field
+                                            :id field
+                                            :value (form-data field)})]
    (form-help-text data)])
 (defmethod form-row :email [[field data] {:keys [form-data]}]
   [:div.form-row

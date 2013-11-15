@@ -8,12 +8,16 @@
 
 
 (defn click-richtext! [e]
-  (let [field (-> e ev$ (jq/attr :field-name))]
+  (let [field (-> e ev$ (jq/attr :field-name))
+        [module entity id] (remove s/blank?
+                                   (-> (-> js/window .-location .-pathname)
+                                       (s/replace #"^/admin/frame/module/" "")
+                                       (s/split #"/")))]
     (.open js/window
            (str
             "/admin/frame/module/edit/richtext?field="
             field
-            "&module-info=" (s/replace (-> js/window .-location .-pathname) #"^/admin/frame/module/" ""))
+            "&module=" module "&entity=" entity "&id=" id)
            "_blank"
            "height=640,width=800,location=0,menubar=0,resizable=1,scrollbars=1,status=0,titlebar=1"
            true)))
@@ -51,4 +55,9 @@
       jq/$
       (jq/on :click "span[type=richtext]" click-richtext!)
       (jq/on :click "span[type=image]" click-image!)
-      (jq/on :click "span[type=url]" click-url!)))
+      (jq/on :click "span[type=url]" click-url!))
+  (doseq [input (jq/$ "[_type=datetime]")]
+    (.appendDtpicker (jq/$ input) (clj->js {:minuteInterval 15
+                                            :firstDayOfWeek 1
+                                            :current ""
+                                            :autodateOnStart false}))))
