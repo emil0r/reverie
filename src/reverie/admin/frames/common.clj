@@ -2,8 +2,7 @@
 
 
 (def frame-options {:css ["/admin/css/font-awesome.min.css"
-                          "/admin/css/main.css"
-                          "/admin/css/jquery.simple-dtpicker.css"]
+                          "/admin/css/main.css"]
                     :js ["/admin/js/jquery-1.8.3.min.js"
                          "/admin/js/jquery.simple-dtpicker.js"
                          "/admin/js/main-dev.js"

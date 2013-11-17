@@ -1,0 +1,231 @@
+@colour_saturday: blue;
+@colour_sunday: red;
+
+.datepicker {
+    display: inline-block;
+    font-weight: normal;
+    border: 1px solid @black;
+    border-radius: 5px;
+    box-shadow: 1px 1px 5px fadeout(@black, 10%);
+
+    > .datepicker_header {
+        padding: 5px;
+	background-color: @secondary;
+	color: @white;
+	text-align: center;
+	font-size: 9pt;
+	font-weight: bold;
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+        span {
+            padding: 0 10px;
+        }
+        
+        > a {
+            user-select: none;
+	    -webkit-user-select: none;
+	    -moz-user-select: none;
+	    cursor: pointer;
+	    color: @white;
+            &:hover {
+                color: @primary;
+                > svg > g > path {
+                    fill: @primary; /* Icon button hover color */
+                }
+            }
+            &:active {
+                color: @gray-lighter;
+            }
+        }
+
+        > .icon-home {
+            &:before {
+                content: "";
+            }
+            position: absolute;
+	    display: block;
+	    float: left;
+	    margin-top:	2px;
+	    margin-left: 5px;
+	    width: 11pt;
+	    height: 11pt;
+	    vertical-align: middle;
+            > svg > g > path {
+                fill: @white;
+            }
+        }
+    }
+
+    > .datepicker_inner_container {
+        margin: -2px 0px -2px 0px;
+	background-color: #d2d2d2;
+	border: 1px solid #c8c8c8;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;  
+	-moz-border-radius: 3px;
+
+	box-shadow: 0.5px 0px 3px #c8c8c8;
+	-webkit-box-shadow: 0.5px 0px 3px #c8c8c8;
+	-moz-box-shadow: 0.5px 0px 3px #c8c8c8;
+
+        .clearfix();
+        
+        > .datepicker_calendar {
+            float: left;
+	    width: auto;
+	    
+	    margin-top: -0.5px;
+	    margin-left: -1px;
+	    margin-bottom: -2px;
+	    
+	    background-color: @white;
+	    border: 1px solid #c8c8c8;
+            padding: 10px;
+	    
+	    border-top:none;
+	    border-top-left-radius: 3px;
+	    border-bottom-left-radius: 3px;
+	    -webkit-border-top-left-radius:	3px;
+	    -webkit-border-bottom-left-radius: 3px;
+	    -moz-border-radius-topleft:		3px;
+	    -moz-border-radius-bottomleft:	3px;
+            > table {
+                padding: 10px;
+            }
+            > .datepicker_table {
+                > tbody > tr {
+                    > th {
+                        color: @primary;
+	                width: 18px;
+	                font-size: small;
+	                font-weight: normal;
+	                text-align:center;
+                    }
+                    > td {
+                        color:	#000000;
+	                font-size: small;
+	                text-align:center;
+	                
+	                user-select: none;
+		        -webkit-user-select: none;
+		        -moz-user-select: none;
+	                cursor: pointer;
+                        &.today {
+                            background-color: @gray-light;
+                            color: @white !important;
+	                    margin-bottom: -2px;
+                        }
+                        &.wday_sat {
+                            color: @colour_saturday;
+                        }
+                        &.wday_sun {
+                            color: @colour_sunday;
+                        }
+                        &.day_another_month {
+                            color: @gray-light;
+                        }
+                        &.day_in_past {
+                            cursor: default;
+                            color: @gray-light;
+                        }
+                        &.active {
+                            color: @white;
+	                    background-color: @secondary;
+                        }
+                        &.hover {
+                            color: @white;
+	                    background-color: @primary;
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+        }
+
+        > .datepicker_timelist {
+            float: left;
+	    width: 4.2em;
+            height: 140px !important;
+	    
+	    margin-top: -0.5px;
+	    padding: 5px;
+	    padding-left: 0px;
+	    padding-right: 0px;
+	    
+	    overflow: auto;
+	    overflow-x: hidden; 
+	    
+	    background-color:	#ffffff;
+	    
+	    border-top-right-radius: 3px;
+	    border-bottom-right-radius: 3px;
+	    -webkit-border-top-right-radius:	3px;
+	    -webkit-border-bottom-right-radius: 3px;
+	    -moz-border-radius-topright:		3px;
+	    -moz-border-radius-bottomright:	3px;
+            
+            &::-webkit-scrollbar {
+                overflow: hidden;
+	        width: 6px;
+	        background: #fafafa;
+	        
+	        border-top-right-radius: 3px;
+	        border-bottom-right-radius: 3px;
+	        -webkit-border-top-right-radius:	3px;
+	        -webkit-border-bottom-right-radius: 3px;
+	        -moz-border-radius-topright:		3px;
+	        -moz-border-radius-bottomright:	3px;
+                &:horizontal {
+                    height: 1px;
+                }
+                &::-webkit-scrollbar-button {
+	            display: none;
+                }
+                &::-webkit-scrollbar-piece {
+	            background: #eee;
+                }
+                &::-webkit-scrollbar-piece:start {
+	            background: #eee;
+                }
+                &::-webkit-scrollbar-thumb {
+	            background: #aaaaaa;
+	            border-radius: 3px;
+		    -webkit-border-radius: 3px;  
+		    -moz-border-radius: 3px;
+                }
+                &::-webkit-scrollbar-corner {
+	            background: #333;
+                }
+            }
+            > div.timelist_item {
+	        padding-top:   1px;
+	        padding-bottom:1px;
+	        padding-left:  7px;
+	        padding-right: 25px;
+	        margin-top: 5px;
+	        margin-bottom: 2px;
+	        font-size: small;
+	        
+	        user-select: none;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+	        cursor: pointer;
+                &.time_in_past {
+	            cursor: default;
+	            color: #cccccc;
+                }
+                &.active {
+	            color: @white;
+	            background-color: @secondary;
+                }
+                &.hover {
+	            color: @white;
+	            background-color: @primary;
+                }
+            }
+        }
+
+
+    }
+}
