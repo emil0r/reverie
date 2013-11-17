@@ -16,16 +16,6 @@
         [reverie.response :only [response-302]]
         [reverie.util :only [join-uri]]))
 
-(defn- string->timestamp [timestamp]
-  (let [timestamp (s/trim timestamp)
-        timestamp (case (count timestamp)
-                    16 (str timestamp ":00")
-                    13 (str timestamp ":00:00")
-                    10 (str timestamp "00:00:00")
-                    timestamp)
-        fmt (format/formatters :mysql)]
-    (->> timestamp (format/parse fmt) coerce/to-sql-date)))
-
 (defn- get-form-data [request]
   (-> request
       :form-params
@@ -38,6 +28,22 @@
    (get (request :form-params) "_addanother") :add-another
    :else :save))
 
+(defn- valid-datetime? [value]
+  (or (s/blank? value)
+      (re-find #"^\d{4,4}-\d{2,2}-\d{2,2} [0-2][0-9](?::[0-6][0-9]){1,2}$" (s/trim value))))
+
+(defn- string->timestamp [timestamp]
+  (if (valid-datetime? timestamp)
+   (let [timestamp (s/trim timestamp)
+         timestamp (case (count timestamp)
+                     16 (str timestamp ":00")
+                     13 (str timestamp ":00:00")
+                     10 (str timestamp "00:00:00")
+                     timestamp)
+         fmt (format/formatters :mysql)]
+     (->> timestamp (format/parse fmt) coerce/to-sql-date))
+   timestamp))
+
 (defn- valid-form-data? [form-data fields]
   (doseq [[field {:keys [type validation]}] fields]
     (if validation
@@ -46,6 +52,7 @@
           (v/rule (v? form-data) [field error-msg])
           (v/rule (v? (form-data field)) [field error-msg]))))
     (case type
+      :datetime (v/rule (valid-datetime? (form-data field)) [field "Datetime expected. YYYY-MM-DD HH:MM(:SS) accepted"])
       :number (v/rule (v/valid-number? (form-data field)) [field "Only numbers are allowed"])
       (v/rule true [field "Should not appear"])))
   (not (apply v/errors? (keys fields))))
