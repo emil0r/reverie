@@ -42,7 +42,8 @@
                                          :optimizations :advanced
                                          :pretty-print false
                                          :externs ["externs/jquery-1.8.js"
-                                                   "externs/dynatree.js"]}}
+                                                   "externs/dynatree.js"
+                                                   "externs/datepicker.js"]}}
                        :prod-simple {:source-paths ["src-cljs"]
                                      :compiler {:output-to "resources/public/admin/js/main-simple.js"
                                                 :optimizations :simple
