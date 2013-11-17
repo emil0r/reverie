@@ -29,7 +29,7 @@
    (get (request :form-params) "_addanother") :add-another
    :else :save))
 
-(defn- string->timestamp [timestamp]
+(defn- string->sql-datetime [timestamp]
   (if (valid-datetime? timestamp)
    (let [timestamp (s/trim timestamp)
          timestamp (case (count timestamp)
@@ -38,8 +38,13 @@
                      10 (str timestamp "00:00:00")
                      timestamp)
          fmt (format/formatters :mysql)]
-     (->> timestamp (format/parse fmt) coerce/to-sql-date))
+     (->> timestamp (format/parse fmt) coerce/to-sql-time))
    timestamp))
+
+(defn- sql-datetime->string [timestamp]
+  (if (instance? java.sql.Timestamp timestamp)
+    (format/unparse (format/formatters :mysql) (coerce/from-sql-time timestamp))
+    timestamp))
 
 (defn- valid-form-data? [form-data fields]
   (doseq [[field {:keys [type validation]}] fields]
@@ -76,7 +81,7 @@
                 :datetime (cond
                            (nil? (form-data k)) (assoc out k nil)
                            (s/blank? (form-data k)) (assoc out k nil)
-                           :else (assoc out k (string->timestamp (form-data k))))
+                           :else (assoc out k (string->sql-datetime (form-data k))))
                 :m2m (cond
                       (nil? (form-data k)) (assoc out k [])
                       (sequential? (form-data k)) (assoc out k (vec (map
@@ -149,7 +154,7 @@
                                             :_type :datetime
                                             :name field
                                             :id field
-                                            :value (form-data field)})]
+                                            :value (sql-datetime->string (form-data field))})]
    (form-help-text data)])
 (defmethod form-row :email [[field data] {:keys [form-data]}]
   [:div.form-row
