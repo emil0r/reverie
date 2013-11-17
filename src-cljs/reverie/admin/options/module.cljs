@@ -60,4 +60,10 @@
     (.appendDtpicker (jq/$ input) (clj->js {:minuteInterval 15
                                             :firstDayOfWeek 1
                                             :current ""
+                                            :autodateOnStart false})))
+  (doseq [input (jq/$ "[_type=date]")]
+    (.appendDtpicker (jq/$ input) (clj->js {:minuteInterval 15
+                                            :firstDayOfWeek 1
+                                            :current ""
+                                            :dateOnly true
                                             :autodateOnStart false}))))

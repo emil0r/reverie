@@ -46,6 +46,19 @@
     (format/unparse (format/formatters :mysql) (coerce/from-sql-time timestamp))
     timestamp))
 
+(defn- string->sql-date [timestamp]
+  (if (valid-date? timestamp)
+   (let [timestamp (s/trim timestamp)
+         fmt (format/formatters :date)]
+     (->> timestamp (format/parse fmt) coerce/to-sql-time))
+   timestamp))
+
+(defn- sql-date->string [timestamp]
+  (if (instance? java.sql.Date timestamp)
+    (format/unparse (format/formatters :date) (coerce/from-sql-time timestamp))
+    timestamp))
+
+
 (defn- valid-form-data? [form-data fields]
   (doseq [[field {:keys [type validation]}] fields]
     (if validation
@@ -55,6 +68,7 @@
           (v/rule (v? (form-data field)) [field error-msg]))))
     (case type
       :datetime (v/rule (valid-datetime? (form-data field)) [field "Datetime expected. YYYY-MM-DD HH:MM(:SS) accepted"])
+      :date (v/rule (valid-date? (form-data field)) [field "Date expected. YYYY-MM-DD accepted"])
       :number (v/rule (v/valid-number? (form-data field)) [field "Only numbers are allowed"])
       (v/rule true [field "Should not appear"])))
   (not (apply v/errors? (keys fields))))
@@ -82,6 +96,10 @@
                            (nil? (form-data k)) (assoc out k nil)
                            (s/blank? (form-data k)) (assoc out k nil)
                            :else (assoc out k (string->sql-datetime (form-data k))))
+                :date (cond
+                       (nil? (form-data k)) (assoc out k nil)
+                       (s/blank? (form-data k)) (assoc out k nil)
+                       :else (assoc out k (string->sql-date (form-data k))))
                 :m2m (cond
                       (nil? (form-data k)) (assoc out k [])
                       (sequential? (form-data k)) (assoc out k (vec (map
@@ -155,6 +173,16 @@
                                             :name field
                                             :id field
                                             :value (sql-datetime->string (form-data field))})]
+   (form-help-text data)])
+(defmethod form-row :date [[field data] {:keys [form-data]}]
+  [:div.form-row
+   (v/on-error field error-item)
+   (label field (get-field-name field data))
+   [:input (merge (get-field-attribs data) {:type :text
+                                            :_type :date
+                                            :name field
+                                            :id field
+                                            :value (sql-date->string (form-data field))})]
    (form-help-text data)])
 (defmethod form-row :email [[field data] {:keys [form-data]}]
   [:div.form-row
