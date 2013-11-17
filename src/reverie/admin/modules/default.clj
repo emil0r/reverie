@@ -9,6 +9,7 @@
   (:use [hiccup core form]
         [reverie.admin.frames.common :only [frame-options error-item]]
         reverie.admin.modules.helpers
+        reverie.admin.modules.validators
         [reverie.admin.templates :only [frame]]
         [reverie.atoms :only [modules]]
         [reverie.core :only [defmodule raise-response]]
@@ -27,12 +28,6 @@
    (get (request :form-params) "_continue") :continue
    (get (request :form-params) "_addanother") :add-another
    :else :save))
-
-(defn- valid-datetime? [value]
-  (cond
-   (instance? java.sql.Date value) true
-   (s/blank? value) true
-   :else (re-find #"^\d{4,4}-\d{2,2}-\d{2,2} [0-2][0-9](?::[0-6][0-9]){1,2}$" (s/trim value))))
 
 (defn- string->timestamp [timestamp]
   (if (valid-datetime? timestamp)
