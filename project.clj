@@ -8,8 +8,9 @@
                  ;;[ring-anti-forgery "0.2.1"]
                  [ring/ring-json "0.2.0"]
                  [clj-time "0.6.0"]
-                 [korma "0.3.0-RC5"]
+                 [korma "0.3.0-RC6"]
                  [me.raynes/fs "1.4.5"]
+                 [clj-log "0.4.5"]
                  
                  ;; DO NOT WANT
                  [org.clojars.emil0r/hiccup "1.0.3a"]
@@ -33,7 +34,6 @@
                                   [cljsbuild "0.3.3"]
                                   [org.clojure/clojurescript "0.0-1853" :exclusions [[org.apache.ant/ant]]]
                                   [org.clojure/google-closure-library-third-party "0.0-2029"]
-                                  [org.clojure/tools.trace "0.7.5"]
                                   [com.cemerick/piggieback "0.1.0"]]
                    :plugins [[lein-cljsbuild "0.3.3"]]}}
   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
@@ -44,10 +44,6 @@
                                          :externs ["externs/jquery-1.8.js"
                                                    "externs/dynatree.js"
                                                    "externs/datepicker.js"]}}
-                       :prod-simple {:source-paths ["src-cljs"]
-                                     :compiler {:output-to "resources/public/admin/js/main-simple.js"
-                                                :optimizations :simple
-                                                :pretty-print false}}
                        :dev {:source-paths ["src-cljs"]
                              :compiler {:output-to "resources/public/admin/js/main-dev.js"
                                         :optimizations :whitespace

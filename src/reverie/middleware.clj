@@ -1,5 +1,6 @@
 (ns reverie.middleware
-  (:require [clojure.string :as s]
+  (:require [clj-log.core :as log]
+            [clojure.string :as s]
             [reverie.atoms :as atoms]
             [reverie.auth.user :as user]
             [reverie.page :as page]
@@ -24,6 +25,15 @@
           encoding (or "utf-8" encoding)]
       (assoc-in resp [:headers "Content-Type"] (str "application/edn; charset=" encoding "")))))
 
+
+(defn wrap-error-log [handler]
+  (fn [request]
+    (try
+      (handler request)
+      (catch Exception ex
+        (do
+          (log/log :error "Caught an error at wrap-error-log" ex)
+          (r/response-500))))))
 
 (defn wrap-edit-mode [handler]
   (fn [{:keys [uri] :as request}]

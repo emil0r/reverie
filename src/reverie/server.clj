@@ -10,7 +10,8 @@
                                    wrap-edit-mode
                                    wrap-published?
                                    wrap-reverie-data
-                                   wrap-redirects]]
+                                   wrap-redirects
+                                   wrap-error-log]]
         [reverie.role :only [add-roles]]
         [reverie.util :only [generate-handler]]
         [ring.middleware.content-type :only [wrap-content-type]]
@@ -60,7 +61,8 @@
                          [wrap-strip-trailing-slash]
                          [wrap-noir-validation]
                          [wrap-noir-cookies]
-                         [wrap-noir-session {:store (or store (memory-store mem))}]])]
+                         [wrap-noir-session {:store (or store (memory-store mem))}]
+                         [wrap-error-log]])]
     (generate-handler
      handlers
      (fn [request]
