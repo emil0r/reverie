@@ -1,4 +1,4 @@
-(ns reverie.admin.modules.validators
+(ns reverie.admin.validators
   (:require [clojure.string :as s]))
 
 

@@ -12,6 +12,8 @@
   (:use [cheshire.core :only [encode]]
         [hiccup core form]
         [reverie.admin.frames.common :only [frame-options error-item]]
+        reverie.admin.helpers
+        reverie.admin.validators
         [reverie.middleware :only [wrap-access]]))
 
 
@@ -24,6 +26,20 @@
       [:span {:field-name field-name :type :richtext}
        "Edit text..."]
       (hidden-field field-name data)]]))
+(defmethod row-edit :datetime [field-name {:keys [initial input name]} data]
+  (let [data (or (data field-name) initial)]
+    [:tr
+     [:td (label field-name name)]
+     [:td
+      [:input {:type :text :_type :datetime :name field-name :id field-name :value (sql-datetime->string data)}]
+      ]]))
+(defmethod row-edit :date [field-name {:keys [initial input name]} data]
+  (let [data (or (data field-name) initial)]
+    [:tr
+     [:td (label field-name name)]
+     [:td
+      [:input {:type :text :_type :date :name field-name :id field-name :value (sql-date->string data)}]
+      ]]))
 (defmethod row-edit :image [field-name {:keys [initial input name]} data]
   [:tr
    [:td (label field-name name)]

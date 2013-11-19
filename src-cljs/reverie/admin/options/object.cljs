@@ -53,4 +53,15 @@
       jq/$
       (jq/on :click "span[type=richtext]" click-richtext!)
       (jq/on :click "span[type=image]" click-image!)
-      (jq/on :click "span[type=url]" click-url!)))
+      (jq/on :click "span[type=url]" click-url!))
+  (doseq [input (jq/$ "[_type=datetime]")]
+    (.appendDtpicker (jq/$ input) (clj->js {:minuteInterval 15
+                                            :firstDayOfWeek 1
+                                            :current ""
+                                            :autodateOnStart false})))
+  (doseq [input (jq/$ "[_type=date]")]
+    (.appendDtpicker (jq/$ input) (clj->js {:minuteInterval 15
+                                            :firstDayOfWeek 1
+                                            :current ""
+                                            :dateOnly true
+                                            :autodateOnStart false}))))
