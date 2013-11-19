@@ -28,8 +28,8 @@
     parts))
 
 (defn area-render [obj request]
-  (let [render-fn (if-not (false? (get-in @objects [(-> obj :name keyword) :options :use-area-render-fn?])) ;; negative if, default is true
-                    (-> @settings :core :area-render-fn))]
+  (let [render-fn (if-not (false? (get-in @objects [(-> obj :name keyword) :options :area/use-render-fn?])) ;; negative if, default is true
+                    (-> @settings :core :area/render-fn))]
    (if (mode? request :edit)
      [:div.reverie-object {:object-id (:id obj)}
       [:div.reverie-object-holder
