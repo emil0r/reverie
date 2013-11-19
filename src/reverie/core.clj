@@ -22,18 +22,20 @@
                             (assoc-in [:reverie :overriden] :with-template)
                             (assoc-in [:reverie :overridden-areas] areas))))))
 
-(defn ->html [parts]
-  (if-let [area-fn (-> @settings :core :area-fn)]
-    (html (apply area-fn parts))
-    (html parts)))
+(defn- ->html [parts render-fn]
+  (if render-fn
+    (apply render-fn parts)
+    parts))
 
 (defn area-render [obj request]
-  (if (mode? request :edit)
-    [:div.reverie-object {:object-id (:id obj)}
-     [:div.reverie-object-holder
-      [:span.reverie-object-panel (str "object " (:name obj))]]
-     (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))))]
-    (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))))))
+  (let [render-fn (if-not (false? (get-in @objects [(-> obj :name keyword) :options :use-area-render-fn?])) ;; negative if, default is true
+                    (-> @settings :core :area-render-fn))]
+   (if (mode? request :edit)
+     [:div.reverie-object {:object-id (:id obj)}
+      [:div.reverie-object-holder
+       [:span.reverie-object-panel (str "object " (:name obj))]]
+      (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))) render-fn)]
+     (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))) render-fn))))
 
 (defmacro area [name]
   (let [name (keyword name)]
