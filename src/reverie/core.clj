@@ -20,7 +20,7 @@
   (let [template-fn (:fn (@templates template))]
     (:body (template-fn (-> request
                             (assoc-in [:reverie :overriden] :with-template)
-                            (assoc-in [:reverie :overridden-areas] areas))))))
+                            (assoc-in [:reverie :overridden/areas] areas))))))
 
 (defn- ->html [parts render-fn]
   (if render-fn
@@ -42,7 +42,7 @@
     `(let [~'serial (get-in ~'request [:reverie :page-serial])
            ~'request (assoc-in ~'request [:reverie :area] ~name)]
        (case (get-in ~'request [:reverie :overriden])
-         :with-template (let [~'areas (get-in ~'request [:reverie :overridden-areas])]
+         :with-template (let [~'areas (get-in ~'request [:reverie :overridden/areas])]
                           (get ~'areas ~name))
          (if (mode? ~'request :edit)
            (html [:div.reverie-area {:area ~name :page-serial ~'serial}
