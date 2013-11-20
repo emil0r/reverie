@@ -126,3 +126,19 @@
                  (index :role_group_unique [:role_id :group_id] :unique)))
   (down [] (drop (table :role_group))))
 
+
+(defmigration alter-page-add-app-template-bindings
+  (up [] (alter :add
+                (table :page
+                       (varchar :app_template_bindings 2048 :not-null (default "")))))
+  (down [] (alter :drop
+                  (table :page
+                         (column :app_template_bindings)))))
+
+(defmigration alter-object-add-app-path
+  (up [] (alter :add
+                (table :object
+                       (varchar :app_path 255 :not-null (default "")))))
+  (down [] (alter :drop
+                  (table :object
+                         (column :app_path)))))

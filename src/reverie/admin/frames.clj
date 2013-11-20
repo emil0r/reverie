@@ -123,8 +123,25 @@
     (table-row (label :type "Type") (drop-down :type ["normal" "app"] (if (nil? type)
                                                                         type
                                                                         (clojure.core/name type))) nil)
-    (table-row {:class "template"} (label :template "Template") (drop-down :template (atoms/get-templates) template) (v/on-error :template error-item))
-    (table-row {:class "hidden app"} (label :app "App") (drop-down :app (atoms/get-apps) app) (v/on-error :app error-item))
+    (table-row (label :template "Template")
+               (drop-down :template (atoms/get-templates) template)
+               (v/on-error :template error-item))
+    (table-row {:class "hidden app"}
+               (label :app "App")
+               [:select {:id :app :name :app}
+                (map #(let [{:keys [options]} (get @atoms/apps %)
+                            app-type (clojure.core/name (get options :app/type :raw))
+                            value (util/kw->str %)]
+                        [:option {:value value
+                                  :type app-type
+                                  :selected (= value app)}
+                         (str value " [" app-type "]")])
+                     (keys @atoms/apps))]
+               (v/on-error :app error-item))
+    (table-row {:class "hidden areas"}
+               (label :areas "app/areas <-> template/areas")
+               nil
+               nil)
     (if-not (empty? attributes)
       (list
        (table-row nil [:strong "Attributes"] nil)

@@ -8,7 +8,6 @@
 
 
 (defn switch-template-app [e]
-  (-> :tr.template jq/$ (jq/toggle-class "hidden"))
   (-> :tr.app jq/$ (jq/toggle-class "hidden")))
 
 (defn change-uri []
