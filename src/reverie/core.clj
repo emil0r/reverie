@@ -1,13 +1,11 @@
 (ns reverie.core
-  (:require [clojure.zip :as zip]
-            [korma.core :as korma]
-            [reverie.object :as o]
+  (:require [reverie.object :as o]
             [reverie.page :as p])
   (:use clout.core
         [hiccup.core :only [html]]
         reverie.atoms
         [reverie.helper-macros :only [object-funcs request-method]]
-        [reverie.util :only [generate-handler mode?]]
+        [reverie.util :only [mode?]]
         [slingshot.slingshot :only [try+ throw+]]))
 
 
