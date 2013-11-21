@@ -1,7 +1,5 @@
 (ns reverie.batteries.paginator)
 
-
-
 (defmulti paginate
   "Paginate the incoming collection/length"
   (fn [coll? _ _] (sequential? coll?)))
