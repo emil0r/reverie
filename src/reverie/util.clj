@@ -36,9 +36,11 @@
   [m]
   (let [w (merge m (if (:type m) {:type (-> m :type keyword)} {}))
         w (if (:app m) (merge w {:app (-> m :app keyword)}) w)
-        w (if-not (s/blank? (:app_template_bindings m))
-            (merge w {:app_template_bindings
-                      (-> m :app_template_bindings read-string)})
+        w (if (:app_template_bindings m)
+            (if-not (s/blank? (:app_template_bindings m))
+              (merge w {:app_template_bindings
+                        (-> m :app_template_bindings read-string)})
+              (merge w {:app_template_bindings {}}))
             w)]
     w))
 
