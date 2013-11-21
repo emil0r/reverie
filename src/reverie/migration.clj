@@ -130,7 +130,7 @@
 (defmigration alter-page-add-app-template-bindings
   (up [] (alter :add
                 (table :page
-                       (varchar :app_template_bindings 2048 :not-null (default "")))))
+                       (varchar :app_template_bindings 2048 :not-null (default "{}")))))
   (down [] (alter :drop
                   (table :page
                          (column :app_template_bindings)))))
