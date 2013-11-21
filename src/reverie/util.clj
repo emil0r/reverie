@@ -29,10 +29,9 @@
       (assoc-in [:real-uri] (:uri request))
       (assoc-in [:uri] (clojure.string/replace
                         (:uri request)
-                        ;; remove trailing slash IF there are more
-                        ;; characters in the URI, ie, exemption for
-                        ;; the first page
-                        (re-pattern (s/replace remove-part-of-uri #".+/$" "")) ""))))
+                        (re-pattern (if (= remove-part-of-uri "/")
+                                      "/"
+                                      (s/replace remove-part-of-uri #"/$" ""))) ""))))
 
 (defn revmap->kw
   "SQL databases can't store keywords. Do a transformation"

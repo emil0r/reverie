@@ -93,7 +93,10 @@
                 (util/middleware-wrap
                  (util/middleware-merge template-options)
                  f request))
-      :page (let [page-options (->> route-uri (clojure.core/get @pages) :options)
+      :page (let [request (util/shorten-uri
+                           request
+                           route-uri)
+                  page-options (->> route-uri (clojure.core/get @pages) :options)
                   [_ route options f] (->> route-uri
                                            (clojure.core/get @pages)
                                            :fns
@@ -102,9 +105,7 @@
                                                (and
                                                 (= (:request-method request) method)
                                                 (clout/route-matches route
-                                                                     (util/shorten-uri
-                                                                      request
-                                                                      route-uri)))))
+                                                                     request))))
                                            first)]
               (if (nil? f)
                 (r/response-404)

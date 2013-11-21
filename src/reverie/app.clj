@@ -22,6 +22,7 @@
   [{:keys [reverie] :as request}]
   (if-let [app (@apps (:app reverie))]
     (let [p (:page reverie)
+          request (util/shorten-uri request (:uri p))
           app-options (:options app)
           [_ route options f] (->> app
                                    :fns
@@ -29,9 +30,7 @@
                                               (and
                                                (= (:request-method request) method)
                                                (clout/route-matches route
-                                                                    (util/shorten-uri
-                                                                     request
-                                                                     (:uri p))))))
+                                                                    request))))
                                    first)]
       (if (nil? f)
         (r/response-404)
