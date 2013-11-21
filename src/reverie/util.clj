@@ -23,13 +23,16 @@
   (= (get-in request [:reverie :mode]) mode))
 
 (defn shorten-uri
-  "shortens the uri by removing the unwanted part"
+  "shortens the uri by removing the unwanted part. Used for defpage and defapp"
   [request remove-part-of-uri]
   (-> request
       (assoc-in [:real-uri] (:uri request))
       (assoc-in [:uri] (clojure.string/replace
                         (:uri request)
-                        (re-pattern (s/replace remove-part-of-uri #"/$" "")) ""))))
+                        ;; remove trailing slash IF there are more
+                        ;; characters in the URI, ie, exemption for
+                        ;; the first page
+                        (re-pattern (s/replace remove-part-of-uri #".+/$" "")) ""))))
 
 (defn revmap->kw
   "SQL databases can't store keywords. Do a transformation"
