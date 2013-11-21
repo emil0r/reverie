@@ -6,8 +6,8 @@
             [reverie.settings :as settings]
             [reverie.util :as util])
   (:use [reverie.atoms :exclude [objects]]
-        [reverie.core :only [with-template]]
-        reverie.entity))
+        reverie.entity
+        [reverie.helpers :only [with-template]]))
 
 (defn- convert-areas [area-mappings areas]
   (reduce (fn [out k]

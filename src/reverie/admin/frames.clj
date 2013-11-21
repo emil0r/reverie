@@ -135,7 +135,7 @@
     (table-row {:class "hidden app"}
                (label :app "App")
                [:select {:id :app :name :app}
-                (map #(let [app-type (util/kw->str (settings/options-read :app % [:app/type] :template))
+                (map #(let [app-type (util/kw->str (settings/option-read :app % [:app/type] :template))
                             value (util/kw->str %)]
                         [:option {:value value
                                   :selected (= value app)}

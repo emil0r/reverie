@@ -117,4 +117,3 @@
   "Take any uri and return everything but the last part corresponding to the page"
   [uri]
   (s/join "/" (butlast (remove s/blank? (s/split uri #"/")))))
-

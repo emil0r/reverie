@@ -9,6 +9,7 @@
   (:use [hiccup core form]
         [reverie.admin.frames.common :only [frame-options error-item]]
         reverie.admin.modules.helpers
+        reverie.admin.helpers
         reverie.admin.validators
         [reverie.admin.templates :only [frame]]
         [reverie.atoms :only [modules]]
