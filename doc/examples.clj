@@ -4,7 +4,8 @@
 ;; options: options. array that holds areas, pre- and post processing
 ;; body: actual body that will return to the ring handler
 (deftemplate name-of-template options body)
-(deftemplate main {:areas [:a :b :c] :pre nil :post nil}
+(deftemplate main {:template/areas [:a :b :c] ;; used to tell app rendering using templates what areas there area
+                   }
   [:html
    [:head
     [:title "example"]]
@@ -23,8 +24,7 @@
 ;; second variable as the body or a collection of statements that get
 ;; executed as one body 
 (deftemplate name-of-object options methods & body)
-(defobject object/text {:areas [:a :b]
-                        :attributes [{:text {:db/ident :object.text/text
+(defobject object/text {:attributes [{:text {:db/ident :object.text/text
                                              :db/type db.type/string
                                              :db/cardinality :db.cardinality/one
                                              :db/doc "docstring"}
@@ -45,7 +45,9 @@
 
 
 (defapp name-of-app options methods-with-path-and-body)
-(defapp gallery {:objects [object/text object/image]}
+(defapp gallery {:app/areas [:a :b]
+                 :app/type :raw ;; defaults to :template
+                 }
   [:get ["/:gallery/:image"] [:h1 gallery] [:img {:src (get-src image) :alt image}]]
   [:get ["/:gallery" {:gallery #"\w+"}] [:h1 gallery] [:div "images from the gallery"]]
   [:get ["*"] "my body"]
