@@ -41,13 +41,18 @@
                                      (= :copy (:action data))))
                                   (get-in @atoms/settings [:edits :objects])))}})
 
+(defn- get-options [option-ks [k v]]
+  (merge
+   {:options (select-keys (:options v) option-ks)}
+   {:name (util/kw->str k)}))
+
 (defn- get-meta []
   (let [root-serial (get-root-serial)
         u (user/get)]
    {:init-root-page? (init-root-page?)
-    :templates (sort (map util/kw->str (keys @atoms/templates)))
-    :objects (sort (map util/kw->str (keys @atoms/objects)))
-    :apps (sort (map util/kw->str (keys @atoms/apps)))
+    :templates (sort-by :name (map (partial get-options [:template/areas]) @atoms/templates))
+    :objects (sort-by :name (map (partial get-options []) @atoms/objects))
+    :apps (sort-by :name (map (partial get-options [:app/areas]) @atoms/apps))
     :edits (get-edit-actions u)
     :pages {:root root-serial
             :current root-serial}}))
