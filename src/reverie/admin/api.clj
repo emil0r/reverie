@@ -41,18 +41,29 @@
                                      (= :copy (:action data))))
                                   (get-in @atoms/settings [:edits :objects])))}})
 
-(defn- get-options [option-ks [k v]]
-  (merge
-   {:options (select-keys (:options v) option-ks)}
-   {:name (util/kw->str k)}))
+(defn- get-options
+  "Get options from templates, objects or apps. option-ks can have defaults (a vector of two: [key default])"
+  [option-ks [k v]]
+  (let [options (:options v)]
+   {(util/kw->str k)
+    {:options (reduce (fn [out k]
+                        (if (nil? k)
+                          out
+                          (if (vector? k)
+                            (let [[k default] k]
+                              (assoc out k (get-in options [k] default)))
+                            (assoc out k (get-in options [k])))))
+                      {}
+                      option-ks)}}))
 
 (defn- get-meta []
   (let [root-serial (get-root-serial)
         u (user/get)]
    {:init-root-page? (init-root-page?)
-    :templates (sort-by :name (map (partial get-options [:template/areas]) @atoms/templates))
-    :objects (sort-by :name (map (partial get-options []) @atoms/objects))
-    :apps (sort-by :name (map (partial get-options [:app/areas]) @atoms/apps))
+    :templates (into {}  (map (partial get-options [:template/areas]) @atoms/templates))
+    :objects (into {} (map (partial get-options []) @atoms/objects))
+    :apps (into {} (map (partial get-options [:app/areas
+                                              [:app/type :template]]) @atoms/apps))
     :edits (get-edit-actions u)
     :pages {:root root-serial
             :current root-serial}}))
