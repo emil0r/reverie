@@ -17,6 +17,7 @@
             [reverie.object :as object]
             [reverie.page :as page]
             [reverie.response :as r]
+            [reverie.settings :as settings]
             [reverie.util :as util])
   (:use [cheshire.core :only [generate-string]]
         [korma.core :only [sqlfn]]
@@ -108,12 +109,14 @@
   (let [key (str "attribute-" (clojure.core/name key))]
     (table-row (label key name) (text-field key value) nil)))
 
-(defn- page-form [{:keys [id serial parent name title type template app uri attributes] :as p}]
+(defn- page-form [{:keys [id serial parent name title type template app uri attributes app_template_bindings] :as p}]
   (form-to
    [:post ""]
    [:table.table.small
     (hidden-field :parent parent)
     (hidden-field :serial serial)
+
+    ;; simple fields name, title, uri, type and template
     (table-row (label :name "Name") (text-field :name name) (v/on-error :name error-item))
     (table-row (label :title "Title") (text-field :title title) nil)
     (if (pos? parent)
@@ -123,25 +126,34 @@
     (table-row (label :type "Type") (drop-down :type ["normal" "app"] (if (nil? type)
                                                                         type
                                                                         (clojure.core/name type))) nil)
+    
     (table-row (label :template "Template")
                (drop-down :template (atoms/get-templates) template)
                (v/on-error :template error-item))
+
+    ;; app is tightly coupled with area mapping in the cljs code
     (table-row {:class "hidden app"}
                (label :app "App")
                [:select {:id :app :name :app}
-                (map #(let [{:keys [options]} (get @atoms/apps %)
-                            app-type (clojure.core/name (get options :app/type :raw))
+                (map #(let [app-type (util/kw->str (settings/options-read :app % [:app/type] :template))
                             value (util/kw->str %)]
                         [:option {:value value
-                                  :type app-type
                                   :selected (= value app)}
                          (str value " [" app-type "]")])
                      (keys @atoms/apps))]
                (v/on-error :app error-item))
+    
+    ;; area mapping when an app is using a template
     (table-row {:class "hidden areas"}
-               (label :areas "app/areas <-> template/areas")
-               nil
+               (label :areas "Area mapping")
+               [:div {:id :area-mapping-holder}]
                nil)
+    (hidden-field :app_template_bindings (if (nil? app_template_bindings)
+                                           "{}"
+                                           (if (string? app_template_bindings)
+                                             app_template_bindings
+                                            (pr-str app_template_bindings))))
+    ;; page attributes
     (if-not (empty? attributes)
       (list
        (table-row nil [:strong "Attributes"] nil)
@@ -367,7 +379,8 @@
       [:h2 (:name p)]
       (page-form p)))]
   
-  [:post ["/meta" {:keys [parent name title type template app uri] :as data}]
+  [:post ["/meta" {:keys [parent name title type template app uri
+                          app_template_bindings] :as data}]
    (let [serial (read-string (get-in request [:params :serial]))
          p (page/get {:serial serial :version 0})
          parent (page/get {:serial (read-string parent) :version 0})
@@ -387,6 +400,7 @@
                                          :type type
                                          :app (or app "")
                                          :template (or template "")
+                                         :app_template_bindings app_template_bindings
                                          :updated (sqlfn now)))}))]
          ;; delete page attributes and add new ones
          (k/delete reverie.entity/page-attributes (k/where {:page_serial (:serial p)}))
