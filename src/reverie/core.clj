@@ -42,9 +42,9 @@
               (map #(area-render % request) (take-while #(> (:order %) 0) objects))]])
       (html
        (list
-        (map #(area-render % request) (take-while #(< (:order %) 0) objects))
+        (map #(area-render % request) (remove #(pos? (:order %)) objects))
         out
-        (map #(area-render % request) (take-while #(> (:order %) 0) objects)))))))
+        (map #(area-render % request) (remove #(neg? (:order %)) objects)))))))
 
 (defmacro area [name]
   (let [name (keyword name)]
