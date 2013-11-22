@@ -156,8 +156,7 @@
           :onDrop on-drop
           :autoExpandMS 1000
           :preventVoidMoves true
-          }
-    }))
+          }}))
 
 (defn ^:export reload []
   (-> :#tree
@@ -186,8 +185,11 @@
   (dom/show-main))
 
 (defn ^:export init []
-  ;;(util/log (get-settings))
   (-> :#tree
       jq/$
       jq/empty
-      (.dynatree (get-settings))))
+      (.dynatree (get-settings)))
+  (if-not (nil? (get-in @meta/data [:edits :page]))
+    (do
+      (-> :.icon-edit-sign jq/$ (jq/add-class "hidden"))
+      (-> :.icon-eye-open jq/$ (jq/remove-class "hidden")))))

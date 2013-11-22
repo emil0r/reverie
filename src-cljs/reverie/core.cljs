@@ -59,14 +59,12 @@
   (module/init))
 (defmethod init :default []
   (meta/listen!)
-  (tree/listen!)
   (misc/listen!)
   (area/init)
   (tabs/init)
   (dom/$m-loaded #(dom/$m-ready area/init))
   (meta/read! (fn []
-                (if (:init-root-page? @meta/data)
-                  (options/new-root-page!))
+                (tree/listen!)
                 (tree/init))))
 
 (jq/document-ready
