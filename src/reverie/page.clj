@@ -80,7 +80,8 @@
         w {:page_id page-id :area (util/kw->str area)}]
     (k/select object
               (k/where (and w
-                            {:app_path [in (remove nil? ["" "*" (name app-path)])]}))
+                            {:app_path [in (remove nil? ["" "*" (if app-path
+                                                                  (name app-path))])]}))
               (k/order :order))))
 
 (defn render
