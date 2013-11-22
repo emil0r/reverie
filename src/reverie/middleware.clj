@@ -79,7 +79,7 @@
   "Add interesting reverie data into the request map for functions further down the stream. Handle 404's here as well"
   [handler]
   (fn [{:keys [uri] :as request}]
-    (if-let [[_ route-data] (atoms/get-route uri)]
+    (if-let [[route-uri route-data] (atoms/get-route uri)]
       (let [u (user/get)
             editor? (or (user/admin? u)
                         (user/role? u :edit))
@@ -87,6 +87,7 @@
                          :version (if editor? 0 1)})]
         (handler (-> request
                      (assoc-in [:reverie :editor?] editor?)
+                     (assoc-in [:reverie :route-uri] route-uri)
                      (assoc-in [:reverie :route-data] route-data)
                      (assoc-in [:reverie :page] p)
                      (assoc-in [:reverie :page-id] (:id p))
