@@ -25,7 +25,7 @@
 (defn- create-area-menu! [$elem]
   (hide-area-menu!)
   (let [area (jq/attr $elem :area)
-        objects (sort (keys (:objects @meta/data)))]
+        objects (sort (map name (keys (:objects @meta/data))))]
     (jq/append $elem
                (crate/html
                 [:ul.reverie-area-menu
