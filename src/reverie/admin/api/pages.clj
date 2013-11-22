@@ -27,6 +27,10 @@
    :draggable (if (nil? draggable?) true draggable?)
    :created (:created p)
    :updated (:updated p)
+   :app (:app p)
+   :app-type (settings/option-read :app (:app p) [:app/type] :template)
+   :template (:template p)
+   :type (:type p)
    :order (:order p)
    :parent (:parent p)
    :version (:version p)})
@@ -93,11 +97,7 @@
      (do
        (atoms/view! user-name)
        (atoms/edit! (:uri p) user-name)
-       {:result true
-        :app (:app p)
-        :app/type (settings/option-read :app (:app p) [:app/type] :template)
-        :template (:template p)
-        :type (:type p)}))]
+       {:result true}))]
   [:get ["/move/:node/:source-node/:hit-mode"]
    ;; anchor serial hit-mode in that order
    {:result (page/move! (read-string node) (read-string source-node) hit-mode)}])
