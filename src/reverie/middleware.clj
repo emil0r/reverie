@@ -98,18 +98,20 @@
   [handler]
   (fn [{:keys [uri] :as request}]
     (if-let [[_ {:keys [serial]}] (atoms/get-route uri)]
-      (let [{p :page editor? :editor?} (:reverie request)
+      (let [{{p :page editor? :editor?} :reverie} request
             {:keys [redirect redirect-permanent]} (:attributes p)
             redirect (s/trim (:value redirect))
             redirect-permanent (s/trim (:value redirect-permanent))]
         (cond
-         (re-find #"^\d+$" redirect) (let [p (page/get {:serial (read-string redirect)
-                                                        :version (if editor? 0 1)})]
-                                       (r/response-302 (:uri p)))
+         (re-find #"^\d+$" redirect) (if-let [p (page/get {:serial (read-string redirect)
+                                                           :version (if editor? 0 1)})]
+                                       (r/response-302 (:uri p))
+                                       (r/response-404))
          (not (s/blank? redirect)) (r/response-302 redirect)
-         (re-find #"^\d+$" redirect-permanent) (let [p (page/get {:serial (read-string redirect-permanent)
-                                                                  :version (if editor? 0 1)})]
-                                                 (r/response-301 (:uri p)))
+         (re-find #"^\d+$" redirect-permanent) (if-let [p (page/get {:serial (read-string redirect-permanent)
+                                                                     :version (if editor? 0 1)})]
+                                                 (r/response-301 (:uri p))
+                                                 (r/response-404))
          (not (s/blank? redirect-permanent)) (r/response-301 redirect-permanent)
          :else (handler request)))
       (handler request))))
