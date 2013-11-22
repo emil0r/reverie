@@ -41,32 +41,58 @@
                                      (= :copy (:action data))))
                                   (get-in @atoms/settings [:edits :objects])))}})
 
-(defn- get-options
-  "Get options from templates, objects or apps. option-ks can have defaults (a vector of two: [key default])"
-  [option-ks [k v]]
-  (let [options (:options v)]
-   {(util/kw->str k)
-    {:options (reduce (fn [out k]
-                        (if (nil? k)
-                          out
-                          (if (vector? k)
-                            (let [[k default] k]
-                              (assoc out k (get-in options [k] default)))
-                            (assoc out k (get-in options [k])))))
-                      {}
-                      option-ks)}}))
+
+(defn- get-meta-options [data k options option-ks]
+  (assoc-in
+   data
+   [k :options]
+   (reduce (fn [out k]
+             (if (nil? k)
+               out
+               (if (vector? k)
+                 (let [[k default] k]
+                   (assoc out k (get-in options [k] default)))
+                 (assoc out k (get-in options [k])))))
+           {}
+           option-ks)))
+
+(defn- get-meta-app-paths [data type app app-data]
+  (if (= type :app)
+    (assoc-in data [app :paths] (reduce (fn [out [_ _ options _]]
+                                          (if (nil? options)
+                                            out
+                                            (conj out
+                                                  [(:app/path options)
+                                                   (:app.path/help options)])))
+                                        [[:* "All paths"]]
+                                        (:fns app-data)))
+    data))
+
+(defn- get-meta-info
+  "Get meta info from templates, objects or apps. option-ks can have defaults (a vector of two: [key default])"
+  [option-ks type [k v]]
+  (let [k (keyword k)]
+   (-> {}
+       (get-meta-options k (:options v) option-ks)
+       (get-meta-app-paths type k v)
+      
+       )))
 
 (defn- get-meta []
   (let [root-serial (get-root-serial)
         u (user/get)]
-   {:init-root-page? (init-root-page?)
-    :templates (into {}  (map (partial get-options [:template/areas]) @atoms/templates))
-    :objects (into {} (map (partial get-options []) @atoms/objects))
-    :apps (into {} (map (partial get-options [:app/areas
-                                              [:app/type :template]]) @atoms/apps))
-    :edits (get-edit-actions u)
-    :pages {:root root-serial
-            :current root-serial}}))
+    (-> {}
+        (assoc :init-root-page? (init-root-page?))
+        (assoc :templates (into {}  (map (partial get-meta-info [:template/areas]
+                                                  :template) @atoms/templates)))
+        (assoc :objects (into {} (map (partial get-meta-info []
+                                               :object) @atoms/objects)))
+        (assoc :apps (into {} (map (partial get-meta-info [:app/areas
+                                                           [:app/type :template]]
+                                            :app) @atoms/apps)))
+        (assoc :edits (get-edit-actions u))
+        (assoc :pages {:root root-serial
+                       :current root-serial}))))
 
 (rev/defpage "/admin/api" {:middleware [[wrap-json-params]
                                         [wrap-json-response]
