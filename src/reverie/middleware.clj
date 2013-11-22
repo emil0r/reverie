@@ -52,7 +52,7 @@
              (not (re-find #"^/admin" uri)))
           (do
             (atoms/view! user-name)
-            (atoms/edit! uri user-name)
+            (atoms/edit! (get-in request [:reverie :route-uri]) user-name)
             (handler (assoc-in request [:reverie :mode] :edit)))
           (handler (assoc-in request [:reverie :mode] :view)))))))
 
