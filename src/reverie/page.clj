@@ -75,10 +75,13 @@
 
 (defn objects
   "Get objects associated with a page. page-id required"
-  [{:keys [reverie] :as request}]
-  (let [{:keys [area page-id]} reverie
+  [request]
+  (let [{{area :area page-id :page-id app-path :app/path} :reverie} request
         w {:page_id page-id :area (util/kw->str area)}]
-    (k/select object (k/where w) (k/order :order))))
+    (k/select object
+              (k/where (and w
+                            {:app_path [in (remove nil? ["" "*" (name app-path)])]}))
+              (k/order :order))))
 
 (defn render
   "Renders a page"

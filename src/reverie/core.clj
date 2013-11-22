@@ -27,13 +27,32 @@
       (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))) render-fn)]
      (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))) render-fn))))
 
+(defn render-with-template [request serial areas name]
+  (let [out (get areas name)
+        objects (p/objects request)]
+    (if (mode? request :edit)
+      (html [:div.reverie-area {:area name :page-serial serial}
+             [:div.reverie-area-holder
+              [:span.reverie-area-panel (str "area " (clojure.core/name name))]]
+             [:div.reverie-origo
+              [:div.reverie-origo-holder
+               [:span.reverie-origo-panel (str "origo")]]
+              
+              out
+              (map #(area-render % request) (take-while #(> (:order %) 0) objects))]])
+      (html
+       (list
+        (map #(area-render % request) (take-while #(< (:order %) 0) objects))
+        out
+        (map #(area-render % request) (take-while #(> (:order %) 0) objects)))))))
+
 (defmacro area [name]
   (let [name (keyword name)]
     `(let [~'serial (get-in ~'request [:reverie :page-serial])
            ~'request (assoc-in ~'request [:reverie :area] ~name)]
        (case (get-in ~'request [:reverie :overriden])
          :with-template (let [~'areas (get-in ~'request [:reverie :overridden/areas])]
-                          (get ~'areas ~name))
+                          (render-with-template ~'request ~'serial ~'areas ~name))
          (if (mode? ~'request :edit)
            (html [:div.reverie-area {:area ~name :page-serial ~'serial}
                   [:div.reverie-area-holder

@@ -3,7 +3,8 @@
             [reverie.auth.user :as user]
             [reverie.core :as rev]
             [reverie.atoms :as atoms]
-            [reverie.page :as page])
+            [reverie.page :as page]
+            [reverie.settings :as settings])
   (:use reverie.entity
         [reverie.middleware :only [wrap-access]]
         ;;[reverie.util :only [published?]]
@@ -92,7 +93,11 @@
      (do
        (atoms/view! user-name)
        (atoms/edit! (:uri p) user-name)
-       {:result true}))]
+       {:result true
+        :app (:app p)
+        :app/type (settings/option-read :app (:app p) [:app/type] :template)
+        :template (:template p)
+        :type (:type p)}))]
   [:get ["/move/:node/:source-node/:hit-mode"]
    ;; anchor serial hit-mode in that order
    {:result (page/move! (read-string node) (read-string source-node) hit-mode)}])
