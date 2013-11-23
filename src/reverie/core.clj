@@ -34,12 +34,12 @@
       (html [:div.reverie-area {:area name :page-serial serial}
              [:div.reverie-area-holder
               [:span.reverie-area-panel (str "area " (clojure.core/name name))]]
+             (map #(area-render % request) (remove #(pos? (:order %)) objects))
              [:div.reverie-origo
               [:div.reverie-origo-holder
                [:span.reverie-origo-panel (str "origo")]]
-              
-              out
-              (map #(area-render % request) (take-while #(> (:order %) 0) objects))]])
+              out]
+             (map #(area-render % request) (remove #(neg? (:order %)) objects))])
       (html
        (list
         (map #(area-render % request) (remove #(pos? (:order %)) objects))

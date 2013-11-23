@@ -5,6 +5,7 @@
             [jayq.util :as util]
             [reverie.dom :as dom]
             [reverie.meta :as meta]
+            [reverie.admin.app :as app]
             [reverie.admin.area :as area]
             [reverie.admin.options :as options]))
 
@@ -107,12 +108,12 @@
       jq/$
       (jq/on :click :.icon-refresh nil #(if-let [node (get-active-node)]
                                           (if-let [uri (-> node .-data .-uri)]
-                                            (do
+                                            (let [node-data (-> (get-active-node)
+                                                                get-node-data)]
                                               (swap! meta/data assoc-in
                                                      [:pages :current]
-                                                     (-> (get-active-node)
-                                                         get-node-data
-                                                         :serial))
+                                                     (:serial node-data))
+                                              (app/handle-navigation node-data)
                                               (options/refresh! uri)))))
       (jq/on :click :.icon-plus-sign nil #(if-let [node (get-active-node)]
                                             (if-let [serial (-> node .-data .-serial)]
@@ -155,8 +156,7 @@
           :onDragOver on-drag-over
           :onDrop on-drop
           :autoExpandMS 1000
-          :preventVoidMoves true
-          }}))
+          :preventVoidMoves true}}))
 
 (defn ^:export reload []
   (-> :#tree

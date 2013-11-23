@@ -2,6 +2,7 @@
   (:require [clojure.string :as s]
             [jayq.core :as jq]
             [jayq.util :as util]
+            [reverie.admin.app :as app]
             [reverie.admin.area :as area]
             [reverie.admin.filemanager :as filemanager]
             [reverie.admin.file-picker :as file-picker]
@@ -64,6 +65,7 @@
   (tabs/init)
   (dom/$m-loaded #(dom/$m-ready area/init))
   (meta/read! (fn []
+                (app/listen!)
                 (tree/listen!)
                 (tree/init))))
 

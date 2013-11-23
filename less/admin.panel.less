@@ -67,6 +67,43 @@
     }
 }
 
+#app-navigation {
+    padding: 5px;
+    border-bottom: 1px dotted @primary;
+    h2 {
+        margin: 0 0 10px 0;
+        font-size: 100%;
+        color: @black;
+        font-weight: bold;
+    }
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        li {
+            margin-bottom: 5px;
+            span {
+                padding: 3px 10px;
+                margin-right: 10px;
+                background-color: @secondary;
+                color: @white;
+                border-radius: 5px;
+                &.active {
+                    background-color: @tertiary;
+                    &:hover {
+                        background-color: @tertiary;
+                    }
+                }
+                &:hover {
+                    cursor: pointer;
+                    //background-color: @secondary + #111;
+                    box-shadow: 0 0 5px @black;
+                }
+            }
+        }
+    }
+}
+
 #tabbar {
     margin: 5px 0;
     padding-bottom: 5px;

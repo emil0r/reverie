@@ -82,7 +82,9 @@
                   [:i.icon-edit-sign {:title "Edit mode"}]
                   [:i.icon-eye-open.hidden {:title "View mode"}]
                   [:i.icon-trash {:title "Trash it"}]]]
-                
+                [:div#app-navigation.hidden
+                 [:h2 "Possible app paths"]
+                 [:ul]]
                 [:div.meta]])])
 
 
