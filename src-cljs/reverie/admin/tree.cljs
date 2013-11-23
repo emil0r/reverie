@@ -134,6 +134,7 @@
         jq/$
         (jq/val (:serial data)))
     (meta/display data)
+    (swap! meta/data assoc-in [:pages :current-node] data)
     node))
 
 (defn- on-post-init [reloading? error?]

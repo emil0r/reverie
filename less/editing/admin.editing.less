@@ -60,6 +60,14 @@
     // object
     .reverie-object, .reverie-origo {
         margin-bottom: 15px;
+        sup.reverie-app-path {
+            margin-left: 5px;
+            color: @gray-lighter;
+
+            &:before {
+                content: "[path] ";
+            }
+        }
     }
     .reverie-ready-for-cut {
         border: 3px dotted @secondary;

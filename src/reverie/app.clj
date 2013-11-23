@@ -32,7 +32,10 @@
                                                (clout/route-matches route
                                                                     request))))
                                    first)
-          request (assoc-in request [:reverie :app/path] (:app/path options))]
+          request (assoc-in request [:reverie :app/path]
+                            (or
+                             (get-in request [:params :reverie-app-path])
+                             (:app/path options)))]
       (if (nil? f)
         (r/response-404)
         (let [resp (if (= :get (:request-method request))

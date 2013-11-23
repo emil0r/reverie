@@ -2,6 +2,7 @@
   (:require [crate.core :as crate]
             [jayq.core :as jq]
             [jayq.util :as util]
+            [reverie.admin.options :as options]
             [reverie.meta :as meta])
   (:use [reverie.util :only [ev$]]))
 
@@ -36,7 +37,13 @@
 (defn click-app-path! [e]
   (let [$e (ev$ e)]
     (clear-app-paths!)
-    (jq/add-class $e "active")))
+    (jq/add-class $e "active")
+    (util/log (str
+               (get-in @meta/data [:pages :current-node :uri])
+               "?reverie-app-path=" (jq/html $e)))
+    (options/refresh! (str
+                       (get-in @meta/data [:pages :current-node :uri])
+                       "?reverie-app-path=" (jq/html $e)))))
 
 (defn listen! []
   (-> :#app-navigation

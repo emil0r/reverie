@@ -23,7 +23,11 @@
    (if (mode? request :edit)
      [:div.reverie-object {:object-id (:id obj)}
       [:div.reverie-object-holder
-       [:span.reverie-object-panel (str "object " (:name obj))]]
+       [:span.reverie-object-panel (str "object " (:name obj))
+        (if (get-in request [:reverie :app/path])
+          [:sup.reverie-app-path (if (= "" (:app_path obj))
+                                   "*"
+                                   (:app_path obj))])]]
       (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))) render-fn)]
      (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))) render-fn))))
 
