@@ -14,7 +14,8 @@
 
 
 (defn handle-navigation [node-data]
-  (if (and (= (:type node-data) "app") (= (:app-type node-data) "template"))
+  (if (and (= (:type node-data) "app")
+           (= (:app-type node-data) "template"))
     (do
       (let [app (get-in @meta/data [:apps (keyword (:app node-data))])
             $ul (jq/$ "#app-navigation > ul")]
