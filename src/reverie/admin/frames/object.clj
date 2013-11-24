@@ -7,7 +7,9 @@
             [reverie.core :as rev]
             reverie.entity
             [reverie.object :as object]
+            [reverie.page :as page]
             [reverie.response :as r]
+            [reverie.settings :as settings]
             [reverie.util :as util])
   (:use [cheshire.core :only [encode]]
         [hiccup core form]
@@ -77,6 +79,25 @@
    [:td (label field-name name)]
    [:td (text-field field-name (or (data field-name) initial))]])
 
+
+(defn- get-tabs [request attributes-table]
+  (let [object-id (read-string (get-in request [:params :object-id]))
+        [_ obj-data] (object/get object-id :data-object)]
+    (if (page/attributes? {:page-id (:page_id obj-data)} {:type :app})
+     (list
+      [:div#tabbar.edit-object
+       [:div.goog-tab.goog-tab-selected
+        {:tab :properties} "Properties"]
+       [:div.goog-tab {:tab :paths} "Paths"]]
+   
+      [:div#properties attributes-table]
+      [:div#paths
+       (let [p (page/get {:page-id (:page_id obj-data)})
+             paths (get-app-paths (:app p))]
+         [:ul (for [[path help] paths]
+                [:li [:span (name path)] help])])])
+     attributes-table)))
+
 (defn- get-object-table [request attributes attr-order data]
   (form-to {:name :form_object}
            [:post ""]
@@ -115,7 +136,8 @@
      (t/frame
       (assoc frame-options
         :title "Edit object")
-      (get-object-table request attributes attr-order data)))]
+      (get-tabs request
+       (get-object-table request attributes attr-order data))))]
   
   [:post ["/" form-data]
    (let [object-id (read-string (get-in request [:params :object-id]))
@@ -136,7 +158,8 @@
       (assoc frame-options
         :title "Edit object"
         :custom-js custom-js)
-      (get-object-table request attributes attr-order form-data)))]
+      (get-tabs request
+       (get-object-table request attributes attr-order form-data))))]
 
   [:get ["/richtext"]
    (let [field (-> request (get-in [:params :field]) keyword)

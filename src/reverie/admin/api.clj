@@ -1,5 +1,6 @@
 (ns reverie.admin.api
   (:require [korma.core :as k]
+            [reverie.admin.helpers :as helpers]
             [reverie.atoms :as atoms]
             [reverie.auth.user :as user]
             [reverie.core :as rev]
@@ -56,16 +57,9 @@
            {}
            option-ks)))
 
-(defn- get-meta-app-paths [data type app app-data]
+(defn- get-meta-app-paths [data type app]
   (if (= type :app)
-    (assoc-in data [app :paths] (reduce (fn [out [_ _ options _]]
-                                          (if (nil? options)
-                                            out
-                                            (conj out
-                                                  [(:app/path options)
-                                                   (:app.path/help options)])))
-                                        [[:* "All paths"]]
-                                        (:fns app-data)))
+    (assoc-in data [app :paths] (helpers/get-app-paths app))
     data))
 
 (defn- get-meta-info
@@ -74,9 +68,7 @@
   (let [k (keyword k)]
    (-> {}
        (get-meta-options k (:options v) option-ks)
-       (get-meta-app-paths type k v)
-      
-       )))
+       (get-meta-app-paths type k))))
 
 (defn- get-meta []
   (let [root-serial (get-root-serial)
