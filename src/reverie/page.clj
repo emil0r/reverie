@@ -53,9 +53,10 @@
                                          attributes)))) children)))
 
 (defn get
-  "Get a page. serial + version overrides page-id"
-  [{:keys [page-id serial version] :as request}]
-  (let [page (if (and serial version)
+  "Get a page. serial overrides page-id. Leaving version nil gives you the unpublished version."
+  [{:keys [page-id serial version]}]
+  (let [version (or version 0)
+        page (if (and serial version)
                (-> page (k/select
                          (k/where {:serial serial :version version}))
                    first util/revmap->kw)
@@ -64,6 +65,9 @@
                    first util/revmap->kw))
         attributes (k/select page-attributes (k/where {:page_serial (:serial page)}))]
     (assoc page :attributes (helpers/transform-attributes attributes))))
+
+(defn attributes? [page-get-data attributes]
+  (= attributes (select-keys (get page-get-data) (keys attributes))))
 
 (defn- get-last-order [request]
   (let [parent (or (:parent request) (:serial (get request)))]
