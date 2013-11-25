@@ -38,17 +38,17 @@
       (html [:div.reverie-area {:area name :page-serial serial}
              [:div.reverie-area-holder
               [:span.reverie-area-panel (str "area " (clojure.core/name name))]]
-             (map #(area-render % request) (remove #(pos? (:order %)) objects))
+             (map #(area-render % request) (filter #(neg? (:order %)) objects))
              [:div.reverie-origo
               [:div.reverie-origo-holder
                [:span.reverie-origo-panel (str "origo")]]
               out]
-             (map #(area-render % request) (remove #(neg? (:order %)) objects))])
+             (map #(area-render % request) (filter #(pos? (:order %)) objects))])
       (html
        (list
-        (map #(area-render % request) (remove #(pos? (:order %)) objects))
+        (map #(area-render % request) (filter #(neg? (:order %)) objects))
         out
-        (map #(area-render % request) (remove #(neg? (:order %)) objects)))))))
+        (map #(area-render % request) (filter #(pos? (:order %)) objects)))))))
 
 (defmacro area [name]
   (let [name (keyword name)]
