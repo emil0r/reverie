@@ -61,6 +61,16 @@
       :data-object [data obj]
       data)))
 
+(defn attributes? [data attributes]
+  (if (and (string? (:app_paths attributes))
+           (string? (:app_paths data)))
+    (let [attr1 (s/split (:app_paths attributes) #",")
+          attr2 (s/split (:app_paths data) #",")]
+      (and
+       (= (dissoc attributes :app_paths) (select-keys data (keys (dissoc attributes :app_paths))))
+       (= attr1 (filter (fn [a2] (some #(= a2 %) attr1)) attr2))))
+    (= attributes (select-keys data (keys attributes)))))
+
 (defn add! [{:keys [page-id name area]} obj]
   (let [name (clojure.core/name name)
         page-obj (k/insert object
