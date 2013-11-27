@@ -66,8 +66,8 @@
         attributes (k/select page-attributes (k/where {:page_serial (:serial page)}))]
     (assoc page :attributes (helpers/transform-attributes attributes))))
 
-(defn attributes? [page-get-data attributes]
-  (= attributes (select-keys (get page-get-data) (keys attributes))))
+(defn attributes? [data attributes]
+  (= attributes (select-keys data (keys attributes))))
 
 (defn- get-last-order [request]
   (let [parent (or (:parent request) (:serial (get request)))]
@@ -84,8 +84,8 @@
         w {:page_id page-id :area (util/kw->str area)}]
     (k/select object
               (k/where (and w
-                            {:app_path [in (remove nil? ["" "*" (if app-path
-                                                                  (name app-path))])]}))
+                            {:app_paths [in (remove nil? ["" "*" (if app-path
+                                                                   (name app-path))])]}))
               (k/order :order))))
 
 (defn render
