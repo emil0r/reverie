@@ -94,6 +94,7 @@
             .-location) uri))
 
 (defn ^:export reload-main! []
-  (let [href (-> js/window .-parent .-main .-framem .-location .-pathname)]
-    (main-uri! href)))
+  (let [href (-> js/window .-parent .-main .-framem .-location .-pathname)
+        search (-> js/window .-parent .-main .-framem .-location .-search)]
+    (main-uri! (str href search))))
 

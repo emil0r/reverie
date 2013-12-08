@@ -3,11 +3,11 @@
             [korma.core :as k]
             [reverie.admin.updated :as updated]
             [reverie.auth.user :as user]
-            [reverie.core :as rev]
             [reverie.atoms :as atoms]
             [reverie.object :as object]
             [reverie.page :as page])
-  (:use [reverie.middleware :only [wrap-access]]
+  (:use [reverie.core :only [defpage]]
+        [reverie.middleware :only [wrap-access]]
         [ring.middleware.json :only [wrap-json-params
                                      wrap-json-response]]))
 
@@ -19,9 +19,9 @@
                {name initial}) (-> @atoms/objects obj :options :attributes)))))
 
 
-(rev/defpage "/admin/api/objects" {:middleware [[wrap-json-params]
-                                                [wrap-json-response]
-                                                [wrap-access :edit]]}
+(defpage "/admin/api/objects" {:middleware [[wrap-json-params]
+                                            [wrap-json-response]
+                                            [wrap-access :edit]]}
   [:post ["/add/:page-serial/:area/:object-name" _]
    (let [p (page/get {:serial (read-string page-serial) :version 0})
          data (default-data object-name)]
@@ -85,6 +85,14 @@
                                             :anchor area})})
            {:result false}))
        {:result false}))]
+  [:post ["/app-path" {:keys [object-id app-path]}]
+   (let [object-id (read-string object-id)]
+     (do
+       (updated/via-object object-id)
+       (k/update reverie.entity/object
+                 (k/set-fields {:app_path app-path})
+                 (k/where {:id object-id}))
+       {:result true}))]
   [:post ["/delete" {:keys [object-id]}]
    (let [object-id (read-string object-id)
          o (-> reverie.entity/object

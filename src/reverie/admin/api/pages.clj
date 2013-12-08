@@ -1,11 +1,11 @@
 (ns reverie.admin.api.pages
   (:require [korma.core :as k]
             [reverie.auth.user :as user]
-            [reverie.core :as rev]
             [reverie.atoms :as atoms]
             [reverie.page :as page]
             [reverie.settings :as settings])
-  (:use reverie.entity
+  (:use [reverie.core :only [defpage]]
+        reverie.entity
         [reverie.middleware :only [wrap-access]]
         ;;[reverie.util :only [published?]]
         [ring.middleware.json :only [wrap-json-params
@@ -74,9 +74,9 @@
       (recur parent (conj out parent)))))
 
 
-(rev/defpage "/admin/api/pages" {:middleware [[wrap-json-params]
-                                              [wrap-json-response]
-                                              [wrap-access :edit]]}
+(defpage "/admin/api/pages" {:middleware [[wrap-json-params]
+                                          [wrap-json-response]
+                                          [wrap-access :edit]]}
   [:get ["/read"]
    (get-pages (-> (k/select page (k/where {:version 0 :parent 0})) first :serial) true)]
   [:get ["/read/:parent"]

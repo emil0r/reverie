@@ -22,9 +22,9 @@
         node-data (js->clj (.-data node) :keywordize-keys true)]
     (if (= (:type node-data) "app")
       (apply conj
-       [["" "No path"]]
-       (rest
-        (get-in @meta/data [:apps (-> node-data :app keyword) :paths])))
+             [["" "No path"]]
+             (rest
+              (get-in @meta/data [:apps (-> node-data :app keyword) :paths])))
       nil)))
 
 (defn- hide-area-menu! []
@@ -67,14 +67,17 @@
                    [:li.reverie-sub-menu-holder "App path"
                     [:ul
                      (for [[path help] paths]
-                       [:li {:app-path path} "[" path "] " help])]])
+                       [:li {:app-path path :action "app-path"
+                             :object-id object-id}
+                        "[" path "] " help])]])
                  [:li.reverie-sub-menu-holder "Delete?"
                   [:ul
                    [:li.delete-object {:action "delete"} "Delete!"]]]
                  (if (paste?)
                    (list
                     [:li.reverie-bar]
-                    [:li.paste-object {:action "paste" :area area :type "object" :object-id object-id} "Paste"]))
+                    [:li.paste-object {:action "paste" :area area
+                                       :type "object" :object-id object-id} "Paste"]))
                  [:li.reverie-bar]
                  [:li.copy-object {:action "cut"} "Cut"]
                  [:li.copy-object {:action "copy"} "Copy"]
@@ -176,6 +179,15 @@
         object-id (-> $e (jq/parents :.reverie-object) (jq/attr :object-id))]
     (jq/xhr [:post "/admin/api/objects/move"]
             {:object-id object-id :hit-mode "down"}
+            (fn [data]
+              (if (.-result data)
+                (dom/reload-main!))))))
+(defmethod click-object-method! "app-path" [e]
+  (let [$e (ev$ e)
+        object-id (-> $e (jq/parents :.reverie-object) (jq/attr :object-id))
+        app-path (-> $e (jq/attr "app-path"))]
+    (jq/xhr [:post "/admin/api/objects/app-path"]
+            {:object-id object-id :app-path app-path}
             (fn [data]
               (if (.-result data)
                 (dom/reload-main!))))))

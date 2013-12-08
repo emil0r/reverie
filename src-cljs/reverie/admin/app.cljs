@@ -36,9 +36,6 @@
   (let [$e (ev$ e)]
     (clear-app-paths!)
     (jq/add-class $e "active")
-    (util/log (str
-               (get-in @meta/data [:pages :current-node :uri])
-               "?reverie-app-path=" (jq/html $e)))
     (options/refresh! (str
                        (get-in @meta/data [:pages :current-node :uri])
                        "?reverie-app-path=" (jq/html $e)))))
