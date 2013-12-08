@@ -138,14 +138,7 @@
 (defmigration alter-object-add-app-path
   (up [] (alter :add
                 (table :object
-                       (varchar :app_paths 1024 :not-null (default "")))))
+                       (varchar :app_path 1024 :not-null (default "")))))
   (down [] (alter :drop
                   (table :object
-                         (column :app_paths)))))
-
-(defmigration add-object-app-path
-  (up [] (create (table :object_app_path
-                        (varchar :path 255 :not-null (default ""))
-                        (integer :order :not-null)
-                        (integer :object_id [:refer :object :id] :not-null))))
-  (down [] (drop (table :object_app_path))))
+                         (column :app_path)))))
