@@ -25,12 +25,12 @@
   (-> :.meta
       jq/$
       (jq/off :click :.publish)
-      (jq/off :click :.meta)
+      (jq/off :click :.btn.meta)
       (jq/off :click :.restore))
   (-> :.meta
       jq/$
       (jq/on :click :.publish nil options/publish-page!)
-      (jq/on :click :.meta nil options/meta-page!)
+      (jq/on :click :.btn.meta nil options/meta-page!)
       (jq/on :click :.restore nil options/restore!)))
 
 (defn display [data]

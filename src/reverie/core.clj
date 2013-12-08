@@ -25,9 +25,10 @@
       [:div.reverie-object-holder
        [:span.reverie-object-panel (str "object " (:name obj))
         (if (get-in request [:reverie :app/path])
-          [:sup.reverie-app-path (if (= "" (:app_path obj))
-                                   "*"
-                                   (:app_path obj))])]]
+          [:sup.reverie-app-path {:app-path (:app_path obj)}
+           (if (= "" (:app_path obj))
+             "No path selected"
+             (:app_path obj))])]]
       (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))) render-fn)]
      (->html (o/render (assoc-in request [:reverie :object-id] (:id obj))) render-fn))))
 

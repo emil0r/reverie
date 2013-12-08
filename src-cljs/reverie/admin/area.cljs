@@ -8,6 +8,25 @@
 
 (def areas (atom #{}))
 
+(defn- active-path? [path]
+  (let [node (-> :#tree jq/$ (.dynatree "getActiveNode"))
+        node-data (js->clj (.-data node) :keywordize-keys true)]
+    (and
+     (= (:type node-data) "app")
+     (=
+      path
+      (-> "#app-navigation span.active" jq/$ jq/html)))))
+
+(defn- get-app-paths []
+  (let [node (-> :#tree jq/$ (.dynatree "getActiveNode"))
+        node-data (js->clj (.-data node) :keywordize-keys true)]
+    (if (= (:type node-data) "app")
+      (apply conj
+       [["" "No path"]]
+       (rest
+        (get-in @meta/data [:apps (-> node-data :app keyword) :paths])))
+      nil)))
+
 (defn- hide-area-menu! []
   (-> :.reverie-area-menu
       dom/$m
@@ -39,27 +58,36 @@
 
 (defn- create-object-menu! [$elem {:keys [area object-id]}]
   (hide-object-menu!)
-  (jq/append $elem
-             (crate/html
-              [:ul.reverie-object-menu
-               [:li.edit-object {:action "edit"} "Edit"]
-               [:li.delete-object {:action "delete"} "Delete"]
-               (if (paste?)
-                 (list
-                  [:li.reverie-bar]
-                  [:li.paste-object {:action "paste" :area area :type "object" :object-id object-id} "Paste"]))
-               [:li.reverie-bar]
-               [:li.copy-object {:action "cut"} "Cut"]
-               [:li.copy-object {:action "copy"} "Copy"]
-               [:li.move-object "Move to »"
-                [:ul.move-object-to
-                 (map (fn [a] [:li {:action "move-to-area" :area a} "area " a])
-                      (remove #(= area %) @areas))
+  (let [paths (get-app-paths)]
+    (jq/append $elem
+               (crate/html
+                [:ul.reverie-object-menu
+                 [:li.edit-object {:action "edit"} "Edit"]
+                 (if paths
+                   [:li.reverie-sub-menu-holder "App path"
+                    [:ul
+                     (for [[path help] paths]
+                       [:li {:app-path path} "[" path "] " help])]])
+                 [:li.reverie-sub-menu-holder "Delete?"
+                  [:ul
+                   [:li.delete-object {:action "delete"} "Delete!"]]]
+                 (if (paste?)
+                   (list
+                    [:li.reverie-bar]
+                    [:li.paste-object {:action "paste" :area area :type "object" :object-id object-id} "Paste"]))
                  [:li.reverie-bar]
-                 [:li.move-object-to-top {:action "move-to-top"} "Move to top"]
-                 [:li.move-object-up {:action "move-up"} "Move up"]
-                 [:li.move-object-down {:action "move-down"} "Move down"]
-                 [:li.move-object-to-bottom {:action "move-to-bottom"} "Move to bottom"]]]])))
+                 [:li.copy-object {:action "cut"} "Cut"]
+                 [:li.copy-object {:action "copy"} "Copy"]
+                 (if-not (active-path? "*")
+                   [:li.reverie-sub-menu-holder "Move to"
+                    [:ul.move-object-to
+                     (map (fn [a] [:li {:action "move-to-area" :area a} "area " a])
+                          (remove #(= area %) @areas))
+                     [:li.reverie-bar]
+                     [:li.move-object-to-top {:action "move-to-top"} "Move to top"]
+                     [:li.move-object-up {:action "move-up"} "Move up"]
+                     [:li.move-object-down {:action "move-down"} "Move down"]
+                     [:li.move-object-to-bottom {:action "move-to-bottom"} "Move to bottom"]]])]))))
 
 (defn- click-area! [e]
   (.stopPropagation e)

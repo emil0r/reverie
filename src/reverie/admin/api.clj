@@ -59,7 +59,7 @@
 
 (defn- get-meta-app-paths [data type app]
   (if (= type :app)
-    (assoc-in data [app :paths] (helpers/get-app-paths app))
+    (assoc-in data [app :paths] (helpers/get-app-paths app true))
     data))
 
 (defn- get-meta-info

@@ -43,6 +43,7 @@
             margin: 0;
             top: 5px;
             background-color: @gray-lighter;
+            color: @black;
             border: 1px @gray solid;
             li {
                 padding: 5px;
@@ -106,11 +107,15 @@
                 cursor: pointer;
             }
         }
-        .move-object {
-            &:hover .move-object-to {
+
+        .reverie-sub-menu-holder {
+            &:after {
+                content: " »";
+            }
+            &:hover > ul {
                 display: block;
             }
-            .move-object-to {
+            > ul {
                 display: none;
                 margin: 0;
                 padding: 0;

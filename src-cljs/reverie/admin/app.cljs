@@ -24,9 +24,7 @@
         (doseq [[path help] (:paths app)]
           (jq/append $ul
                      (crate/html
-                      [:li [:span (if (= path "*")
-                                    {:class "active"}
-                                    {}) path] help]))))
+                      [:li [:span path] help]))))
       (show-navigation))
     (hide-navigation)))
 

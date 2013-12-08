@@ -80,35 +80,22 @@
    [:td (text-field field-name (or (data field-name) initial))]])
 
 
-(defn- get-tabs [request attributes-table]
-  (let [object-id (read-string (get-in request [:params :object-id]))
-        [_ obj-data] (object/get object-id :data-object)]
-    (if (page/attributes? {:page-id (:page_id obj-data)} {:type :app})
-     (list
-      [:div#tabbar.edit-object
-       [:div.goog-tab.goog-tab-selected
-        {:tab :properties} "Properties"]
-       [:div.goog-tab {:tab :paths} "Paths"]]
-   
-      [:div#properties attributes-table]
-      [:div#paths
-       (let [p (page/get {:page-id (:page_id obj-data)})
-             paths (get-app-paths (:app p))]
-         [:ul (for [[path help] paths]
-                [:li [:span (name path)] help])])])
-     attributes-table)))
-
 (defn- get-object-table [request attributes attr-order data]
-  (form-to {:name :form_object}
-           [:post ""]
-           [:table.table
-            (reduce (fn [out k]
-                      (if (nil? k)
-                        out
-                        (conj out (row-edit k (attributes k) data))))
-                    (list)
-                    (reverse attr-order))
-            [:tr [:td] [:td (submit-button "Save")]]]))
+  [:div#object-properties
+   (form-to {:name :form_object}
+            [:post ""]
+            (list
+             [:table.table
+              (reduce (fn [out k]
+                        (if (nil? k)
+                          out
+                          (conj out (row-edit k (attributes k) data))))
+                      (list)
+                      (reverse attr-order))]
+             [:div.save
+              [:input {:type :submit :class "btn btn-primary"
+                       :id :_save_attributes :name :_save_attributes
+                       :value "Save attributes"}]]))])
 
 (defn- process-form-data [data attributes]
   (reduce (fn [out k]
@@ -136,8 +123,7 @@
      (t/frame
       (assoc frame-options
         :title "Edit object")
-      (get-tabs request
-       (get-object-table request attributes attr-order data))))]
+      (get-object-table request attributes attr-order data)))]
   
   [:post ["/" form-data]
    (let [object-id (read-string (get-in request [:params :object-id]))
@@ -146,6 +132,7 @@
          attr-order (object/get-attributes-order object-name)
          form-data (select-keys form-data (keys attributes))
          validated? (valid-form-data? attributes form-data)
+         validated? false
          custom-js (if validated?
                      ["opener.reverie.dom.reload_main_BANG_();"
                       "window.close();"]
@@ -158,8 +145,7 @@
       (assoc frame-options
         :title "Edit object"
         :custom-js custom-js)
-      (get-tabs request
-       (get-object-table request attributes attr-order form-data))))]
+      (get-object-table request attributes attr-order form-data)))]
 
   [:get ["/richtext"]
    (let [field (-> request (get-in [:params :field]) keyword)

@@ -37,12 +37,14 @@
     timestamp))
 
 
-(defn get-app-paths [app]
+(defn get-app-paths [app & [all?]]
   (reduce (fn [out [_ _ options _]]
             (if (nil? options)
               out
               (conj out
                     [(:app/path options)
                      (:app.path/help options)])))
-          [[:* "All paths"]]
+          (if all?
+            [[:* "Show all objects"]]
+            [])
           (:fns (get @apps (keyword app)))))

@@ -81,11 +81,11 @@
   "Get objects associated with a page. page-id required"
   [request]
   (let [{{area :area page-id :page-id app-path :app/path} :reverie} request
-        w {:page_id page-id :area (util/kw->str area)}]
+        w (if (or (nil? app-path) (s/blank? (name app-path)) (= "*" (name app-path)))
+            {:page_id page-id :area (util/kw->str area)}
+            {:page_id page-id :area (util/kw->str area) :app_path (name app-path)})]
     (k/select object
-              (k/where (and w
-                            {:app_paths [in (remove nil? ["" "*" (if app-path
-                                                                   (name app-path))])]}))
+              (k/where w)
               (k/order :order))))
 
 (defn render

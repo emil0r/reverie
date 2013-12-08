@@ -1,10 +1,13 @@
 (ns reverie.admin.options.object
   "This namespace is only run in the frame for object edits"
   (:require [clojure.string :as s]
+            [goog.events :as events]
+            [goog.ui.TabBar :as tb]
+            [goog.ui.Tab :as t]
+            [goog.dom :as dom]
             [jayq.core :as jq]
             [jayq.util :as util])
   (:use [reverie.util :only [ev$ query-params params->querystring join-uri]]))
-
 
 
 (defn click-richtext! [e]
