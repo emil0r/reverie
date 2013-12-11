@@ -11,12 +11,18 @@
 (defn- get-last-order [{:keys [object-id area page-id]}]
   (let [page-id (or
                  page-id
-                 (-> object (k/select (k/where {:id object-id})) first :page_id))]
-    (+ 1
-       (or
-        (-> object (k/select (k/aggregate (max :order) :order)
-                             (k/where {:page_id page-id :area (util/kw->str area)})) first :order)
-        0))))
+                 (-> object (k/select (k/where {:id object-id})) first :page_id))
+        order (-> object
+                  (k/select
+                   (k/aggregate (max :order) :order)
+                   (k/where {:page_id page-id :area (util/kw->str area)}))
+                  first
+                  :order)]
+    (cond
+     (nil? order) 1
+     (pos? order) (+ 1 order)
+     (neg? order) 1
+     :else 1)))
 
 (defn- get-serial-object []
   (let [serial (-> object (k/select (k/aggregate (max :serial) :serial)) first :serial)]
@@ -62,14 +68,7 @@
       data)))
 
 (defn attributes? [data attributes]
-  (if (and (string? (:app_paths attributes))
-           (string? (:app_paths data)))
-    (let [attr1 (s/split (:app_paths attributes) #",")
-          attr2 (s/split (:app_paths data) #",")]
-      (and
-       (= (dissoc attributes :app_paths) (select-keys data (keys (dissoc attributes :app_paths))))
-       (= attr1 (filter (fn [a2] (some #(= a2 %) attr1)) attr2))))
-    (= attributes (select-keys data (keys attributes)))))
+  (= attributes (select-keys data (keys attributes))))
 
 (defn add! [{:keys [page-id name area]} obj]
   (let [name (clojure.core/name name)
@@ -102,11 +101,44 @@
                 (get-in @objects [obj-name :any]))]
       (f request obj (:params request)))))
 
-(defn move! [{:keys [object-id hit-mode anchor page-serial after-object-id]}]
-  (let [{page-id :page_id area :area} (-> object (k/select (k/where {:id object-id})) first)
-        objs (vec (map :id (k/select object
-                                     (k/where {:page_id page-id
-                                               :area area}))))]
+(defmulti ^:private object-range
+  "Range for objects depending on page type (apps have origo that objects can move around on an axis)"
+  (fn [p hit-mode obj objs]
+    [(:type p) hit-mode (cond
+                         (= -1 (:order obj)) -1
+                         (= 1 (:order obj)) 1
+                         :else nil)]))
+(defmethod ^:private object-range ["app" "up" 1] [p hit-mode obj objs]
+  (let [-min (apply min (map :order objs))
+        -max (apply max (map :order objs))]
+    (map #(if (= % 1)
+            -1
+            (dec %)) (remove zero? (range -min (+ 1 -max))))))
+(defmethod ^:private object-range ["app" "down" -1] [p hit-mode obj objs]
+  (let [-min (apply min (map :order objs))
+        -max (apply max (map :order objs))]
+    (map #(if (= % -1)
+            1
+            (inc %)) (remove zero? (range -min (+ 1 -max))))))
+(defmethod ^:private object-range :default [p hit-mode obj objs]
+  (let [-min (apply min (map :order objs))
+        -max (apply max (map :order objs))]
+    (remove zero? (range -min (+ 1 -max)))))
+
+(defn move!
+  "hit-mode is the action taken up the object
+ anchor is the anchor to be moved to in area-paste hit-mode
+ after-object-id is the object to moved after in the case of object-paste"
+  [{:keys [object-id hit-mode anchor page-serial after-object-id]}]
+  (let [{page-id :page_id area :area
+         app-path :app_path} (-> object (k/select (k/where {:id object-id})) first)
+         obj (first (k/select object (k/where {:id object-id})))
+         p (first (k/select page (k/where {:id page-id})))
+         w (if (= (:type p) "app")
+             {:page_id page-id :area area}
+             {:page_id page-id :area area :app_path app-path})
+         objs (k/select object
+                        (k/where w))]
     (case hit-mode
       "object-paste" (let [{page-id :page_id} (first (k/select object
                                                                (k/where {:id after-object-id})))
@@ -125,7 +157,10 @@
                                (k/set-fields {:area (util/kw->str anchor)
                                               :page_id page-id})
                                (k/where {:id object-id}))
-                       (doseq [[obj-id order] (map vector new-order (range 1 (+ 1 (count new-order))))]
+                       (doseq [[{obj-id :id} order] (map vector new-order
+                                                   (object-range p hit-mode obj new-order)
+                                                   ;;(range 1 (+ 1 (count new-order)))
+                                                   )]
                          (k/update object
                                    (k/set-fields {:order order})
                                    (k/where {:id obj-id})))
@@ -152,7 +187,7 @@
                                (if (zip/end? next-loc)
                                  (zip/root loc)
                                  (let [node-value (zip/node next-loc)]
-                                   (if (= object-id node-value)
+                                   (if (= object-id (:id node-value))
                                      (if (beginning? next-loc)
                                        (zip/root next-loc)
                                        (-> next-loc
@@ -160,7 +195,8 @@
                                            (zip/insert-left node-value)
                                            zip/root))
                                      (recur next-loc))))))]
-             (doseq [[obj-id order] (map vector new-order (range 1 (+ 1 (count new-order))))]
+             (doseq [[{obj-id :id} order] (map vector new-order
+                                         (object-range p hit-mode obj new-order))]
                (k/update object
                          (k/set-fields {:order order})
                          (k/where {:id obj-id})))
@@ -170,7 +206,7 @@
                                  (if (zip/end? next-loc)
                                    (zip/root loc)
                                    (let [node-value (zip/node next-loc)]
-                                     (if (= object-id node-value)
+                                     (if (= object-id (:id node-value))
                                        (if (end? next-loc)
                                          (zip/root next-loc)
                                          (-> next-loc
@@ -179,7 +215,8 @@
                                              (zip/insert-right node-value)
                                              zip/root))
                                        (recur next-loc))))))]
-               (doseq [[obj-id order] (map vector new-order (range 1 (+ 1 (count new-order))))]
+               (doseq [[{obj-id :id} order] (map vector new-order
+                                           (object-range p hit-mode obj new-order))]
                  (k/update object
                            (k/set-fields {:order order})
                            (k/where {:id obj-id})))
@@ -189,7 +226,7 @@
                                 (if (zip/end? next-loc)
                                   (zip/root loc)
                                   (let [node-value (zip/node next-loc)]
-                                    (if (= object-id node-value)
+                                    (if (= object-id (:id node-value))
                                       (if (beginning? next-loc)
                                         (zip/root next-loc)
                                         (-> next-loc
@@ -198,7 +235,8 @@
                                             (zip/insert-left node-value)
                                             zip/root))
                                       (recur next-loc))))))]
-              (doseq [[obj-id order] (map vector new-order (range 1 (+ 1 (count new-order))))]
+              (doseq [[{obj-id :id} order] (map vector new-order
+                                          (object-range p hit-mode obj new-order))]
                 (k/update object
                           (k/set-fields {:order order})
                           (k/where {:id obj-id})))
@@ -208,7 +246,7 @@
                                    (if (zip/end? next-loc)
                                      (zip/root loc)
                                      (let [node-value (zip/node next-loc)]
-                                       (if (= object-id node-value)
+                                       (if (= object-id (:id node-value))
                                          (do
                                            (if (end? next-loc)
                                              (zip/root next-loc)
@@ -219,7 +257,8 @@
                                                  (zip/insert-right node-value)
                                                  zip/root)))
                                          (recur next-loc))))))]
-                 (doseq [[obj-id order] (map vector new-order (range 1 (+ 1 (count new-order))))]
+                 (doseq [[{obj-id :id} order] (map vector new-order
+                                             (object-range p hit-mode obj new-order))]
                    (k/update object
                              (k/set-fields {:order order})
                              (k/where {:id obj-id})))
