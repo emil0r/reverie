@@ -123,15 +123,15 @@
 (defmethod ^:private object-range ["app" "object-paste" nil] [p hit-mode obj objs]
   (let [-min (apply min (map :order objs))
         -max (apply max (map :order objs))]
-    (remove zero? (range -min (+ 2 -max)))))
+    (remove zero? (range -min (+ 1 -max)))))
 (defmethod ^:private object-range ["app" "object-paste" 1] [p hit-mode obj objs]
   (let [-min (apply min (map :order objs))
         -max (apply max (map :order objs))]
-    (remove zero? (range -min (+ 2 -max)))))
+    (remove zero? (range -min (+ 1 -max)))))
 (defmethod ^:private object-range ["app" "object-paste" -1] [p hit-mode obj objs]
   (let [-min (apply min (map :order objs))
         -max (apply max (map :order objs))]
-    (remove zero? (range -min (+ 2 -max)))))
+    (remove zero? (range -min (+ 1 -max)))))
 (defmethod ^:private object-range :default [p hit-mode obj objs]
   (let [-min (apply min (map :order objs))
         -max (apply max (map :order objs))]
@@ -142,27 +142,36 @@
  anchor is the anchor to be moved to in area-paste hit-mode
  after-object-id is the object to moved after in the case of object-paste"
   [{:keys [object-id hit-mode anchor page-serial after-object-id]}]
-  (let [{page-id :page_id area :area
-         app-path :app_path} (-> object (k/select (k/where {:id object-id})) first)
-         obj (first (k/select object (k/where {:id object-id})))
-         p (first (k/select page (k/where {:id page-id})))
-         w (if (= (:type p) "app")
-             {:page_id page-id :area area}
-             {:page_id page-id :area area :app_path app-path})
-         objs (k/select object
-                        (k/where w))]
+  (let [obj (first (k/select object (k/where {:id object-id})))
+        after-obj (if (nil? after-object-id)
+                    nil
+                    (-> (k/select object (k/where {:id after-object-id})) first))
+        {app-path :app_path
+         page-id :page_id
+         area :area} (if (nil? after-object-id)
+                             obj
+                             after-obj)
+        p (first (k/select page (k/where {:id page-id})))
+        w (if (= (:type p) "app")
+            {:page_id page-id :area area}
+            {:page_id page-id :area area :app_path app-path})
+        objs (k/select object
+                       (k/where w))]
     (case hit-mode
       "object-paste" (let [{page-id :page_id
                             app-path :app_path} (first (k/select object
                                                                  (k/where {:id after-object-id})))
-                           new-order (loop [loc (zip/vector-zip objs)]
-                                       (let [next-loc (zip/next loc)]
-                                         (if (zip/end? next-loc)
-                                           (zip/root (zip/append-child (zip/vector-zip objs) object-id))
-                                           (let [node-value (zip/node next-loc)]
-                                             (if (= (:order node-value) after-object-id)
-                                               (zip/root (zip/insert-right next-loc obj))
-                                               (recur next-loc))))))]
+                            new-order (loop [loc (zip/vector-zip objs)]
+                                        (let [next-loc (zip/next loc)]
+                                          (if (zip/end? next-loc)
+                                            (zip/root (zip/append-child (zip/vector-zip objs) obj))
+                                            (let [node-value (zip/node next-loc)]
+                                              (if (= (:id node-value) after-object-id)
+                                                (zip/root (zip/insert-right next-loc obj))
+                                                (recur next-loc))))))]
+
+                       
+                       (println (map (fn [{:keys [id name]}] [id name]) new-order))
                        (k/update object
                                  (k/set-fields {:area (util/kw->str anchor)
                                                 :page_id page-id
@@ -214,7 +223,7 @@
                                            zip/root))
                                      (recur next-loc))))))]
              (doseq [[{obj-id :id} order] (map vector new-order
-                                         (object-range p hit-mode obj new-order))]
+                                               (object-range p hit-mode obj new-order))]
                (k/update object
                          (k/set-fields {:order order})
                          (k/where {:id obj-id})))
@@ -244,7 +253,7 @@
                                              zip/root))
                                        (recur next-loc))))))]
                (doseq [[{obj-id :id} order] (map vector new-order
-                                           (object-range p hit-mode obj new-order))]
+                                                 (object-range p hit-mode obj new-order))]
                  (k/update object
                            (k/set-fields {:order order})
                            (k/where {:id obj-id})))
@@ -264,7 +273,7 @@
                                             zip/root))
                                       (recur next-loc))))))]
               (doseq [[{obj-id :id} order] (map vector new-order
-                                          (object-range p hit-mode obj new-order))]
+                                                (object-range p hit-mode obj new-order))]
                 (k/update object
                           (k/set-fields {:order order})
                           (k/where {:id obj-id})))
@@ -286,7 +295,7 @@
                                                  zip/root)))
                                          (recur next-loc))))))]
                  (doseq [[{obj-id :id} order] (map vector new-order
-                                             (object-range p hit-mode obj new-order))]
+                                                   (object-range p hit-mode obj new-order))]
                    (k/update object
                              (k/set-fields {:order order})
                              (k/where {:id obj-id})))
@@ -294,25 +303,28 @@
       false)))
 
 
-(doseq [[order id] [[-1 11] [1 10] [2 9]]]
-  (k/update object (k/set-fields {:order order}) (k/where {:id id})))
+;; (doseq [[order id] [[-1 11] [1 10] [2 9]]]
+;;   (k/update object (k/set-fields {:order order}) (k/where {:id id})))
 
-(println (object-range {:type "app"}
-                       "object-paste"
-                       {:id 12 :order -1 :name :d}
-                       [{:id 11 :order -1 :name :a}
-                        {:id 9 :order 1 :name :b}
-                        {:id 10 :order 2 :name :c}]))
+;; (println (object-range {:type "app"}
+;;                        "object-paste"
+;;                        {:id 12 :order -1 :name :d}
+;;                        [{:id 11 :order -1 :name :a}
+;;                         {:id 9 :order 1 :name :b}
+;;                         {:id 10 :order 2 :name :c}]))
+
+
 
 (do
- (println
-  "----\nbefore\n"
-  (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2}))))
- 
- (move! {:object-id 10 :hit-mode "down"})
- 
- (println
-  "after\n"
-  (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2})))))
+  (k/update object (k/set-fields {:page_id 1}) (k/where {:id 11}))
+  (println
+   "----\nbefore\n"
+   (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2}))))
+  
+  (move! {:object-id 11 :hit-mode "object-paste" :after-object-id 9 :anchor "b"})
+  
+  (println
+   "after\n"
+   (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2})))))
 
 

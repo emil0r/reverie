@@ -237,8 +237,6 @@
                       "object" {:after-object-id (jq/attr $e :object-id)}
                       "area" {:page-serial (get-in @meta/data [:pages :current])}
                       {}))]
-    (util/log $e)
-    (util/log type)
     (jq/xhr [:post "/admin/api/objects/paste"]
             data
             (fn [data]
