@@ -171,7 +171,7 @@
                                                 (recur next-loc))))))]
 
                        
-                       (println (map (fn [{:keys [id name]}] [id name]) new-order))
+                       ;; (println (map (fn [{:keys [id name]}] [id name]) new-order))
                        (k/update object
                                  (k/set-fields {:area (util/kw->str anchor)
                                                 :page_id page-id
@@ -315,16 +315,16 @@
 
 
 
-(do
-  (k/update object (k/set-fields {:page_id 1}) (k/where {:id 11}))
-  (println
-   "----\nbefore\n"
-   (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2}))))
+;; (do
+;;   (k/update object (k/set-fields {:page_id 1}) (k/where {:id 11}))
+;;   (println
+;;    "----\nbefore\n"
+;;    (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2}))))
   
-  (move! {:object-id 11 :hit-mode "object-paste" :after-object-id 9 :anchor "b"})
+;;   (move! {:object-id 11 :hit-mode "object-paste" :after-object-id 9 :anchor "b"})
   
-  (println
-   "after\n"
-   (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2})))))
+;;   (println
+;;    "after\n"
+;;    (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2})))))
 
 
