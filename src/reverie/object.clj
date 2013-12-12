@@ -120,6 +120,18 @@
     (map #(if (= % -1)
             1
             (inc %)) (remove zero? (range -min (+ 1 -max))))))
+(defmethod ^:private object-range ["app" "object-paste" nil] [p hit-mode obj objs]
+  (let [-min (apply min (map :order objs))
+        -max (apply max (map :order objs))]
+    (remove zero? (range -min (+ 2 -max)))))
+(defmethod ^:private object-range ["app" "object-paste" 1] [p hit-mode obj objs]
+  (let [-min (apply min (map :order objs))
+        -max (apply max (map :order objs))]
+    (remove zero? (range -min (+ 2 -max)))))
+(defmethod ^:private object-range ["app" "object-paste" -1] [p hit-mode obj objs]
+  (let [-min (apply min (map :order objs))
+        -max (apply max (map :order objs))]
+    (remove zero? (range -min (+ 2 -max)))))
 (defmethod ^:private object-range :default [p hit-mode obj objs]
   (let [-min (apply min (map :order objs))
         -max (apply max (map :order objs))]
@@ -140,27 +152,24 @@
          objs (k/select object
                         (k/where w))]
     (case hit-mode
-      "object-paste" (let [{page-id :page_id} (first (k/select object
-                                                               (k/where {:id after-object-id})))
-                           objs (vec (map :id (k/select object
-                                                        (k/where {:page_id page-id
-                                                                  :area (util/kw->str anchor)}))))
+      "object-paste" (let [{page-id :page_id
+                            app-path :app_path} (first (k/select object
+                                                                 (k/where {:id after-object-id})))
                            new-order (loop [loc (zip/vector-zip objs)]
                                        (let [next-loc (zip/next loc)]
                                          (if (zip/end? next-loc)
                                            (zip/root (zip/append-child (zip/vector-zip objs) object-id))
                                            (let [node-value (zip/node next-loc)]
-                                             (if (= node-value after-object-id)
-                                               (zip/root (zip/insert-right next-loc object-id))
+                                             (if (= (:order node-value) after-object-id)
+                                               (zip/root (zip/insert-right next-loc obj))
                                                (recur next-loc))))))]
                        (k/update object
-                               (k/set-fields {:area (util/kw->str anchor)
-                                              :page_id page-id})
-                               (k/where {:id object-id}))
+                                 (k/set-fields {:area (util/kw->str anchor)
+                                                :page_id page-id
+                                                :app_path app-path})
+                                 (k/where {:id object-id}))
                        (doseq [[{obj-id :id} order] (map vector new-order
-                                                   (object-range p hit-mode obj new-order)
-                                                   ;;(range 1 (+ 1 (count new-order)))
-                                                   )]
+                                                         (object-range p hit-mode obj new-order))]
                          (k/update object
                                    (k/set-fields {:order order})
                                    (k/where {:id obj-id})))
@@ -188,7 +197,16 @@
                                  (zip/root loc)
                                  (let [node-value (zip/node next-loc)]
                                    (if (= object-id (:id node-value))
-                                     (if (beginning? next-loc)
+                                     (if (or
+                                          (beginning? next-loc)
+                                          ;; check for this so that
+                                          ;; the object moving up
+                                          ;; doesn't jump any
+                                          ;; potential object already
+                                          ;; lying above origo
+                                          (and
+                                           (= "app" (:type p))
+                                           (= 1 (:order node-value))))
                                        (zip/root next-loc)
                                        (-> next-loc
                                            zip/remove
@@ -207,7 +225,17 @@
                                    (zip/root loc)
                                    (let [node-value (zip/node next-loc)]
                                      (if (= object-id (:id node-value))
-                                       (if (end? next-loc)
+                                       (if (or
+                                            (end? next-loc)
+                                            ;; check for this so that
+                                            ;; the object moving down
+                                            ;; skips the origo instead
+                                            ;; of the object next in
+                                            ;; line if it's just below
+                                            ;; the origo
+                                            (and
+                                             (= "app" (:type p))
+                                             (= -1 (:order node-value))))
                                          (zip/root next-loc)
                                          (-> next-loc
                                              zip/remove
@@ -264,3 +292,27 @@
                              (k/where {:id obj-id})))
                  true)
       false)))
+
+
+(doseq [[order id] [[-1 11] [1 10] [2 9]]]
+  (k/update object (k/set-fields {:order order}) (k/where {:id id})))
+
+(println (object-range {:type "app"}
+                       "object-paste"
+                       {:id 12 :order -1 :name :d}
+                       [{:id 11 :order -1 :name :a}
+                        {:id 9 :order 1 :name :b}
+                        {:id 10 :order 2 :name :c}]))
+
+(do
+ (println
+  "----\nbefore\n"
+  (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2}))))
+ 
+ (move! {:object-id 10 :hit-mode "down"})
+ 
+ (println
+  "after\n"
+  (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2})))))
+
+
