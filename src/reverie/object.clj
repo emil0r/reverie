@@ -101,40 +101,40 @@
                 (get-in @objects [obj-name :any]))]
       (f request obj (:params request)))))
 
+
+(defn- get-min [objs]
+  (* -1 (count (filter neg? (map :order objs)))))
+(defn- get-max [objs]
+  (count (filter pos? (map :order objs))))
 (defmulti ^:private object-range
   "Range for objects depending on page type (apps have origo that objects can move around on an axis)"
   (fn [p hit-mode obj objs]
     [(:type p) hit-mode (cond
+                         (= hit-mode "object-paste") :object-paste
                          (= -1 (:order obj)) -1
                          (= 1 (:order obj)) 1
                          :else nil)]))
 (defmethod ^:private object-range ["app" "up" 1] [p hit-mode obj objs]
-  (let [-min (apply min (map :order objs))
-        -max (apply max (map :order objs))]
+  (let [-min (get-min objs)
+        -max (get-max objs)]
     (map #(if (= % 1)
             -1
             (dec %)) (remove zero? (range -min (+ 1 -max))))))
 (defmethod ^:private object-range ["app" "down" -1] [p hit-mode obj objs]
-  (let [-min (apply min (map :order objs))
-        -max (apply max (map :order objs))]
+  (let [-min (get-min objs)
+        -max (get-max objs)]
     (map #(if (= % -1)
             1
             (inc %)) (remove zero? (range -min (+ 1 -max))))))
-(defmethod ^:private object-range ["app" "object-paste" nil] [p hit-mode obj objs]
-  (let [-min (apply min (map :order objs))
-        -max (apply max (map :order objs))]
-    (remove zero? (range -min (+ 1 -max)))))
-(defmethod ^:private object-range ["app" "object-paste" 1] [p hit-mode obj objs]
-  (let [-min (apply min (map :order objs))
-        -max (apply max (map :order objs))]
-    (remove zero? (range -min (+ 1 -max)))))
-(defmethod ^:private object-range ["app" "object-paste" -1] [p hit-mode obj objs]
-  (let [-min (apply min (map :order objs))
-        -max (apply max (map :order objs))]
-    (remove zero? (range -min (+ 1 -max)))))
+(defmethod ^:private object-range ["app" "object-paste" :object-paste] [p hit-mode obj objs]
+  (let [-min (get-min objs)
+        -max (get-max objs)]
+    (if (neg? (:order obj))
+      (remove zero? (range (- -min 1) (+ 1 -max)))
+      (remove zero? (range -min (+ 2 -max))))))
 (defmethod ^:private object-range :default [p hit-mode obj objs]
-  (let [-min (apply min (map :order objs))
-        -max (apply max (map :order objs))]
+  (let [-min (get-min objs)
+        -max (get-max objs)]
     (remove zero? (range -min (+ 1 -max)))))
 
 (defn move!
@@ -169,16 +169,13 @@
                                               (if (= (:id node-value) after-object-id)
                                                 (zip/root (zip/insert-right next-loc obj))
                                                 (recur next-loc))))))]
-
-                       
-                       ;; (println (map (fn [{:keys [id name]}] [id name]) new-order))
                        (k/update object
                                  (k/set-fields {:area (util/kw->str anchor)
                                                 :page_id page-id
                                                 :app_path app-path})
                                  (k/where {:id object-id}))
                        (doseq [[{obj-id :id} order] (map vector new-order
-                                                         (object-range p hit-mode obj new-order))]
+                                                         (object-range p hit-mode after-obj objs))]
                          (k/update object
                                    (k/set-fields {:order order})
                                    (k/where {:id obj-id})))
@@ -303,28 +300,31 @@
       false)))
 
 
-;; (doseq [[order id] [[-1 11] [1 10] [2 9]]]
-;;   (k/update object (k/set-fields {:order order}) (k/where {:id id})))
 
 ;; (println (object-range {:type "app"}
 ;;                        "object-paste"
-;;                        {:id 12 :order -1 :name :d}
-;;                        [{:id 11 :order -1 :name :a}
-;;                         {:id 9 :order 1 :name :b}
-;;                         {:id 10 :order 2 :name :c}]))
+;;                        {:id 11 :order -1 :name :a}
+;;                        [{:id 11 :order -2 :name :a}
+;;                         {:id 9 :order -1 :name :b}
+;;                         {:id 7 :order 1 :name :b}
+;;                         {:id 8 :order 2 :name :b}
+;;                         {:id 10 :order 3 :name :c}]))
 
 
 
-;; (do
-;;   (k/update object (k/set-fields {:page_id 1}) (k/where {:id 11}))
-;;   (println
-;;    "----\nbefore\n"
-;;    (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2}))))
+(do
+  (doseq [[order id] [[-1 9] [1 10] [2 5]]]
+    (k/update object (k/set-fields {:order order}) (k/where {:id id})))
+
+  (k/update object (k/set-fields {:page_id 1}) (k/where {:id 11}))
+  (println
+   "----\nbefore\n"
+   (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2}))))
   
-;;   (move! {:object-id 11 :hit-mode "object-paste" :after-object-id 9 :anchor "b"})
+  (move! {:object-id 11 :hit-mode "object-paste" :after-object-id 9 :anchor "b"})
   
-;;   (println
-;;    "after\n"
-;;    (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2})))))
+  (println
+   "after\n"
+   (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2})))))
 
 
