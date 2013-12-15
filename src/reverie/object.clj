@@ -312,19 +312,19 @@
 
 
 
-(do
-  (doseq [[order id] [[-1 9] [1 10] [2 5]]]
-    (k/update object (k/set-fields {:order order}) (k/where {:id id})))
+;; (do
+;;   (doseq [[order id] [[-1 9] [1 10] [2 5]]]
+;;     (k/update object (k/set-fields {:order order}) (k/where {:id id})))
 
-  (k/update object (k/set-fields {:page_id 1}) (k/where {:id 11}))
-  (println
-   "----\nbefore\n"
-   (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2}))))
+;;   (k/update object (k/set-fields {:page_id 1}) (k/where {:id 11}))
+;;   (println
+;;    "----\nbefore\n"
+;;    (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2}))))
   
-  (move! {:object-id 11 :hit-mode "object-paste" :after-object-id 9 :anchor "b"})
+;;   (move! {:object-id 11 :hit-mode "object-paste" :after-object-id 9 :anchor "b"})
   
-  (println
-   "after\n"
-   (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2})))))
+;;   (println
+;;    "after\n"
+;;    (map (fn [{:keys [order id name]}] [order id name]) (k/select object (k/where {:page_id 2})))))
 
 
