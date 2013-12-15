@@ -1,6 +1,6 @@
 # reverie
 
-A friendly CMS for the web
+A CMS written in Clojure
 
 ## CMS?
 Content Management System. Useful if you don't want to fill in the same pieces of information again, and again, and again, and ...
@@ -8,6 +8,8 @@ Content Management System. Useful if you don't want to fill in the same pieces o
 ## Usage
 
 http://reveriecms.org
+
+Documentation is lacking. Working on it.
 
 ## License
 
