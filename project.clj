@@ -1,5 +1,5 @@
-(defproject reverie "0.6.0-SNAPSHOT"
-  :description "A friendly CMS for the web"
+(defproject reverie "0.6.0-alpha1"
+  :description "A sane CMS"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
@@ -18,7 +18,7 @@
                  ;; DO NOT WANT
                  
                  [org.clojure/core.async "0.1.242.0-44b1e3-alpha"]
-                 [ez-image "1.0"]
+                 [ez-image "1.0.1"]
                  [clout "1.1.0"]
                  [slingshot "0.10.3"]
                  [bultitude "0.1.7"]
