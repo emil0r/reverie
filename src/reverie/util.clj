@@ -67,11 +67,13 @@
 
 (defn generate-handler
   "Take handlers, recursively apply to final handler"
-  [handlers final-handler]
-  (reduce (fn [current [new & args]]
-            (apply new current args))
-          final-handler
-          handlers))
+  ([handlers]
+     (generate-handler (butlast handlers) (last handlers)))
+  ([handlers final-handler]
+     (reduce (fn [current [new & args]]
+               (apply new current args))
+             final-handler
+             handlers)))
 
 (defn middleware-wrap
   "Wrap middleware in options around the function"
