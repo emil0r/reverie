@@ -8,6 +8,7 @@
         [reverie.atoms :only [get-route read-routes!]]
         [reverie.middleware :only [wrap-admin
                                    wrap-edit-mode
+                                   wrap-files-resources
                                    wrap-published?
                                    wrap-reverie-data
                                    wrap-redirects
@@ -28,7 +29,8 @@
             reverie.admin.index
             [reverie.heart :as heart]
             [reverie.page :as page]
-            [reverie.response :as r])
+            [reverie.response :as r]
+            [taoensso.timbre :as timbre])
   (:import org.apache.commons.io.FilenameUtils))
 
 (defn load-views [& dirs]
@@ -50,14 +52,14 @@
                          [wrap-edit-mode]
                          [wrap-redirects]
                          [wrap-reverie-data]
+                         [wrap-files-resources (generate-handler [[wrap-file file-path]
+                                                                  [wrap-resource resource]
+                                                                  [wrap-file-info mime-types]])]
                          [wrap-content-type]
                          [wrap-keyword-params]
                          [wrap-nested-params]
                          [wrap-params]
                          [wrap-multipart-params multipart-opts]
-                         [wrap-file file-path]
-                         [wrap-resource resource]
-                         [wrap-file-info mime-types]
                          [wrap-strip-trailing-slash]
                          [wrap-noir-validation]
                          [wrap-noir-cookies]
@@ -75,6 +77,8 @@
   (fs/mkdirs "media/files")
   (fs/mkdirs "media/cache/images")
   (ez/setup! "media/cache/images/" "/cache/images/")
+  (timbre/set-config! [:appenders :spit :enabled?] true)
+  (timbre/set-config! [:shared-appender-config :spit-filename] "reverie.log")
   (heart/start))
 
 (defn start [{:keys [port handlers] :as options}]

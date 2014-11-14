@@ -1,10 +1,10 @@
 (ns reverie.middleware
-  (:require [clj-log.core :as log]
-            [clojure.string :as s]
+  (:require [clojure.string :as s]
             [reverie.atoms :as atoms]
             [reverie.auth.user :as user]
             [reverie.page :as page]
-            [reverie.response :as r])
+            [reverie.response :as r]
+            [taoensso.timbre :as timbre])
   (:use reverie.entity))
 
 (defn wrap-admin [handler]
@@ -32,7 +32,8 @@
       (handler request)
       (catch Exception ex
         (do
-          (log/log :error "Caught an error at wrap-error-log" ex)
+          (println (.getMessage ex))
+          (timbre/error "Caught an error at wrap-error-log" ex)
           (r/response-500))))))
 
 (defn wrap-edit-mode [handler]
@@ -93,6 +94,18 @@
                      (assoc-in [:reverie :page-id] (:id p))
                      (assoc-in [:reverie :page-serial] (:serial p)))))
       (r/response-404))))
+
+(defn wrap-files-resources
+  "Take care of files/resources"
+  [handler fr-handlers] ;; fr == file/resources
+  (fn [request]
+    (let [resp (handler request)]
+      (if (= (:status resp) 404)
+        (let [fr-resp (fr-handlers request)]
+          (if (= (:status fr-resp) 404)
+            resp
+            fr-resp))
+        resp))))
 
 (defn wrap-redirects
   "Take care of redirects"

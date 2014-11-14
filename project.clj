@@ -1,4 +1,4 @@
-(defproject reverie "0.6.0-alpha2"
+(defproject reverie "0.6.0-SNAPSHOT"
   :description "A sane CMS"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
@@ -10,7 +10,7 @@
                  [clj-time "0.6.0"]
                  [korma "0.3.0-RC6"]
                  [me.raynes/fs "1.4.5"]
-                 [clj-log "0.4.5"]
+                 [com.taoensso/timbre "3.1.0"]
                  
                  ;; DO NOT WANT
                  [org.clojars.emil0r/hiccup "1.0.3a"]
