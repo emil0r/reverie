@@ -25,5 +25,4 @@ blackboard/
 /resources/public/admin/js/main-simple.js
 /resources/public/admin/css/main.css
 /resources/public/admin/css/editing.css
-/reverie.log
-/reverie.iml
+/reverie-core/target/
