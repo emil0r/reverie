@@ -9,35 +9,30 @@
   (add-page-type! [system kw page])
   (add-template-type! [system kw template])
   (add-object-type! [system kw object])
-  (add-page! [system page])
+  (add-role-type! [system role])
   (objects [system])
   (templates [system])
   (apps [system])
   (pages [system])
-  (roles [system])
-  (add-role! [system role])
-  (move-object! [system page object area order])
-  (move-page! [system page order]))
+  (roles [system]))
 
 
 
-(defrecord ReverieSystem [database routes pages templates apps objects roles]
+(defrecord ReverieSystem [database pages templates apps objects roles]
   component/Lifecycle
   (start [this]
-    (if (and routes pages templates apps objects roles)
+    (if (and pages templates apps objects roles)
       this
       (assoc this
-        :routes (atom [])
         :pages (atom {})
         :templates (atom {})
         :apps (atom {})
         :objects (atom {})
         :roles (atom []))))
   (stop [this]
-    (if-not (and routes pages templates apps objects roles)
+    (if-not (and pages templates apps objects roles)
       this
 ,      (assoc this
-        :routes nil
         :pages nil
         :templates nil
         :apps nil
