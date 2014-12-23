@@ -11,8 +11,9 @@
   RoutingProtocol
   (match? [this request]
     (if-let [matched (clout/route-matches compiled request)]
-      (let [method (or (get methods (:request-method request))
-                       (:any methods))]
+      (let [method (if methods
+                     (or (get methods (:request-method request))
+                         (:any methods)))]
         {:request (if casting
                     (assoc request
                       :params
@@ -21,7 +22,7 @@
                                   (assoc params key (cast/cast cast-to (get params key)))
                                   params))
                               (merge (:params request) matched) casting))
-                    request)
+                    (assoc request :params (merge (:params request) matched)))
          :matched matched
          :method method})))
   (get-route [this] this))
