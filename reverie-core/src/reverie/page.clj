@@ -26,6 +26,17 @@
 (defn type? [page expected]
   (= (type page) expected))
 
+(defn- handle-response [properties response]
+  (cond
+   (map? response) response
+   (nil? response) response
+   :else
+   (let [{:keys [headers status]} (:http properties)]
+     {:status (or status 200)
+      :headers (merge {"Content-Type" "text/html; charset=utf-8;"}
+                      headers)
+      :body response})))
+
 (defrecord Page [route id name title properties template
                  uri created updated parent database
                  published-date published? objects]
@@ -49,7 +60,9 @@
 
   render/RenderProtocol
   (render [this request]
-    (render/render template request this (properties this)))
+    (handle-response
+     properties
+     (render/render template request this (properties this))))
   (render [this _ _]
     (throw (RenderException. "[component request properties] not implemented for reverie.page/Page")))
   (render [this _ _ _]
@@ -79,7 +92,9 @@
   (render [this {:keys [request-method] :as request}]
     (let [method (or (get methods request-method)
                      (:any methods))]
-      (method request this (properties this) (:params request))))
+      (handle-response
+       properties
+       (method request this (properties this) (:params request)))))
   (render [this _ _]
     (throw (RenderException. "[component request properties] not implemented for reverie.page/RawPage")))
   (render [this _ _ _]
@@ -119,13 +134,15 @@
 
   render/RenderProtocol
   (render [this request]
-    (if-let [app-route (first (filter #(route/match? % request) app-routes))]
-      (let [{:keys [request method]} (route/match? app-route request)
-            resp (method request this properties (:params request))]
-        (if (map? resp)
-          (let [t (or (:template properties) template)]
-            (render/render t request (assoc this :rendered resp) properties))
-          resp))))
+    (handle-response
+     properties
+     (if-let [app-route (first (filter #(route/match? % request) app-routes))]
+       (let [{:keys [request method]} (route/match? app-route request)
+             resp (method request this properties (:params request))]
+         (if (map? resp)
+           (let [t (or (:template properties) template)]
+             (render/render t request (assoc this :rendered resp) properties))
+           resp)))))
   (render [this _ _]
     (throw (RenderException. "[component request properties] not implemented for reverie.page/Page")))
   (render [this _ _ _]

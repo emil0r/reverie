@@ -93,7 +93,7 @@
  "rendering with :page, manually setup"
  (let [req (request :get "/")
        p (first-page)]
-   (hiccup/html (render/render p req)))
+   (hiccup/html (:body (render/render p req))))
  => (expected-result))
 
 
@@ -101,14 +101,15 @@
  "rendering with :app, manually setup"
  (let [req (request :get "/")
        p (first-page-app)]
-   (hiccup/html (render/render p req)))
+   (hiccup/html (:body (render/render p req))))
  => (expected-result [:p "app route base"]))
 
 
 (fact
  "rendering with site/Site"
  (let [p (first-page-app)
-       s (component/start (site/site {:host-names ["example.com"]}))]
+       s (component/start (site/site {:host-names ["example.com"]
+                                      :render-fn (fn [data] (hiccup.compiler/render-html data))}))]
    (site/add-page! s p)
    (fact "get page"
          (site/get-page s {:uri "/"}) => p)
@@ -117,12 +118,12 @@
    (fact "404 due to wrong host name"
          (render/render s {:uri "/"}) => (get @(:system-pages s) 404))
    (fact "rendered page, uri /"
-         (hiccup/html
+         (:body
           (render/render s {:uri "/" :server-name "example.com"
                             :request-method :get}))
          => (expected-result [:p "app route base"]))
    (fact "rendered page, uri /foo/bar"
-         (hiccup/html
+         (:body
           (render/render s {:uri "/foo/bar" :server-name "example.com"
                             :request-method :get}))
          => (expected-result (list [:p "app route foobar"]

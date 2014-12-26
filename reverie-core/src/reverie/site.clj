@@ -14,7 +14,7 @@
   (move-page! [system page order]))
 
 
-(defrecord Site [host-names pages system-pages settings database]
+(defrecord Site [host-names pages system-pages settings database render-fn]
   component/Lifecycle
   (start [this]
     (if pages
@@ -58,7 +58,7 @@
       (get @system-pages 404) ;; no match for against the host names -> 404
       (if-let [p (get-page this request)]
         (if-let [resp (render/render p request)]
-          resp
+          (assoc resp :body (render-fn (:body resp)))
           (get @system-pages 404)) ;; got back nil -> 404
         (get @system-pages 404))))) ;; didn't find page -> 404
 
