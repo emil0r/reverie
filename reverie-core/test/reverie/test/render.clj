@@ -116,7 +116,7 @@
    (fact "get page /foo/bar"
          (site/get-page s {:uri "/foo/bar"}) => p)
    (fact "404 due to wrong host name"
-         (render/render s {:uri "/"}) => (get @(:system-pages s) 404))
+         (:status (render/render s {:uri "/"})) => 404)
    (fact "rendered page, uri /"
          (:body
           (render/render s {:uri "/" :server-name "example.com"
@@ -129,6 +129,8 @@
          => (expected-result (list [:p "app route foobar"]
                                    [:p "bar is bar"])))
    (fact "404 due to wrong path"
-         (render/render s {:uri "/foo/bar/baz" :server-name "example.com"
-                           :request-method :get})
-         => (get @(:system-pages s) 404))))
+         (:status
+          (render/render s {:uri "/foo/bar/baz" :server-name "example.com"
+                            :request-method :get}))
+         => 404)
+   ))

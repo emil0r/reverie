@@ -2,7 +2,9 @@
   (:require [com.stuartsierra.component :as component]
             [reverie.database :as db]
             [reverie.page :as page]
-            [reverie.render :as render]))
+            [reverie.render :as render]
+            [reverie.response :as response]
+            [slingshot.slingshot :refer [try+]]))
 
 
 (defprotocol SiteProtocol
@@ -20,9 +22,7 @@
     (if pages
       this
       (assoc this
-        :pages (atom {})
-        :system-pages (atom {404 {:status 404 :headers {} :body "404, Page Not Found"}
-                             500 {:status 500 :headers {} :body "500, Internal Server Error"}}))))
+        :pages (atom {}))))
   (stop [this]
     (if-not pages
       this
@@ -54,13 +54,21 @@
 
   render/RenderProtocol
   (render [this request]
-    (if-not (host-match? this request)
-      (get @system-pages 404) ;; no match for against the host names -> 404
-      (if-let [p (get-page this request)]
-        (if-let [resp (render/render p request)]
-          (assoc resp :body (render-fn (:body resp)))
-          (get @system-pages 404)) ;; got back nil -> 404
-        (get @system-pages 404))))) ;; didn't find page -> 404
+    (try+
+     (if-not (host-match? this request)
+       (or (get system-pages 404)
+           (response/get 404)) ;; no match for against the host names -> 404
+       (if-let [p (get-page this request)]
+         (if-let [resp (render/render p request)]
+           (assoc resp :body (render-fn (:body resp)))
+           (or (get system-pages 404)
+               (response/get 404))) ;; got back nil -> 404
+         (or (get system-pages 404)
+             (response/get 404)))) ;; didn't find page -> 404
+     (catch [:type :response] {:keys [status args]}
+       (or
+        (response/get (get system-pages status))
+        (apply response/get status args))))))
 
 
 (defn site [data]
