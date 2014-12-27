@@ -7,6 +7,7 @@
                  [ring/ring-core "1.3.1"]
                  [clout "2.0.0"]
                  [slingshot "0.12.1"]
+                 [org.clojure/core.match "0.2.1"]
                  [com.stuartsierra/component "0.2.2"]]
   :profiles {:dev {:dependencies [[midje "1.6.3"]
                                   [ring-mock "0.1.3"]
