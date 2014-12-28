@@ -13,7 +13,10 @@
        match2 (route/match?
                r (request :get "/"))
        match3 (route/match?
-               (route/route ["/foo/:bar"]) (request :get "/foo/1234"))]
+               (route/route ["/foo/:bar"]) (request :get "/foo/1234"))
+       match4 (route/match?
+               (route/route ["/:bar"]) (assoc (request :get "/foo/1234")
+                                         :shortened-uri "/1234"))]
    (fact "match1: hit"
          (nil? match1) => false)
    (fact "match1: bar has been casted to an integer"
@@ -23,4 +26,7 @@
          (nil? match2) => true)
    (fact "match3: bar has been caught"
          (get-in match3 [:request :params :bar])
+         => "1234")
+   (fact "match4: bar has been caught"
+         (get-in match4 [:request :params :bar])
          => "1234")))

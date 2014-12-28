@@ -11,8 +11,9 @@
   (page [object])
   (properties [object]))
 
-(defrecord ReverieObject [id name area order page app-path
-                          database properties methods]
+(defrecord ReverieObject [id name area order page route
+                          database properties methods
+                          saved-properties]
   ObjectProtocol
   (id [object] id)
   (area [object] area)
@@ -25,7 +26,7 @@
   (render [this {:keys [request-method] :as request}]
     (let [method (or (get methods request-method)
                      (:any methods))]
-      (method request this properties (:params request))))
+      (method request this saved-properties (:params request))))
   (render [this _ _]
     (throw (RenderException. "[component request properties] not implemented for reverie.object/ReverieObject")))
   (render [this _ _ _]

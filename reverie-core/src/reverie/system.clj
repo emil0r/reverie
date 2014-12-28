@@ -5,41 +5,77 @@
             [reverie.route :as route]))
 
 (defprotocol SystemProtocol
-  (add-app-type! [system kw app])
-  (add-page-type! [system kw page])
-  (add-template-type! [system kw template])
-  (add-object-type! [system kw object])
-  (add-role-type! [system role])
+  (add-object-type! [system key object-type])
   (objects [system])
+  (object [system key])
+
+  (add-template-type! [system key template-type])
   (templates [system])
+  (template [system key])
+
+  (add-app-type! [system key app-type])
   (apps [system])
-  (pages [system])
-  (roles [system]))
+  (app [system key])
+
+  (add-raw-page-type! [system key raw-page-type])
+  (raw-pages [system])
+  (raw-page [system key])
+
+  (add-role-type! [system key role-type])
+  (roles [system])
+  (role [system key]))
 
 
 
-(defrecord ReverieSystem [database pages templates apps objects roles]
+(defrecord ReverieSystem [database raw-pages apps objects templates roles]
   component/Lifecycle
   (start [this]
-    (if (and pages templates apps objects roles)
+    (if (and raw-pages templates apps objects roles)
       this
       (assoc this
-        :pages (atom {})
+        :raw-pages (atom {})
         :templates (atom {})
         :apps (atom {})
         :objects (atom {})
         :roles (atom []))))
   (stop [this]
-    (if-not (and pages templates apps objects roles)
+    (if-not (and raw-pages templates apps objects roles)
       this
 ,      (assoc this
-        :pages nil
-        :templates nil
-        :apps nil
-        :objects nil
-        :roles nil)))
+         :raw-pages nil
+         :templates nil
+         :apps nil
+         :objects nil
+         :roles nil)))
 
   SystemProtocol
-  (add-app-type! [this kw app]
-    )
-  )
+  (add-app-type! [this key app-type]
+    (swap! apps assoc key app-type))
+  (apps [this]
+    @apps)
+  (app [this key]
+    (get @apps key))
+  (add-template-type! [this key template-type]
+    (swap! templates assoc key template-type))
+  (templates [this]
+    @templates)
+  (template [this key]
+    (get @templates key))
+  (add-raw-page-type! [this key raw-page-type]
+    (swap! raw-pages assoc key raw-page-type))
+  (raw-pages [this]
+    @raw-pages)
+  (raw-page [this key]
+    (get @raw-pages key))
+  (add-role-type! [this key role-type]
+    (swap! roles assoc key role-type))
+  (roles [this]
+    @roles)
+  (role [this key]
+    (get @roles key))
+  (add-object-type! [this key object-type]
+    (swap! objects assoc key object-type))
+  (objects [this]
+    @objects)
+  (object [this key]
+    (get @objects key)))
