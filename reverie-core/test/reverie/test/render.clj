@@ -3,6 +3,7 @@
             [hiccup.core :as hiccup]
             [reverie.test.dummy :as dummy]
             [reverie.area :as area]
+            [reverie.core :as rev]
             [reverie.database :as db]
             [reverie.object :as object]
             [reverie.page :as page]
@@ -22,7 +23,7 @@
     [:title (page/title page)]]
    [:body
     [:div
-     (render/render (area/area :a) request page nil)]]])
+     (rev/area a)]]])
 
 (defn- app-route-base [request page properties params]
   {:a [:p "app route base"]})
@@ -115,6 +116,7 @@
                                       :database dummy-db
                                       :system dummy-sys
                                       :render-fn (fn [data] (hiccup.compiler/render-html data))}))]
+   (reset! sys/storage {})
    (sys/add-template-type! dummy-sys
                            :testus (template/template template-render))
    (sys/add-app-type! dummy-sys

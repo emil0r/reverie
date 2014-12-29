@@ -4,6 +4,12 @@
             [reverie.database :as db]
             [reverie.route :as route]))
 
+(defonce storage (atom {:raw-pages {}
+                        :apps {}
+                        :objects {}
+                        :templates {}
+                        :roles {}}))
+
 (defprotocol SystemProtocol
   (add-object-type! [system key object-type])
   (objects [system])
@@ -30,52 +36,38 @@
 (defrecord ReverieSystem [database raw-pages apps objects templates roles]
   component/Lifecycle
   (start [this]
-    (if (and raw-pages templates apps objects roles)
-      this
-      (assoc this
-        :raw-pages (atom {})
-        :templates (atom {})
-        :apps (atom {})
-        :objects (atom {})
-        :roles (atom []))))
+    this)
   (stop [this]
-    (if-not (and raw-pages templates apps objects roles)
-      this
-,      (assoc this
-         :raw-pages nil
-         :templates nil
-         :apps nil
-         :objects nil
-         :roles nil)))
+    this)
 
   SystemProtocol
   (add-app-type! [this key app-type]
-    (swap! apps assoc key app-type))
+    (swap! storage assoc-in [:apps key] app-type))
   (apps [this]
-    @apps)
+    (:apps @storage))
   (app [this key]
-    (get @apps key))
+    (get-in @storage [:apps key]))
   (add-template-type! [this key template-type]
-    (swap! templates assoc key template-type))
+    (swap! storage assoc-in [:templates key] template-type))
   (templates [this]
-    @templates)
+    (:templates @storage))
   (template [this key]
-    (get @templates key))
+    (get-in @storage [:templates key]))
   (add-raw-page-type! [this key raw-page-type]
-    (swap! raw-pages assoc key raw-page-type))
+    (swap! storage assoc-in [:raw-pages key] raw-page-type))
   (raw-pages [this]
-    @raw-pages)
+    (:raw-pages @storage))
   (raw-page [this key]
-    (get @raw-pages key))
+    (get-in @storage [:raw-pages key]))
   (add-role-type! [this key role-type]
-    (swap! roles assoc key role-type))
+    (swap! storage assoc-in [:roles key] role-type))
   (roles [this]
-    @roles)
+    (:roles @storage))
   (role [this key]
-    (get @roles key))
+    (get-in @storage [:roles key]))
   (add-object-type! [this key object-type]
-    (swap! objects assoc key object-type))
+    (swap! storage assoc-in [:objects key] object-type))
   (objects [this]
-    @objects)
+    (:objects @storage))
   (object [this key]
-    (get @objects key)))
+    (get-in @storage [:objects key])))
