@@ -78,9 +78,9 @@
 
 (fact
  "test database"
- (let [db (get-dummy-db)]
+ (let [db (get-db)]
   (fact "page"
         (:name (db/get-page db 1)) => "Test page")
   (fact "objects"
         (map :name (db/get-objects db (db/get-page db 1)))
-        => ["text" "image"])))
+        => [:text :image])))

@@ -144,9 +144,8 @@
                             :request-method :get}))
          => (expected-result (list [:p "app route foobar"]
                                    [:p "bar is bar"])))
-   ;; (fact "404 due to wrong path"
-   ;;       (:status
-   ;;        (render/render s {:uri "/foo/bar/baz" :server-name "example.com"
-   ;;                          :request-method :get}))
-   ;;       => 404)
-   ))
+   (fact "404 due to wrong path"
+         (:status
+          (render/render s {:uri "/foo/bar/baz" :server-name "example.com"
+                            :request-method :get}))
+         => 404)))
