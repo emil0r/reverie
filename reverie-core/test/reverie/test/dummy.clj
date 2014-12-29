@@ -59,17 +59,17 @@
              :title "My test page" :parent 1 :children nil
              :route "/foo" :type :app :app :foobar}]
     :objects [{:name :text :id 1 :area :a :page 1
-               :order 1 :saved-properties {:text "My text"}}
+               :order 1 :properties {:text "My text"}}
               {:name :image :id 2 :area :a :page 1
                :app-path "/bar"
-               :order 2 :saved-properties {:src "/images/test.png"
+               :order 2 :properties {:src "/images/test.png"
                                            :alt "Alt"
                                            :title "Title"}}
               {:name :text :id 1 :area :a :page 2
-               :order -1 :saved-properties {:text "My text"}}
+               :order -1 :properties {:text "My text"}}
               {:name :image :id 2 :area :a :page 2
                :app-path "/bar"
-               :order 1 :saved-properties {:src "/images/test.png"
+               :order 1 :properties {:src "/images/test.png"
                                            :alt "Alt"
                                            :title "Title"}}]
     :users [{:id 1 :username "test@test.com"

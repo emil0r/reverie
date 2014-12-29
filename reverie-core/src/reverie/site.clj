@@ -7,8 +7,10 @@
             [reverie.response :as response]
             [reverie.route :as route]
             [reverie.system :as sys]
-            [slingshot.slingshot :refer [try+]]))
+            [slingshot.slingshot :refer [try+]])
+  (:import [reverie RenderException]))
 
+(defonce routes (atom {}))
 
 (defprotocol SiteProtocol
   (add-route! [system route page-data])
@@ -19,24 +21,17 @@
   (move-page! [system page order]))
 
 
-(defrecord Site [host-names routes system
+(defrecord Site [host-names system
                  system-pages settings database render-fn]
   component/Lifecycle
   (start [this]
-    (if routes
-      this
-      (assoc this
-        :routes (atom (into
-                       {}
-                       (map (fn [[route properties]]
-                              {route [(route/route [route]) properties]})
-                            (db/get-pages-by-route database)))))))
-  (stop [this]
-    (if-not routes
-      this
-      (assoc this
-        :routes nil
-        :system-pages nil)))
+    (swap! routes merge (into
+                         {}
+                         (map (fn [[route properties]]
+                                {route [(route/route [route]) properties]})
+                              (db/get-pages-by-route database))))
+    this)
+  (stop [this] this)
 
   SiteProtocol
   (add-route! [this route properties]
@@ -64,7 +59,7 @@
                                      (let [obj-data (sys/object system (object/name obj))]
                                       (assoc obj
                                         :methods (:methods obj-data)
-                                        :properties (:properties obj-data))))
+                                        :options (:options obj-data))))
                                    (db/get-objects database page))]
                       (page/page
                        (assoc page
@@ -75,21 +70,23 @@
               :raw (let [page-data (sys/raw-page system name)]
                      (page/raw-page
                       {:route route
-                       :properties (:properties page-data)
-                       :methods (:methods page-data)
+                       :options (:options page-data)
+                       :routes (:routes page-data)
                        :database database}))
               :app (let [page (db/get-page database (:id properties))
                          page-data (sys/app system app)
                          objects (map
                                   (fn [obj]
-                                    (assoc obj
-                                      :methods (:methods (sys/object system (object/name obj)))
-                                      :route (route/route [(:route obj)])))
+                                    (let [obj-data (sys/object system (object/name obj))]
+                                     (assoc obj
+                                       :methods (:methods obj-data)
+                                       :options (:options obj-data)
+                                       :route (route/route [(:route obj)]))))
                                   (db/get-objects database page))]
                      (page/app-page
                       (assoc page
                         :template (sys/template system template)
-                        :properties (:properties page-data)
+                        :options (:options page-data)
                         :app-routes (:app-routes page-data)
                         :database database
                         :route route
@@ -104,6 +101,7 @@
   (render [this request]
     (try+
      (if-not (host-match? this request)
+
        (or (get system-pages 404)
            (response/get 404)) ;; no match for against the host names -> 404
        (if-let [p (get-page this request)]
@@ -116,7 +114,9 @@
      (catch [:type :response] {:keys [status args]}
        (or
         (response/get (get system-pages status))
-        (apply response/get status args))))))
+        (apply response/get status args)))))
+  (render [this _ _]
+    (throw (RenderException. "[component request sub-component] not implemented for reverie.site/Site"))))
 
 
 (defn site [data]

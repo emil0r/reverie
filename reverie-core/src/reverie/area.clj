@@ -16,9 +16,7 @@
   render/RenderProtocol
   (render [this _]
     (throw (RenderException. "[component request] not implemented for reverie.area/Area")))
-  (render [this _ _]
-    (throw (RenderException. "[component request properties] not implemented for reverie.area/Area")))
-  (render [this request page properties]
+  (render [this request page]
     (let [edit? (= :edit (get-in request [:reverie :mode]))
           [before after] (if edit?
                            [(str "<div class='reverie-area' area='" (name name) "' page-id='" (page/id page) "'>") "</div>"]

@@ -45,11 +45,11 @@
                       :properties {}})
         objects [(object/object {:id 1 :name "Text" :area :a :page p
                                  :order -1
-                                 :saved-properties {:text "My text"}
+                                 :properties {:text "My text"}
                                  :methods {:any object-text-render}})
                  (object/object {:id 2 :name "Image" :area :a :page p
                                  :order 1
-                                 :saved-properties {:src "/images/test.png"
+                                 :properties {:src "/images/test.png"
                                                     :alt "Alt"
                                                     :title "Title"}
                                  :methods {:get object-image-render}})]
@@ -67,11 +67,11 @@
                                        (route/route ["/foo/:bar" {:get app-route-foobar}])]})
         objects [(object/object {:id 1 :name "Text" :area :a :page p
                                  :order -1
-                                 :saved-properties {:text "My text"}
+                                 :properties {:text "My text"}
                                  :methods {:any object-text-render}})
                  (object/object {:id 2 :name "Image" :area :a :page p
                                  :order 1
-                                 :saved-properties {:src "/images/test.png"
+                                 :properties {:src "/images/test.png"
                                                     :alt "Alt"
                                                     :title "Title"}
                                  :methods {:get object-image-render}})]

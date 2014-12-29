@@ -1,13 +1,14 @@
 (ns reverie.template
-  (:require [reverie.render :as render])
+  (:require [reverie.page :as page]
+            [reverie.render :as render])
   (:import [reverie RenderException]))
 
 (defrecord Template [function]
   render/RenderProtocol
-  (render [this _ _]
-    (throw (RenderException. "[component request properties] not implemented for reverie.template/Template")))
-  (render [this request page properties]
-    (function request page properties (:params request))))
+  (render [this _]
+    (throw (RenderException. "[component request] not implemented for reverie.template/Template")))
+  (render [this request page]
+    (function request page (page/properties page) (:params request))))
 
 
 (defn template [function]
