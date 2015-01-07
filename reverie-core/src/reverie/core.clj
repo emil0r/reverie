@@ -38,3 +38,9 @@
       (swap! sys/storage assoc-in [:raw-pages ~path]
              {:routes (map route/route ~routes)
               :options ~options}))))
+
+(defmacro defmodule [name options routes]
+  (let [name (keyword name)]
+    `(swap! sys/storage assoc-in [:modules ~name]
+            {:routes (map route/route ~routes)
+             :options ~options})))

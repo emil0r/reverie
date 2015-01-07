@@ -3,14 +3,11 @@
   (:import [reverie ModuleException]))
 
 (defprotocol ModuleProtocol
-  (list [module request offset limit])
+  (list [module] [module entity params offset limit])
   (get-filters [module])
   (get-removals [module])
-  (related [module])
-  (add! [module entity data])
-  (save! [module entity data])
-  (update! [module entity data])
-  (delete! [module entity data]))
+  (entities [module])
+  (related [module]))
 
 
 (defprotocol ModuleEntityProtocol
@@ -22,15 +19,10 @@
 
 (defrecord ModuleOptions [offset limit filters removals])
 
-(defrecord Module [database options
-                   list-fn
-                   add-fn save-fn update-fn delete-fn]
+(defrecord Module [database options entities entities-order list-fn]
   ModuleProtocol
-  (list [this request offset limit] (list-fn database request offset limit))
-  (add! [this entity data] (add-fn database entity data))
-  (save! [this entity data] (save-fn database entity data))
-  (update! [this entity data] (update-fn database entity data))
-  (delete! [this entity data] (delete-fn database entity data)))
+  (list [this] (sort entities))
+  (list [this entity params offset limit] (list-fn database params offset limit)))
 
 
 
