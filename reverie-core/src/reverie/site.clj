@@ -29,7 +29,7 @@
                          {}
                          (map (fn [[route properties]]
                                 {route [(route/route [route]) properties]})
-                              (db/get-pages-by-route database))))
+                              (page/get-pages-by-route database))))
     this)
   (stop [this] this)
 
@@ -53,14 +53,14 @@
         (if route
           (let [{:keys [template app type name]} properties]
             (case type
-              :page (let [page (db/get-page database (:id properties))
+              :page (let [page (page/get-page database (:id properties))
                           objects (map
                                    (fn [obj]
                                      (let [obj-data (sys/object system (object/name obj))]
                                       (assoc obj
                                         :methods (:methods obj-data)
                                         :options (:options obj-data))))
-                                   (db/get-objects database page))]
+                                   (object/get-objects database page))]
                       (page/page
                        (assoc page
                          :template (sys/template system template)
@@ -73,7 +73,7 @@
                        :options (:options page-data)
                        :routes (:routes page-data)
                        :database database}))
-              :app (let [page (db/get-page database (:id properties))
+              :app (let [page (page/get-page database (:id properties))
                          page-data (sys/app system app)
                          objects (map
                                   (fn [obj]
@@ -82,7 +82,7 @@
                                        :methods (:methods obj-data)
                                        :options (:options obj-data)
                                        :route (route/route [(:route obj)]))))
-                                  (db/get-objects database page))]
+                                  (object/get-objects database page))]
                      (page/app-page
                       (assoc page
                         :template (sys/template system template)

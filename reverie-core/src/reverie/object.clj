@@ -1,7 +1,11 @@
 (ns reverie.object
   (:refer-clojure :exclude [name])
-  (:require [reverie.render :as render])
+  (:require [reverie.render :as render]
+            [reverie.route :as route])
   (:import [reverie RenderException]))
+
+(defprotocol ObjectDatabaseProtocol
+  (get-objects [database page]))
 
 (defprotocol ObjectProtocol
   (id [object])
@@ -16,13 +20,13 @@
                           database options methods
                           properties]
   ObjectProtocol
-  (id [object] id)
-  (area [object] area)
-  (name [object] name)
-  (order [object] order)
-  (page [object] page)
-  (options [object] options)
-  (properties [object] properties)
+  (id [this] id)
+  (area [this] area)
+  (name [this] name)
+  (order [this] order)
+  (page [this] page)
+  (options [this] options)
+  (properties [this] properties)
 
   render/RenderProtocol
   (render [this {:keys [request-method] :as request}]
@@ -34,4 +38,6 @@
 
 
 (defn object [data]
-  (map->ReverieObject data))
+  (if (string? (:route data))
+    (map->ReverieObject (assoc data :route (route/route [(:route data)])))
+    (map->ReverieObject data)))

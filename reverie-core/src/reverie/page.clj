@@ -8,9 +8,17 @@
             [reverie.util :as util])
   (:import [reverie RenderException]))
 
+(defprotocol PageDatabaseProtocol
+  (get-pages [database] [database published?])
+  (get-pages-by-route [database])
+  (get-page [database id] [database serial published?])
+  (get-children [database page])
+  (get-children-count [database page]))
+
 
 (defprotocol PageProtocol
   (id [page])
+  (serial [page])
   (parent [page])
   (root? [page])
   (children [page])
@@ -22,7 +30,8 @@
   (properties [page])
   (path [page])
   (objects [page])
-  (type [page]))
+  (type [page])
+  (version [page]))
 
 
 (defn type? [page expected]
@@ -39,8 +48,8 @@
                       headers)
       :body response})))
 
-(defrecord Page [route id name title properties options template
-                 path created updated parent database
+(defrecord Page [route id serial name title properties options template
+                 path created updated parent database version
                  published-date published? objects]
   route/RoutingProtocol
   (get-route [this] route)
@@ -48,10 +57,12 @@
 
   PageProtocol
   (id [this] id)
+  (serial [this] serial)
+  (version [this] version)
   (parent [this] parent)
   (root? [page] (nil? parent))
-  (children [this] (db/get-page-children database this))
-  (children? [this] (pos? (db/get-page-children-count database this)))
+  (children [this] (get-children database this))
+  (children? [this] (pos? (get-children-count database this)))
   (title [this] title)
   (name [this] name)
   (order [this] order)
@@ -77,6 +88,8 @@
 
   PageProtocol
   (id [this])
+  (serial [this])
+  (version [this])
   (parent [this])
   (root? [this] false)
   (children [this])
@@ -105,8 +118,8 @@
 
 
 (defrecord AppPage [route app app-routes app-area-mappings
-                    id name title properties options template
-                    path created updated parent database
+                    id serial name title properties options template
+                    path created updated parent database version
                     published-date published? objects]
   route/RoutingProtocol
   (get-route [this] route)
@@ -123,10 +136,12 @@
 
   PageProtocol
   (id [this] id)
+  (serial [this] serial)
+  (version [this] version)
   (parent [this] parent)
   (root? [page] (nil? parent))
-  (children [this] (db/get-page-children database this))
-  (children? [this] (pos? (db/get-page-children-count database this)))
+  (children [this] (get-children database this))
+  (children? [this] (pos? (get-children-count database this)))
   (title [this] title)
   (name [this] name)
   (order [this] order)

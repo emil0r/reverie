@@ -5,7 +5,10 @@
             [reverie.page :as page]
             [reverie.user :as user]
             [reverie.system :as sys]
-            [midje.sweet :refer :all]))
+            [midje.sweet :refer :all])
+  (:import [reverie.auth UserDatabaseProtocol]
+           [reverie.object ObjectDatabaseProtocol]
+           [reverie.page PageDatabaseProtocol]))
 
 (defn get-system []
   (let [system (sys/map->ReverieSystem {})]
@@ -27,9 +30,12 @@
   (query! [db query] nil)
   (query! [db query args])
 
+  UserDatabaseProtocol
   (get-users [db] users)
   (get-user [db id]
     (user/map->User (first (filter #(= id (:id %)) users))))
+
+  PageDatabaseProtocol
   (get-pages [db] pages)
   (get-pages-by-route [db]
     (map (fn [{:keys [route id template type app name]}]
@@ -39,6 +45,8 @@
     (get-new-page (first (filter #(= id (:id %)) pages)) db))
   (get-page-children [db page]
     (get-new-page (filter #(= (page/id page) (:parent %)) pages) db))
+
+  ObjectDatabaseProtocol
   (get-objects [db page]
     (sort-by object/order
              (map #(assoc (object/map->ReverieObject %)
@@ -80,7 +88,7 @@
  "test database"
  (let [db (get-db)]
   (fact "page"
-        (:name (db/get-page db 1)) => "Test page")
+        (:name (page/get-page db 1)) => "Test page")
   (fact "objects"
-        (map :name (db/get-objects db (db/get-page db 1)))
+        (map :name (object/get-objects db (page/get-page db 1)))
         => [:text :image])))
