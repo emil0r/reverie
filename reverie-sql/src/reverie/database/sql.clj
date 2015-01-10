@@ -30,19 +30,20 @@
               default-autocommit false
               maxconns-per-partition 10
               minconns-per-partition 5
-              partition-count 1}} datasource]
-    (assoc db-spec
-      :datasource
-      (doto (BoneCPDataSource.)
-        (.setJdbcUrl (str "jdbc:" subprotocol ":" subname))
-        (.setUsername user)
-        (.setPassword password)
-        (.setConnectionTestStatement "select 42;")
-        (.setConnectionTimeoutInMs connection-timeout)
-        (.setDefaultAutoCommit default-autocommit)
-        (.setMaxConnectionsPerPartition maxconns-per-partition)
-        (.setMinConnectionsPerPartition minconns-per-partition)
-        (.setPartitionCount partition-count)))))
+              partition-count 1}} datasource
+         ds (doto (BoneCPDataSource.)
+              (.setJdbcUrl (str "jdbc:" subprotocol ":" subname))
+              (.setUsername user)
+              (.setPassword password)
+              (.setConnectionTestStatement "select 42;")
+              (.setConnectionTimeoutInMs connection-timeout)
+              (.setDefaultAutoCommit default-autocommit)
+              (.setMaxConnectionsPerPartition maxconns-per-partition)
+              (.setMinConnectionsPerPartition minconns-per-partition)
+              (.setPartitionCount partition-count))
+         db-spec (assoc db-spec :datasource ds)
+         connection (jdbc/get-connection db-spec)]
+    (assoc db-spec :connection connection)))
 
 (defn- massage-page-data [data]
   (assoc data
@@ -107,12 +108,16 @@
       this
       (do
         (log/info "Stopping database")
-        (doseq [[_ db-spec] db-specs]
-          (.close (:datasource db-spec)))
-        (log/info "Closed database connection")
+        (doseq [[key db-spec] db-specs]
+          (.close (:connection db-spec))
+          (log/info "Closed connection for" key)
+          (.close (:datasource db-spec))
+          (log/info "Closed datasource for" key))
         (assoc this
-          :db-specs (into {} (map (fn [[key db-spec]]
-                                    [key (dissoc db-spec :datasource)]) db-specs))))))
+          :db-specs (into
+                     {} (map (fn [[key db-spec]]
+                               [key (dissoc db-spec :datasource)])
+                             db-specs))))))
 
   DatabaseProtocol
   (query [this query]

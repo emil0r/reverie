@@ -31,7 +31,8 @@
   (path [page])
   (objects [page])
   (type [page])
-  (version [page]))
+  (version [page])
+  (published? [page]))
 
 
 (defn type? [page expected]
@@ -59,6 +60,7 @@
   (id [this] id)
   (serial [this] serial)
   (version [this] version)
+  (published? [this] (= version 1))
   (parent [this] parent)
   (root? [page] (nil? parent))
   (children [this] (get-children database this))
@@ -90,6 +92,7 @@
   (id [this])
   (serial [this])
   (version [this])
+  (published? [this])
   (parent [this])
   (root? [this] false)
   (children [this])
@@ -138,6 +141,7 @@
   (id [this] id)
   (serial [this] serial)
   (version [this] version)
+  (published? [this] (= version 1))
   (parent [this] parent)
   (root? [page] (nil? parent))
   (children [this] (get-children database this))

@@ -36,6 +36,8 @@
   (component/stop db))
 
 
+
+
 (defn seed! []
   (let [jmap {:db {:type :sql
                    :url (str "jdbc:postgresql:"
