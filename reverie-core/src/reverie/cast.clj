@@ -1,4 +1,5 @@
-(ns reverie.cast)
+(ns reverie.cast
+  (:refer-clojure :exclude [cast]))
 
 (defprotocol CastProtocol
   (cast [to from-str]))
