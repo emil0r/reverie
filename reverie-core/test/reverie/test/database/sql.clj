@@ -3,8 +3,9 @@
             [clojure.string :as str]
             [com.stuartsierra.component :as component]
             [reverie.database :as db]
-            [reverie.page :as page]
             [reverie.database.sql :as sql]
+            [reverie.page :as page]
+            [reverie.system :as sys]
             [midje.sweet :refer :all]))
 
 (def db-spec {:classname "org.postgresql.Driver"
@@ -21,8 +22,9 @@
    :password "devuser"})
 
 (defn- get-db []
-  (sql/database {:default db-spec
-                 :two db-spec-two}))
+  (assoc (sql/database {:default db-spec
+                        :two db-spec-two})
+    :system (component/start (sys/map->ReverieSystem {}))))
 
 (let [db (component/start (get-db))]
   (try

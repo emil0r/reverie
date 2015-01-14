@@ -14,6 +14,7 @@
   (:import [reverie.database DatabaseProtocol]
            [reverie.object ObjectDatabaseProtocol]
            [reverie.page PageDatabaseProtocol]
+           [reverie.publish PublishingProtocol]
            [com.jolbox.bonecp BoneCPDataSource]))
 
 
@@ -53,6 +54,7 @@
            ""
            (keyword (:app data)))))
 
+
 (defn- get-page [database data]
   (let [{:keys [template app] :as data} (massage-page-data data)]
    (case (:type data)
@@ -60,9 +62,8 @@
                     (assoc data
                       :template (get-in @sys/storage
                                         [:templates template])
-                      :database database))
-                 objects []]
-             (assoc p :objects objects))
+                      :database database))]
+             (assoc p :objects (object/get-objects database p)))
      :app (let [page-data (get-in @sys/storage
                                   [:apps app])
                 p (page/page
@@ -71,26 +72,36 @@
                                        [:templates template])
                      :options (:options page-data)
                      :app-routes (:app-routes page-data)
-                     :database database))
-                objects []]
-            (assoc p :objects objects)))))
+                     :database database))]
+            (assoc p :objects (object/get-objects database p))))))
+
+(defn- get-migration-map [{:keys [subprotocol subname user password]} path]
+  {:db {:type :sql
+        :url (str "jdbc:" subprotocol ":"
+                  subname
+                  "?user=" user
+                  "&password=" password)}
+   :migrator path})
 
 
-(defrecord DatabaseSQL [db-specs ds-specs]
+(defrecord DatabaseSQL [system db-specs ds-specs]
   component/Lifecycle
   (start [this]
     (if (get-in db-specs [:default :datasource])
       this
       (do
-        (let [{:keys [subprotocol
-                      subname user password]} (:default db-specs)
-                      jmap {:db {:type :sql
-                                 :url (str "jdbc:" subprotocol ":"
-                                           subname
-                                           "?user=" user
-                                           "&password=" password)}
-                            :migrator (str "resources/migrations/" subprotocol)}]
-          (joplin/migrate-db jmap))
+        (let [default-spec (:default db-specs)
+              paths (apply conj
+                           [(str "resources/migrations/"
+                                 (:subprotocol default-spec))]
+                           (sort
+                            (map (fn [[_ {:keys [path]}]]
+                                   path)
+                                 (filter (fn [[_ {:keys [automatic?]}]]
+                                           automatic?)
+                                         (sys/migrations system)))))
+              mmap (get-migration-map default-spec paths)]
+          (joplin/migrate-db mmap))
 
         (log/info "Starting database")
         (let [db-specs (into
@@ -211,20 +222,53 @@
 
   ObjectDatabaseProtocol
   (get-objects [db page]
-    (let [obj-data (db/query db {:select [:*]
-                                 :from [:reverie_object]
-                                 :where [:= :page_id (page/id page)]})]
-      (map (fn [data]
+    (let [objs-meta
+          (db/query db {:select [:*]
+                        :from [:reverie_object]
+                        :where [:= :page_id (page/id page)]
+                        :order-by [(sql/raw "\"order\"")]})
+
+          objs-properties-to-fetch
+          (reduce (fn [out obj-meta]
+                    (let [obj-data (get-in @sys/storage
+                                           [:objects (keyword name)])
+                          table (or (get-in obj-data [:options :table :name])
+                                    (str/replace name #"/|\." "_"))
+                          foreign-key (or (get-in obj-data [:options :table :foreign-key])
+                                          :object_id)
+                          object-ids (get (get out name)
+                                          :object-ids [])]
+                      (assoc out name
+                             {:table table
+                              :foreign-key foreign-key
+                              :object-ids (conj object-ids (:id obj-meta))})))
+                  {} objs-meta)
+
+          objs-properties
+          (flatten
+           (map (fn [[name {:keys [table foreign-key object-ids]}]]
+                  (into
+                   {}
+                   (map
+                    (fn [data]
+                      (let [obj-id (get data foreign-key)]
+                        {obj-id data}))
+                    (db/query db {:select [:*]
+                                  :from [table]
+                                  :where {foreign-key object-ids}}))))
+                objs-properties-to-fetch))]
+      (map (fn [{:keys [id] :as obj-meta}]
              (let [obj-data (get-in @sys/storage
-                                    [:objects (keyword (:name data))])]
-              (object/object
-               (assoc data
+                                    [:objects (keyword (:name obj-meta))])]
+               (assoc obj-meta
+                 :properties (get objs-properties id)
                  :database db
-                 :area (keyword (:area data))
-                 :name (keyword (:name data))
+                 :area (keyword (:area obj-meta))
+                 :name (keyword (:name obj-meta))
                  :options (:options obj-data)
-                 :methods (:methods obj-data)))))
-           obj-data))))
+                 :methods (:methods obj-data)))))))
+  PublishingProtocol
+  )
 
 (defn database
   ([db-specs]

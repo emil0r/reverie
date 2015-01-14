@@ -44,3 +44,13 @@
     `(swap! sys/storage assoc-in [:modules ~name]
             {:routes (map route/route ~routes)
              :options ~options})))
+
+(defmacro defobject [name options methods]
+  (let [name (keyword name)
+        migration (:migration options)]
+    `(do
+       (if ~migration
+         (swap! sys/storage assoc-in [:migrations ~name] ~migration))
+       (swap! sys/storage assoc-in [:objects ~name]
+             {:options ~options
+              :methods ~methods}))))

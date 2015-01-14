@@ -9,7 +9,8 @@
                         :objects {}
                         :templates {}
                         :roles {}
-                        :modules {}}))
+                        :modules {}
+                        :migrations {}}))
 
 (defprotocol SystemProtocol
   (add-object-type! [system key object-type])
@@ -33,11 +34,14 @@
   (role [system key])
 
   (modules [system])
-  (module [system key]))
+  (module [system key])
+
+  (migrations [system])
+  (migration [system key]))
 
 
 
-(defrecord ReverieSystem [database raw-pages apps objects templates roles]
+(defrecord ReverieSystem []
   component/Lifecycle
   (start [this]
     this)
@@ -83,4 +87,9 @@
   (modules [this]
     (:modules @storage))
   (module [this key]
-    (get-in @storage [:modules key])))
+    (get-in @storage [:modules key]))
+
+  (migrations [this]
+    (:migrations @storage))
+  (migration [this key]
+    (get-in @storage [:migrations key])))

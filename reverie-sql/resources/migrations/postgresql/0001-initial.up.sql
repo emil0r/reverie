@@ -1,5 +1,5 @@
 CREATE TABLE reverie_page (
-    id serial primary key,
+    id bigserial primary key,
     serial integer NOT NULL,
     parent integer,
     created timestamp without time zone NOT NULL DEFAULT now(),
@@ -15,28 +15,28 @@ CREATE TABLE reverie_page (
 );
 
 CREATE TABLE reverie_page_properties (
-    id serial primary key,
+    id bigserial primary key,
     created timestamp without time zone NOT NULL DEFAULT now(),
     name character varying(255) NOT NULL,
     key character varying(100) NOT NULL,
     value character varying(255) NOT NULL,
-    page_id integer NOT NULL references reverie_page(id)
+    page_id bigint NOT NULL references reverie_page(id)
 );
 
 CREATE TABLE reverie_object (
-       id serial primary key,
-       created timestamp without time zone NOT NULL DEFAULT now(),
-       updated timestamp without time zone NOT NULL,
-       name character varying(255) NOT NULL,
-       area character varying(100) NOT NULL,
-       route character varying(1024) NOT NULL DEFAULT '',
-       "order" integer NOT NULL,
-       page_id integer NOT NULL references reverie_page(id)
+    id bigserial primary key,
+    created timestamp without time zone NOT NULL DEFAULT now(),
+    updated timestamp without time zone NOT NULL,
+    name character varying(255) NOT NULL,
+    area character varying(100) NOT NULL,
+    route character varying(1024) NOT NULL DEFAULT '',
+    "order" integer NOT NULL,
+    page_id bigint NOT NULL references reverie_page(id)
 );
 
 
 CREATE TABLE reverie_role (
-    id serial primary key,
+    id bigserial primary key,
     created timestamp without time zone DEFAULT now() NOT NULL,
     name character varying(255) NOT NULL
 );
