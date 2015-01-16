@@ -15,6 +15,9 @@
                                   [ring-mock "0.1.3"]
                                   [reverie-sql "0.1.0-SNAPSHOT"]
                                   [reverie-batteries "0.1.0-SNAPSHOT"]
+                                  [spyscope "0.1.5"]
                                   [org.postgresql/postgresql "9.3-1102-jdbc41"]]
+                   :injections [(require 'spyscope.core)
+                                (require '[clojure.pprint :refer [pprint]])]
                    :resource-paths ["../reverie-sql/resources"]
                    :plugins [[lein-midje "3.1.3"]]}})

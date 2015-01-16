@@ -2,9 +2,14 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [com.stuartsierra.component :as component]
+            [joplin.core :as joplin]
+            joplin.jdbc.database
             [reverie.database :as db]
             [reverie.database.sql :as sql]
+            reverie.sql.objects.text
+            reverie.sql.objects.image
             [reverie.page :as page]
+            [reverie.object :as object]
             [reverie.system :as sys]
             [midje.sweet :refer :all]))
 
@@ -21,18 +26,21 @@
    :user "devuser"
    :password "devuser"})
 
-(defn- get-db []
+(defn get-db []
   (assoc (sql/database {:default db-spec
                         :two db-spec-two})
     :system (component/start (sys/map->ReverieSystem {}))))
 
 (let [db (component/start (get-db))]
   (try
-    (println (db/query db {:select [6]}))
-    (println (db/query db :two {:select [:*]
-                                :from [:reverie_page]
-                                :limit :?limit}
-                       {:limit 1}))
+    ;; (println (db/query db {:select [6]}))
+    ;; (println (db/query db :two {:select [:*]
+    ;;                             :from [:reverie_page]
+    ;;                             :limit :?limit}
+    ;;                    {:limit 1}))
+    ;;(clojure.pprint/pprint (page/get-page db 2 true))
+    ;;(clojure.pprint/pprint (object/get-objects db (page/page {:id 1})))
+    ;;(println (db/query {:select [:*], :from [:reverie_text], :where [:in :object_id [1]]}))
     (catch Exception e
       (println e)))
   (component/stop db))
@@ -46,8 +54,10 @@
                              "//localhost:5432/dev_reverie"
                              "?user=" "devuser"
                              "&password=" "devuser")}
-              :migrator (str "resources/migrations/postgresql")}]
-    (joplin/rollback-db jmap))
+              :migrator ["resources/migrations/postgresql"
+                         "src/reverie/sql/objects/migrations/text/"
+                         "src/reverie/sql/objects/migrations/image/"]}]
+    (joplin/rollback-db jmap 9000))
   (let [db (component/start (get-db))
         seed (slurp (io/resource "seeds/postgresql/seed.sql"))]
     (try
@@ -57,8 +67,6 @@
       (catch Exception e
         (println e)))
     (component/stop db)))
-
-
 
 (fact
  "pages"
@@ -80,6 +88,9 @@
    (fact "get-page by serial"
          ((juxt :serial :name :version) (page/get-page db 1 true))
          => [1 "Main" 1])
+   (fact "get-page by serial (nothing found)"
+         ((juxt :serial :name :version) (page/get-page db 2 true))
+         => [nil nil nil])
    (fact "get-children"
          (map (juxt :serial :name :version)
               (page/get-children db (page/get-page db 1)))
@@ -91,3 +102,13 @@
          (page/get-children-count db (page/get-page db 1 true))
          => 0)
    (component/stop db)))
+
+
+(fact
+ "objects"
+ (seed!)
+ (let [db (get-db)]
+  (fact "objects (text)"
+        (let [p (page/get-page db 3)]
+          (map :name (page/objects p)))
+        => [:reverie/text :reverie/image :reverie/text])))

@@ -16,8 +16,7 @@
 
 
 (defobject reverie/image
-  {:name :image
-   :table "batteries_image"
+  {:table "batteries_image"
    :migration {:path "src/reverie/sql/objects/migrations/image/"
                :automatic? true}
    :properties-order [:title :alt :src :width :height]

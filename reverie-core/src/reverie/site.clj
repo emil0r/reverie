@@ -53,44 +53,16 @@
         (if route
           (let [{:keys [template app type name]} properties]
             (case type
-              :page (let [page (page/get-page database (:id properties))
-                          objects (map
-                                   (fn [obj]
-                                     (let [obj-data (sys/object system (object/name obj))]
-                                      (assoc obj
-                                        :methods (:methods obj-data)
-                                        :options (:options obj-data))))
-                                   (object/get-objects database page))]
-                      (page/page
-                       (assoc page
-                         :template (sys/template system template)
-                         :database database
-                         :route route
-                         :objects objects)))
+              :page (assoc (page/get-page database (:id properties))
+                      :route route)
               :raw (let [page-data (sys/raw-page system name)]
                      (page/raw-page
                       {:route route
                        :options (:options page-data)
                        :routes (:routes page-data)
                        :database database}))
-              :app (let [page (page/get-page database (:id properties))
-                         page-data (sys/app system app)
-                         objects (map
-                                  (fn [obj]
-                                    (let [obj-data (sys/object system (object/name obj))]
-                                     (assoc obj
-                                       :methods (:methods obj-data)
-                                       :options (:options obj-data)
-                                       :route (route/route [(:route obj)]))))
-                                  (object/get-objects database page))]
-                     (page/app-page
-                      (assoc page
-                        :template (sys/template system template)
-                        :options (:options page-data)
-                        :app-routes (:app-routes page-data)
-                        :database database
-                        :route route
-                        :objects objects)))))))))
+              :app (assoc (page/get-page database (:id properties))
+                     :route route)))))))
 
   (host-match? [this {:keys [server-name]}]
     (if (empty? host-names)

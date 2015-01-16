@@ -12,6 +12,14 @@
           "</div>")
     (render/render obj request)))
 
+(defn- neg-filter [area-name object]
+  (and (neg? (object/order object))
+       (= area-name (object/area object))))
+
+(defn- pos-filter [area-name object]
+  (and (pos? (object/order object))
+       (= area-name (object/area object))))
+
 (defrecord Area [name]
   render/RenderProtocol
   (render [this _]
@@ -27,10 +35,10 @@
       (list
        before
        (map (partial area-object-render request edit?)
-            (filter #(neg? (object/order %)) (page/objects page)))
+            (filter (partial neg-filter name) (page/objects page)))
        middle
        (map (partial area-object-render request edit?)
-            (filter #(pos? (object/order %)) (page/objects page)))
+            (filter (partial pos-filter name) (page/objects page)))
        after))))
 
 

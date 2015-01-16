@@ -49,8 +49,8 @@
                       headers)
       :body response})))
 
-(defrecord Page [route id serial name title properties options template
-                 path created updated parent database version
+(defrecord Page [route id serial name title properties template
+                 created updated parent database version
                  published-date published? objects]
   route/RoutingProtocol
   (get-route [this] route)
@@ -68,7 +68,7 @@
   (title [this] title)
   (name [this] name)
   (order [this] order)
-  (options [this] options)
+  (options [this] nil)
   (properties [this] properties)
   (path [this] (:path route))
   (objects [this] (sort-by :order objects))
@@ -122,7 +122,7 @@
 
 (defrecord AppPage [route app app-routes app-area-mappings
                     id serial name title properties options template
-                    path created updated parent database version
+                    created updated parent database version
                     published-date published? objects]
   route/RoutingProtocol
   (get-route [this] route)

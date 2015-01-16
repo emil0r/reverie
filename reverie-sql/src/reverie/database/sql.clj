@@ -8,6 +8,7 @@
             [reverie.database :as db]
             [reverie.object :as object]
             [reverie.page :as page]
+            [reverie.publish :as publish]
             [reverie.system :as sys]
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log])
@@ -56,24 +57,25 @@
 
 
 (defn- get-page [database data]
-  (let [{:keys [template app] :as data} (massage-page-data data)]
-   (case (:type data)
-     :page (let [p (page/page
-                    (assoc data
-                      :template (get-in @sys/storage
-                                        [:templates template])
-                      :database database))]
-             (assoc p :objects (object/get-objects database p)))
-     :app (let [page-data (get-in @sys/storage
-                                  [:apps app])
-                p (page/page
-                   (assoc data
-                     :template (get-in @sys/storage
-                                       [:templates template])
-                     :options (:options page-data)
-                     :app-routes (:app-routes page-data)
-                     :database database))]
-            (assoc p :objects (object/get-objects database p))))))
+  (if data
+    (let [{:keys [template app] :as data} (massage-page-data data)]
+      (case (:type data)
+        :page (let [p (page/page
+                       (assoc data
+                         :template (get-in @sys/storage
+                                           [:templates template])
+                         :database database))]
+                (assoc p :objects (object/get-objects database p)))
+        :app (let [page-data (get-in @sys/storage
+                                     [:apps app])
+                   p (page/app-page
+                      (assoc data
+                        :template (get-in @sys/storage
+                                          [:templates template])
+                        :options (:options page-data)
+                        :app-routes (:app-routes page-data)
+                        :database database))]
+               (assoc p :objects (object/get-objects database p)))))))
 
 (defn- get-migration-map [{:keys [subprotocol subname user password]} path]
   {:db {:type :sql
@@ -91,6 +93,9 @@
                               automatic?)
                             (sys/migrations system))))]
     paths))
+
+(defn- get-object-name [name]
+  (str/replace (str name) #":" ""))
 
 (defrecord DatabaseSQL [system db-specs ds-specs]
   component/Lifecycle
@@ -236,11 +241,12 @@
                         :order-by [(sql/raw "\"order\"")]})
 
           objs-properties-to-fetch
-          (reduce (fn [out obj-meta]
+          (reduce (fn [out {:keys [name] :as obj-meta}]
                     (let [obj-data (get-in @sys/storage
                                            [:objects (keyword name)])
-                          table (or (get-in obj-data [:options :table :name])
-                                    (str/replace name #"/|\." "_"))
+                          table (keyword
+                                 (or (get-in obj-data [:options :table])
+                                     (str/replace name #"/|\." "_")))
                           foreign-key (or (get-in obj-data [:options :table :foreign-key])
                                           :object_id)
                           object-ids (get (get out name)
@@ -252,28 +258,32 @@
                   {} objs-meta)
 
           objs-properties
-          (flatten
-           (map (fn [[name {:keys [table foreign-key object-ids]}]]
-                  (into
-                   {}
-                   (map
-                    (fn [data]
-                      (let [obj-id (get data foreign-key)]
-                        {obj-id data}))
-                    (db/query db {:select [:*]
-                                  :from [table]
-                                  :where {foreign-key object-ids}}))))
-                objs-properties-to-fetch))]
+          (into
+           {}
+           (flatten
+            (map (fn [[name {:keys [table foreign-key object-ids]}]]
+                   (into
+                    {}
+                    (map
+                     (fn [data]
+                       (let [obj-id (get data foreign-key)]
+                         {obj-id data}))
+                     (db/query db {:select [:*]
+                                   :from [table]
+                                   :where [:in foreign-key object-ids]}))))
+                 objs-properties-to-fetch)))]
       (map (fn [{:keys [id] :as obj-meta}]
              (let [obj-data (get-in @sys/storage
                                     [:objects (keyword (:name obj-meta))])]
-               (assoc obj-meta
-                 :properties (get objs-properties id)
-                 :database db
-                 :area (keyword (:area obj-meta))
-                 :name (keyword (:name obj-meta))
-                 :options (:options obj-data)
-                 :methods (:methods obj-data)))))))
+               (object/object
+                (assoc obj-meta
+                  :properties (get objs-properties id)
+                  :database db
+                  :area (keyword (:area obj-meta))
+                  :name (keyword (:name obj-meta))
+                  :options (:options obj-data)
+                  :methods (:methods obj-data)))))
+           objs-meta)))
   PublishingProtocol
   )
 
