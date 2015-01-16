@@ -9,6 +9,7 @@
             [reverie.object :as object]
             [reverie.page :as page]
             [reverie.publish :as publish]
+            [reverie.route :as route]
             [reverie.system :as sys]
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log])
@@ -279,6 +280,8 @@
                 (assoc obj-meta
                   :properties (get objs-properties id)
                   :database db
+                  :page page
+                  :route (route/route [(:route obj-meta)])
                   :area (keyword (:area obj-meta))
                   :name (keyword (:name obj-meta))
                   :options (:options obj-data)

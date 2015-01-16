@@ -80,10 +80,7 @@
                                :request-method :get}))
          => (expected "Baz"
                       (list "baz get " [:p "Text2"])
-                      (list [:img {:src "/path/to/img.jpg"
-                                   :title "TitleImage1"
-                                   :alt "AltImage1"}]
-                            "baz get "
+                      (list "baz get "
                             [:p "Text3"])))
    (fact "rendered page, uri /baz/caught-this"
          (:body
@@ -91,9 +88,8 @@
                                :server-name "example.com"
                                :request-method :post}))
          => (expected "Baz"
-                      (list "baz post caught-this" [:p "Text2"])
+                      (list "baz post caught-this")
                       (list [:img {:src "/path/to/img.jpg"
                                    :title "TitleImage1"
                                    :alt "AltImage1"}]
-                            "baz post caught-this"
-                            [:p "Text3"])))))
+                            "baz post caught-this")))))

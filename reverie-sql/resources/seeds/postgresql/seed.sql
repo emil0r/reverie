@@ -7,7 +7,7 @@ INSERT INTO reverie_page VALUES (4, 3, 1, now(), now(), 'foobaz', 'Bar', '', 0, 
 INSERT INTO reverie_object VALUES(1, now(), now(), 'reverie/text', 'a', '', 1, 1);
 INSERT INTO reverie_object VALUES(2, now(), now(), 'reverie/text', 'a', '', 1, 2);
 INSERT INTO reverie_object VALUES(3, now(), now(), 'reverie/text', 'a', '', 1, 3);
-INSERT INTO reverie_object VALUES(4, now(), now(), 'reverie/image', 'b', '', -1, 3);
+INSERT INTO reverie_object VALUES(4, now(), now(), 'reverie/image', 'b', '/caught-this', -1, 3);
 INSERT INTO reverie_object VALUES(5, now(), now(), 'reverie/text', 'b', '', 1, 3);
 INSERT INTO reverie_object VALUES(6, now(), now(), 'reverie/text', 'a', '', 1, 4);
 INSERT INTO reverie_object VALUES(7, now(), now(), 'reverie/text', 'a', '', 2, 4);

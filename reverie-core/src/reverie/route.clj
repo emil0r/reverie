@@ -1,5 +1,6 @@
 (ns reverie.route
-  (:require [clout.core :as clout]
+  (:require [clojure.string :as str]
+            [clout.core :as clout]
             [reverie.cast :as cast]))
 
 (defprotocol RoutingProtocol
@@ -37,7 +38,8 @@
                                      [true true] [nil nil matching?]
                                      [false true] [matching? nil casting?]
                                      [false false] [matching? casting? methods])]
-    (Route. path (if matching
-                   (clout/route-compile (or path "") matching)
-                   (clout/route-compile (or path "")))
-            matching casting methods)))
+    (let [path (if (str/blank? path) "/" path)]
+     (Route. path (if matching
+                    (clout/route-compile path matching)
+                    (clout/route-compile path ))
+             matching casting methods))))
