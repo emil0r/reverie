@@ -36,7 +36,7 @@
   SiteProtocol
   (add-route! [this route properties]
     (swap! routes assoc (:path route) [route properties]))
-  (get-page [this request]
+  (get-page [this {:keys [reverie] :as request}]
     (let [uri (:uri request)]
       (let [[route properties]
             (if-let [data (get @routes uri)]
@@ -51,18 +51,30 @@
                first
                second))]
         (if route
-          (let [{:keys [template app type name]} properties]
+          (let [{:keys [template app type name serial]} properties
+                public? (not (= :edit (:mode reverie)))]
             (case type
-              :page (assoc (page/get-page database (:id properties))
-                      :route route)
+              :page (let [p (page/get-page database
+                                           serial
+                                           public?)]
+                      (if p
+                        (assoc p
+                          :route route)
+                        nil))
               :raw (let [page-data (sys/raw-page system name)]
                      (page/raw-page
                       {:route route
                        :options (:options page-data)
                        :routes (:routes page-data)
                        :database database}))
-              :app (assoc (page/get-page database (:id properties))
-                     :route route)))))))
+              :app (let [p (page/get-page
+                            database
+                            serial
+                            public?)]
+                     (if p
+                       (assoc p
+                         :route route)
+                       nil))))))))
 
   (host-match? [this {:keys [server-name]}]
     (if (empty? host-names)

@@ -79,9 +79,9 @@
           (render/render site {:uri "/baz" :server-name "example.com"
                                :request-method :get}))
          => (expected "Baz"
-                      (list "baz get " [:p "Text2"])
+                      (list "baz get " [:p "Text2 (publ)"])
                       (list "baz get "
-                            [:p "Text3"])))
+                            [:p "Text3 (publ)"])))
    (fact "rendered page, uri /baz/caught-this"
          (:body
           (render/render site {:uri "/baz/caught-this"
@@ -90,6 +90,6 @@
          => (expected "Baz"
                       (list "baz post caught-this")
                       (list [:img {:src "/path/to/img.jpg"
-                                   :title "TitleImage1"
-                                   :alt "AltImage1"}]
+                                   :title "TitleImage1 (publ)"
+                                   :alt "AltImage1 (publ)"}]
                             "baz post caught-this")))))
