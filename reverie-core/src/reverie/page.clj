@@ -8,13 +8,6 @@
             [reverie.util :as util])
   (:import [reverie RenderException]))
 
-(defprotocol PageDatabaseProtocol
-  (get-pages [database] [database published?])
-  (get-pages-by-route [database])
-  (get-page [database id] [database serial published?])
-  (get-children [database page])
-  (get-children-count [database page]))
-
 
 (defprotocol PageProtocol
   (id [page])

@@ -1,9 +1,8 @@
 (ns reverie.publish)
 
 (defprotocol PublishingProtocol
-  (publish! [database component])
+  (publish! [database component] [database component when])
   (unpublish! [database component])
-  (timed-publish! [database component when])
   (trash! [database component])
   (revisions [database component])
   (revision [database component revision])

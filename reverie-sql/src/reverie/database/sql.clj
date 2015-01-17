@@ -14,8 +14,6 @@
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log])
   (:import [reverie.database DatabaseProtocol]
-           [reverie.object ObjectDatabaseProtocol]
-           [reverie.page PageDatabaseProtocol]
            [reverie.publish PublishingProtocol]
            [com.jolbox.bonecp BoneCPDataSource]))
 
@@ -66,7 +64,7 @@
                          :template (get-in @sys/storage
                                            [:templates template])
                          :database database))]
-                (assoc p :objects (object/get-objects database p)))
+                (assoc p :objects (db/get-objects database p)))
         :app (let [page-data (get-in @sys/storage
                                      [:apps app])
                    p (page/app-page
@@ -76,7 +74,7 @@
                         :options (:options page-data)
                         :app-routes (:app-routes page-data)
                         :database database))]
-               (assoc p :objects (object/get-objects database p)))))))
+               (assoc p :objects (db/get-objects database p)))))))
 
 (defn- get-migration-map [{:keys [subprotocol subname user password]} path]
   {:db {:type :sql
@@ -172,9 +170,19 @@
     (jdbc/execute! (get db-specs key) (sql/format query args)))
   (databases [this]
     (keys db-specs))
+  (add-page! [this data]
+    (assert (nil? data) "foo?")
+    :parent
+    :template
+    :name
+    :title
+    :route
+    :type
+    :app
+    data)
+  (add-object! [this data]
+    )
 
-
-  PageDatabaseProtocol
   (get-pages [db]
     (map (partial get-page db)
          (db/query db {:select [:*]
@@ -233,7 +241,6 @@
           first
           :count)))
 
-  ObjectDatabaseProtocol
   (get-objects [db page]
     (let [objs-meta
           (db/query db {:select [:*]
@@ -287,8 +294,7 @@
                   :options (:options obj-data)
                   :methods (:methods obj-data)))))
            objs-meta)))
-  PublishingProtocol
-  )
+  PublishingProtocol)
 
 (defn database
   ([db-specs]

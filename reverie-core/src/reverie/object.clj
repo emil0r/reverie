@@ -5,9 +5,6 @@
             [reverie.route :as route])
   (:import [reverie RenderException]))
 
-(defprotocol ObjectDatabaseProtocol
-  (get-objects [database page]))
-
 (defprotocol ObjectProtocol
   (id [object])
   (area [object])

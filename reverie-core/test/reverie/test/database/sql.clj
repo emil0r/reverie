@@ -74,14 +74,14 @@
  (let [db (component/start (get-db))]
    (fact "get-pages"
          (map (juxt :serial :name) (page/get-pages db))
-         => [[1 "Main"] [1 "Main"] [2 "Baz"] [3 "Bar"]])
+         => [[1 "Main"] [1 "Main"] [2 "Baz"] [2 "Baz"] [3 "Bar"] [3 "Bar"]])
    (fact "get-pages published=true"
          (map (juxt :serial :name) (page/get-pages db true))
-         => [[1 "Main"]])
+         => [[1 "Main"] [2 "Baz"] [3 "Bar"]])
    (fact "get-pages-by-route"
          (sort (map (juxt first #(-> % second :version))
                     (page/get-pages-by-route db)))
-         => [["/" 0] ["/" 1] ["/bar" 0] ["/baz" 0]])
+         => [["/" 0] ["/" 1] ["/bar" 0] ["/bar" 1] ["/baz" 0] ["/baz" 1]])
    (fact "get-page by id"
          ((juxt :serial :name :version) (page/get-page db 1))
          => [1 "Main" 0])
@@ -89,7 +89,7 @@
          ((juxt :serial :name :version) (page/get-page db 1 true))
          => [1 "Main" 1])
    (fact "get-page by serial (nothing found)"
-         ((juxt :serial :name :version) (page/get-page db 2 true))
+         ((juxt :serial :name :version) (page/get-page db 4 true))
          => [nil nil nil])
    (fact "get-children"
          (map (juxt :serial :name :version)
@@ -100,7 +100,7 @@
          => 2)
    (fact "get-children-count (published)"
          (page/get-children-count db (page/get-page db 1 true))
-         => 0)
+         => 2)
    (component/stop db)))
 
 
@@ -112,3 +112,10 @@
         (let [p (page/get-page db 3)]
           (map :name (page/objects p)))
         => [:reverie/text :reverie/image :reverie/text])))
+
+
+(fact
+ "add!"
+ (seed!)
+ (let [db (get-db)]
+   (println (db/add-page! db {}))))
