@@ -73,33 +73,33 @@
  (seed!)
  (let [db (component/start (get-db))]
    (fact "get-pages"
-         (map (juxt :serial :name) (page/get-pages db))
+         (map (juxt :serial :name) (db/get-pages db))
          => [[1 "Main"] [1 "Main"] [2 "Baz"] [2 "Baz"] [3 "Bar"] [3 "Bar"]])
    (fact "get-pages published=true"
-         (map (juxt :serial :name) (page/get-pages db true))
+         (map (juxt :serial :name) (db/get-pages db true))
          => [[1 "Main"] [2 "Baz"] [3 "Bar"]])
    (fact "get-pages-by-route"
          (sort (map (juxt first #(-> % second :version))
-                    (page/get-pages-by-route db)))
+                    (db/get-pages-by-route db)))
          => [["/" 0] ["/" 1] ["/bar" 0] ["/bar" 1] ["/baz" 0] ["/baz" 1]])
    (fact "get-page by id"
-         ((juxt :serial :name :version) (page/get-page db 1))
+         ((juxt :serial :name :version) (db/get-page db 1))
          => [1 "Main" 0])
    (fact "get-page by serial"
-         ((juxt :serial :name :version) (page/get-page db 1 true))
+         ((juxt :serial :name :version) (db/get-page db 1 true))
          => [1 "Main" 1])
    (fact "get-page by serial (nothing found)"
-         ((juxt :serial :name :version) (page/get-page db 4 true))
+         ((juxt :serial :name :version) (db/get-page db 4 true))
          => [nil nil nil])
    (fact "get-children"
          (map (juxt :serial :name :version)
-              (page/get-children db (page/get-page db 1)))
+              (db/get-children db (db/get-page db 1)))
          => [[2 "Baz" 0] [3 "Bar" 0]])
    (fact "get-children-count"
-         (page/get-children-count db (page/get-page db 1))
+         (db/get-children-count db (db/get-page db 1))
          => 2)
    (fact "get-children-count (published)"
-         (page/get-children-count db (page/get-page db 1 true))
+         (db/get-children-count db (db/get-page db 1 true))
          => 2)
    (component/stop db)))
 
@@ -109,13 +109,19 @@
  (seed!)
  (let [db (get-db)]
   (fact "objects (text)"
-        (let [p (page/get-page db 3)]
+        (let [p (db/get-page db 3)]
           (map :name (page/objects p)))
-        => [:reverie/text :reverie/image :reverie/text])))
+        => [:reverie/image :reverie/text :reverie/text])
+  (component/stop db)))
 
 
 (fact
  "add!"
  (seed!)
  (let [db (get-db)]
-   (println (db/add-page! db {}))))
+   (fact "page"
+         (db/add-page! db {:parent 1 :title "" :name "Test page 1"
+                           :route "/test-page-1" :template :foobaz
+                           :type :page :app ""})
+         (page/name (db/get-page db 4 false)) => "Test page 1")
+   (component/stop db)))

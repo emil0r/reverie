@@ -93,8 +93,10 @@
                             (sys/migrations system))))]
     paths))
 
-(defn- get-object-name [name]
-  (str/replace (str name) #":" ""))
+(defn- kw->str [x]
+  (if (keyword? x)
+    (str/replace (str x) #":" "")
+    x))
 
 (defrecord DatabaseSQL [system db-specs ds-specs]
   component/Lifecycle
@@ -142,45 +144,67 @@
                              db-specs))))))
 
   DatabaseProtocol
-  (query [this query]
+  (query [db query]
     (if (string? query)
       (jdbc/query (:default db-specs) [query])
       (jdbc/query (:default db-specs) (sql/format query))))
-  (query [this key? query]
+  (query [db key? query]
     (let [[key query args] (if (get db-specs key?)
                              [key? query nil]
                              [:default key? query])]
       (if (nil? args)
         (jdbc/query (get db-specs key) (sql/format query))
         (jdbc/query (get db-specs key) (sql/format query args)))))
-  (query [this key query args]
+  (query [db key query args]
     (jdbc/query (get db-specs key) (sql/format query args)))
-  (query! [this query]
+  (query! [db query]
     (if (string? query)
       (jdbc/execute! (:default db-specs) [query])
       (jdbc/execute! (:default db-specs) (sql/format query))))
-  (query! [this key? query]
+  (query! [db key? query]
     (let [[key query args] (if (get db-specs key?)
                              [key? query nil]
                              [:default key? query])]
       (if (nil? args)
         (jdbc/execute! (get db-specs key) (sql/format query))
         (jdbc/execute! (get db-specs key) (sql/format query args)))))
-  (query! [this key query args]
+  (query! [db key query args]
     (jdbc/execute! (get db-specs key) (sql/format query args)))
-  (databases [this]
+  (databases [db]
     (keys db-specs))
-  (add-page! [this data]
-    (assert (nil? data) "foo?")
-    :parent
-    :template
-    :name
-    :title
-    :route
-    :type
-    :app
-    data)
-  (add-object! [this data]
+  (add-page! [db data]
+    (assert (contains? data :parent) ":parent key is missing")
+    (assert (contains? data :template) ":template key is missing")
+    (assert (contains? data :name) ":name key is missing")
+    (assert (contains? data :title) ":title key is missing")
+    (assert (contains? data :route) ":route key is missing")
+    (assert (contains? data :type) ":type key is missing")
+    (assert (contains? data :app) ":app key is missing")
+    (let [serial (-> (db/query db {:select [:%max.serial]
+                                   :from [:reverie_page]})
+                     first
+                     :max
+                     inc)
+          order (or
+                 (-> (db/query db {:select [(sql/raw "max(\"order\")")]
+                                   :from [:reverie_page]
+                                   :where [:and
+                                           [:= :parent (:parent data)]
+                                           [:= :version 0]]})
+                     first
+                     :max)
+                 1)]
+      (let [data (assoc data
+                   :id (sql/raw "default")
+                   :serial serial
+                   :template (-> data :template kw->str)
+                   :app (-> data :app kw->str)
+                   :type (-> data :type kw->str)
+                   (sql/raw "\"order\"") (inc order)
+                   :version 0)]
+        (db/query! db {:insert-into :reverie_page
+                       :values [data]}))))
+  (add-object! [db data]
     )
 
   (get-pages [db]

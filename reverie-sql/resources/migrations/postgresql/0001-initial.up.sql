@@ -1,9 +1,9 @@
 CREATE TABLE reverie_page (
     id bigserial primary key,
     serial integer NOT NULL,
-    parent integer,
+    parent integer, -- references serial which can be in more than one row
     created timestamp with time zone NOT NULL DEFAULT now(),
-    updated timestamp with time zone NOT NULL,
+    updated timestamp with time zone NOT NULL DEFAULT now(),
     template character varying(255) NOT NULL,
     name character varying(255) NOT NULL,
     title character varying(255) NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE reverie_page_properties (
 CREATE TABLE reverie_object (
     id bigserial primary key,
     created timestamp with time zone NOT NULL DEFAULT now(),
-    updated timestamp with time zone NOT NULL,
+    updated timestamp with time zone NOT NULL DEFAULT now(),
     name character varying(255) NOT NULL,
     area character varying(100) NOT NULL,
     route character varying(1024) NOT NULL DEFAULT '',
