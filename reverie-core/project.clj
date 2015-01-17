@@ -18,6 +18,7 @@
                                   [spyscope "0.1.5"]
                                   [org.postgresql/postgresql "9.3-1102-jdbc41"]]
                    :injections [(require 'spyscope.core)
+                                (require 'spyscope.repl)
                                 (require '[clojure.pprint :refer [pprint]])]
                    :resource-paths ["../reverie-sql/resources"]
                    :plugins [[lein-midje "3.1.3"]]}})
