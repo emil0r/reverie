@@ -204,8 +204,22 @@
                    :version 0)]
         (db/query! db {:insert-into :reverie_page
                        :values [data]}))))
+
+  (update-page! [db id data]
+    (let [data (select-keys data [:parent :template :name :title
+                                  :route :type :app :order])
+          data (if (contains? data :order)
+                 (-> data
+                     (assoc (sql/raw "\"order\"") (:order data))
+                     (dissoc :order))
+                 data)]
+      (assert (not (empty? data)) "update-page! does not take an empty data set")
+      (db/query! db {:update :reverie_page
+                     :set data})))
+
   (add-object! [db data]
     )
+  (update-object! [db id data])
 
   (get-pages [db]
     (map (partial get-page db)

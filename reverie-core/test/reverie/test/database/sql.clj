@@ -116,12 +116,18 @@
 
 
 (fact
- "add!"
+ "!"
  (seed!)
  (let [db (get-db)]
-   (fact "page"
+   (fact "add page"
          (db/add-page! db {:parent 1 :title "" :name "Test page 1"
                            :route "/test-page-1" :template :foobaz
                            :type :page :app ""})
          (page/name (db/get-page db 4 false)) => "Test page 1")
+   (fact "update page"
+         (db/update-page! db
+                          (-> (db/get-page db 1 false)
+                              :id)
+                          {:name "Test update-page!"})
+         (page/name (db/get-page db 1 false)) => "Test update-page!")
    (component/stop db)))
