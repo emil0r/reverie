@@ -130,4 +130,14 @@
                               :id)
                           {:name "Test update-page!"})
          (page/name (db/get-page db 1 false)) => "Test update-page!")
+   (fact "add object"
+         (db/add-object! db {:page_id 1 :name "reverie/text"
+                             :area "a" :route ""
+                             :properties {:text "foobar"}})
+         (-> (db/get-page db 1)
+             page/objects
+             last
+             :properties
+             :text)
+         => "foobar")
    (component/stop db)))

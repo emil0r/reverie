@@ -12,10 +12,13 @@
             [reverie.route :as route]
             [reverie.system :as sys]
             [slingshot.slingshot :refer [try+]]
-            [taoensso.timbre :as log])
+            [taoensso.timbre :as log]
+            [yesql.core :refer [defqueries]])
   (:import [reverie.database DatabaseProtocol]
            [reverie.publish PublishingProtocol]
            [com.jolbox.bonecp BoneCPDataSource]))
+
+(defqueries "reverie/database/sql/queries.sql")
 
 
 (defn- bonecp-datasource
@@ -98,6 +101,11 @@
     (str/replace (str x) #":" "")
     x))
 
+(defn- str->kw [x]
+  (if (string? x)
+    (keyword x)
+    x))
+
 (defrecord DatabaseSQL [system db-specs ds-specs]
   component/Lifecycle
   (start [this]
@@ -145,31 +153,60 @@
 
   DatabaseProtocol
   (query [db query]
-    (if (string? query)
-      (jdbc/query (:default db-specs) [query])
-      (jdbc/query (:default db-specs) (sql/format query))))
+    (cond
+     (string? query) (jdbc/query (:default db-specs) [query])
+     (fn? query) (query {} {:connection (:default db-specs)})
+     :else (jdbc/query (:default db-specs) (sql/format query))))
   (query [db key? query]
     (let [[key query args] (if (get db-specs key?)
                              [key? query nil]
                              [:default key? query])]
-      (if (nil? args)
-        (jdbc/query (get db-specs key) (sql/format query))
-        (jdbc/query (get db-specs key) (sql/format query args)))))
+      (cond
+       (and (nil? args) (fn? query))
+       (query {} {:connection (get db-specs key)})
+
+       (fn? query)
+       (query args {:connection (get db-specs key)})
+
+       (nil? args)
+       (jdbc/query (get db-specs key) (sql/format query))
+
+       :else
+       (jdbc/query (get db-specs key) (sql/format query args)))))
   (query [db key query args]
-    (jdbc/query (get db-specs key) (sql/format query args)))
+    (if (fn? query)
+      (query args {:connection (get db-specs key)})
+      (jdbc/query (get db-specs key) (sql/format query args))))
   (query! [db query]
-    (if (string? query)
-      (jdbc/execute! (:default db-specs) [query])
-      (jdbc/execute! (:default db-specs) (sql/format query))))
+    (cond
+     (string? query)
+     (jdbc/execute! (:default db-specs) [query])
+
+     (fn? query)
+     (query {} (:default db-specs))
+
+     :else
+     (jdbc/execute! (:default db-specs) (sql/format query))))
   (query! [db key? query]
     (let [[key query args] (if (get db-specs key?)
                              [key? query nil]
                              [:default key? query])]
-      (if (nil? args)
-        (jdbc/execute! (get db-specs key) (sql/format query))
-        (jdbc/execute! (get db-specs key) (sql/format query args)))))
+      (cond
+       (and (fn? query) (nil? args))
+       (query {} {:connection (get db-specs key)})
+
+       (fn? query)
+       (query args {:connection (get db-specs key)})
+
+       (nil? args)
+       (jdbc/execute! (get db-specs key) (sql/format query))
+
+       :else
+       (jdbc/execute! (get db-specs key) (sql/format query args)))))
   (query! [db key query args]
-    (jdbc/execute! (get db-specs key) (sql/format query args)))
+    (if (fn? query)
+      (query args {:connection (get db-specs key)})
+      (jdbc/execute! (get db-specs key) (sql/format query args))))
   (databases [db]
     (keys db-specs))
   (add-page! [db data]
@@ -195,15 +232,13 @@
                      :max)
                  1)]
       (let [data (assoc data
-                   :id (sql/raw "default")
                    :serial serial
                    :template (-> data :template kw->str)
                    :app (-> data :app kw->str)
                    :type (-> data :type kw->str)
-                   (sql/raw "\"order\"") (inc order)
+                   :order (inc order)
                    :version 0)]
-        (db/query! db {:insert-into :reverie_page
-                       :values [data]}))))
+        (db/query! db add-page<! data))))
 
   (update-page! [db id data]
     (let [data (select-keys data [:parent :template :name :title
@@ -218,7 +253,39 @@
                      :set data})))
 
   (add-object! [db data]
-    )
+    (assert (contains? data :page_id) ":page_id key is missing")
+    (assert (contains? data :area) ":area key is missing")
+    (assert (contains? data :route) ":route key is missing")
+    (assert (contains? data :name) ":name key is missing")
+    (assert (contains? data :properties) ":properties key is missing")
+
+    (let [order (or (-> (db/query db {:select [(sql/raw "max(\"order\")")]
+                                      :from [:reverie_object]
+                                      :where [:= :page_id (:page_id data)]})
+                        first
+                        :max)
+                    1)
+          obj (db/query! db add-object<! (-> data
+                                             (assoc :order order)
+                                             (dissoc :properties)))
+          obj-meta (sys/object system (-> data :name keyword))
+          field-ks (->> obj-meta
+                        :options
+                        :properties
+                        keys)
+          fk (or (->> obj-meta
+                      :options
+                      :foreign-key)
+                 :object_id)
+          obj-id (:id obj)
+          table (or (get-in obj-meta [:options :table])
+                    (-> data :name keyword))
+          properties (merge (select-keys (:properties data) field-ks)
+                            {fk obj-id})]
+      (db/query! db {:insert-into (sql/raw table)
+                     :values [properties]})
+
+      obj))
   (update-object! [db id data])
 
   (get-pages [db]
@@ -293,7 +360,7 @@
                           table (keyword
                                  (or (get-in obj-data [:options :table])
                                      (str/replace name #"/|\." "_")))
-                          foreign-key (or (get-in obj-data [:options :table :foreign-key])
+                          foreign-key (or (get-in obj-data [:options :foreign-key])
                                           :object_id)
                           object-ids (get (get out name)
                                           :object-ids [])]
