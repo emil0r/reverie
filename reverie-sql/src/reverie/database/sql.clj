@@ -287,34 +287,37 @@
 
       obj))
   (update-object! [db id data]
-    (assert (contains? data :name) ":name key is missing")
-    (let [{:keys [area order properties]} data
-          obj-meta (sys/object system (-> data :name keyword))
+    (let [obj-name (-> (db/query db {:select [:name]
+                                     :from [:reverie_object]
+                                     :where [:= :id id]})
+                   first :name keyword)
+          obj-meta (sys/object system obj-name)
           fk (or (->> obj-meta
                       :options
                       :foreign-key)
-                 :object_id)]
-      (when (or area order)
-        (let [data (select-keys data [:area :order])
-              data (if (contains? :order data)
-                     (-> data
-                         (assoc (sql/raw "\"order\"") order)
-                         (dissoc :order))
-                     data)]
-          (db/query! db {:update :reverie_object
-                         :set data
-                         :where [:= fk id]})))
-      (when properties
-        (let [field-ks (->> obj-meta
-                            :options
-                            :properties
-                            keys)
-              table (or (get-in obj-meta [:options :table])
-                        (-> data :name keyword))
-              properties (merge (select-keys (:properties data) field-ks))]
-          (db/query! db {:update (sql/raw table)
-                         :set properties
-                         :where [:= fk id]})))))
+                 :object_id)
+          field-ks (->> obj-meta
+                        :options
+                        :properties
+                        keys)
+          table (or (get-in obj-meta [:options :table])
+                    obj-name)
+          properties (merge (select-keys data field-ks))]
+      (db/query! db {:update (sql/raw table)
+                     :set properties
+                     :where [:= fk id]})))
+  (move-object! [db id data]
+    (assert (contains? data :area) ":area key is missing")
+    (assert (contains? data :order) ":order key is missing")
+    (let [data (select-keys data [:area :order])
+          data (if (contains? :order data)
+                 (-> data
+                     (assoc (sql/raw "\"order\"") (:order data))
+                     (dissoc :order))
+                 data)]
+      (db/query! db {:update :reverie_object
+                     :set data
+                     :where [:= :id id]})))
 
   (get-pages [db]
     (map (partial get-page db)

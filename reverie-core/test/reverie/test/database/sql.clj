@@ -141,8 +141,7 @@
              :text)
          => "foobar")
    (fact "update object"
-         (db/update-object! db 1 {:properties {:text "foobar"}
-                                  :name "reverie/text"})
+         (db/update-object! db 1 {:text "foobar"})
          (-> (db/get-page db 1)
              page/objects
              last

@@ -17,6 +17,7 @@
   (get-objects [database page])
   (add-object! [database data])
   (update-object! [database id data])
+  (move-object! [database id data])
 
   (add-module-entity! [database entity data])
   (update-module-entity! [database entity data])
