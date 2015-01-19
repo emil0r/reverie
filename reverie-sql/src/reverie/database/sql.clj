@@ -277,16 +277,44 @@
                       :options
                       :foreign-key)
                  :object_id)
-          obj-id (:id obj)
           table (or (get-in obj-meta [:options :table])
                     (-> data :name keyword))
+          obj-id (:id obj)
           properties (merge (select-keys (:properties data) field-ks)
                             {fk obj-id})]
       (db/query! db {:insert-into (sql/raw table)
                      :values [properties]})
 
       obj))
-  (update-object! [db id data])
+  (update-object! [db id data]
+    (assert (contains? data :name) ":name key is missing")
+    (let [{:keys [area order properties]} data
+          obj-meta (sys/object system (-> data :name keyword))
+          fk (or (->> obj-meta
+                      :options
+                      :foreign-key)
+                 :object_id)]
+      (when (or area order)
+        (let [data (select-keys data [:area :order])
+              data (if (contains? :order data)
+                     (-> data
+                         (assoc (sql/raw "\"order\"") order)
+                         (dissoc :order))
+                     data)]
+          (db/query! db {:update :reverie_object
+                         :set data
+                         :where [:= fk id]})))
+      (when properties
+        (let [field-ks (->> obj-meta
+                            :options
+                            :properties
+                            keys)
+              table (or (get-in obj-meta [:options :table])
+                        (-> data :name keyword))
+              properties (merge (select-keys (:properties data) field-ks))]
+          (db/query! db {:update (sql/raw table)
+                         :set properties
+                         :where [:= fk id]})))))
 
   (get-pages [db]
     (map (partial get-page db)
