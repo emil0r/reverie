@@ -153,3 +153,23 @@
                   (zip/root (zip/insert-right next-loc new-id))
                   origo?)
                  (recur next-loc)))))))))
+
+(defn before "ids -> [[order id] [order id] ...]"
+  ([ids id new-id]
+     (before ids id new-id false))
+  ([ids id new-id origo?]
+     (let [ids (vec (map second (if origo?
+                                  (insert-origo ids)
+                                  ids)))]
+       (loop [loc (zip/vector-zip ids)]
+         (let [next-loc (zip/next loc)]
+           (if (zip/end? next-loc)
+             (re-index
+              (zip/root (zip/append-child (zip/vector-zip ids) new-id))
+              origo?)
+             (let [node-value (zip/node next-loc)]
+               (if (= node-value id)
+                 (re-index
+                  (zip/root (zip/insert-left next-loc new-id))
+                  origo?)
+                 (recur next-loc)))))))))
