@@ -6,6 +6,7 @@
             joplin.jdbc.database
             [honeysql.core :as sql]
             [reverie.database :as db]
+            [reverie.movement :as movement]
             [reverie.object :as object]
             [reverie.page :as page]
             [reverie.publish :as publish]
@@ -241,16 +242,34 @@
         (db/query! db add-page<! data))))
 
   (update-page! [db id data]
-    (let [data (select-keys data [:parent :template :name :title
-                                  :route :type :app :order])
-          data (if (contains? data :order)
-                 (-> data
-                     (assoc (sql/raw "\"order\"") (:order data))
-                     (dissoc :order))
-                 data)]
+    (let [data (select-keys data [:template :name :title
+                                  :route :type :app])]
       (assert (not (empty? data)) "update-page! does not take an empty data set")
       (db/query! db {:update :reverie_page
                      :set data})))
+
+  (move-page! [db id origo-id movement]
+    (let [movement (keyword movement)]
+      (assert (some #(= % movement) [:after :before]) "movement has to be :after or :before")
+      (let [parent (-> (db/query db {:select [:parent]
+                                     :from [:reverie_page]
+                                     :where [:= :id origo-id]})
+                       first :parent)
+            objs (db/query db {:select [:p.order :p.id]
+                               :from [[:reverie_page :p]]
+                               :join [[:reverie_page :o]
+                                      [:= :p.parent :o.parent]]
+                               :where [:and
+                                       [:= :p.version 0]
+                                       [:= :o.id origo-id]]})
+            objs (if (= movement :after)
+                   (movement/after objs origo-id id)
+                   (movement/before objs origo-id id))]
+        (doseq [[order id] objs]
+          (db/query! db {:update :reverie_page
+                         :set {(sql/raw "\"order\"") order
+                               :parent parent}
+                         :where [:= :id id]})))))
 
   (add-object! [db data]
     (assert (contains? data :page_id) ":page_id key is missing")
@@ -303,22 +322,39 @@
           table (or (get-in obj-meta [:options :table])
                     obj-name)
           properties (merge (select-keys data field-ks))]
+      (assert (not (empty? properties))
+              "update-object! does not take an empty data set")
       (db/query! db {:update (sql/raw table)
                      :set properties
                      :where [:= fk id]})))
-  (move-object! [db id data]
-    (assert (contains? data :area) ":area key is missing")
-    (assert (contains? data :order) ":order key is missing")
-    (let [data (select-keys data [:area :order])
-          data (if (contains? :order data)
-                 (-> data
-                     (assoc (sql/raw "\"order\"") (:order data))
-                     (dissoc :order))
-                 data)]
+  (move-object! [db id direction]
+    (assert (some #(= % (keyword direction)) [:up :down :bottom :top])
+            "direction has to be :up, :down, :bottom or :top")
+    (let [objs (->
+                (db/query db {:select [:o.order :o.id]
+                              :from [[:reverie_object :f]]
+                              :join [[:reverie_object :o]
+                                     [:= :f.page_id :o.page_id]]
+                              :where [:and
+                                      [:= :f.id id]
+                                      [:= :f.area :o.area]]})
+                (movement/move id direction :origo))]
+      (doseq [[order id] objs]
+        (db/query! db {:update :reverie_object
+                       :set {(sql/raw "\"order\"") order}
+                       :where [:= :id id]}))))
+  (move-object! [db id page-id area]
+    (let [area (kw->str area)
+          order (-> (db/query db {:select [:%max.order]
+                                  :from [:reverie_page]
+                                  :where [:and
+                                          [:= :page_id page-id]
+                                          [:= :area area]]})
+                    first :max)]
       (db/query! db {:update :reverie_object
-                     :set data
+                     :set {(sql/raw "\"order\"") order
+                           :area area}
                      :where [:= :id id]})))
-
   (get-pages [db]
     (map (partial get-page db)
          (db/query db {:select [:*]
