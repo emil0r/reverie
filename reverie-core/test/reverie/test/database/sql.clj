@@ -195,4 +195,20 @@
                  (map
                   (juxt :order :name)
                   (page/children (db/get-page db 1 false))))
-               => [[1 "Baz"] [2 "Bar"] [3 "Test page 1"]]))))
+               => [[1 "Baz"] [2 "Bar"] [3 "Test page 1"]]))
+   (comment
+     (fact "same level (move-object)"
+          (fact ":up"
+                (seed!)
+                (db/move-page! db 5 3 :before)
+                (map
+                 (juxt :order :name)
+                 (page/children (db/get-page db 1 false)))
+                => [[1 "Bar"] [2 "Baz"]])
+          (fact ":after"
+                (seed!)
+                (db/move-page! db 3 5 :after)
+                (map
+                 (juxt :order :name)
+                 (page/children (db/get-page db 1 false)))
+                => [[1 "Bar"] [2 "Baz"]])))))

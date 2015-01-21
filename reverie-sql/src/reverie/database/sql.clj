@@ -12,6 +12,7 @@
             [reverie.publish :as publish]
             [reverie.route :as route]
             [reverie.system :as sys]
+            [reverie.util :refer [slugify]]
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log]
             [yesql.core :refer [defqueries]])
@@ -237,9 +238,19 @@
                    :template (-> data :template kw->str)
                    :app (-> data :app kw->str)
                    :type (-> data :type kw->str)
+                   :slug (or (:slug data)
+                             (slugify (:name data)))
                    :order (inc order)
-                   :version 0)]
-        (db/query! db add-page<! data))))
+                   :version 0)
+            {:keys [id] :as page-data} (db/query! db add-page<! data)]
+        (db/query! db
+                   {:update :reverie_page
+                    :set {:route :r.route}
+                    :from [(sql/raw (str "(SELECT route FROM get_route("
+                                         id
+                                         ")) AS r"))]
+                    :where [:= :id id]})
+        page-data)))
 
   (update-page! [db id data]
     (let [data (select-keys data [:template :name :title
@@ -250,6 +261,8 @@
 
   (move-page! [db id origo-id movement]
     (let [movement (keyword movement)]
+      (assert id "id has to be non-nil")
+      (assert origo-id "origo-id has to be non-nil")
       (assert (some #(= % movement) [:after :before]) "movement has to be :after or :before")
       (let [parent
             (-> (db/query db {:select [:parent]
@@ -291,7 +304,14 @@
           (db/query! db {:update :reverie_page
                          :set {(sql/raw "\"order\"") order
                                :parent parent}
-                         :where [:= :id id]})))))
+                         :where [:= :id id]}))
+        (db/query! db
+                   {:update :reverie_page
+                    :set {:route :r.route}
+                    :from [(sql/raw (str "(SELECT route FROM get_route("
+                                         id
+                                         ")) AS r"))]
+                    :where [:= :id id]}))))
 
   (add-object! [db data]
     (assert (contains? data :page_id) ":page_id key is missing")

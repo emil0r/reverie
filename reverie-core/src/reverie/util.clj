@@ -11,3 +11,28 @@
       (if (str/blank? uri)
         "/"
         uri))))
+
+
+(defn slugify [name]
+  (-> name
+      (str/replace #"[åÅäÄĀāĀāÀÁÂÃÆàáâãæ]" "a")
+      (str/replace #"[ČčÇç]" "c")
+      (str/replace #"[Ðð]" "d")
+      (str/replace #"[ĒēĒēËëÈÉÊËèéêë]" "e")
+      (str/replace #"[Ğğ]" "g")
+      (str/replace #"[ĪīĪīÏïİıìíîïÌÍÎÏ]" "i")
+      (str/replace #"[Ĳĳ]" "ij")
+      (str/replace #"[Ññ]" "n")
+      (str/replace #"[öÖŐőŌōŌōŒœŒœòóôõöøÒÓÔÕÖØ]" "o")
+      (str/replace #"[Þþ]" "p")
+      (str/replace #"[Řř]" "r")
+      (str/replace #"[ŠšŠšŠŞşŠš]" "s")
+      (str/replace #"[ß]" "ss")
+      (str/replace #"[ŰűŪūŪūÜüÙÚÛÜùúûü]" "u")
+      (str/replace #"[ẀẁẂẃŴŵ]" "w")
+      (str/replace #"[ŶŷŸýÝÿŸ]" "y")
+      (str/replace #"[ŽžŽžŽžžŽ]" "z")
+      (str/replace #"\s" "-")
+      (str/replace #"\&" "-")
+      (str/replace #"[^a-zA-Z0-9\-\_\.]" "")
+      str/lower-case))

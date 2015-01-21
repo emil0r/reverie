@@ -1,10 +1,10 @@
 -- pages
-INSERT INTO reverie_page VALUES (default, 1, NULL, now(), now(), 'foobar', 'Main', '', 0, '/', 'page', '', 1);
-INSERT INTO reverie_page VALUES (default, 1, NULL, now(), now(), 'foobar', 'Main', '', 1, '/', 'page', '', 1);
-INSERT INTO reverie_page VALUES (default, 2, 1, now(), now(), 'foobaz', 'Baz', '', 0, '/baz', 'app', 'baz', 1);
-INSERT INTO reverie_page VALUES (default, 2, 1, now(), now(), 'foobaz', 'Baz', '', 1, '/baz', 'app', 'baz', 1);
-INSERT INTO reverie_page VALUES (default, 3, 1, now(), now(), 'foobaz', 'Bar', '', 0, '/bar', 'page', '', 2);
-INSERT INTO reverie_page VALUES (default, 3, 1, now(), now(), 'foobaz', 'Bar', '', 1, '/bar', 'page', '', 2);
+INSERT INTO reverie_page VALUES (default, 1, NULL, now(), now(), 'foobar', 'Main', '', 0, 'main', '/', 'page', '', 1);
+INSERT INTO reverie_page VALUES (default, 1, NULL, now(), now(), 'foobar', 'Main', '', 1, 'main', '/', 'page', '', 1);
+INSERT INTO reverie_page VALUES (default, 2, 1, now(), now(), 'foobaz', 'Baz', '', 0, 'baz', '/baz', 'app', 'baz', 1);
+INSERT INTO reverie_page VALUES (default, 2, 1, now(), now(), 'foobaz', 'Baz', '', 1, 'baz', '/baz', 'app', 'baz', 1);
+INSERT INTO reverie_page VALUES (default, 3, 1, now(), now(), 'foobaz', 'Bar', '', 0, 'bar', '/bar', 'page', '', 2);
+INSERT INTO reverie_page VALUES (default, 3, 1, now(), now(), 'foobaz', 'Bar', '', 1, 'bar', '/bar', 'page', '', 2);
 -- objects
 INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, 1);
 INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, 2);

@@ -22,6 +22,7 @@
   (options [page])
   (properties [page])
   (path [page])
+  (slug [page])
   (objects [page])
   (type [page])
   (version [page])
@@ -43,7 +44,7 @@
       :body response})))
 
 (defrecord Page [route id serial name title properties template
-                 created updated parent database version
+                 created updated parent database version slug
                  published-date published? objects]
   route/RoutingProtocol
   (get-route [this] route)
@@ -63,6 +64,7 @@
   (order [this] order)
   (options [this] nil)
   (properties [this] properties)
+  (slug [this] slug)
   (path [this] (:path route))
   (objects [this] (sort-by :order objects))
   (type [page] :page)
@@ -95,6 +97,7 @@
   (order [this])
   (options [this] options)
   (properties [this] nil)
+  (slug [this] nil)
   (path [this] (:path route))
   (objects [this])
   (type [page] :raw)
@@ -113,7 +116,7 @@
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/RawPage"))))
 
 
-(defrecord AppPage [route app app-routes app-area-mappings
+(defrecord AppPage [route app app-routes app-area-mappings slug
                     id serial name title properties options template
                     created updated parent database version
                     published-date published? objects]
@@ -144,6 +147,7 @@
   (order [this] order)
   (properties [this] properties)
   (options [this] options)
+  (slug [this] slug)
   (path [this] (:path route))
   (objects [this] (sort-by :order objects))
   (type [page] :app)

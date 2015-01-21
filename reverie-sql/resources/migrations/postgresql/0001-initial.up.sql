@@ -5,21 +5,22 @@ CREATE TABLE reverie_page (
     created timestamp with time zone NOT NULL DEFAULT now(),
     updated timestamp with time zone NOT NULL DEFAULT now(),
     template character varying(255) NOT NULL,
-    name character varying(255) NOT NULL,
-    title character varying(255) NOT NULL,
+    name text NOT NULL,
+    title text NOT NULL,
     version integer NOT NULL,
-    route character varying(2048) NOT NULL,
-    type character varying(100) NOT NULL,
-    app character varying(100) NOT NULL DEFAULT '',
+    slug varchar NOT NULL,
+    route text NOT NULL,
+    type text NOT NULL,
+    app text NOT NULL DEFAULT '',
     "order" integer NOT NULL
 );
 
 CREATE TABLE reverie_page_properties (
     id bigserial primary key,
     created timestamp with time zone NOT NULL DEFAULT now(),
-    name character varying(255) NOT NULL,
-    key character varying(100) NOT NULL,
-    value character varying(255) NOT NULL,
+    name text NOT NULL,
+    key text NOT NULL,
+    value text NOT NULL,
     page_id bigint NOT NULL references reverie_page(id)
 );
 
@@ -27,9 +28,9 @@ CREATE TABLE reverie_object (
     id bigserial primary key,
     created timestamp with time zone NOT NULL DEFAULT now(),
     updated timestamp with time zone NOT NULL DEFAULT now(),
-    name character varying(255) NOT NULL,
-    area character varying(100) NOT NULL,
-    route character varying(1024) NOT NULL DEFAULT '',
+    name text NOT NULL,
+    area text NOT NULL,
+    route text NOT NULL DEFAULT '',
     "order" integer NOT NULL,
     page_id bigint NOT NULL references reverie_page(id)
 );
@@ -57,3 +58,27 @@ CREATE INDEX page_index_serial ON reverie_page USING btree (serial);
 CREATE INDEX page_index_route ON reverie_page USING btree (route);
 
 ALTER TABLE reverie_page ADD CONSTRAINT page_unique_serial UNIQUE(serial,route,version);
+
+
+
+CREATE OR REPLACE FUNCTION get_route(start_id integer)
+RETURNS TABLE(route text, id bigint)
+        LANGUAGE sql
+        AS $$
+        WITH RECURSIVE transverse(slug, parent, id) AS (
+             SELECT slug, parent, id
+             FROM reverie_page
+             WHERE id = start_id
+        UNION ALL
+              SELECT
+                CASE WHEN p.parent IS NULL THEN '' ELSE p.slug END || '/' || t.slug,
+                p.parent, p.id
+              FROM
+                reverie_page p
+                INNER JOIN transverse t ON serial = t.parent
+              WHERE
+                t.parent = p.serial
+                AND p.version = 0
+)
+SELECT slug, id FROM transverse WHERE parent IS NULL
+$$;
