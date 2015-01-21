@@ -149,3 +149,50 @@
              :text)
          => "foobar")
    (component/stop db)))
+
+
+(fact
+ "movement!"
+ (let [db (get-db)]
+   (fact "same level (move-page)"
+         (fact ":before"
+               (seed!)
+               (db/move-page! db 5 3 :before)
+               (map
+                (juxt :order :name)
+                (page/children (db/get-page db 1 false)))
+               => [[1 "Bar"] [2 "Baz"]])
+         (fact ":after"
+               (seed!)
+               (db/move-page! db 3 5 :after)
+               (map
+                (juxt :order :name)
+                (page/children (db/get-page db 1 false)))
+               => [[1 "Bar"] [2 "Baz"]]))
+   (fact "another level (move-page)"
+         (fact ":before"
+               (seed!)
+               (let [{:keys [id]} (db/add-page!
+                                   db {:parent 2 :title ""
+                                       :name "Test page 1"
+                                       :route "/baz/test-page-1"
+                                       :template :foobaz
+                                       :type :page :app ""})]
+                 (db/move-page! db id 5 :before)
+                 (map
+                  (juxt :order :name)
+                  (page/children (db/get-page db 1 false))))
+               => [[1 "Baz"] [2 "Test page 1"] [3 "Bar"]])
+         (fact ":after"
+               (seed!)
+               (let [{:keys [id]} (db/add-page!
+                                   db {:parent 2 :title ""
+                                       :name "Test page 1"
+                                       :route "/baz/test-page-1"
+                                       :template :foobaz
+                                       :type :page :app ""})]
+                 (db/move-page! db id 5 :after)
+                 (map
+                  (juxt :order :name)
+                  (page/children (db/get-page db 1 false))))
+               => [[1 "Baz"] [2 "Bar"] [3 "Test page 1"]]))))

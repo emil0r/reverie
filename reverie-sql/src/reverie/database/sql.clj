@@ -231,7 +231,7 @@
                                            [:= :version 0]]})
                      first
                      :max)
-                 1)]
+                 0)]
       (let [data (assoc data
                    :serial serial
                    :template (-> data :template kw->str)
@@ -251,20 +251,42 @@
   (move-page! [db id origo-id movement]
     (let [movement (keyword movement)]
       (assert (some #(= % movement) [:after :before]) "movement has to be :after or :before")
-      (let [parent (-> (db/query db {:select [:parent]
-                                     :from [:reverie_page]
-                                     :where [:= :id origo-id]})
-                       first :parent)
-            objs (db/query db {:select [:p.order :p.id]
+      (let [parent
+            (-> (db/query db {:select [:parent]
+                              :from [:reverie_page]
+                              :where [:= :id origo-id]})
+                first :parent)
+            parent-id
+            (-> (db/query db {:select [:parent]
+                              :from [:reverie_page]
+                              :where [:= :id id]})
+                first :parent)
+            objs
+            (->> (db/query db {:select [:p.order :p.id]
                                :from [[:reverie_page :p]]
                                :join [[:reverie_page :o]
                                       [:= :p.parent :o.parent]]
                                :where [:and
                                        [:= :p.version 0]
-                                       [:= :o.id origo-id]]})
-            objs (if (= movement :after)
-                   (movement/after objs origo-id id)
-                   (movement/before objs origo-id id))]
+                                       [:= :o.id origo-id]]
+                               :order-by [(sql/raw "\"order\"")]})
+                 (map (fn [{:keys [order id]}]
+                        [order id])))
+            objs
+            (cond
+             (and (= parent parent-id)
+                  (= movement :after))
+             (movement/move objs id :down)
+
+             (and (= parent parent-id)
+                  (= movement :before))
+             (movement/move objs id :up)
+
+             (= movement :after)
+             (movement/after objs origo-id id)
+
+             :else
+             (movement/before objs origo-id id))]
         (doseq [[order id] objs]
           (db/query! db {:update :reverie_page
                          :set {(sql/raw "\"order\"") order
