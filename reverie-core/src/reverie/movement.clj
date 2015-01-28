@@ -8,37 +8,37 @@
   (= (zip/node loc) (zip/node (zip/rightmost loc))))
 
 (defn insert-origo [ids]
-  (if (empty? ids)
-    [[0 nil]]
-    (loop [loc1 (zip/next (zip/vector-zip ids))
-           val1 (zip/node loc1)]
-      (let [loc2 (if (-> loc1 zip/next zip/next zip/end?)
-                   nil
-                   (-> loc1 zip/right))
-            val2 (if (nil? loc2)
-                   nil
-                   (zip/node loc2))]
-
-        (cond
-         (zero? (first val1)) (zip/root loc1)
-         (and (neg? (first val1)) (nil? val2))
-         (-> loc1
-             (zip/insert-right [0 nil])
-             zip/root)
-         (and (pos? (first val1)) (nil? val2))
-         (-> loc1
-             (zip/insert-left [0 nil])
-             zip/root)
-         (and (neg? (first val1)) (pos? (first val2)))
-         (-> loc1
-             (zip/insert-right [0 nil])
-             zip/root)
-         (and (pos? (first val1)) (pos? (first val2)))
-         (-> loc1
-             (zip/insert-left [0 nil])
-             zip/root)
-         (zip/end? loc1) (zip/root loc1)
-         :else (recur (zip/right loc1) (zip/node (zip/right loc1))))))))
+  (let [ids (vec ids)]
+    (if (empty? ids)
+      [[0 nil]]
+      (loop [loc1 (zip/next (zip/vector-zip ids))
+             val1 (zip/node loc1)]
+        (let [loc2 (if (-> loc1 zip/next zip/next zip/end?)
+                     nil
+                     (-> loc1 zip/right))
+              val2 (if (nil? loc2)
+                     nil
+                     (zip/node loc2))]
+          (cond
+           (zero? (first val1)) (zip/root loc1)
+           (and (neg? (first val1)) (nil? val2))
+           (-> loc1
+               (zip/insert-right [0 nil])
+               zip/root)
+           (and (pos? (first val1)) (nil? val2))
+           (-> loc1
+               (zip/insert-left [0 nil])
+               zip/root)
+           (and (neg? (first val1)) (pos? (first val2)))
+           (-> loc1
+               (zip/insert-right [0 nil])
+               zip/root)
+           (and (pos? (first val1)) (pos? (first val2)))
+           (-> loc1
+               (zip/insert-left [0 nil])
+               zip/root)
+           (zip/end? loc1) (zip/root loc1)
+           :else (recur (zip/right loc1) (zip/node (zip/right loc1)))))))))
 
 (defn- dir-up [ids id]
   (loop [loc (zip/vector-zip ids)]
