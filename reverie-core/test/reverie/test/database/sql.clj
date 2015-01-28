@@ -152,7 +152,7 @@
 
 
 (fact
- "movement!"
+ "movement page!"
  (let [db (get-db)]
    (fact "same level (move-page)"
          (fact ":before"
@@ -195,20 +195,31 @@
                  (map
                   (juxt :order :name)
                   (page/children (db/get-page db 1 false))))
-               => [[1 "Baz"] [2 "Bar"] [3 "Test page 1"]]))
-   (comment
-     (fact "same level (move-object)"
-          (fact ":up"
-                (seed!)
-                (db/move-page! db 5 3 :before)
-                (map
-                 (juxt :order :name)
-                 (page/children (db/get-page db 1 false)))
-                => [[1 "Bar"] [2 "Baz"]])
-          (fact ":after"
-                (seed!)
-                (db/move-page! db 3 5 :after)
-                (map
-                 (juxt :order :name)
-                 (page/children (db/get-page db 1 false)))
-                => [[1 "Bar"] [2 "Baz"]])))))
+               => [[1 "Baz"] [2 "Bar"] [3 "Test page 1"]]))))
+
+(fact
+ "movement object!"
+ (let [db (get-db)]
+   (fact "same level (move-object)"
+         (fact ":up"
+               (seed!)
+               (db/move-object! db 11 :up)
+               (map
+                (juxt :id :order :name)
+                (page/objects (db/get-page db 5)))
+               => [[11 1 :reverie/text] [9 2 :reverie/text]])
+         (fact ":down"
+               (seed!)
+               (db/move-object! db 9 :up)
+               (map
+                (juxt :id :order :name)
+                (page/objects (db/get-page db 5)))
+               => [[9 -1 :reverie/text] [11 1 :reverie/text]]))
+   (fact "other page and area"
+         (seed!)
+         (db/move-object! db 9 3 :b)
+         (->>
+          (page/objects (db/get-page db 3))
+          (filter (fn [{:keys [area]}] (= area :b)))
+          (map (juxt :id :order :name :area)))
+         => [[5 -1 :reverie/image :b] [7 1 :reverie/text :b] [9 2 :reverie/text :b]])))

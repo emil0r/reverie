@@ -345,8 +345,8 @@
                             {fk obj-id})]
       (db/query! db {:insert-into (sql/raw table)
                      :values [properties]})
-
       obj))
+
   (update-object! [db id data]
     (let [obj-name (-> (db/query db {:select [:name]
                                      :from [:reverie_object]
@@ -369,34 +369,42 @@
       (db/query! db {:update (sql/raw table)
                      :set properties
                      :where [:= fk id]})))
+
   (move-object! [db id direction]
     (assert (some #(= % (keyword direction)) [:up :down :bottom :top])
             "direction has to be :up, :down, :bottom or :top")
     (let [objs (->
-                (db/query db {:select [:o.order :o.id]
-                              :from [[:reverie_object :f]]
-                              :join [[:reverie_object :o]
-                                     [:= :f.page_id :o.page_id]]
-                              :where [:and
-                                      [:= :f.id id]
-                                      [:= :f.area :o.area]]})
+                (map
+                 (fn [{:keys [order id]}]
+                   [order id])
+                 (db/query db {:select [:o.order :o.id]
+                               :from [[:reverie_object :f]]
+                               :join [[:reverie_object :o]
+                                      [:= :f.page_id :o.page_id]]
+                               :where [:and
+                                       [:= :f.id id]
+                                       [:= :f.area :o.area]]}))
                 (movement/move id direction :origo))]
       (doseq [[order id] objs]
-        (db/query! db {:update :reverie_object
-                       :set {(sql/raw "\"order\"") order}
-                       :where [:= :id id]}))))
+        (if-not (nil? id)
+          (db/query! db {:update :reverie_object
+                         :set {(sql/raw "\"order\"") order}
+                         :where [:= :id id]})))))
+
   (move-object! [db id page-id area]
     (let [area (kw->str area)
-          order (-> (db/query db {:select [:%max.order]
-                                  :from [:reverie_page]
+          order (-> (db/query db {:select [:%max.o.order]
+                                  :from [[:reverie_object :o]]
                                   :where [:and
-                                          [:= :page_id page-id]
-                                          [:= :area area]]})
-                    first :max)]
+                                          [:= :o.page_id page-id]
+                                          [:= :o.area area]]})
+                    first :max inc)]
       (db/query! db {:update :reverie_object
                      :set {(sql/raw "\"order\"") order
-                           :area area}
+                           :area area
+                           :page_id page-id}
                      :where [:= :id id]})))
+
   (get-pages [db]
     (map (partial get-page db)
          (db/query db {:select [:*]
@@ -405,12 +413,14 @@
                                [:= :version 0]
                                [:= :version 1]]
                        :order-by [(sql/raw "\"order\"")]})))
+
   (get-pages [db published?]
     (map (partial get-page db)
          (db/query db {:select [:*]
                        :from [:reverie_page]
                        :where [:= :version (if published? 1 0)]
                        :order-by [(sql/raw "\"order\"")]})))
+
   (get-pages-by-route [db]
     (map (fn [page-data]
            [(:route page-data) page-data])
