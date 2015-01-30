@@ -260,6 +260,7 @@
                      :set data})))
 
   (move-page! [db id origo-id movement]
+    ;; TODO: recalculate route
     (let [movement (keyword movement)]
       (assert id "id has to be non-nil")
       (assert origo-id "origo-id has to be non-nil")
@@ -535,6 +536,8 @@
 
   (publish-page! [db page-id]
     ;; TODO: wrap in a transaction
+    ;; TODO: reorder pages when a page is published
+    ;; (could have been moved to a new root)
     (let [;; page-unpublished
           pu (db/get-page db page-id)
           ;; pages-published
