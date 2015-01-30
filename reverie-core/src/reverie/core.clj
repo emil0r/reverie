@@ -1,5 +1,6 @@
 (ns reverie.core
-  (:require [reverie.area :as a]
+  (:require [clojure.string :as str]
+            [reverie.area :as a]
             [reverie.system :as sys]
             [reverie.render :as render]
             [reverie.route :as route]
@@ -53,4 +54,7 @@
          (swap! sys/storage assoc-in [:migrations ~name] ~migration))
        (swap! sys/storage assoc-in [:objects ~name]
              {:options ~options
-              :methods ~methods}))))
+              :methods ~methods
+              :table (keyword
+                      (or (get ~options :table)
+                          (str/replace ~name #"/|\." "_")))}))))

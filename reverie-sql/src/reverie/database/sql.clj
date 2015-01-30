@@ -330,16 +330,10 @@
                                              (assoc :order order)
                                              (dissoc :properties)))
           obj-meta (sys/object system (-> data :name keyword))
-          field-ks (->> obj-meta
-                        :options
-                        :properties
-                        keys)
-          fk (or (->> obj-meta
-                      :options
-                      :foreign-key)
+          field-ks (->> obj-meta :options :properties keys)
+          fk (or (->> obj-meta :options :foreign-key)
                  :object_id)
-          table (or (get-in obj-meta [:options :table])
-                    (-> data :name keyword))
+          table (get-in obj-meta [:options :table])
           obj-id (:id obj)
           properties (merge (select-keys (:properties data) field-ks)
                             {fk obj-id})]
@@ -353,14 +347,9 @@
                                      :where [:= :id id]})
                    first :name keyword)
           obj-meta (sys/object system obj-name)
-          fk (or (->> obj-meta
-                      :options
-                      :foreign-key)
+          fk (or (->> obj-meta :options :foreign-key)
                  :object_id)
-          field-ks (->> obj-meta
-                        :options
-                        :properties
-                        keys)
+          field-ks (->> obj-meta :options :properties keys)
           table (or (get-in obj-meta [:options :table])
                     obj-name)
           properties (merge (select-keys data field-ks))]
@@ -501,9 +490,7 @@
           (reduce (fn [out {:keys [name] :as obj-meta}]
                     (let [obj-data (get-in @sys/storage
                                            [:objects (keyword name)])
-                          table (keyword
-                                 (or (get-in obj-data [:options :table])
-                                     (str/replace name #"/|\." "_")))
+                          table (:table obj-data)
                           foreign-key (or (get-in obj-data [:options :foreign-key])
                                           :object_id)
                           object-ids (get (get out name)
@@ -524,12 +511,12 @@
                     (map
                      (fn [data]
                        (let [obj-id (get data foreign-key)]
-                         {obj-id data}))
+                         {obj-id (dissoc data :id foreign-key)}))
                      (db/query db {:select [:*]
                                    :from [table]
                                    :where [:in foreign-key object-ids]}))))
                  objs-properties-to-fetch)))]
-      (map (fn [{:keys [id] :as obj-meta}]
+      (map (fn [{:keys [id name] :as obj-meta}]
              (let [obj-data (get-in @sys/storage
                                     [:objects (keyword (:name obj-meta))])]
                (object/object
@@ -543,7 +530,38 @@
                   :options (:options obj-data)
                   :methods (:methods obj-data)))))
            objs-meta)))
-  PublishingProtocol)
+
+  PublishingProtocol
+
+  (publish-page! [db page-id]
+    ;; TODO: wrap in a transaction
+    (let [;; page-unpublished
+          pu (db/get-page db page-id)
+          ;; pages-published
+          pps (db/query db {:select [:id :version]
+                            :from [:reverie_page]
+                            :where [:and
+                                    [:> :version 0]
+                                    [:= :serial (page/serial pu)]]})]
+      (doseq [pp pps]
+        (db/query! db {:update :reverie_page
+                       :set {:version (inc (:version pp))}
+                       :where [:= :id (:id pp)]}))
+      (let [{:keys [id] :as copied} (db/query! db copy-page<! {:id (page/id pu)})]
+        (doseq [obj (page/objects pu)]
+          (let [;; copy meta object
+                new-meta-obj (db/query! db copy-object-meta<!
+                                        {:pageid id
+                                         :id (object/id obj)})
+                ;; get meta data for meta object
+                obj-meta (sys/object system (-> new-meta-obj :name keyword))
+                ;; foreign key
+                fk (or (->> obj-meta :options :foreign-key)
+                       :object_id)]
+            (db/query! db {:insert-into (:table obj-meta)
+                           :values [(assoc (object/properties obj)
+                                      fk (:id new-meta-obj))]})
+            ))))))
 
 (defn database
   ([db-specs]

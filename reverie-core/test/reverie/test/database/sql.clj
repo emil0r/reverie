@@ -10,6 +10,7 @@
             reverie.sql.objects.image
             [reverie.page :as page]
             [reverie.object :as object]
+            [reverie.publish :as publish]
             [reverie.system :as sys]
             [midje.sweet :refer :all]))
 
@@ -240,3 +241,17 @@
                 (filter (fn [{:keys [area]}] (= area :a)))
                 (map (juxt :id :order :name :area :page_id)))
                => [[9 1 :reverie/text :a 1] [1 2 :reverie/text :a 1]]))))
+
+
+(fact "publishing"
+      (let [db (get-db)]
+       (fact "publish"
+             (seed!)
+             (publish/publish-page! db 1)
+             (->>
+              (db/query db {:select [:serial :version]
+                            :from [:reverie_page]
+                            :where [:= :serial 1]
+                            :order-by [:version]})
+              (map (juxt :serial :version)))
+             => [[1 0] [1 1] [1 2]])))
