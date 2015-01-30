@@ -19,8 +19,9 @@
   (add-object! [database data])
   (update-object! [database id data])
   (move-object!
-    [database id movement] ;; :up/down/bottom/top
+    [database id direction] ;; :up/down/bottom/top
     [database id page-id area]) ;; always bottom
+  (move-object-to-object! [database id other-id direction]) ;; after/before
 
   (add-module-entity! [database entity data])
   (update-module-entity! [database entity data])

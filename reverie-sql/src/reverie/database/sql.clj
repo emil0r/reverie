@@ -405,6 +405,31 @@
                            :page_id page-id}
                      :where [:= :id id]})))
 
+  (move-object-to-object! [db id other-id direction]
+    (assert (some #(= % (keyword direction)) [:after :before])
+            "direction has to be :after or :before")
+    (let [direction (keyword direction)
+          {:keys [area page_id]}
+          (-> (db/query db {:select [:area :page_id]
+                            :from [:reverie_object]
+                            :where [:= :id other-id]})
+              first)
+          objs (->> (db/query db {:select [:o.order :o.id]
+                                  :from [[:reverie_object :o]]
+                                  :join [[:reverie_object :j]
+                                         [:= :j.page_id :o.page_id]]
+                                  :where [:= :j.id other-id]
+                                  :order-by [:o.order]})
+                    (map (fn [{:keys [order id]}] [order id])))
+          objs (if (= direction :after)
+                 (movement/after objs other-id id :origo)
+                 (movement/before objs other-id id :origo))]
+      (doseq [[order id] objs]
+        (db/query! db {:update :reverie_object
+                       :set {(sql/raw "\"order\"") order
+                             :page_id page_id}
+                       :where [:= :id id]}))))
+
   (get-pages [db]
     (map (partial get-page db)
          (db/query db {:select [:*]

@@ -222,4 +222,21 @@
           (page/objects (db/get-page db 3))
           (filter (fn [{:keys [area]}] (= area :b)))
           (map (juxt :id :order :name :area)))
-         => [[5 -1 :reverie/image :b] [7 1 :reverie/text :b] [9 2 :reverie/text :b]])))
+         => [[5 -1 :reverie/image :b] [7 1 :reverie/text :b] [9 2 :reverie/text :b]])
+   (fact "move object to object"
+         (fact "after"
+               (seed!)
+               (db/move-object-to-object! db 9 1 :after)
+               (->>
+                (page/objects (db/get-page db 1))
+                (filter (fn [{:keys [area]}] (= area :a)))
+                (map (juxt :id :order :name :area :page_id)))
+               => [[1 1 :reverie/text :a 1] [9 2 :reverie/text :a 1]])
+         (fact "before"
+               (seed!)
+               (db/move-object-to-object! db 9 1 :before)
+               (->>
+                (page/objects (db/get-page db 1))
+                (filter (fn [{:keys [area]}] (= area :a)))
+                (map (juxt :id :order :name :area :page_id)))
+               => [[9 1 :reverie/text :a 1] [1 2 :reverie/text :a 1]]))))
