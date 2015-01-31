@@ -25,3 +25,16 @@ FROM
        reverie_object
 WHERE
        id = :id;
+
+
+-- name: update-published-pages-order!
+UPDATE
+     reverie_page
+SET
+     "order" = pu.order
+FROM (      SELECT serial, "order"
+            FROM reverie_page
+            WHERE parent = :parent AND version = 0      ) AS pu
+WHERE
+     version = 1
+     AND reverie_page.serial = pu.serial;

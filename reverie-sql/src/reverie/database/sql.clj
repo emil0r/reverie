@@ -108,6 +108,40 @@
     (keyword x)
     x))
 
+(defn- recalculate-routes [db page-ids]
+  (let [page-ids (if (sequential? page-ids)
+                   page-ids
+                   [page-ids])]
+    (when-not (empty? page-ids)
+      (doseq [page-id page-ids]
+        (db/query! db
+                   {:update :reverie_page
+                    :set {:route :r.route}
+                    :from [(sql/raw (str "(SELECT route FROM get_route("
+                                         page-id
+                                         ")) AS r"))]
+                    :where [:= :id page-id]}))
+      (let [page-ids (map :id
+                          (db/query db
+                                    {:select [:p.id]
+                                     :from [[:reverie_page :p]]
+                                     :join [[:reverie_page :o]
+                                            [:= :o.serial :p.parent]]
+                                     :where [:in :o.id page-ids]}))]
+        (recur db page-ids)))))
+
+(defn- shift-versions! [db serial]
+  (let [;; pages-published
+        pps (db/query db {:select [:id :version]
+                          :from [:reverie_page]
+                          :where [:and
+                                  [:> :version 0]
+                                  [:= :serial serial]]})]
+    (doseq [pp pps]
+      (db/query! db {:update :reverie_page
+                     :set {:version (inc (:version pp))}
+                     :where [:= :id (:id pp)]}))))
+
 (defrecord DatabaseSQL [system db-specs ds-specs]
   component/Lifecycle
   (start [this]
@@ -243,24 +277,18 @@
                    :order (inc order)
                    :version 0)
             {:keys [id] :as page-data} (db/query! db add-page<! data)]
-        (db/query! db
-                   {:update :reverie_page
-                    :set {:route :r.route}
-                    :from [(sql/raw (str "(SELECT route FROM get_route("
-                                         id
-                                         ")) AS r"))]
-                    :where [:= :id id]})
+        (recalculate-routes db id)
         page-data)))
 
   (update-page! [db id data]
     (let [data (select-keys data [:template :name :title
-                                  :route :type :app])]
+                                  :route :type :app :slug])]
       (assert (not (empty? data)) "update-page! does not take an empty data set")
       (db/query! db {:update :reverie_page
-                     :set data})))
+                     :set data})
+      (recalculate-routes db id)))
 
   (move-page! [db id origo-id movement]
-    ;; TODO: recalculate route
     (let [movement (keyword movement)]
       (assert id "id has to be non-nil")
       (assert origo-id "origo-id has to be non-nil")
@@ -306,13 +334,7 @@
                          :set {(sql/raw "\"order\"") order
                                :parent parent}
                          :where [:= :id id]}))
-        (db/query! db
-                   {:update :reverie_page
-                    :set {:route :r.route}
-                    :from [(sql/raw (str "(SELECT route FROM get_route("
-                                         id
-                                         ")) AS r"))]
-                    :where [:= :id id]}))))
+        (recalculate-routes db id))))
 
   (add-object! [db data]
     (assert (contains? data :page_id) ":page_id key is missing")
@@ -536,20 +558,9 @@
 
   (publish-page! [db page-id]
     ;; TODO: wrap in a transaction
-    ;; TODO: reorder pages when a page is published
-    ;; (could have been moved to a new root)
     (let [;; page-unpublished
-          pu (db/get-page db page-id)
-          ;; pages-published
-          pps (db/query db {:select [:id :version]
-                            :from [:reverie_page]
-                            :where [:and
-                                    [:> :version 0]
-                                    [:= :serial (page/serial pu)]]})]
-      (doseq [pp pps]
-        (db/query! db {:update :reverie_page
-                       :set {:version (inc (:version pp))}
-                       :where [:= :id (:id pp)]}))
+          pu (db/get-page db page-id)]
+      (shift-versions! db (page/serial pu))
       (let [{:keys [id] :as copied} (db/query! db copy-page<! {:id (page/id pu)})]
         (doseq [obj (page/objects pu)]
           (let [;; copy meta object
@@ -563,8 +574,24 @@
                        :object_id)]
             (db/query! db {:insert-into (:table obj-meta)
                            :values [(assoc (object/properties obj)
-                                      fk (:id new-meta-obj))]})
-            ))))))
+                                      fk (:id new-meta-obj))]}))))
+      (recalculate-routes db (page/id pu))
+      (db/query! db update-published-pages-order! {:parent (page/parent pu)})))
+  (unpublish-page! [db page-id]
+    (let [;; page-unpublished
+          pu (db/get-page db page-id)]
+      (shift-versions! db (page/serial pu))))
+  (trash-page! [db page-id]
+    (let [;; page-unpublished
+          pu (db/get-page db page-id)]
+      (shift-versions! db (page/serial pu))
+      (db/query! db {:update :reverie_page
+                     :set {:version -1}
+                     :where [:= :id page-id]})))
+  (trash-object! [db obj-id]
+    (db/query! db {:update :reverie_object
+                   :set {:version -1}
+                   :where [:= :id obj-id]})))
 
 (defn database
   ([db-specs]
