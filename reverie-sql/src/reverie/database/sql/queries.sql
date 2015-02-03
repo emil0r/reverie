@@ -1,8 +1,8 @@
 -- name: add-page<!
-INSERT INTO reverie_page VALUES (default, :serial, :parent, default, default, :template, :name, :title, :version, :slug, :route, :type, :app, :order);
+INSERT INTO reverie_page VALUES (default, :serial, :parent, default, default, :template, :name, :title, :version, :slug, '', :type, :app, :order);
 
 -- name: add-object<!
-INSERT INTO reverie_object VALUES (default, default, default, :name, :area, :route, :order, :page_id);
+INSERT INTO reverie_object VALUES (default, default, default, :name, :area, :route, :order, default, :page_id);
 
 -- name: copy-page<!
 INSERT INTO
@@ -18,9 +18,9 @@ WHERE
 
 -- name: copy-object-meta<!
 INSERT INTO
-       reverie_object (name, area, route, "order", page_id)
+       reverie_object (name, area, route, "order", version, page_id)
 SELECT
-       name, area, route, "order", :pageid
+       name, area, route, "order", version, :pageid
 FROM
        reverie_object
 WHERE

@@ -6,18 +6,18 @@ INSERT INTO reverie_page VALUES (default, 2, 1, now(), now(), 'foobaz', 'Baz', '
 INSERT INTO reverie_page VALUES (default, 3, 1, now(), now(), 'foobaz', 'Bar', '', 0, 'bar', '/bar', 'page', '', 2);
 INSERT INTO reverie_page VALUES (default, 3, 1, now(), now(), 'foobaz', 'Bar', '', 1, 'bar', '/bar', 'page', '', 2);
 -- objects
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, 1);
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, 2);
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, 3);
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, 4);
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/image', 'b', '/caught-this', -1, 3);
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/image', 'b', '/caught-this', -1, 4);
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'b', '', 1, 3);
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'b', '', 1, 4);
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, 5);
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, 6);
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 2, 5);
-INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 2, 6);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, default, 1);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, default, 2);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, default, 3);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, default, 4);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/image', 'b', '/caught-this', -1, default, 3);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/image', 'b', '/caught-this', -1, default, 4);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'b', '', 1, default, 3);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'b', '', 1, default, 4);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, default, 5);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 1, default, 6);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 2, default, 5);
+INSERT INTO reverie_object VALUES(default, now(), now(), 'reverie/text', 'a', '', 2, default, 6);
 -- text
 INSERT INTO batteries_text VALUES(default, 1, 'Text1');
 INSERT INTO batteries_text VALUES(default, 2, 'Text1 (publ)');

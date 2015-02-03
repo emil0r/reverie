@@ -136,7 +136,8 @@
                           :from [:reverie_page]
                           :where [:and
                                   [:> :version 0]
-                                  [:= :serial serial]]})]
+                                  [:= :serial serial]]
+                          :order-by [[:version :desc]]})]
     (doseq [pp pps]
       (db/query! db {:update :reverie_page
                      :set {:version (inc (:version pp))}
@@ -155,7 +156,7 @@
                             (:subprotocol default-spec))]
                       (apply conj
                              [(str "resources/migrations/"
-                            (:subprotocol default-spec))]
+                                   (:subprotocol default-spec))]
                              migration-paths))
               mmap (get-migration-map default-spec paths)]
           (joplin/migrate-db mmap))
@@ -250,7 +251,6 @@
     (assert (contains? data :template) ":template key is missing")
     (assert (contains? data :name) ":name key is missing")
     (assert (contains? data :title) ":title key is missing")
-    (assert (contains? data :route) ":route key is missing")
     (assert (contains? data :type) ":type key is missing")
     (assert (contains? data :app) ":app key is missing")
     (let [serial (-> (db/query db {:select [:%max.serial]
@@ -368,7 +368,7 @@
     (let [obj-name (-> (db/query db {:select [:name]
                                      :from [:reverie_object]
                                      :where [:= :id id]})
-                   first :name keyword)
+                       first :name keyword)
           obj-meta (sys/object system obj-name)
           fk (or (->> obj-meta :options :foreign-key)
                  :object_id)
@@ -506,7 +506,9 @@
     (let [objs-meta
           (db/query db {:select [:*]
                         :from [:reverie_object]
-                        :where [:= :page_id (page/id page)]
+                        :where [:and
+                                [:= :page_id (page/id page)]
+                                [:not= :version -1]]
                         :order-by [(sql/raw "\"order\"")]})
 
           objs-properties-to-fetch
@@ -557,37 +559,58 @@
   PublishingProtocol
 
   (publish-page! [db page-id]
+    (publish/publish-page! db page-id false))
+
+  (publish-page! [db page-id recur?]
     ;; TODO: wrap in a transaction
+    ;; TODO: rewrite so it doesn't use so many db calls :(
     (let [;; page-unpublished
-          pu (db/get-page db page-id)]
-      (shift-versions! db (page/serial pu))
-      (let [{:keys [id] :as copied} (db/query! db copy-page<! {:id (page/id pu)})]
-        (doseq [obj (page/objects pu)]
-          (let [;; copy meta object
-                new-meta-obj (db/query! db copy-object-meta<!
-                                        {:pageid id
-                                         :id (object/id obj)})
-                ;; get meta data for meta object
-                obj-meta (sys/object system (-> new-meta-obj :name keyword))
-                ;; foreign key
-                fk (or (->> obj-meta :options :foreign-key)
-                       :object_id)]
-            (db/query! db {:insert-into (:table obj-meta)
-                           :values [(assoc (object/properties obj)
-                                      fk (:id new-meta-obj))]}))))
-      (recalculate-routes db (page/id pu))
-      (db/query! db update-published-pages-order! {:parent (page/parent pu)})))
+          pu (db/get-page db page-id)
+          pages (if recur?
+                  (map (fn [{:keys [serial]}]
+                         (db/get-page db serial false))
+                       (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))
+                  [pu])]
+      (doseq [pu pages]
+        (shift-versions! db (page/serial pu))
+        (let [{:keys [id] :as copied} (db/query! db copy-page<! {:id (page/id pu)})]
+          (doseq [obj (page/objects pu)]
+            (let [;; copy meta object
+                  new-meta-obj (db/query! db copy-object-meta<!
+                                          {:pageid id
+                                           :id (object/id obj)})
+                  ;; get meta data for meta object
+                  obj-meta (sys/object system (-> new-meta-obj :name keyword))
+                  ;; foreign key
+                  fk (or (->> obj-meta :options :foreign-key)
+                         :object_id)]
+              (db/query! db {:insert-into (:table obj-meta)
+                             :values [(assoc (object/properties obj)
+                                        fk (:id new-meta-obj))]}))))
+        (recalculate-routes db (page/id pu))
+        (db/query! db update-published-pages-order! {:parent (page/parent pu)}))))
+
   (unpublish-page! [db page-id]
     (let [;; page-unpublished
-          pu (db/get-page db page-id)]
-      (shift-versions! db (page/serial pu))))
+          pu (db/get-page db page-id)
+          pages (map (fn [{:keys [serial]}]
+                       (db/get-page db serial false))
+                     (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))]
+      (doseq [pu pages]
+        (shift-versions! db (page/serial pu)))))
+
   (trash-page! [db page-id]
     (let [;; page-unpublished
-          pu (db/get-page db page-id)]
-      (shift-versions! db (page/serial pu))
-      (db/query! db {:update :reverie_page
-                     :set {:version -1}
-                     :where [:= :id page-id]})))
+          pu (db/get-page db page-id)
+          pages (map (fn [{:keys [serial]}]
+                       (db/get-page db serial false))
+                     (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))]
+      (doseq [pu pages]
+        (shift-versions! db (page/serial pu))
+        (db/query! db {:update :reverie_page
+                       :set {:version -1}
+                       :where [:= :id (page/id pu)]}))))
+
   (trash-object! [db obj-id]
     (db/query! db {:update :reverie_object
                    :set {:version -1}

@@ -32,6 +32,7 @@ CREATE TABLE reverie_object (
     area text NOT NULL,
     route text NOT NULL DEFAULT '',
     "order" integer NOT NULL,
+    version integer NOT NULL default 0,
     page_id bigint NOT NULL references reverie_page(id)
 );
 
@@ -81,4 +82,25 @@ RETURNS TABLE(route text, id bigint)
                 AND p.version = 0
 )
 SELECT slug, id FROM transverse WHERE parent IS NULL
+$$;
+
+
+CREATE OR REPLACE FUNCTION get_serials_recursively(start_serial integer)
+RETURNS TABLE(serial integer, parent integer)
+        LANGUAGE sql
+        AS $$
+        WITH RECURSIVE transverse(serial, parent) AS (
+             SELECT serial, parent
+             FROM reverie_page
+             WHERE start_serial = serial AND version = 0
+        UNION ALL
+              SELECT
+                p.serial, p.parent
+              FROM
+                reverie_page p
+                INNER JOIN transverse t ON t.serial = p.parent
+              WHERE p.version = 0
+)
+SELECT serial, parent FROM transverse
+ORDER BY serial
 $$;

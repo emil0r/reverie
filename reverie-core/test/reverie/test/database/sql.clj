@@ -244,14 +244,71 @@
 
 
 (fact "publishing"
+      (seed!)
       (let [db (get-db)]
-       (fact "publish"
-             (seed!)
-             (publish/publish-page! db 1)
-             (->>
-              (db/query db {:select [:serial :version]
-                            :from [:reverie_page]
-                            :where [:= :serial 1]
-                            :order-by [:version]})
-              (map (juxt :serial :version)))
-             => [[1 0] [1 1] [1 2]])))
+        (fact "publish"
+              (publish/publish-page! db 1)
+              (->>
+               (db/query db {:select [:serial :version]
+                             :from [:reverie_page]
+                             :where [:= :serial 1]
+                             :order-by [:version]})
+               (map (juxt :serial :version)))
+              => [[1 0] [1 1] [1 2]])
+        (fact "add pages and publish (single)"
+              (db/add-page! db {:parent 1 :title "" :name "Test page 1"
+                                :template :foobaz
+                                :type :page :app ""})
+              (db/add-page! db {:parent 4 :title "" :name "Test page 2"
+                                :template :foobaz
+                                :type :page :app ""})
+              (db/add-page! db {:parent 5 :title "" :name "Test page 3"
+                                :template :foobaz
+                                :type :page :app ""})
+              (publish/publish-page! db 8)
+              (->>
+               (db/query db {:select [:serial :version]
+                             :from [:reverie_page]
+                             :where [:and
+                                     [:in :serial [4 5 6]]
+                                     [:= :version 1]]
+                             :order-by [:version]})
+               (map (juxt :serial :version)))
+              => [[4 1]])
+        (fact "publish (recursive)"
+              (publish/publish-page! db 8 true)
+              (->>
+               (db/query db {:select [:serial :version]
+                             :from [:reverie_page]
+                             :where [:and
+                                     [:in :serial [4 5 6]]
+                                     [:= :version 1]]
+                             :order-by [:version]})
+               (map (juxt :serial :version)))
+              => [[4 1] [5 1] [6 1]])
+        (fact "unpublish!"
+              (publish/unpublish-page! db 8)
+              (->>
+               (db/query db {:select [:serial :version]
+                             :from [:reverie_page]
+                             :where [:and
+                                     [:in :serial [4 5 6]]
+                                     [:= :version 1]]
+                             :order-by [:version]})
+               (map (juxt :serial :version)))
+              => [])
+        (fact "trash page!"
+              (publish/trash-page! db 8)
+              (->>
+               (db/query db {:select [:serial :version]
+                             :from [:reverie_page]
+                             :where [:and
+                                     [:in :serial [4 5 6]]
+                                     [:= :version -1]]
+                             :order-by [:version]})
+               (map (juxt :serial :version)))
+              => [[4 -1] [5 -1] [6 -1]])
+        (fact "trash object!"
+              (publish/trash-object! db 1)
+              (count (page/objects (db/get-page db 1)))
+              => 0)))
