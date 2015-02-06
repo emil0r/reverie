@@ -12,7 +12,7 @@
             [reverie.publish :as publish]
             [reverie.route :as route]
             [reverie.system :as sys]
-            [reverie.util :refer [slugify]]
+            [reverie.util :refer [slugify kw->str str->kw]]
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log]
             [yesql.core :refer [defqueries]])
@@ -90,11 +90,11 @@
    :migrator paths})
 
 (defn- get-migration-paths [system]
-  (let [paths (map (fn [[obj-kw {:keys [table path]}]]
+  (let [paths (map (fn [[kw {:keys [table path]}]]
                      (let [table (or table
                                      (str
                                       "ragtime_migrations"
-                                      (str/replace (str obj-kw)
+                                      (str/replace (str kw)
                                                    #":|/|\."
                                                    "_")))]
                        [table path]))
@@ -102,16 +102,6 @@
                              automatic?)
                            (sys/migrations system)))]
     paths))
-
-(defn- kw->str [x]
-  (if (keyword? x)
-    (str/replace (str x) #":" "")
-    x))
-
-(defn- str->kw [x]
-  (if (string? x)
-    (keyword x)
-    x))
 
 (defn- recalculate-routes [db page-ids]
   (let [page-ids (if (sequential? page-ids)
