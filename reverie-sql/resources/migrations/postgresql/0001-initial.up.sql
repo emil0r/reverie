@@ -37,12 +37,6 @@ CREATE TABLE reverie_object (
 );
 
 
-CREATE TABLE reverie_role (
-    id bigserial primary key,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    name character varying(255) NOT NULL
-);
-
 CREATE TABLE reverie_publishing (
     id bigserial primary key,
     created timestamp with time zone DEFAULT now() NOT NULL,

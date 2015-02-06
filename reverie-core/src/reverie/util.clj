@@ -36,3 +36,14 @@
       (str/replace #"\&" "-")
       (str/replace #"[^a-zA-Z0-9\-\_\.]" "")
       str/lower-case))
+
+
+(defn kw->str [x]
+  (if (keyword? x)
+    (str/replace (str x) #":" "")
+    x))
+
+(defn str->kw [x]
+  (if (string? x)
+    (keyword x)
+    x))

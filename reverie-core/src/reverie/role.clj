@@ -1,4 +1,2 @@
-(ns reverie.role)
-
-(defprotocol RoleProtocol
-  (allowed? [what user] [what user operation]))
+(ns reverie.role
+  )

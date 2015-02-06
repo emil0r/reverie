@@ -1,0 +1,27 @@
+(ns reverie.test.modules.auth
+  (:require [com.stuartsierra.component :as component]
+            [reverie.database :as db]
+            [reverie.module :as module]
+            [reverie.modules.role :as role]
+            [reverie.modules.auth :as auth]
+            [reverie.test.database.sql-helpers :refer [get-db]]
+            [reverie.system :as sys]
+            [midje.sweet :refer :all]))
+
+
+
+(fact
+ "Roles added properly"
+ (let [db (component/start (get-db))]
+   (try
+     (-> {:database db
+          :system (component/start (sys/map->ReverieSystem {}))}
+         (role/map->RoleManager)
+         (component/start))
+     (->> (db/query db "SELECT name FROM reverie_role;")
+          (map #(-> % :name keyword))
+          sort)
+     => [:admin :staff :user]
+     (catch Exception e
+       (println e)))
+   (component/stop db)))
