@@ -1,7 +1,6 @@
 (ns reverie.object
   (:refer-clojure :exclude [name])
-  (:require [reverie.page :as page]
-            [reverie.render :as render]
+  (:require [reverie.render :as render]
             [reverie.route :as route])
   (:import [reverie RenderException]))
 
@@ -30,7 +29,7 @@
   (render [this {:keys [request-method] :as request}]
     (let [method (or (get methods request-method)
                      (:any methods))]
-      (if (= :app (page/type page))
+      (if (= :app (:type page))
         (if (or (route/match? route request))
           (method request this properties (:params request)))
         (method request this properties (:params request)))))

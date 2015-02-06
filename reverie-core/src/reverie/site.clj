@@ -29,7 +29,7 @@
                          {}
                          (map (fn [[route properties]]
                                 {route [(route/route [route]) properties]})
-                              (page/get-pages-by-route database))))
+                              (db/get-pages-by-route database))))
     this)
   (stop [this] this)
 
@@ -54,9 +54,9 @@
           (let [{:keys [template app type name serial]} properties
                 public? (not (= :edit (:mode reverie)))]
             (case type
-              :page (let [p (page/get-page database
-                                           serial
-                                           public?)]
+              :page (let [p (db/get-page database
+                                         serial
+                                         public?)]
                       (if p
                         (assoc p
                           :route route)
@@ -67,7 +67,7 @@
                        :options (:options page-data)
                        :routes (:routes page-data)
                        :database database}))
-              :app (let [p (page/get-page
+              :app (let [p (db/get-page
                             database
                             serial
                             public?)]

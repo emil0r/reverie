@@ -121,7 +121,7 @@
 
 (defn move "ids -> [[order id] [order id] ...]"
   ([ids id direction]
-     (move! ids id direction false))
+     (move ids id direction false))
   ([ids id direction origo?]
      (let [ids (vec (map second (if origo?
                                       (insert-origo ids)

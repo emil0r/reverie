@@ -55,9 +55,11 @@
                              "//localhost:5432/dev_reverie"
                              "?user=" "devuser"
                              "&password=" "devuser")}
-              :migrator ["resources/migrations/postgresql"
-                         "src/reverie/sql/objects/migrations/text/"
-                         "src/reverie/sql/objects/migrations/image/"]}]
+              :migrator (array-map
+                         :default "resources/migrations/postgresql"
+                         "ragtime_migrations_reverie_text" "src/reverie/sql/objects/migrations/text/"
+                         "ragtime_migrations_reverie_image" "src/reverie/sql/objects/migrations/image/"
+                         )}]
     (joplin/rollback-db jmap 9000))
   (let [db (component/start (get-db))
         seed (slurp (io/resource "seeds/postgresql/seed.sql"))]

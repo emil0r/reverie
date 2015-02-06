@@ -81,21 +81,26 @@
                         :database database))]
                (assoc p :objects (db/get-objects database p)))))))
 
-(defn- get-migration-map [{:keys [subprotocol subname user password]} path]
+(defn- get-migration-map [{:keys [subprotocol subname user password]} paths]
   {:db {:type :sql
         :url (str "jdbc:" subprotocol ":"
                   subname
                   "?user=" user
                   "&password=" password)}
-   :migrator path})
+   :migrator paths})
 
 (defn- get-migration-paths [system]
-  (let [paths (sort
-               (map (fn [[_ {:keys [path]}]]
-                      path)
-                    (filter (fn [[_ {:keys [automatic?]}]]
-                              automatic?)
-                            (sys/migrations system))))]
+  (let [paths (map (fn [[obj-kw {:keys [table path]}]]
+                     (let [table (or table
+                                     (str
+                                      "ragtime_migrations"
+                                      (str/replace (str obj-kw)
+                                                   #":|/|\."
+                                                   "_")))]
+                       [table path]))
+                   (filter (fn [[_ {:keys [automatic?]}]]
+                             automatic?)
+                           (sys/migrations system)))]
     paths))
 
 (defn- kw->str [x]
@@ -151,16 +156,12 @@
       (do
         (let [default-spec (:default db-specs)
               migration-paths (get-migration-paths system)
-              paths (if (empty? migration-paths)
-                      [(str "resources/migrations/"
-                            (:subprotocol default-spec))]
-                      (apply conj
-                             [(str "resources/migrations/"
-                                   (:subprotocol default-spec))]
-                             migration-paths))
+              paths (concat
+                     [[:default (str "resources/migrations/"
+                                     (:subprotocol default-spec))]]
+                     migration-paths)
               mmap (get-migration-map default-spec paths)]
           (joplin/migrate-db mmap))
-
         (log/info "Starting database")
         (let [db-specs (into
                         {}
