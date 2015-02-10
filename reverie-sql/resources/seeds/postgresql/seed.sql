@@ -34,3 +34,22 @@ INSERT INTO batteries_text VALUES(default, 12, 'Text5 (publ)');
 -- image
 INSERT INTO batteries_image VALUES(default, 5, 'TitleImage1', 'AltImage1', '/path/to/img.jpg', NULL, NULL);
 INSERT INTO batteries_image VALUES(default, 6, 'TitleImage1 (publ)', 'AltImage1 (publ)', '/path/to/img.jpg', NULL, NULL);
+
+
+-- role
+INSERT INTO auth_role VALUES (default, default, 'admin');
+INSERT INTO auth_role VALUES (default, default, 'staff');
+INSERT INTO auth_role VALUES (default, default, 'user');
+
+-- user
+INSERT INTO auth_user VALUES (default, default, 'admin', 'bcrypt+sha512$400a78a96113cad1ea67c6ab$12$243261243132243057724e2e555876376a76626b79783156377569796554484551784e364d315a6a52557936446478486d337036496a6f6658425153', 'admin@admin.com', 'Admin', 'Admin', now()); -- password == admin
+
+-- user roles
+INSERT INTO auth_user_role VALUES (1, 1);
+
+-- group
+INSERT INTO auth_group VALUES (default, 'administrators');
+INSERT INTO auth_user_group VALUES (1,1);
+INSERT INTO auth_group_role VALUES (1,1);
+INSERT INTO auth_group_role VALUES (1,2);
+INSERT INTO auth_group_role VALUES (1,3);

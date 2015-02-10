@@ -33,18 +33,21 @@
 
 
 (defn seed! []
-  (let [jmap {:db {:type :sql
-                   :url (str "jdbc:postgresql:"
-                             "//localhost:5432/dev_reverie"
-                             "?user=" "devuser"
-                             "&password=" "devuser")}
-              :migrator (array-map
-                         :default "resources/migrations/postgresql"
-                         "ragtime_migrations_reverie_text" "src/reverie/sql/objects/migrations/text/"
-                         "ragtime_migrations_reverie_image" "src/reverie/sql/objects/migrations/image/"
-                         "ragtime_migrations_auth" "src/reverie/modules/migrations/auth/"
-                         )}]
-    (joplin/rollback-db jmap 9000))
+  (let [jmaps (map (fn [[table path]]
+                     {:db {:type :sql
+                           :migration-table table
+                           :url (str "jdbc:postgresql:"
+                                     "//localhost:5432/dev_reverie"
+                                     "?user=" "devuser"
+                                     "&password=" "devuser")}
+                      :migrator path})
+                   (array-map
+                    "ragtime_migrations_auth" "src/reverie/modules/migrations/auth/"
+                    "ragtime_migrations_reverie_text" "src/reverie/sql/objects/migrations/text/"
+                    "ragtime_migrations_reverie_image" "src/reverie/sql/objects/migrations/image/"
+                    nil "resources/migrations/postgresql"))]
+    (doseq [jmap jmaps]
+      (joplin/rollback-db jmap 9000)))
   (let [db (component/start (get-db))
         seed (slurp (io/resource "seeds/postgresql/seed.sql"))]
     (try

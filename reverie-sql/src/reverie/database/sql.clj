@@ -5,6 +5,7 @@
             [joplin.core :as joplin]
             joplin.jdbc.database
             [honeysql.core :as sql]
+            [reverie.auth :refer [UserDatabaseProtocol] :as auth]
             [reverie.database :as db]
             [reverie.movement :as movement]
             [reverie.object :as object]
@@ -81,15 +82,16 @@
                         :database database))]
                (assoc p :objects (db/get-objects database p)))))))
 
-(defn- get-migration-map [{:keys [subprotocol subname user password]} paths]
+(defn- get-migrator-map [{:keys [subprotocol subname user password]} table path]
   {:db {:type :sql
+        :migration-table table
         :url (str "jdbc:" subprotocol ":"
                   subname
                   "?user=" user
                   "&password=" password)}
-   :migrator paths})
+   :migrator path})
 
-(defn- get-migration-paths [system]
+(defn- get-migrators [system]
   (let [paths (map (fn [[kw {:keys [table path]}]]
                      (let [table (or table
                                      (str
@@ -145,13 +147,15 @@
       this
       (do
         (let [default-spec (:default db-specs)
-              migration-paths (get-migration-paths system)
-              paths (concat
-                     [[:default (str "resources/migrations/"
-                                     (:subprotocol default-spec))]]
-                     migration-paths)
-              mmap (get-migration-map default-spec paths)]
-          (joplin/migrate-db mmap))
+              migrators (concat
+                         [[nil (str "resources/migrations/"
+                                    (:subprotocol default-spec))]]
+                         (get-migrators system))
+              mmaps (map (fn [[table path]]
+                           (get-migrator-map default-spec table path))
+                         migrators)]
+          (doseq [mmap mmaps]
+            (joplin/migrate-db mmap)))
         (log/info "Starting database")
         (let [db-specs (into
                         {}

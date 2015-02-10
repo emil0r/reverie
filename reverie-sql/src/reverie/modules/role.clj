@@ -6,12 +6,6 @@
             [reverie.util :as util]
             [taoensso.timbre :as log]))
 
-(let [modules {:foo {:options {:roles #{:a}}}
-               :bar {:options {:roles #{:b}}}}]
-  (apply set/union (map (fn [[_ data]]
-                          (get-in data [:options :roles]))
-                        modules)))
-(apply set/union [#{:a} #{:b}])
 
 (defrecord RoleManager [database system]
   component/Lifecycle
@@ -29,10 +23,10 @@
           roles-in-db (into #{}
                             (map #(-> % :name keyword)
                                  (db/query database {:select [:name]
-                                                     :from [:reverie_role]})))
+                                                     :from [:auth_role]})))
           roles-diff (set/difference roles roles-in-db)]
       (when-not (empty? roles-diff)
-        (db/query! database {:insert-into :reverie_role
+        (db/query! database {:insert-into :auth_role
                              :values (map (fn [role]
                                             {:name (util/kw->str role)}) roles-diff)}))))
   (stop [this]
