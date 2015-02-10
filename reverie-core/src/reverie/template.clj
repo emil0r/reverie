@@ -4,7 +4,7 @@
   (:import [reverie RenderException]))
 
 (defrecord Template [function]
-  render/RenderProtocol
+  render/IRender
   (render [this _]
     (throw (RenderException. "[component request] not implemented for reverie.template/Template")))
   (render [this request page]

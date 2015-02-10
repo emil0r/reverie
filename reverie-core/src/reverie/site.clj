@@ -12,7 +12,7 @@
 
 (defonce routes (atom {}))
 
-(defprotocol SiteProtocol
+(defprotocol ISite
   (add-route! [system route page-data])
   (get-page [system request])
   (host-match? [system request])
@@ -33,7 +33,7 @@
     this)
   (stop [this] this)
 
-  SiteProtocol
+  ISite
   (add-route! [this route properties]
     (swap! routes assoc (:path route) [route properties]))
   (get-page [this {:keys [reverie] :as request}]
@@ -81,7 +81,7 @@
       true
       (some #(= server-name %) host-names)))
 
-  render/RenderProtocol
+  render/IRender
   (render [this request]
     (try+
      (if-not (host-match? this request)

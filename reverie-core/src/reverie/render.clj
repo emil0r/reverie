@@ -1,4 +1,4 @@
 (ns reverie.render)
 
-(defprotocol RenderProtocol
+(defprotocol IRender
   (render [component request] [component request sub-component]))

@@ -21,7 +21,7 @@
        (= area-name (object/area object))))
 
 (defrecord Area [name]
-  render/RenderProtocol
+  render/IRender
   (render [this _]
     (throw (RenderException. "[component request] not implemented for reverie.area/Area")))
   (render [this request page]

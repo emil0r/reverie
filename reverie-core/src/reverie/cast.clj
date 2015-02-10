@@ -1,7 +1,7 @@
 (ns reverie.cast
   (:refer-clojure :exclude [cast]))
 
-(defprotocol CastProtocol
+(defprotocol ICast
   (cast [to from-str]))
 
 (defmulti class->cast (fn [to _] to))
@@ -16,7 +16,7 @@
 (defmethod class->cast :default [_ from-str]
   from-str)
 
-(extend-protocol CastProtocol
+(extend-protocol ICast
   java.lang.Class
   (cast [to from-str]
     (class->cast (.getName to) from-str)))

@@ -2,14 +2,14 @@
   (:refer-clojure :exclude [list])
   (:import [reverie ModuleException]))
 
-(defprotocol ModuleProtocol
+(defprotocol IModule
   (interface? [entity]
     "Should this be automatically interfaced?")
   (entities [module]
     "Entities of the module"))
 
 
-(defprotocol ModuleEntityProtocol
+(defprotocol IModuleEntity
   (list [entity] [entity params offset limit]
     "List the fields in an entity in the admin interface")
   (pk [entity]
@@ -28,12 +28,12 @@
 (defrecord ModuleOptions [offset limit filters])
 
 (defrecord Module [database entities entities-order]
-  ModuleProtocol)
+  IModule)
 
 
 
 (defrecord ModuleEntity [data fields id-key]
-  ModuleEntityProtocol
+  IModuleEntity
   (pk [this] (or (get data id-key)
                  (get data :id)
                  (let [ids (filter #(re-find #"id" (name %)) (keys data))]

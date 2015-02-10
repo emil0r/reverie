@@ -9,7 +9,7 @@
   (:import [reverie RenderException]))
 
 
-(defprotocol PageProtocol
+(defprotocol IPage
   (id [page])
   (serial [page])
   (parent [page])
@@ -46,11 +46,11 @@
 (defrecord Page [route id serial name title properties template
                  created updated parent database version slug
                  published-date published? objects]
-  route/RoutingProtocol
+  route/IRouting
   (get-route [this] route)
   (match? [this request] (route/match? route request))
 
-  PageProtocol
+  IPage
   (id [this] id)
   (serial [this] serial)
   (version [this] version)
@@ -69,7 +69,7 @@
   (objects [this] (sort-by :order objects))
   (type [page] :page)
 
-  render/RenderProtocol
+  render/IRender
   (render [this request]
     (handle-response
      options
@@ -79,11 +79,11 @@
 
 
 (defrecord RawPage [route options routes database]
-  route/RoutingProtocol
+  route/IRouting
   (get-route [this] route)
   (match? [this request] (route/match? route request))
 
-  PageProtocol
+  IPage
   (id [this])
   (serial [this])
   (version [this])
@@ -102,7 +102,7 @@
   (objects [this])
   (type [page] :raw)
 
-  render/RenderProtocol
+  render/IRender
   (render [this {:keys [request-method] :as request}]
     (let [request (merge request
                          {:shortened-uri (util/shorten-uri
@@ -120,7 +120,7 @@
                     id serial name title properties options template
                     created updated parent database version
                     published-date published? objects]
-  route/RoutingProtocol
+  route/IRouting
   (get-route [this] route)
   (match? [this request]
     (let [pattern (re-pattern (str "^" (:path route)))]
@@ -133,7 +133,7 @@
                 (assoc-in [:request :uri] uri)
                 (assoc-in [:request :app-uri] app-uri)))))))
 
-  PageProtocol
+  IPage
   (id [this] id)
   (serial [this] serial)
   (version [this] version)
@@ -152,7 +152,7 @@
   (objects [this] (sort-by :order objects))
   (type [page] :app)
 
-  render/RenderProtocol
+  render/IRender
   (render [this request]
     (let [request (merge request
                          {:shortened-uri (util/shorten-uri

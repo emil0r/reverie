@@ -12,7 +12,7 @@
                         :modules {}
                         :migrations {}}))
 
-(defprotocol SystemProtocol
+(defprotocol ISystem
   (add-object-type! [system key object-type])
   (objects [system])
   (object [system key])
@@ -48,7 +48,7 @@
   (stop [this]
     this)
 
-  SystemProtocol
+  ISystem
   (add-app-type! [this key app-type]
     (swap! storage assoc-in [:apps key] app-type))
   (apps [this]

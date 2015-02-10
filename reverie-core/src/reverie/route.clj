@@ -3,13 +3,13 @@
             [clout.core :as clout]
             [reverie.cast :as cast]))
 
-(defprotocol RoutingProtocol
+(defprotocol IRouting
   (match? [component request])
   (get-route [component]))
 
 
 (defrecord Route [path compiled matching casting methods]
-  RoutingProtocol
+  IRouting
   (match? [this request]
     (let [temp-request (if (:shortened-uri request)
                          (assoc request :uri (:shortened-uri request))

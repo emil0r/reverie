@@ -4,7 +4,7 @@
             [reverie.route :as route])
   (:import [reverie RenderException]))
 
-(defprotocol ObjectProtocol
+(defprotocol IObject
   (id [object])
   (area [object])
   (name [object])
@@ -16,7 +16,7 @@
 (defrecord ReverieObject [id name area order page route
                           database options methods
                           properties]
-  ObjectProtocol
+  IObject
   (id [this] id)
   (area [this] area)
   (name [this] name)
@@ -25,7 +25,7 @@
   (options [this] options)
   (properties [this] properties)
 
-  render/RenderProtocol
+  render/IRender
   (render [this {:keys [request-method] :as request}]
     (let [method (or (get methods request-method)
                      (:any methods))]

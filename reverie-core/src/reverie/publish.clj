@@ -1,6 +1,6 @@
 (ns reverie.publish)
 
-(defprotocol PublishingProtocol
+(defprotocol IPublish
   (publish-page! [database page-id] [database page-id recur?])
   (unpublish-page! [database page-id])
   (trash-page! [database page-id])

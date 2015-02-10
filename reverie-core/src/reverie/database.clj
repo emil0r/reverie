@@ -1,7 +1,7 @@
 (ns reverie.database)
 
 
-(defprotocol DatabaseProtocol
+(defprotocol IDatabase
   (query [database query] [database key? query] [database key query args])
   (query! [database query] [database key? query] [database key query args])
   (databases [database])

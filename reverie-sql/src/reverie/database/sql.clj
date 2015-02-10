@@ -5,7 +5,6 @@
             [joplin.core :as joplin]
             joplin.jdbc.database
             [honeysql.core :as sql]
-            [reverie.auth :refer [UserDatabaseProtocol] :as auth]
             [reverie.database :as db]
             [reverie.movement :as movement]
             [reverie.object :as object]
@@ -17,8 +16,8 @@
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log]
             [yesql.core :refer [defqueries]])
-  (:import [reverie.database DatabaseProtocol]
-           [reverie.publish PublishingProtocol]
+  (:import [reverie.database IDatabase]
+           [reverie.publish IPublish]
            [com.jolbox.bonecp BoneCPDataSource]))
 
 (defqueries "reverie/database/sql/queries.sql")
@@ -183,7 +182,7 @@
                                [key (dissoc db-spec :datasource)])
                              db-specs))))))
 
-  DatabaseProtocol
+  IDatabase
   (query [db query]
     (cond
      (string? query) (jdbc/query (:default db-specs) [query])
@@ -551,7 +550,7 @@
                   :methods (:methods obj-data)))))
            objs-meta)))
 
-  PublishingProtocol
+  IPublish
 
   (publish-page! [db page-id]
     (publish/publish-page! db page-id false))

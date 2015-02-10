@@ -1,6 +1,6 @@
 (ns reverie.settings)
 
-(defprotocol SettingsProtocol
+(defprotocol ISettings
   (sites [settings]))
 
 (defrecord Settings [settings])

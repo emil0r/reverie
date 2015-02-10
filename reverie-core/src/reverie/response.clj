@@ -4,10 +4,10 @@
             [slingshot.slingshot :refer [throw+]]))
 
 
-(defprotocol ResponseProtocol
+(defprotocol IResponse
   (get [response] [response location-or-body] [response headers body]))
 
-(extend-protocol ResponseProtocol
+(extend-protocol IResponse
   clojure.lang.PersistentArrayMap
   (get
     ([this] this)

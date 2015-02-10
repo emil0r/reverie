@@ -8,8 +8,7 @@
             reverie.sql.objects.image
             [reverie.database :as db]
             [reverie.database.sql :as sql]
-            [reverie.system :as sys]
-            [midje.sweet :refer :all]))
+            [reverie.system :as sys]))
 
 
 

@@ -2,7 +2,7 @@
   (:require [buddy.hashers :as hashers]
             [clojure.string :as str]
             [noir.session :as session]
-            [reverie.auth :refer [UserDatabaseProtocol] :as auth]
+            [reverie.auth :refer [IUserDatabase] :as auth]
             [reverie.core :refer [defmodule]]
             [reverie.database :as db]
             [reverie.module :as module]
@@ -15,6 +15,7 @@
    :migration {:path "src/reverie/modules/migrations/auth/"
                :automatic? true}
    :roles #{:admin :staff :user}
+   :required-roles #{:admin}
    :entities
    {:user {:name "User"
            :order :name
@@ -68,7 +69,7 @@
 
 
 (extend-type DatabaseSQL
-  UserDatabaseProtocol
+  IUserDatabase
   (get-users [db]
     (let [users
           (db/query db {:select [:id :created :username :email
