@@ -1,0 +1,9 @@
+{:server-options {:port 9090}
+ :middleware-options {}
+ :db-specs {:default {:classname "org.postgresql.Driver"
+                      :subprotocol "postgresql"
+                      :subname "//localhost:5432/dev_reverie"
+                      :user "devuser"
+                      :password "devuser"}}
+ :server-mode :dev
+ :log {:rotor {:path "logs/reverie.log"}}}
