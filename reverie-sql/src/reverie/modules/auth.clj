@@ -5,6 +5,7 @@
             [reverie.auth :refer [IUserDatabase] :as auth]
             [reverie.core :refer [defmodule]]
             [reverie.database :as db]
+            reverie.database.sql
             [reverie.module :as module]
             vlad)
   (:import [reverie.database.sql DatabaseSQL]))

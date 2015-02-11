@@ -16,9 +16,7 @@
   (add-route! [system route page-data])
   (get-page [system request])
   (host-match? [system request])
-  (set-system-page! [system status rendered-page])
-  (move-object! [system page object area order])
-  (move-page! [system page order]))
+  (set-system-page! [system status rendered-page]))
 
 
 (defrecord Site [host-names system
@@ -90,7 +88,7 @@
            (response/get 404)) ;; no match for against the host names -> 404
        (if-let [p (get-page this request)]
          (if-let [resp (render/render p request)]
-           (assoc resp :body (render-fn (:body resp)))
+           (assoc resp :body (render-fn #spy/t (:body resp)))
            (or (get system-pages 404)
                (response/get 404))) ;; got back nil -> 404
          (or (get system-pages 404)

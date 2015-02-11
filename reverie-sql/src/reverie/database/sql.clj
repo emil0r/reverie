@@ -94,7 +94,7 @@
   (let [paths (map (fn [[kw {:keys [table path]}]]
                      (let [table (or table
                                      (str
-                                      "ragtime_migrations"
+                                      "migrations"
                                       (str/replace (str kw)
                                                    #":|/|\."
                                                    "_")))]
@@ -147,8 +147,8 @@
       (do
         (let [default-spec (:default db-specs)
               migrators (concat
-                         [[nil (str "resources/migrations/"
-                                    (:subprotocol default-spec))]]
+                         [["migrations" (str "resources/migrations/"
+                                             (:subprotocol default-spec))]]
                          (get-migrators system))
               mmaps (map (fn [[table path]]
                            (get-migrator-map default-spec table path))

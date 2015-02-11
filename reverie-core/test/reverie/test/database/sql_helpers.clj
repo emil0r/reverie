@@ -4,6 +4,7 @@
             [com.stuartsierra.component :as component]
             [joplin.core :as joplin]
             joplin.jdbc.database
+            reverie.modules.auth
             reverie.sql.objects.text
             reverie.sql.objects.image
             [reverie.database :as db]
@@ -41,10 +42,10 @@
                                      "&password=" "devuser")}
                       :migrator path})
                    (array-map
-                    "ragtime_migrations_auth" "src/reverie/modules/migrations/auth/"
-                    "ragtime_migrations_reverie_text" "src/reverie/sql/objects/migrations/text/"
-                    "ragtime_migrations_reverie_image" "src/reverie/sql/objects/migrations/image/"
-                    nil "resources/migrations/postgresql"))]
+                    "migrations_auth" "src/reverie/modules/migrations/auth/"
+                    "migrations_reverie_text" "src/reverie/sql/objects/migrations/text/"
+                    "migrations_reverie_image" "src/reverie/sql/objects/migrations/image/"
+                    "migrations" "resources/migrations/postgresql"))]
     (doseq [jmap jmaps]
       (joplin/rollback-db jmap 9000)))
   (let [db (component/start (get-db))
@@ -57,4 +58,4 @@
         (println e)))
     (component/stop db)))
 
-(seed!)
+;;(seed!)

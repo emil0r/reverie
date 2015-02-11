@@ -22,6 +22,7 @@
                                   [reverie-sql "0.1.0-SNAPSHOT"]
                                   [reverie-batteries "0.1.0-SNAPSHOT"]
                                   [spyscope "0.1.5"]
+                                  [http-kit "2.1.16"]
                                   [org.clojure/tools.namespace "0.2.9"]
                                   [org.postgresql/postgresql "9.3-1102-jdbc41"]]
                    :injections [(require 'spyscope.core)
