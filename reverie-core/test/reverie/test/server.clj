@@ -6,6 +6,7 @@
             [noir.cookies :as cookies]
             [reverie.test.database.sql-helpers :refer [get-db seed!]]
             reverie.test.helpers
+            [reverie.auth :as auth]
             [reverie.render :as render]
             [reverie.server :as server]
             [reverie.settings :as settings]
@@ -32,7 +33,7 @@
                                           :run-server run-server
                                           :stop-server stop-server}))]
   (try
-    #spy/d @(client/get "http://127.0.0.1:9090/")
+    #spy/d @(client/get "http://127.0.0.1:9090/admin/frame/module/auth")
     ;; #spy/d (render/render site {:uri "/" :request-method :get})
     (catch Exception e
       (println e)))

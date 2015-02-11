@@ -51,10 +51,16 @@
   (let [name (keyword name)
         entities (map module/module-entity (:entities options))
         mod (module/module name entities options)
-        migration (:migration options)]
+        migration (:migration options)
+        path (str "/admin/frame/module/" (clojure.core/name name))]
     `(do
        (when ~migration
          (swap! sys/storage assoc-in [:migrations ~name] ~migration))
+       (when (:interface? ~options)
+         (swap! site/routes assoc ~path
+                [(route/route [~path]) {:name ~name
+                                        :path ~path
+                                        :type :module}]))
        (swap! sys/storage assoc-in [:modules ~name]
              {:routes (map route/route ~routes)
               :options ~options

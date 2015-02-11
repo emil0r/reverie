@@ -10,7 +10,11 @@
                         :templates {}
                         :roles {}
                         :modules {}
-                        :migrations {}}))
+                        :migrations {}
+                        :database nil}))
+
+(defn get-db []
+  (:database @storage))
 
 (defprotocol ISystem
   (add-object-type! [system key object-type])
@@ -41,11 +45,13 @@
 
 
 
-(defrecord ReverieSystem []
+(defrecord ReverieSystem [database]
   component/Lifecycle
   (start [this]
+    (swap! storage assoc :database database)
     this)
   (stop [this]
+    (swap! storage assoc :database nil)
     this)
 
   ISystem

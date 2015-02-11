@@ -120,59 +120,64 @@
                                   (map #(-> % :group_name keyword)
                                        (get groups id))))})))
               [] users)))
-  (get-user [db id]
-    (let [users
-          (db/query db (merge
-                        {:select [:id :created :username :email
-                                  :first_name :last_name :last_login]
-                         :from [:auth_user]}
-                        (cond
-                         (and (string? id)
-                              (re-find #"@" id)) {:where [:= :email id]}
-                         (string? id) {:where [:= :username id]}
-                         :else {:where [:= :id id]})))
-          id (-> users first :id)
-          roles (group-by
-                 :user_id
-                 (db/query db {:select [:ur.user_id :r.name]
-                               :from [[:auth_user_role :ur]]
-                               :join [[:auth_role :r]
-                                      [:= :r.id :ur.role_id]]
-                               :where [:= :ur.user_id id]}))
-          groups (group-by
-                  :user_id
-                  (db/query db {:select [:ug.user_id
-                                         [:g.name :group_name]
-                                         [:r.name :role_name]]
-                                :from [[:auth_user_group :ug]]
-                                :join [[:auth_group :g]
-                                       [:= :ug.group_id :g.id]]
-                                :left-join [[:auth_group_role :gr]
-                                            [:= :gr.group_id :ug.group_id]
-                                            [:auth_role :r]
-                                            [:= :gr.role_id :r.id]]
-                                :where [:= :ug.user_id id]}))]
-      (if (first users)
-        (let [{:keys [id created username
-                      email first_name last_name last_login]} (first users)]
-          (auth/map->User
-           {:id id :created created
-            :username username :email email
-            :first-name first_name :last-name last_name
-            :last-login last_login
-            :roles (into #{}
-                         (remove
-                          nil?
-                          (flatten
-                           [(map #(-> % :name keyword)
-                                 (get roles id))
-                            (map #(-> % :role_name keyword)
-                                 (get groups id))])))
-            :groups (into #{}
-                          (remove
-                           nil?
-                           (map #(-> % :group_name keyword)
-                                (get groups id))))})))))
+  (get-user
+    ([db]
+       (when-let [user-id (session/get :user-id)]
+         #spy/d user-id
+         (auth/get-user db user-id)))
+    ([db id]
+       (let [users
+             (db/query db (merge
+                           {:select [:id :created :username :email
+                                     :first_name :last_name :last_login]
+                            :from [:auth_user]}
+                           (cond
+                            (and (string? id)
+                                 (re-find #"@" id)) {:where [:= :email id]}
+                                 (string? id) {:where [:= :username id]}
+                                 :else {:where [:= :id id]})))
+             id (-> users first :id)
+             roles (group-by
+                    :user_id
+                    (db/query db {:select [:ur.user_id :r.name]
+                                  :from [[:auth_user_role :ur]]
+                                  :join [[:auth_role :r]
+                                         [:= :r.id :ur.role_id]]
+                                  :where [:= :ur.user_id id]}))
+             groups (group-by
+                     :user_id
+                     (db/query db {:select [:ug.user_id
+                                            [:g.name :group_name]
+                                            [:r.name :role_name]]
+                                   :from [[:auth_user_group :ug]]
+                                   :join [[:auth_group :g]
+                                          [:= :ug.group_id :g.id]]
+                                   :left-join [[:auth_group_role :gr]
+                                               [:= :gr.group_id :ug.group_id]
+                                               [:auth_role :r]
+                                               [:= :gr.role_id :r.id]]
+                                   :where [:= :ug.user_id id]}))]
+         (if (first users)
+           (let [{:keys [id created username
+                         email first_name last_name last_login]} (first users)]
+             (auth/map->User
+              {:id id :created created
+               :username username :email email
+               :first-name first_name :last-name last_name
+               :last-login last_login
+               :roles (into #{}
+                            (remove
+                             nil?
+                             (flatten
+                              [(map #(-> % :name keyword)
+                                    (get roles id))
+                               (map #(-> % :role_name keyword)
+                                    (get groups id))])))
+               :groups (into #{}
+                             (remove
+                              nil?
+                              (map #(-> % :group_name keyword)
+                                   (get groups id))))}))))))
   (login [db username password]
     (let [username (str/lower-case username)
           user (-> (db/query db {:select [:id :password]

@@ -1,6 +1,8 @@
 (ns reverie.module
+  (:require [reverie.render :as render]
+            [reverie.security :refer [with-access]])
   (:refer-clojure :exclude [list])
-  (:import [reverie ModuleException]))
+  (:import [reverie ModuleException RenderException]))
 
 (defprotocol IModule
   (interface? [entity]
@@ -27,8 +29,17 @@
 
 (defrecord ModuleOptions [offset limit filters])
 
-(defrecord Module [database entities entities-order]
-  IModule)
+(defrecord Module [database entities options]
+  IModule
+  render/IRender
+  (render [this request]
+    (with-access
+      (get-in request [:reverie :user]) (:required-roles options)
+      {:status 200
+       :body "hi from module?!"
+       :headers {}}))
+  (render [this _ _]
+    (throw (RenderException. "[component request sub-component] not implemented for reverie.module/Module"))))
 
 
 

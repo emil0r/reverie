@@ -27,9 +27,10 @@
    :password "devuser"})
 
 (defn get-db []
-  (assoc (sql/database {:default db-spec
-                        :two db-spec-two})
-    :system (component/start (sys/map->ReverieSystem {}))))
+  (let [db (sql/database {:default db-spec
+                          :two db-spec-two})]
+   (assoc db
+     :system (component/start (sys/map->ReverieSystem {:database db})))))
 
 
 (defn seed! []

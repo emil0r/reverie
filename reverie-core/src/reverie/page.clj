@@ -5,6 +5,7 @@
             [reverie.object :as object]
             [reverie.route :as route]
             [reverie.render :as render]
+            [reverie.security :refer [with-access]]
             [reverie.util :as util])
   (:import [reverie RenderException]))
 
@@ -123,15 +124,17 @@
   route/IRouting
   (get-route [this] route)
   (match? [this request]
-    (let [pattern (re-pattern (str "^" (:path route)))]
-      (if (re-find pattern (:uri request))
-        (let [uri (:uri request)
-              app-uri (str/replace uri pattern "")
-              app-match (first (filter #(route/match? % (assoc request :uri app-uri)) app-routes))]
-          (if app-match
-            (-> app-match
-                (assoc-in [:request :uri] uri)
-                (assoc-in [:request :app-uri] app-uri)))))))
+    (with-access
+      (get-in request [:reverie :user]) (:required-roles options)
+      (let [pattern (re-pattern (str "^" (:path route)))]
+        (if (re-find pattern (:uri request))
+          (let [uri (:uri request)
+                app-uri (str/replace uri pattern "")
+                app-match (first (filter #(route/match? % (assoc request :uri app-uri)) app-routes))]
+            (if app-match
+              (-> app-match
+                  (assoc-in [:request :uri] uri)
+                  (assoc-in [:request :app-uri] app-uri))))))))
 
   IPage
   (id [this] id)

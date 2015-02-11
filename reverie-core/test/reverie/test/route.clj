@@ -30,3 +30,10 @@
    (fact "match4: bar has been caught"
          (get-in match4 [:request :params :bar])
          => "1234")))
+
+
+(fact "protected route"
+      (route/match?
+       (route/route ["/" #{:admin} {:get str}])
+       (request :get "/"))
+      => false)

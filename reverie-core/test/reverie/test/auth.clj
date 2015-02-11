@@ -16,6 +16,10 @@
              (auth/login db "admin" "admin")
              (auth/logged-in?)
              => true)
+       (fact "get user"
+             (auth/login db "admin" "admin")
+             (:username (auth/get-user db))
+             => "admin")
        (fact "logout"
              (auth/logout)
              (auth/logged-in?)

@@ -8,6 +8,10 @@
             [reverie.render :as render]
             [reverie.settings :as settings]
             [reverie.site :as site]
+            [reverie.middleware :refer [wrap-admin
+                                        wrap-error-log
+                                        wrap-access
+                                        wrap-reverie-data]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file-info :refer [wrap-file-info]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
@@ -46,7 +50,9 @@
                           (or site-handlers
                               (vec
                                (concat
-                                [;;[wrap-tag-along]
+                                [[wrap-admin]
+                                 [wrap-access]
+                                 [wrap-reverie-data]
                                  [wrap-content-type]
                                  [wrap-keyword-params]
                                  [wrap-nested-params]
@@ -59,7 +65,8 @@
                                    ;; cookies for 360 days
                                    :cookie-attrs {:max-age (get-in middleware-options [:cookie :max-age] 31104000)}}]
                                  [wrap-noir-cookies]
-                                 [wrap-strip-trailing-slash]]
+                                 [wrap-strip-trailing-slash]
+                                 [wrap-error-log dev?]]
                                 (if dev?
                                   [[wrap-reload]
                                    [wrap-stacktrace]]
