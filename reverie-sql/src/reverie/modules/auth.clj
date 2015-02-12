@@ -123,7 +123,6 @@
   (get-user
     ([db]
        (when-let [user-id (session/get :user-id)]
-         #spy/d user-id
          (auth/get-user db user-id)))
     ([db id]
        (let [users

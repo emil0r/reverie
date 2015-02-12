@@ -1,0 +1,18 @@
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+table.controller #options {
+    display: none;
+}
+
+table.controller td#controlpanel {
+    padding: 5px;
+}
+
+table.controller td > iframe {
+    height: 100%;
+    width: 100%;
+}

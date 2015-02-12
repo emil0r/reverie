@@ -11,9 +11,11 @@
             [reverie.middleware :refer [wrap-admin
                                         wrap-error-log
                                         wrap-access
+                                        wrap-forker
                                         wrap-reverie-data]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file-info :refer [wrap-file-info]]
+            [ring.middleware.head :refer [wrap-head]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.middleware.nested-params :refer [wrap-nested-params]]
@@ -22,6 +24,7 @@
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.middleware.session.memory :refer [memory-store]]
             [ring.middleware.stacktrace :refer [wrap-stacktrace]]
+            [ring.util.response :refer [resource-response file-response]]
             [taoensso.timbre :as log]))
 
 
@@ -46,7 +49,8 @@
   (start [this]
     (if server
       this
-      (let [site-handler (create-handler
+      (let [resource (or (:resource middleware-options) "public")
+            site-handler (create-handler
                           (or site-handlers
                               (vec
                                (concat
@@ -72,7 +76,13 @@
                                    [wrap-stacktrace]]
                                   []))))
                           (site-route site))
-            server (run-server site-handler server-options)]
+            resource-handler (create-handler [[wrap-resource resource]
+                                              [wrap-file-info (:mime-types middleware-options)]
+                                              [wrap-content-type (:content-type middleware-options)]
+                                              [wrap-head]]
+                                             (resource-response resource))
+            handler (wrap-forker site-handler resource-handler)
+            server (run-server handler server-options)]
         (log/info (format "Running server on port %s..." (:port server-options)))
         (assoc this :server server))))
   (stop [this]

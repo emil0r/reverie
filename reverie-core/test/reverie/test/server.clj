@@ -65,8 +65,7 @@
     (reset! test-server {:server server
                          :site site
                          :db db
-                         :settings settings})
-    ))
+                         :settings settings})))
 
 (defn- stop-test-server []
   (do
@@ -89,7 +88,7 @@
   (start-test-server))
 
 
-(-> @(client/get "http://127.0.0.1:9090/admin/login")
+(-> @(client/get "http://127.0.0.1:9090/admin")
     ;;:body
     ;;slurp
     )

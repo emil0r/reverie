@@ -43,3 +43,13 @@
       (handler (assoc request
                  :reverie {:user user
                            :database db})))))
+
+
+(defn wrap-forker [handler & handlers]
+  (fn [request]
+    (loop [resp (handler request)
+           [handler & handlers] handlers]
+      (if (or (not= 404 (:status resp))
+              (nil? handler))
+        resp
+        (recur (handler request) handlers)))))

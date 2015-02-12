@@ -13,7 +13,7 @@
 
 (defn handle-login [request {:keys [database] :as page}
                     {:keys [username password]}]
-  (if #spy/t (auth/login database username password)
+  (if (auth/login database username password)
       (response/get 302 "/admin")
       (response/get 302 "/admin/login")))
 
