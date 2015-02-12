@@ -57,6 +57,7 @@
                                 [[wrap-admin]
                                  [wrap-access]
                                  [wrap-reverie-data]
+                                 [wrap-content-type (:content-type middleware-options)]
                                  [wrap-content-type]
                                  [wrap-keyword-params]
                                  [wrap-nested-params]
@@ -78,7 +79,7 @@
                           (site-route site))
             resource-handler (create-handler [[wrap-resource resource]
                                               [wrap-file-info (:mime-types middleware-options)]
-                                              [wrap-content-type (:content-type middleware-options)]
+                                              [wrap-content-type (:content-type-resources middleware-options)]
                                               [wrap-head]]
                                              (resource-response resource))
             handler (wrap-forker site-handler resource-handler)

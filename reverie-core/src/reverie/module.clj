@@ -1,6 +1,11 @@
 (ns reverie.module
-  (:require [reverie.render :as render]
-            [reverie.security :refer [with-access]])
+  (:require [reverie.page :as page]
+            [reverie.render :as render]
+            [reverie.response :as response]
+            [reverie.route :as route]
+            [reverie.security :refer [with-access]]
+            [reverie.system :as sys]
+            [reverie.util :as util])
   (:refer-clojure :exclude [list])
   (:import [reverie ModuleException RenderException]))
 
@@ -29,17 +34,33 @@
 
 (defrecord ModuleOptions [offset limit filters])
 
-(defrecord Module [database entities options]
+(defrecord Module [database entities options routes route]
   IModule
   render/IRender
   (render [this request]
-    (with-access
-      (get-in request [:reverie :user]) (:required-roles options)
-      {:status 200
-       :body "hi from module?!"
-       :headers {}}))
+    (let [request (merge request
+                         {:shortened-uri (util/shorten-uri
+                                          (:uri request) (:path route))})]
+      (with-access
+        (get-in request [:reverie :user]) (:required-roles options)
+        (if-let [page-route (first (filter #(route/match? % request) routes))]
+          (let [{:keys [request method]} (route/match? page-route request)
+                resp (method request this (:params request))]
+            (let [t (if (:template options)
+                      (get (:templates @sys/storage) (:template options)))]
+              (if (and t
+                       (map? resp)
+                       (not (contains? resp :status))
+                       (not (contains? resp :body))
+                       (not (contains? resp :headers)))
+                (render/render t request (assoc this :rendered resp))
+                resp)))
+          (response/get 404)))))
   (render [this _ _]
-    (throw (RenderException. "[component request sub-component] not implemented for reverie.module/Module"))))
+    (throw (RenderException. "[component request sub-component] not implemented for reverie.module/Module")))
+
+  page/IPage
+  (properties [this] nil))
 
 
 
@@ -59,5 +80,6 @@
 (defn module-entity [[field options]]
   )
 
-(defn module [name entities options]
-  (map->Module {:name name :entities entities :options options}))
+(defn module [name entities options routes]
+  (map->Module {:name name :entities entities
+                :options options :routes routes}))

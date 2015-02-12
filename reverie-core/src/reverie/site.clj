@@ -65,7 +65,9 @@
                        :options (:options page-data)
                        :routes (:routes page-data)
                        :database database}))
-              :module (:module (sys/module system name))
+              :module (assoc (:module (sys/module system name))
+                        :route route
+                        :database database)
               :app (let [p (db/get-page
                             database
                             serial
@@ -89,7 +91,11 @@
            (response/get 404)) ;; no match for against the host names -> 404
        (if-let [p (get-page this request)]
          (if-let [resp (render/render p request)]
-           (assoc resp :body (render-fn (:body resp)))
+           (if (map? resp)
+             (assoc resp :body (render-fn (:body resp)))
+             {:status 200
+              :body (render-fn resp)
+              :headers {"Content-Type" "text/html; charset=utf-8;"}})
            (or (get system-pages 404)
                (response/get 404))) ;; got back nil -> 404
          (or (get system-pages 404)

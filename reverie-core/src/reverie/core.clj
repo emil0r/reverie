@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [reverie.area :as a]
             [reverie.module :as module]
+            reverie.modules.default
             [reverie.render :as render]
             [reverie.route :as route]
             [reverie.site :as site]
@@ -47,24 +48,29 @@
               {:routes (map route/route ~routes)
                :options ~options}))))
 
-(defmacro defmodule [name options routes]
+(defmacro defmodule [name options & [routes]]
   (let [name (keyword name)
-        entities (map module/module-entity (:entities options))
-        mod (module/module name entities options)
+        interface? (:interface? options)
         migration (:migration options)
         path (str "/admin/frame/module/" (clojure.core/name name))]
     `(do
        (when ~migration
          (swap! sys/storage assoc-in [:migrations ~name] ~migration))
-       (when (:interface? ~options)
+       (when ~interface?
          (swap! site/routes assoc ~path
                 [(route/route [~path]) {:name ~name
                                         :path ~path
                                         :type :module}]))
        (swap! sys/storage assoc-in [:modules ~name]
-             {:routes (map route/route ~routes)
-              :options ~options
-              :module ~mod}))))
+              {:options ~options
+               :name ~name
+               :module (module/module
+                        ~name
+                        (map module/module-entity (:entities ~options))
+                        ~options
+                        (map route/route (if ~interface?
+                                           (:module-default-routes @sys/storage)
+                                           ~routes)))}))))
 
 (defmacro defobject [name options methods]
   (let [name (keyword name)

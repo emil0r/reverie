@@ -10,6 +10,7 @@
                         :templates {}
                         :roles {}
                         :modules {}
+                        :module-default-routes []
                         :migrations {}
                         :database nil}))
 

@@ -17,6 +17,7 @@
                :automatic? true}
    :roles #{:admin :staff :user}
    :required-roles #{:admin}
+   :template :admin/main
    :entities
    {:user {:name "User"
            :order :name
@@ -64,9 +65,7 @@
                               :table :auth_group_role}}
             :sections [{:fields [:name]}
                        {:name "Rights"
-                        :fields [:roles]}]
-            }}}
-  [])
+                        :fields [:roles]}]}}})
 
 
 (extend-type DatabaseSQL

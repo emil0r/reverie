@@ -8,6 +8,7 @@
             reverie.test.helpers
             reverie.sql.objects.text
             reverie.sql.objects.image
+            reverie.admin.index
             [reverie.auth :as auth]
             reverie.modules.auth
             [reverie.render :as render]
@@ -36,7 +37,10 @@
                                           :run-server run-server
                                           :stop-server stop-server}))]
   (try
-    #spy/d @(client/get "http://127.0.0.1:9090/admin/frame/module/auth")
+    ;; @(client/post "http://127.0.0.1:9090/admin/login"
+    ;;                      {:form-params {:username "admin"
+    ;;                                     :password "admin"}})
+    #spy/d @(client/get "http://127.0.0.1:9090/")
     ;; #spy/d (render/render site {:uri "/" :request-method :get})
     (catch Exception e
       (println e)))
@@ -88,7 +92,7 @@
   (start-test-server))
 
 
-(-> @(client/get "http://127.0.0.1:9090/admin")
+(-> @(client/get "http://127.0.0.1:9090/admin/frame/module/auth")
     ;;:body
     ;;slurp
     )

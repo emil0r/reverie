@@ -1,7 +1,7 @@
 (ns reverie.middleware
   (:require [reverie.auth :as auth]
             [reverie.system :as sys]
-            [reverie.response :as r]
+            [reverie.response :as response]
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log]))
 
@@ -15,7 +15,12 @@
       (try+
        (handler request)
        (catch [:type :reverie.security/not-allowed] {}
-         (r/get 302 "/admin/login")))
+         (log/info "Unauthorized request for admin area"
+                   {:user (get-in request [:reverie :user])
+                    :request (select-keys request [:headers
+                                                   :remote-address
+                                                   :uri])})
+         (response/get 302 "/admin/login")))
       (handler request))))
 
 (defn wrap-error-log [handler dev?]
@@ -27,14 +32,14 @@
         (catch Exception e
           (do
             (log/error "Caught an exception" e)
-            (r/get 500)))))))
+            (response/get 500)))))))
 
 (defn wrap-access [handler]
   (fn [request]
     (try+
      (handler request)
      (catch [:type :reverie.security/not-allowed] {}
-       (r/get 401)))))
+       (response/get 401)))))
 
 (defn wrap-reverie-data [handler]
   (fn [{:keys [uri] :as request}]

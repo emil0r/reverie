@@ -1,9 +1,11 @@
 (ns reverie.admin.index
-  (:require reverie.admin.api
+  (:require reverie.modules.default
+            reverie.admin.api
             reverie.admin.auth
             reverie.admin.frames
             reverie.admin.templates
-            [reverie.core :refer [defpage]]))
+            [reverie.core :refer [defpage]]
+            ))
 
 
 

@@ -6,10 +6,7 @@
 
 
 
-(defn login-view [request page params]
-  {:nav "nav"
-   :a "area a"
-   :b "area b"})
+(defn login-view [request page params] {})
 
 (defn handle-login [request {:keys [database] :as page}
                     {:keys [username password]}]

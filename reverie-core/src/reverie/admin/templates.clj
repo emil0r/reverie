@@ -5,7 +5,7 @@
 
 (defn- head [title]
   [:head
-   [:link {:rel "stylesheet" :type "text/css" :href "/admin/css/main.css"}]
+   [:link {:rel "stylesheet" :type "text/css" :href "/media/admin/css/main.css"}]
    [:meta {:charset "UTF-8"}]
    [:title title]])
 
