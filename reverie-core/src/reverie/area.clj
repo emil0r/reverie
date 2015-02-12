@@ -25,21 +25,23 @@
   (render [this _]
     (throw (RenderException. "[component request] not implemented for reverie.area/Area")))
   (render [this request page]
-    (let [edit? (= :edit (get-in request [:reverie :mode]))
-          [before after] (if edit?
-                           [(str "<div class='reverie-area' area='" (name name) "' page-id='" (page/id page) "'>") "</div>"]
-                           [nil nil])
-          middle (if (page/type? page :app)
-                   (get (:rendered page) name)
-                   nil)]
-      (list
-       before
-       (map (partial area-object-render request edit?)
-            (filter (partial neg-filter name) (page/objects page)))
-       middle
-       (map (partial area-object-render request edit?)
-            (filter (partial pos-filter name) (page/objects page)))
-       after))))
+    (if (contains? page :rendered)
+      (get-in page [:rendered name])
+      (let [edit? (= :edit (get-in request [:reverie :mode]))
+            [before after] (if edit?
+                             [(str "<div class='reverie-area' area='" (name name) "' page-id='" (page/id page) "'>") "</div>"]
+                             [nil nil])
+            middle (if (page/type? page :app)
+                     (get (:rendered page) name)
+                     nil)]
+        (list
+         before
+         (map (partial area-object-render request edit?)
+              (filter (partial neg-filter name) (page/objects page)))
+         middle
+         (map (partial area-object-render request edit?)
+              (filter (partial pos-filter name) (page/objects page)))
+         after)))))
 
 
 (defn area [name]

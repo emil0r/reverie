@@ -5,7 +5,9 @@
             [reverie.object :as object]
             [reverie.route :as route]
             [reverie.render :as render]
+            [reverie.response :as response]
             [reverie.security :refer [with-access]]
+            [reverie.system :as sys]
             [reverie.util :as util])
   (:import [reverie RenderException]))
 
@@ -108,11 +110,23 @@
     (let [request (merge request
                          {:shortened-uri (util/shorten-uri
                                           (:uri request) (:path route))})]
-      (handle-response
-       options
-       (if-let [page-route (first (filter #(route/match? % request) routes))]
-         (let [{:keys [request method]} (route/match? page-route request)]
-           (method request this (:params request)))))))
+      (with-access
+        (get-in request [:reverie :user]) (:required-roles options)
+        (handle-response
+         options
+         (if-let [page-route (first (filter #(route/match? % request) routes))]
+           (let [{:keys [request method]} (route/match? page-route request)
+                 resp (method request this (:params request))]
+             (let [t (if (:template options)
+                       (get (:templates @sys/storage) (:template options)))]
+               (if (and t
+                        (map? resp)
+                        (not (contains? resp :status))
+                        (not (contains? resp :body))
+                        (not (contains? resp :headers)))
+                 (render/render t request (assoc this :rendered resp))
+                 resp)))
+           (response/get 404))))))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/RawPage"))))
 

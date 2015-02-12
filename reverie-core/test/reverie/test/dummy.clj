@@ -3,7 +3,6 @@
             [reverie.database :as db]
             [reverie.object :as object]
             [reverie.page :as page]
-            [reverie.user :as user]
             [reverie.system :as sys]
             [midje.sweet :refer :all]))
 
@@ -21,15 +20,11 @@
     nil))
 
 (defrecord DummyDatabase [pages objects users]
-  db/DatabaseProtocol
+  db/IDatabase
   (query [db query] nil)
   (query [db query args] nil)
   (query! [db query] nil)
   (query! [db query args])
-
-  ;; (get-users [db] users)
-  ;; (get-user [db id]
-  ;;   (user/map->User (first (filter #(= id (:id %)) users))))
 
   (get-pages [db] pages)
   (get-pages-by-route [db]
