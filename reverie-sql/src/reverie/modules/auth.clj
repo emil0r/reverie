@@ -20,12 +20,13 @@
    :template :admin/main
    :entities
    {:user {:name "User"
-           :order :name
-           :display [:name :email]
-           :fields {:first_name {:name "First name"
-                                 :type :text
-                                 :max 255}
-                    :last_name {:name "Last name"
+           :order :id
+           :table :auth_user
+           :display [:full_name :email]
+           :fields {:spoken_name {:name "Spoken name"
+                                  :type :text
+                                  :max 255}
+                    :full_name {:name "Full name"
                                 :type :text
                                 :max 255}
                     :username {:name "Username"
@@ -42,27 +43,46 @@
                                :validation []}
                     :active_p {:name "Active?"
                                :type :boolean
-                               :default true}}
+                               :default true}
+                    :roles {:name "Roles"
+                            :type :m2m
+                            :table :auth_role
+                            :options [:id :name]
+                            :order :name
+                            :m2m {:table :auth_user_role
+                                  :joining [:user_id :role_id]}}
+                    :groups {:name "Groups"
+                             :type :m2m
+                             :table :auth_group
+                             :options [:id :name]
+                             :order :name
+                             :m2m {:table :auth_user_group
+                                   :joining [:user_id :group_id]}}}
            :sections [{:fields [:name :password]}
                       {:name "Personal information"
-                       :fields [:email :first_name :last_name]}
+                       :fields [:email :spoken_name :full_name]}
                       {:name "Rights"
                        :fields [:active :is_staff :is_admin :roles]}
                       {:name "Groups"
                        :fields [:groups]}]
            :related {:groups {:relation :many
-                              :table :auth_user_group}
+                              :m2m_table :auth_user_group
+                              :table :auth_group}
                      :roles {:relation :many
-                             :table :auth_user_role}}
+                             :m2m_table :auth_user_role
+                             :table :auth_role}}
            :post nil}
     :group {:name "Group"
             :order :name
+            :table :auth_group
             :fields {:name {:name "Name"
                             :type :text
                             :max 255
-                            :validation []}}
-            :related {:roles {:relation :many
-                              :table :auth_group_role}}
+                            :validation []}
+                     :roles {:name "Roles"
+                             :type :m2m
+                             :table :auth_role
+                             :m2m_table :auth_group_role}}
             :sections [{:fields [:name]}
                        {:name "Rights"
                         :fields [:roles]}]}}})
@@ -73,7 +93,7 @@
   (get-users [db]
     (let [users
           (db/query db {:select [:id :created :username :email
-                                 :first_name :last_name :last_login]
+                                 :spoken_name :full_name :last_login]
                         :from [:auth_user]
                         :order-by [:id]})
           roles (group-by
@@ -97,13 +117,13 @@
                                             [:= :gr.role_id :r.id]]
                                 :order-by [:ug.user_id]}))]
       (reduce (fn [out {:keys [id created username
-                               email first_name last_name last_login]}]
+                               email spoken_name full_name last_login]}]
                 (conj
                  out
                  (auth/map->User
                   {:id id :created created
                    :username username :email email
-                   :first-name first_name :last-name last_name
+                   :spoken-name spoken_name :full-name full_name
                    :last-login last_login
                    :roles (into #{}
                                 (remove
@@ -127,7 +147,7 @@
        (let [users
              (db/query db (merge
                            {:select [:id :created :username :email
-                                     :first_name :last_name :last_login]
+                                     :spoken_name :full_name :last_login]
                             :from [:auth_user]}
                            (cond
                             (and (string? id)
@@ -157,11 +177,11 @@
                                    :where [:= :ug.user_id id]}))]
          (if (first users)
            (let [{:keys [id created username
-                         email first_name last_name last_login]} (first users)]
+                         email spoken_name full_name last_login]} (first users)]
              (auth/map->User
               {:id id :created created
                :username username :email email
-               :first-name first_name :last-name last_name
+               :spoken-name spoken_name :full-name full_name
                :last-login last_login
                :roles (into #{}
                             (remove

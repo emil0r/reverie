@@ -10,8 +10,8 @@ CREATE TABLE auth_user (
     username text NOT NULL,
     password text NOT NULL,
     email text NOT NULL,
-    first_name text NOT NULL,
-    last_name text NOT NULL,
+    spoken_name text NOT NULL,
+    full_name text NOT NULL,
     last_login timestamp with time zone NOT NULL
 );
 

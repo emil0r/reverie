@@ -15,6 +15,7 @@
 
 (defn slugify [name]
   (-> name
+      str
       (str/replace #"[åÅäÄĀāĀāÀÁÂÃÆàáâãæ]" "a")
       (str/replace #"[ČčÇç]" "c")
       (str/replace #"[Ðð]" "d")
@@ -34,7 +35,10 @@
       (str/replace #"[ŽžŽžŽžžŽ]" "z")
       (str/replace #"\s" "-")
       (str/replace #"\&" "-")
+      (str/replace #":" "-")
       (str/replace #"[^a-zA-Z0-9\-\_\.]" "")
+      (str/replace #"^-" "")
+      (str/replace #"-$" "")
       str/lower-case))
 
 

@@ -55,12 +55,14 @@
   (html5
    (head "reverie")
    [:body
-    [:div.row
-     [:div.col-md-12
-      [:nav (area nav)]]]
-    [:div.row
-     [:div.col-md-6 (area a)]
-     [:div.col-md-6 (area b)]]]))
+    [:nav
+     [:div.container (area nav)]]
+
+    [:div.container
+     [:div.row
+      (area content)]
+     [:footer
+     (area footer)]]]))
 
 (deftemplate admin/main admin-main)
 (deftemplate admin/login admin-login)

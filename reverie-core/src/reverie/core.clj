@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [reverie.area :as a]
             [reverie.module :as module]
+            [reverie.module.entity :as entity]
             reverie.modules.default
             [reverie.render :as render]
             [reverie.route :as route]
@@ -66,7 +67,7 @@
                :name ~name
                :module (module/module
                         ~name
-                        (map module/module-entity (:entities ~options))
+                        (map entity/module-entity (:entities ~options))
                         ~options
                         (map route/route (if ~interface?
                                            (:module-default-routes @sys/storage)

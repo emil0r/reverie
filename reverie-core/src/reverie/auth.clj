@@ -4,7 +4,7 @@
 
 (defrecord User [id username email
                  created last-login
-                 first-name last-name
+                 spoken-name full-name
                  roles groups])
 
 
