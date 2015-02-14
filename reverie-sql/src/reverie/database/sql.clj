@@ -17,6 +17,7 @@
             [taoensso.timbre :as log]
             [yesql.core :refer [defqueries]])
   (:import [reverie.database IDatabase]
+           [reverie DatabaseException]
            [reverie.publish IPublish]
            [com.jolbox.bonecp BoneCPDataSource]))
 
@@ -238,6 +239,46 @@
     (if (fn? query)
       (query args {:connection (get db-specs key)})
       (jdbc/execute! (get db-specs key) (sql/format query args))))
+
+  (query<! [db query]
+    (cond
+     (string? query)
+     (throw (DatabaseException. "String is not allowed for query<!"))
+
+     (fn? query)
+     (query {} (:default db-specs))
+
+     :else
+     (let [table (:insert-into query)
+           values (:values query)]
+       (apply jdbc/insert! (:default db-specs) table values))))
+  (query<! [db key? query]
+    (let [[key query args] (if (get db-specs key?)
+                             [key? query nil]
+                             [:default key? query])]
+      (cond
+       (and (fn? query) (nil? args))
+       (query {} {:connection (get db-specs key)})
+
+       (fn? query)
+       (query args {:connection (get db-specs key)})
+
+       (nil? args)
+       (let [table (:insert-into query)
+             values (:values query)]
+         (apply jdbc/insert! (get db-specs key) table values))
+
+       :else
+       (let [table (:insert-into query)
+             values (:values query)]
+         (apply jdbc/insert! (:default db-specs) table values)))))
+  (query<! [db key query args]
+    (if (fn? query)
+      (query args {:connection (get db-specs key)})
+      (let [table (:insert-into query)
+             values (:values query)]
+        (apply jdbc/insert! (get db-specs key) table values))))
+
   (databases [db]
     (keys db-specs))
   (add-page! [db data]
