@@ -29,6 +29,16 @@
   (or (get-in entity [:options :pk])
       :id))
 
+(defn- get-m2m-data [db m2m]
+  (reduce
+   (fn [out [k {:keys [name pk order
+                       table options m2m]}]]
+     (assoc out k
+            (db/query db {:select options
+                          :from [table]
+                          :order-by [order]})))
+   {} (into [] m2m)))
+
 
 (extend-type Module
   module/IModuleDatabase
@@ -50,15 +60,7 @@
                             :offset offset
                             :limit limit}))
 
-             m2m-data
-             (reduce
-              (fn [out [k {:keys [name pk order
-                                  table options m2m]}]]
-                (assoc out k
-                       (db/query db {:select options
-                                     :from [table]
-                                     :order-by [order]})))
-              {} (into [] m2m))
+             m2m-data (get-m2m-data db m2m)
 
              shared-m2m-data
              (when-not (empty? data)
@@ -75,13 +77,53 @@
                                        {k (map this data)}))
                                 (into {})))))
                 {} m2m))]
-         {:data (map (fn [data]
-                       (let [id (get data pk)]
-                         {:data data
-                          :joins (into
-                                  {}
-                                  (map (fn [[k d]]
-                                         {k (get d id)})
-                                       shared-m2m-data))}))
-                     data)
-          :m2m-data m2m-data}))))
+         {:entity (map (fn [data]
+                         (let [id (get data pk)]
+                           {:data data
+                            :joins (into
+                                    {}
+                                    (map (fn [[k d]]
+                                           {k (get d id)})
+                                         shared-m2m-data))}))
+                       data)
+          :m2m-data m2m-data})))
+
+  (save-data [this entity id data]
+    (let [db (:database this)
+          table (get-entity-table entity)
+          pk (get-pk entity)
+          m2m (get-m2m-tables entity)]
+      ;; update table
+      (db/query! db {:update table
+                     :set (apply dissoc data (keys m2m))
+                     :where [:= pk id]})
+      ;; loop through the m2m tables
+      (doseq [[k {:keys [m2m]}] m2m]
+        (let [{:keys [table joining]} m2m
+              [this that] joining]
+          (db/query! db {:delete-from table
+                         :where [:= this id]})
+          (when-not (empty? (get data k))
+            (db/query! db {:insert-into table
+                           :values (map (fn [value]
+                                          {this id that value})
+                                        (get data k))}))))))
+
+  (add-data [this entity data]
+    (let [db (:database this)
+          table (get-entity-table entity)
+          pk (get-pk entity)
+          m2m (get-m2m-tables entity)
+          id (->
+              (db/query<! db {:insert-into table
+                              :values [(apply dissoc data (keys m2m))]})
+              first
+              (get pk))]
+      (doseq [[k {:keys [m2m]}] m2m]
+        (let [{:keys [table joining]} m2m
+              [this that] joining]
+          (when-not (empty? (get data k))
+            (db/query! db {:insert-into table
+                           :values (map (fn [value]
+                                          {this id that value})
+                                        (get data k))})))))))

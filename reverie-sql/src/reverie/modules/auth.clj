@@ -206,6 +206,9 @@
         (if (hashers/check password (:password user))
           (do
             (session/swap! merge {:user-id (:id user)})
+            (db/query! db {:update :auth_user
+                           :set {:last_login :%now}
+                           :where [:= :id (:id user)]})
             true)
           false)
         false))))
