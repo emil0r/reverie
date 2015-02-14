@@ -1,5 +1,6 @@
 (ns reverie.modules.sql
-  (:require [reverie.database :as db]
+  (:require [honeysql.core :as sql]
+            [reverie.database :as db]
             [reverie.module :as module]
             [reverie.module.entity :as entity])
   (:import [reverie.module Module]))
@@ -51,6 +52,7 @@
              pk (get-pk entity)
              m2m (get-m2m-tables entity)
 
+             ;; get data for the table
              data
              (db/query db (merge
                            args
@@ -60,8 +62,10 @@
                             :offset offset
                             :limit limit}))
 
+             ;; get data about m2m
              m2m-data (get-m2m-data db m2m)
 
+             ;; get the data about the m2m joining tables
              shared-m2m-data
              (when-not (empty? data)
                (reduce
@@ -69,23 +73,33 @@
                   (let [{:keys [table joining]} m2m
                         [this that] joining]
                     (assoc out k
-                           (->> (db/query db {:select [this that]
-                                              :from [table]
-                                              :where [:in this (map pk data)]})
-                                (group-by this)
-                                (map (fn [[k data]]
-                                       {k (map this data)}))
-                                (into {})))))
+                           (->>
+                            ;; get the data
+                            (db/query db {:select [this that]
+                                          :from [table]
+                                          :where [:in this (map pk data)]})
+                            ;; group by the foreign key for this module
+                            (group-by this)
+                            ;; map it into a list of the foreign key
+                            ;; for that (the other table that's joined by
+                            ;; a m2m table)
+                            (map (fn [[k data]]
+                                   {k (map that data)}))
+                            ;; pour it into a hash-map
+                            (into {})))))
                 {} m2m))]
          {:entity (map (fn [data]
                          (let [id (get data pk)]
-                           {:data data
+                           {;; the actual data for the entity
+                            :data data
+                            ;; the joins
                             :joins (into
                                     {}
                                     (map (fn [[k d]]
                                            {k (get d id)})
                                          shared-m2m-data))}))
                        data)
+          ;; the data for the m2m tables
           :m2m-data m2m-data})))
 
   (save-data [this entity id data]
@@ -101,8 +115,10 @@
       (doseq [[k {:keys [m2m]}] m2m]
         (let [{:keys [table joining]} m2m
               [this that] joining]
+          ;; delete old m2m data
           (db/query! db {:delete-from table
                          :where [:= this id]})
+          ;; reinsert any new m2m data
           (when-not (empty? (get data k))
             (db/query! db {:insert-into table
                            :values (map (fn [value]
@@ -114,11 +130,13 @@
           table (get-entity-table entity)
           pk (get-pk entity)
           m2m (get-m2m-tables entity)
+          ;; add data and get the id
           id (->
               (db/query<! db {:insert-into table
                               :values [(apply dissoc data (keys m2m))]})
               first
               (get pk))]
+      ;; add any m2m data
       (doseq [[k {:keys [m2m]}] m2m]
         (let [{:keys [table joining]} m2m
               [this that] joining]
@@ -126,4 +144,31 @@
             (db/query! db {:insert-into table
                            :values (map (fn [value]
                                           {this id that value})
-                                        (get data k))})))))))
+                                        (get data k))}))))))
+
+  (delete-data
+    ([this entity id]
+       (module/delete-data this entity id false))
+    ([this entity id cascade?]
+       (let [db (:database this)
+             table (get-entity-table entity)
+             pk (get-pk entity)]
+         (try
+           ;; first try a sql based cascade if cascade? is true
+           (db/query! db {:delete-from (if cascade?
+                                         (sql/raw (str (name table)
+                                                       " CASCADE"))
+                                         (sql/raw (name table)))
+                          :where [:= pk id]})
+           ;; catch exception if a sql based cascade is not possible
+           ;; and try and run a manual one
+           (catch Exception e
+             (when cascade?
+               (let [m2m (get-m2m-tables entity)]
+                 (doseq [[k {:keys [m2m]}] m2m]
+                   (let [{:keys [table joining]} m2m
+                         [this _] joining]
+                     (db/query! db {:delete-from table
+                                    :where [:= this id]})))))
+             (db/query! db {:delete-from table
+                            :where [:= pk id]})))))))

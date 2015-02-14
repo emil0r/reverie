@@ -11,23 +11,43 @@
 
 
 
-(let [db (component/start (get-db))
-      mod (assoc (-> @sys/storage :modules :auth :module)
-            :database db)
-      ent (module/get-entity mod "user")]
-  ;;#spy/d (msql/get-m2m-tables ent)
-  (try
-    ;;#spy/d (module/get-data mod ent {:where [:= :username "admin"]} 0 100)
-    ;; #spy/d (module/save-data mod ent 1 {:full_name "Emil Bengtsson"
-    ;;                                     :spoken_name "Emil"
-    ;;                                     :email "emil@emil0r.com"
-    ;;                                     :roles [1] :groups [1]})
-    (module/add-data mod ent {:username "emil" :password "foo"
-                              :spoken_name "Emil"
-                              :full_name "Emil Bengtsson"
-                              :email "emil@emil0r.com"
-                              :roles [1]
-                              :groups [1]})
-    (catch Exception e
-      (println e)))
-  (component/stop db))
+(fact
+ "module data manipulation"
+ (let [db (component/start (get-db))
+       mod (assoc (-> @sys/storage :modules :auth :module)
+             :database db)]
+   (try
+     (seed!)
+     (let [user-ent (module/get-entity mod "user")
+           group-ent (module/get-entity mod "group")]
+       ;; add two groups
+       (module/add-data mod group-ent {:name "Foobar"})
+       (module/add-data mod group-ent {:name "Baz"})
+
+       ;; change first user (admin)
+       (module/save-data mod user-ent 1 {:full_name "Admin Adminsson"
+                                         :spoken_name "Mr Admin"
+                                         :email "admin@reveriecms.org"
+                                         :roles [1 2 3] :groups [1 2 3]})
+       (module/add-data mod user-ent {:username "user1" :password "foo"
+                                      :spoken_name "Mr User1"
+                                      :full_name "User1 Smith"
+                                      :email "user1@smith.org"
+                                      :roles [2]
+                                      :groups [3]})
+       (module/add-data mod user-ent {:username "user2" :password "bar"
+                                      :spoken_name "Mr User2"
+                                      :full_name "User2 Smith"
+                                      :email "user2@smith.org"
+                                      :roles [3]
+                                      :groups [2]})
+
+       (module/delete-data mod user-ent 3 true)
+       (map (fn [{:keys [data joins]}]
+              [(:id data) (:username data) (:roles joins) (:groups joins)])
+            (:entity (module/get-data mod user-ent 0 100)))
+       => [[1 "admin" [1 2 3] [1 2 3]]
+           [2 "user1" [2] [3]]])
+     (catch Exception e
+       (println e)))
+   (component/stop db)))

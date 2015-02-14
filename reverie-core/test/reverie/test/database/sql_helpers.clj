@@ -59,4 +59,4 @@
         (println e)))
     (component/stop db)))
 
-;;(seed!)
+(seed!)

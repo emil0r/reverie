@@ -26,21 +26,21 @@ ALTER TABLE auth_group ADD CONSTRAINT auth_group_unique_name UNIQUE(name);
 
 
 CREATE TABLE auth_user_group (
-    user_id integer references auth_user(id),
-    group_id integer references auth_group(id)
+    user_id integer references auth_user(id) ON DELETE CASCADE,
+    group_id integer references auth_group(id) ON DELETE CASCADE
 );
 ALTER TABLE auth_user_group ADD CONSTRAINT auth_user_group_unique UNIQUE(user_id, group_id);
 
 
 CREATE TABLE auth_user_role (
-    user_id integer references auth_user(id),
-    role_id integer references auth_role(id)
+    user_id integer references auth_user(id) ON DELETE CASCADE,
+    role_id integer references auth_role(id) ON DELETE CASCADE
 );
 ALTER TABLE auth_user_role ADD CONSTRAINT auth_user_role_unique UNIQUE(user_id, role_id);
 
 
 CREATE TABLE auth_group_role (
-    group_id integer references auth_group(id),
-    role_id integer references auth_role(id)
+    group_id integer references auth_group(id) ON DELETE CASCADE,
+    role_id integer references auth_role(id) ON DELETE CASCADE
 );
 ALTER TABLE auth_group_role ADD CONSTRAINT auth_group_role_unique UNIQUE(group_id, role_id);

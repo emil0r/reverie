@@ -16,7 +16,7 @@
     [module entity where-args offset limit])
   (save-data [module entity id data])
   (add-data [module entity data])
-  (delete-data [module entity id]))
+  (delete-data [module entity id] [module entity id cascade?]))
 
 (defprotocol IModule
   (interface? [entity]
