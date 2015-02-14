@@ -1,5 +1,5 @@
 (ns reverie.test.database.sql
-  (:require [com.stuartsierra.component :as component]b
+  (:require [com.stuartsierra.component :as component]
             [reverie.database :as db]
             [reverie.database.sql :as sql]
             [reverie.page :as page]
@@ -63,7 +63,7 @@
 (fact
  "objects"
  (seed!)
- (let [db (get-db)]
+ (let [db (component/start (get-db))]
   (fact "objects (text)"
         (let [p (db/get-page db 3)]
           (map :name (page/objects p)))
@@ -74,7 +74,7 @@
 (fact
  "!"
  (seed!)
- (let [db (get-db)]
+ (let [db (component/start (get-db))]
    (fact "add page"
          (db/add-page! db {:parent 1 :title "" :name "Test page 1"
                            :route "/test-page-1" :template :foobaz
@@ -109,7 +109,7 @@
 
 (fact
  "movement page!"
- (let [db (get-db)]
+ (let [db (component/start (get-db))]
    (fact "same level (move-page)"
          (fact ":before"
                (seed!)
@@ -151,11 +151,12 @@
                  (map
                   (juxt :order :name)
                   (page/children (db/get-page db 1 false))))
-               => [[1 "Baz"] [2 "Bar"] [3 "Test page 1"]]))))
+               => [[1 "Baz"] [2 "Bar"] [3 "Test page 1"]]))
+   (component/stop db)))
 
 (fact
  "movement object!"
- (let [db (get-db)]
+ (let [db (component/start (get-db))]
    (fact "same level (move-object)"
          (fact ":up"
                (seed!)
@@ -195,12 +196,13 @@
                 (page/objects (db/get-page db 1))
                 (filter (fn [{:keys [area]}] (= area :a)))
                 (map (juxt :id :order :name :area :page_id)))
-               => [[9 1 :reverie/text :a 1] [1 2 :reverie/text :a 1]]))))
+               => [[9 1 :reverie/text :a 1] [1 2 :reverie/text :a 1]]))
+   (component/stop db)))
 
 
 (fact "publishing"
       (seed!)
-      (let [db (get-db)]
+      (let [db (component/start (get-db))]
         (fact "publish"
               (publish/publish-page! db 1)
               (->>
@@ -266,4 +268,17 @@
         (fact "trash object!"
               (publish/trash-object! db 1)
               (count (page/objects (db/get-page db 1)))
-              => 0)))
+              => 0)
+        (component/stop db)))
+
+
+(fact "insert!"
+      (seed!)
+      (let [db (component/start (get-db))]
+        (try
+          (db/query<! db {:insert-into :auth_group
+                                 :values [{:name "asdf"}]})
+          (catch Exception e
+            (println e)))
+        => [{:id 2 :name "asdf"}]
+        (component/stop db)))
