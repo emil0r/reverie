@@ -12,7 +12,8 @@
 
 (let [db (component/start (get-db))]
   (try
-    ;; (println (db/query db {:select [6]}))
+    ;; (doseq [i (range 100)]
+    ;;   (future #spy/t (db/query db {:select [i]})))
     ;; (println (db/query db :two {:select [:*]
     ;;                             :from [:reverie_page]
     ;;                             :limit :?limit}

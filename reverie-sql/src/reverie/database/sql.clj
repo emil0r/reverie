@@ -47,10 +47,8 @@
               (.setDefaultAutoCommit default-autocommit)
               (.setMaxConnectionsPerPartition maxconns-per-partition)
               (.setMinConnectionsPerPartition minconns-per-partition)
-              (.setPartitionCount partition-count))
-         db-spec (assoc db-spec :datasource ds)
-         connection (jdbc/get-connection db-spec)]
-    (assoc db-spec :connection connection)))
+              (.setPartitionCount partition-count))]
+    (assoc db-spec :datasource ds)))
 
 (defn- massage-page-data [data]
   (assoc data
@@ -140,6 +138,14 @@
                      :set {:version (inc (:version pp))}
                      :where [:= :id (:id pp)]}))))
 
+(def ^:dynamic *connection* nil)
+
+
+(defn- get-connection [db-specs key]
+  (if-not (nil? *connection*)
+    (assoc (get db-specs key) :connection *connection*)
+    (get db-specs key)))
+
 (defrecord DatabaseSQL [system db-specs ds-specs]
   component/Lifecycle
   (start [this]
@@ -173,8 +179,6 @@
       (do
         (log/info "Stopping database")
         (doseq [[key db-spec] db-specs]
-          (.close (:connection db-spec))
-          (log/info "Closed connection for" key)
           (.close (:datasource db-spec))
           (log/info "Closed datasource for" key))
         (assoc this
@@ -186,59 +190,59 @@
   IDatabase
   (query [db query]
     (cond
-     (string? query) (jdbc/query (:default db-specs) [query])
-     (fn? query) (query {} {:connection (:default db-specs)})
-     :else (jdbc/query (:default db-specs) (sql/format query))))
+     (string? query) (jdbc/query (get-connection db-specs :default) [query])
+     (fn? query) (query {} {:connection (get-connection db-specs :default)})
+     :else (jdbc/query (get-connection db-specs :default) (sql/format query))))
   (query [db key? query]
     (let [[key query args] (if (get db-specs key?)
                              [key? query nil]
                              [:default key? query])]
       (cond
        (and (nil? args) (fn? query))
-       (query {} {:connection (get db-specs key)})
+       (query {} {:connection (get-connection db-specs key)})
 
        (fn? query)
-       (query args {:connection (get db-specs key)})
+       (query args {:connection (get-connection db-specs key)})
 
        (nil? args)
-       (jdbc/query (get db-specs key) (sql/format query))
+       (jdbc/query (get-connection db-specs key) (sql/format query))
 
        :else
-       (jdbc/query (get db-specs key) (sql/format query args)))))
+       (jdbc/query (get-connection db-specs key) (sql/format query args)))))
   (query [db key query args]
     (if (fn? query)
-      (query args {:connection (get db-specs key)})
-      (jdbc/query (get db-specs key) (sql/format query args))))
+      (query args {:connection (get-connection db-specs key)})
+      (jdbc/query (get-connection db-specs key) (sql/format query args))))
   (query! [db query]
     (cond
      (string? query)
-     (jdbc/execute! (:default db-specs) [query])
+     (jdbc/execute! (get-connection db-specs :default) [query])
 
      (fn? query)
-     (query {} (:default db-specs))
+     (query {} (get-connection db-specs :default))
 
      :else
-     (jdbc/execute! (:default db-specs) (sql/format query))))
+     (jdbc/execute! (get-connection db-specs :default) (sql/format query))))
   (query! [db key? query]
     (let [[key query args] (if (get db-specs key?)
                              [key? query nil]
                              [:default key? query])]
       (cond
        (and (fn? query) (nil? args))
-       (query {} {:connection (get db-specs key)})
+       (query {} {:connection (get-connection db-specs key)})
 
        (fn? query)
-       (query args {:connection (get db-specs key)})
+       (query args {:connection (get-connection db-specs key)})
 
        (nil? args)
-       (jdbc/execute! (get db-specs key) (sql/format query))
+       (jdbc/execute! (get-connection db-specs key) (sql/format query))
 
        :else
-       (jdbc/execute! (get db-specs key) (sql/format query args)))))
+       (jdbc/execute! (get-connection db-specs key) (sql/format query args)))))
   (query! [db key query args]
     (if (fn? query)
-      (query args {:connection (get db-specs key)})
-      (jdbc/execute! (get db-specs key) (sql/format query args))))
+      (query args {:connection (get-connection db-specs key)})
+      (jdbc/execute! (get-connection db-specs key) (sql/format query args))))
 
   (query<! [db query]
     (cond
@@ -246,41 +250,42 @@
      (throw (DatabaseException. "String is not allowed for query<!"))
 
      (fn? query)
-     (query {} (:default db-specs))
+     (query {} (get-connection db-specs :default))
 
      :else
      (let [table (:insert-into query)
            values (:values query)]
-       (apply jdbc/insert! (:default db-specs) table values))))
+       (apply jdbc/insert! (get-connection db-specs :default) table values))))
   (query<! [db key? query]
     (let [[key query args] (if (get db-specs key?)
                              [key? query nil]
                              [:default key? query])]
       (cond
        (and (fn? query) (nil? args))
-       (query {} {:connection (get db-specs key)})
+       (query {} {:connection (get-connection db-specs key)})
 
        (fn? query)
-       (query args {:connection (get db-specs key)})
+       (query args {:connection (get-connection db-specs key)})
 
        (nil? args)
        (let [table (:insert-into query)
              values (:values query)]
-         (apply jdbc/insert! (get db-specs key) table values))
+         (apply jdbc/insert! (get-connection db-specs key) table values))
 
        :else
        (let [table (:insert-into query)
              values (:values query)]
-         (apply jdbc/insert! (:default db-specs) table values)))))
+         (apply jdbc/insert! (get-connection db-specs :default) table values)))))
   (query<! [db key query args]
     (if (fn? query)
-      (query args {:connection (get db-specs key)})
+      (query args {:connection (get-connection db-specs key)})
       (let [table (:insert-into query)
              values (:values query)]
-        (apply jdbc/insert! (get db-specs key) table values))))
+        (apply jdbc/insert! (get-connection db-specs key) table values))))
 
   (databases [db]
     (keys db-specs))
+
   (add-page! [db data]
     (assert (contains? data :parent) ":parent key is missing")
     (assert (contains? data :template) ":template key is missing")
