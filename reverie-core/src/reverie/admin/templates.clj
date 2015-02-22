@@ -1,16 +1,8 @@
 (ns reverie.admin.templates
   (:require [hiccup.page :refer [html5]]
             [hiccup.form :as form]
+            [reverie.admin.looknfeel.common :refer [head]]
             [reverie.core :refer [deftemplate area]]))
-
-(defn- head [title]
-  [:head
-   [:link {:rel "stylesheet" :type "text/css" :href "/media/admin/css/main.css"}]
-   [:meta {:charset "UTF-8"}]
-   [:title title]])
-
-(defn- footer []
-  )
 
 (defn admin-index [request page properties params]
   (html5
@@ -59,7 +51,7 @@
      [:div.container (area nav)]]
 
     [:div.container
-     [:div.row
+     [:div.row.admin-interface
       (area content)]
      [:footer
      (area footer)]]]))

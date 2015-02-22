@@ -43,7 +43,7 @@
                                       :groups [2]})
 
        (module/delete-data mod user-ent 3 true)
-       (select-keys (:entity-data (module/get-data mod user-ent 2))
+       (select-keys (:form-data (module/get-data mod user-ent 2))
                     [:id :username :roles :groups])
        => {:id 2 :username "user1" :roles #{2} :groups #{3}})
      (catch Exception e

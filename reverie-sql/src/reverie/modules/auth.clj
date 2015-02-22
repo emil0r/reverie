@@ -1,14 +1,30 @@
 (ns reverie.modules.auth
   (:require [buddy.hashers :as hashers]
             [clojure.string :as str]
+            [ez-web.uri :refer [join-uri]]
+            [hiccup.form :as form]
             [noir.session :as session]
+            [reverie.admin.looknfeel.form :as looknfeel]
             [reverie.auth :refer [IUserDatabase] :as auth]
             [reverie.core :refer [defmodule]]
             [reverie.database :as db]
             reverie.database.sql
             [reverie.module :as module]
+            reverie.modules.sql
             vlad)
   (:import [reverie.database.sql DatabaseSQL]))
+
+(defn- password-html [entity field {:keys [form-data entity-id uri]}]
+  (if entity-id
+    [:div.form-row
+     [:label "Password"]
+     [:a {:href (join-uri uri "/password")} "Change password"]]
+    (list
+     (looknfeel/row entity field {})
+     [:div.form-row
+      (form/label :repeat-password "Repeat password")
+      (form/password-field :repeat-password nil)
+      (looknfeel/help-text {:help "Make sure the password is the same"})])))
 
 (defmodule auth
   {:name "Authentication"
@@ -22,25 +38,27 @@
    {:user {:name "User"
            :order :id
            :table :auth_user
-           :display [:full_name :email]
+           :display [:username :email]
            :fields {:spoken_name {:name "Spoken name"
                                   :type :text
-                                  :max 255}
+                                  :max 255
+                                  :validation (vlad/present [:spoken_name])}
                     :full_name {:name "Full name"
                                 :type :text
-                                :max 255}
+                                :max 255
+                                :validation (vlad/present [:full_name])}
                     :username {:name "Username"
                                :type :text
-                               :validation []
+                               :validation (vlad/present [:username])
                                :max 255
                                :help "A maximum of 255 characters may be used"}
                     :email {:name "Email"
                             :type :email
-                            :validation []
+                            :validation (vlad/present [:email])
                             :max 255}
                     :password {:name "Password"
                                :type :html
-                               :validation []}
+                               :html password-html}
                     :active_p {:name "Active?"
                                :type :boolean
                                :default true}
@@ -57,12 +75,13 @@
                              :options [:id :name]
                              :order :name
                              :m2m {:table :auth_user_group
+                                   ;; joining: this that
                                    :joining [:user_id :group_id]}}}
-           :sections [{:fields [:name :password]}
+           :sections [{:fields [:username :password]}
                       {:name "Personal information"
                        :fields [:email :spoken_name :full_name]}
                       {:name "Rights"
-                       :fields [:active :is_staff :is_admin :roles]}
+                       :fields [:active_p :roles]}
                       {:name "Groups"
                        :fields [:groups]}]
            :related {:groups {:relation :many

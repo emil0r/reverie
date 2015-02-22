@@ -42,7 +42,7 @@ INSERT INTO auth_role VALUES (default, default, 'staff');
 INSERT INTO auth_role VALUES (default, default, 'user');
 
 -- user
-INSERT INTO auth_user VALUES (default, default, 'admin', 'bcrypt+sha512$400a78a96113cad1ea67c6ab$12$243261243132243057724e2e555876376a76626b79783156377569796554484551784e364d315a6a52557936446478486d337036496a6f6658425153', 'admin@admin.com', 'Admin', 'Admin', now()); -- password == admin
+INSERT INTO auth_user VALUES (default, default, 'admin', 'bcrypt+sha512$400a78a96113cad1ea67c6ab$12$243261243132243057724e2e555876376a76626b79783156377569796554484551784e364d315a6a52557936446478486d337036496a6f6658425153', 'admin@admin.com', 'Admin', 'Admin', now(), true); -- password == admin
 
 -- user roles
 INSERT INTO auth_user_role VALUES (1, 1);

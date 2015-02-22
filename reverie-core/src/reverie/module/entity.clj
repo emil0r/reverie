@@ -10,6 +10,16 @@
     "Get the primary key for the entity (eg, id)")
   (fields [entity]
     "Fields for the entity in the database")
+  (field [entity field]
+    "Field for the entity")
+  (field-options [entity field]
+    "Options for the field")
+  (field-attribs [entity field]
+    "Attributes for the field")
+  (field-name [entity field]
+    "Field name for the field")
+  (display [entity]
+    "What to display in admin interface for listings of this entity")
   (sections [entity]
     "Sections for the entity")
   (name [entity]
@@ -24,11 +34,31 @@
   IModuleEntity
   (pk [this] (or (:primary-key options) :id))
   (fields [this] (:fields options))
+  (field [this field] (get-in options [:fields field]))
+  (display [this] (or (:display options)
+                      (pk this)))
+  (field-options [this field]
+    (get-in options [:fields field]))
+  (field-attribs [this field]
+    (let [options (get-in options [:fields field])]
+      (reduce (fn [out k]
+                (if (nil? out)
+                  out
+                  (if (k options)
+                    (assoc out k (k options))
+                    out)))
+              {}
+              [:max :min :placeholder])))
+  (field-name [this field]
+    (or (get-in options [:fields field :name])
+        (-> field clojure.core/name str/capitalize)))
   (sections [this] (:sections options))
   (name [this] (or (:name options)
                    (-> key clojure.core/name str/capitalize)))
   (slug [this]
-    (or (:slug options) (util/slugify key))))
+    (or (:slug options) (util/slugify key)))
+  (table [this]
+    (or (:table options) key)))
 
 
 (defn module-entity [[key options]]

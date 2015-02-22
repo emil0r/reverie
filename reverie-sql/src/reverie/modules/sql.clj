@@ -82,7 +82,7 @@
                             ;; pour it into a hash-map
                             (into #{})))))
                 {} m2m))]
-         {:entity-data (merge data shared-m2m-data)
+         {:form-data (merge data shared-m2m-data)
           ;; the data for the m2m tables
           :m2m-data m2m-data})))
 

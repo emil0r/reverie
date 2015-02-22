@@ -13,7 +13,8 @@ CREATE TABLE auth_user (
     email text NOT NULL,
     spoken_name text NOT NULL,
     full_name text NOT NULL,
-    last_login timestamp with time zone NULL
+    last_login timestamp with time zone NULL,
+    active_p boolean NOT NULL default true
 );
 ALTER TABLE auth_user ADD CONSTRAINT auth_user_unique_username UNIQUE(username);
 
