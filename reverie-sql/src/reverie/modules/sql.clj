@@ -44,9 +44,9 @@
 (extend-type Module
   module/IModuleDatabase
   (get-data
-    ([this entity offset limit]
-       (module/get-data this entity nil offset limit))
-    ([this entity args offset limit]
+    ([this entity id]
+       (module/get-data this entity id nil))
+    ([this entity id args]
        (let [db (:database this)
              table (get-entity-table entity)
              pk (get-pk entity)
@@ -54,13 +54,13 @@
 
              ;; get data for the table
              data
-             (db/query db (merge
-                           args
-                           {:select [:*]
-                            :from [table]
-                            :order-by [pk]
-                            :offset offset
-                            :limit limit}))
+             (first
+              (db/query db (merge
+                            args
+                            {:select [:*]
+                             :from [table]
+                             :order-by [pk]
+                             :where [:= pk id]})))
 
              ;; get data about m2m
              m2m-data (get-m2m-data db m2m)
@@ -75,30 +75,14 @@
                     (assoc out k
                            (->>
                             ;; get the data
-                            (db/query db {:select [this that]
+                            (db/query db {:select [that]
                                           :from [table]
-                                          :where [:in this (map pk data)]})
-                            ;; group by the foreign key for this module
-                            (group-by this)
-                            ;; map it into a list of the foreign key
-                            ;; for that (the other table that's joined by
-                            ;; a m2m table)
-                            (map (fn [[k data]]
-                                   {k (map that data)}))
+                                          :where [:= this (get data pk)]})
+                            (map that)
                             ;; pour it into a hash-map
-                            (into {})))))
+                            (into #{})))))
                 {} m2m))]
-         {:entity (map (fn [data]
-                         (let [id (get data pk)]
-                           {;; the actual data for the entity
-                            :data data
-                            ;; the joins
-                            :joins (into
-                                    {}
-                                    (map (fn [[k d]]
-                                           {k (get d id)})
-                                         shared-m2m-data))}))
-                       data)
+         {:entity-data (merge data shared-m2m-data)
           ;; the data for the m2m tables
           :m2m-data m2m-data})))
 

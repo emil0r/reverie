@@ -43,11 +43,9 @@
                                       :groups [2]})
 
        (module/delete-data mod user-ent 3 true)
-       (map (fn [{:keys [data joins]}]
-              [(:id data) (:username data) (:roles joins) (:groups joins)])
-            (:entity (module/get-data mod user-ent 0 100)))
-       => [[1 "admin" [1 2 3] [1 2 3]]
-           [2 "user1" [2] [3]]])
+       (select-keys (:entity-data (module/get-data mod user-ent 2))
+                    [:id :username :roles :groups])
+       => {:id 2 :username "user1" :roles #{2} :groups #{3}})
      (catch Exception e
        (println e)))
    (component/stop db)))
