@@ -26,6 +26,11 @@
       (form/password-field :repeat-password nil)
       (looknfeel/help-text {:help "Make sure the password is the same"})])))
 
+(defn- user-post-fn [data edit?]
+  (if-let [password (:password data)]
+    :asdf
+    ))
+
 (defmodule auth
   {:name "Authentication"
    :interface? true
@@ -64,6 +69,7 @@
                                :default true}
                     :roles {:name "Roles"
                             :type :m2m
+                            :cast :int
                             :table :auth_role
                             :options [:id :name]
                             :order :name
@@ -71,6 +77,7 @@
                                   :joining [:user_id :role_id]}}
                     :groups {:name "Groups"
                              :type :m2m
+                             :cast :int
                              :table :auth_group
                              :options [:id :name]
                              :order :name
@@ -90,7 +97,7 @@
                      :roles {:relation :many
                              :m2m_table :auth_user_role
                              :table :auth_role}}
-           :post nil}
+           :post user-post-fn}
     :group {:name "Group"
             :order :name
             :table :auth_group

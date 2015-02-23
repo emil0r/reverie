@@ -18,6 +18,7 @@
     "Attributes for the field")
   (field-name [entity field]
     "Field name for the field")
+  (post-fn [entity])
   (display [entity]
     "What to display in admin interface for listings of this entity")
   (sections [entity]
@@ -37,6 +38,7 @@
   (field [this field] (get-in options [:fields field]))
   (display [this] (or (:display options)
                       (pk this)))
+  (post-fn [this] (get-in options [:fields field :post]))
   (field-options [this field]
     (get-in options [:fields field]))
   (field-attribs [this field]

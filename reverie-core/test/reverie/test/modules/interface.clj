@@ -28,19 +28,20 @@
        (module/save-data mod user-ent 1 {:full_name "Admin Adminsson"
                                          :spoken_name "Mr Admin"
                                          :email "admin@reveriecms.org"
-                                         :roles [1 2 3] :groups [1 2 3]})
+                                         :roles [1 2 3]
+                                         :groups [1 2 3]})
        (module/add-data mod user-ent {:username "user1" :password "foo"
                                       :spoken_name "Mr User1"
                                       :full_name "User1 Smith"
                                       :email "user1@smith.org"
-                                      :roles [2]
-                                      :groups [3]})
+                                      :roles ["2"]
+                                      :groups "3"})
        (module/add-data mod user-ent {:username "user2" :password "bar"
                                       :spoken_name "Mr User2"
                                       :full_name "User2 Smith"
                                       :email "user2@smith.org"
                                       :roles [3]
-                                      :groups [2]})
+                                      :groups [3]})
 
        (module/delete-data mod user-ent 3 true)
        (select-keys (:form-data (module/get-data mod user-ent 2))
@@ -49,3 +50,22 @@
      (catch Exception e
        (println e)))
    (component/stop db)))
+
+
+
+(fact
+ "casting"
+ (let [mod (-> @sys/storage :modules :auth :module)]
+   (let [user-ent (module/get-entity mod "user")]
+     (msql/cast-data user-ent {"username" "admin",
+                               "email" "admin@reveriecms.org",
+                               "spoken_name" "Mr Admin",
+                               "full_name" "Admin Adminsson",
+                               "active_p" "true",
+                               "roles" "1"}))
+   => {"username" "admin",
+       "email" "admin@reveriecms.org",
+       "spoken_name" "Mr Admin",
+       "full_name" "Admin Adminsson",
+       "active_p" true,
+       "roles" [1]}))

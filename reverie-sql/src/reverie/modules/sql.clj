@@ -1,8 +1,8 @@
 (ns reverie.modules.sql
   (:require [honeysql.core :as sql]
             [reverie.database :as db]
-            [reverie.module :as module]
-            [reverie.module.entity :as entity])
+            [reverie.module :as m]
+            [reverie.module.entity :as e])
   (:import [reverie.module Module]))
 
 
@@ -40,12 +40,44 @@
                           :order-by [order]})))
    {} (into [] m2m)))
 
+(defmulti cast-to (fn [c v] [c (type v)]))
+(defmethod cast-to [:int clojure.lang.PersistentVector] [_ v]
+  (vec (map #(if (string? %)
+               (Integer/parseInt %)
+               %) v)))
+(defmethod cast-to [:int clojure.lang.PersistentList] [_ v]
+  (cast-to :int (vec v)))
+(defmethod cast-to [:int java.lang.String] [_ v]
+  (Integer/parseInt v))
+(defmethod cast-to :default [_ v]
+  v)
+
+(defmulti convert-data (fn [t v] [t (type v)]))
+(defmethod convert-data [:m2m java.lang.Integer] [_ v]
+  [v])
+(defmethod convert-data [:boolean java.lang.String] [_ v]
+  true)
+(defmethod convert-data [:boolean nil] [_ v]
+  false)
+(defmethod convert-data :default [_ v]
+  v)
+
+(defn cast-data [entity data]
+  (reduce (fn [out k]
+            (let [v (->> (get data k)
+                         (cast-to (:cast (e/field-options entity k)))
+                         (convert-data (:type (e/field-options entity k))))]
+              (if-not (nil? v)
+                (assoc out k v)
+                out)))
+          {} (keys (e/fields entity))))
+
 
 (extend-type Module
-  module/IModuleDatabase
+  m/IModuleDatabase
   (get-data
     ([this entity id]
-       (module/get-data this entity id nil))
+       (m/get-data this entity id nil))
     ([this entity id args]
        (let [db (:database this)
              table (get-entity-table entity)
@@ -88,6 +120,7 @@
 
   (save-data [this entity id data]
     (let [db (:database this)
+          data (cast-data entity data)
           table (get-entity-table entity)
           pk (get-pk entity)
           m2m (get-m2m-tables entity)]
@@ -111,6 +144,7 @@
 
   (add-data [this entity data]
     (let [db (:database this)
+          data (cast-data entity data)
           table (get-entity-table entity)
           pk (get-pk entity)
           m2m (get-m2m-tables entity)
@@ -132,7 +166,7 @@
 
   (delete-data
     ([this entity id]
-       (module/delete-data this entity id false))
+       (m/delete-data this entity id false))
     ([this entity id cascade?]
        (let [db (:database this)
              table (get-entity-table entity)

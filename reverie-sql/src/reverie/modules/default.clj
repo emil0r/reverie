@@ -1,11 +1,13 @@
 (ns reverie.modules.default
-  (:require [ez-web.uri :refer [join-uri]]
+  (:require [clojure.walk :as walk]
+            [ez-web.uri :refer [join-uri]]
             [ez-web.breadcrumbs :refer [crumb]]
             [reverie.admin.looknfeel.form :refer [get-entity-form]]
             [reverie.database :as db]
             [reverie.module :as m]
             [reverie.module.entity :as e]
-            [reverie.system :as sys]))
+            [reverie.system :as sys]
+            [ring.util.response :as response]))
 
 (def ^:private base-link "admin/frame/module")
 
@@ -14,6 +16,14 @@
     (Integer/parseInt pk)
     (catch Exception e
       pk)))
+
+(defn clean-form-params [form-data]
+  (walk/keywordize-keys
+   (dissoc form-data
+           "_method"
+           "_continue"
+           "_addanother"
+           "_save")))
 
 (defn list-entities [request module params]
   {:nav (crumb [[(join-uri base-link (m/slug module)) (m/name module)]])
@@ -79,8 +89,38 @@
             "Back to the start"]]]
      :content [:div.col-md-12 "This entity does not exist"]}))
 
+(defn handle-single-entity [request module {:keys [entity id] :as params}]
+  (let [entity (m/get-entity module entity)
+        id (pk-cast id)
+        post-fn (or (e/post-fn entity) (fn [x & _] x))
+        form-params (clean-form-params (post-fn (:form-params request) true))]
+    (m/save-data module entity id form-params)
+    #spy/t [form-params params]
+    (cond
+     (contains? params :_addanother)
+     (response/redirect (join-uri base-link
+                                  (m/slug module)
+                                  (e/slug entity)
+                                  "add"))
+
+     (contains? params :_save)
+     (response/redirect (join-uri base-link
+                                  (m/slug module)
+                                  (e/slug entity)))
+
+     :else
+     (single-entity request module params))))
+
+(defn add-entity [request module {:keys [entity id] :as params}])
+(defn handle-add-entity [request module {:keys [entity id] :as params}])
+
+(defn delete-entity [request module {:keys [entity id] :as params}])
+(defn handle-delete-entity [request module {:keys [entity id] :as params}])
+
 
 (swap! sys/storage assoc :module-default-routes
        [["/" {:get list-entities}]
         ["/:entity" {:get list-entity}]
-        ["/:entity/:id" {:get single-entity}]])
+        ["/:entity/add" {:get add-entity :post handle-add-entity}]
+        ["/:entity/:id" {:get single-entity :post handle-single-entity}]
+        ["/:entity/:id/delete" {:get delete-entity :post handle-delete-entity}]])
