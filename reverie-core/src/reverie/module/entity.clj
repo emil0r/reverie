@@ -18,6 +18,8 @@
     "Attributes for the field")
   (field-name [entity field]
     "Field name for the field")
+  (error-field-names [entity]
+    "Return a hashmap for vlad error messages")
   (post-fn [entity])
   (display [entity]
     "What to display in admin interface for listings of this entity")
@@ -54,6 +56,13 @@
   (field-name [this field]
     (or (get-in options [:fields field :name])
         (-> field clojure.core/name str/capitalize)))
+  (error-field-names [this]
+    (into {}
+          (map (fn [[k opt]]
+                 [[k] (or (:name opt)
+                          (-> k clojure.core/name str/capitalize))])
+               (get-in options [:fields])))
+    )
   (sections [this] (:sections options))
   (name [this] (or (:name options)
                    (-> key clojure.core/name str/capitalize)))

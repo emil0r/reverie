@@ -10,26 +10,33 @@
             [reverie.database :as db]
             reverie.database.sql
             [reverie.module :as module]
+            [reverie.module.entity :as e]
             reverie.modules.sql
             vlad)
   (:import [reverie.database.sql DatabaseSQL]))
 
-(defn- password-html [entity field {:keys [form-data entity-id uri]}]
+(defn- password-html [entity field {:keys [form-data entity-id uri
+                                           errors error-field-names]}]
   (if entity-id
     [:div.form-row
      [:label "Password"]
      [:a {:href (join-uri uri "/password")} "Change password"]]
     (list
-     (looknfeel/row entity field {})
      [:div.form-row
+      (looknfeel/error-items field errors error-field-names)
+      (form/label field (e/field-name entity field))
+      (form/password-field (e/field-attribs entity field) field (form-data field))
+      (looknfeel/help-text (e/field-options entity field))]
+     [:div.form-row
+      (looknfeel/error-items :repeat-password errors {[:repeat-password] "Repeat password"})
       (form/label :repeat-password "Repeat password")
-      (form/password-field :repeat-password nil)
+      (form/password-field :repeat-password (form-data :repeat-password))
       (looknfeel/help-text {:help "Make sure the password is the same"})])))
 
 (defn- user-post-fn [data edit?]
-  (if-let [password (:password data)]
-    :asdf
-    ))
+  (if edit?
+    (dissoc data :password)
+    (dissoc data :repeat-password)))
 
 (defmodule auth
   {:name "Authentication"
@@ -63,7 +70,13 @@
                             :max 255}
                     :password {:name "Password"
                                :type :html
-                               :html password-html}
+                               :html password-html
+                               :validation (vlad/chain
+                                            (vlad/join
+                                             (vlad/present [:password])
+                                             (vlad/length-in 8 128 [:password])
+                                             (vlad/present [:repeat-password]))
+                                            (vlad/equals-field [:password] [:repeat-password]))}
                     :active_p {:name "Active?"
                                :type :boolean
                                :default true}

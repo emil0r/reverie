@@ -12,8 +12,8 @@
 
 (defprotocol IModuleDatabase
   (get-data
-    [module entity id]
-    [module entity id where-args])
+    [module entity params]
+    [module entity params id])
   (save-data [module entity id data])
   (add-data [module entity data])
   (delete-data [module entity id] [module entity id cascade?]))

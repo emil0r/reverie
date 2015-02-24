@@ -76,9 +76,9 @@
 (extend-type Module
   m/IModuleDatabase
   (get-data
-    ([this entity id]
-       (m/get-data this entity id nil))
-    ([this entity id args]
+    ([this entity params]
+       (m/get-data this entity params nil))
+    ([this entity params id]
        (let [db (:database this)
              table (get-entity-table entity)
              pk (get-pk entity)
@@ -86,13 +86,14 @@
 
              ;; get data for the table
              data
-             (first
-              (db/query db (merge
-                            args
-                            {:select [:*]
-                             :from [table]
-                             :order-by [pk]
-                             :where [:= pk id]})))
+             (merge
+              (when id
+                (first
+                 (db/query db {:select [:*]
+                               :from [table]
+                               :order-by [pk]
+                               :where [:= pk id]})))
+              (dissoc params pk))
 
              ;; get data about m2m
              m2m-data (get-m2m-data db m2m)
@@ -162,7 +163,8 @@
             (db/query! db {:insert-into table
                            :values (map (fn [value]
                                           {this id that value})
-                                        (get data k))}))))))
+                                        (get data k))}))))
+      id))
 
   (delete-data
     ([this entity id]

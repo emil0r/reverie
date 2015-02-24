@@ -3,7 +3,8 @@
             [ez-web.uri :refer [join-uri]]
             [hiccup.form :as form]
             [reverie.module :as m]
-            [reverie.module.entity :as e]))
+            [reverie.module.entity :as e]
+            vlad))
 
 (defn field-name [field options]
   (or (get-in options [:name])
@@ -16,9 +17,16 @@
 (defn error-item [error]
   [:div.error error])
 
-(defn error-items [field errors]
-  (map (fn [error]
-         (error-item error))
+(defn error-items [field errors error-field-names]
+  (map (fn [{:keys [selector first-selector type] :as error}]
+         (if (or (= selector [field])
+                 (= first-selector [field]))
+           (map error-item
+                (flatten
+                 (vals
+                  (-> [error]
+                      (vlad/assign-name error-field-names)
+                      (vlad/translate-errors vlad/english-translation)))))))
        errors))
 
 (defn get-m2m-options [entity field]
@@ -35,7 +43,9 @@
     [:div.row-form (f entity field data)]
     [:div.row-form]))
 
-(defmethod row :m2m [entity field {:keys [form-data m2m-data errors]}]
+(defmethod row :m2m [entity field {:keys [form-data m2m-data errors
+                                          error-field-names]
+                                   :or {form-data {}}}]
   (let [values (cond
                 (sequential? (get field form-data)) (get field form-data)
                 (not (nil? (get field form-data))) [(get field form-data)]
@@ -43,7 +53,7 @@
         m2m-data (get m2m-data field)
         [option-value option-name] (get-m2m-options entity field)]
    [:div.form-row
-    (error-items field errors)
+    (error-items field errors error-field-names)
     (form/label field (e/field-name entity field))
     [:select (merge {:name field :id field :multiple true}
                     (e/field-attribs entity field))
@@ -58,39 +68,49 @@
           m2m-data)]
     (help-text (e/field-options entity field))]))
 
-(defmethod row :boolean [entity field {:keys [form-data errors]}]
+(defmethod row :boolean [entity field {:keys [form-data errors
+                                              error-field-names]
+                                       :or {form-data {}}}]
   [:div.form-row
-   (error-items field errors)
+   (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
    (form/check-box (e/field-attribs entity field) field (form-data field))
    (help-text (e/field-options entity field))])
 
-(defmethod row :password [entity field {:keys [form-data errors]}]
+(defmethod row :password [entity field {:keys [form-data errors
+                                               error-field-names]
+                                        :or {form-data {}}}]
   [:div.form-row
-   (error-items field errors)
+   (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
    (form/password-field (e/field-attribs entity field) field (form-data field))
    (help-text (e/field-options entity field))])
 
-(defmethod row :email [entity field {:keys [form-data errors]}]
+(defmethod row :email [entity field {:keys [form-data errors
+                                            error-field-names]
+                                     :or {form-data {}}}]
   [:div.form-row
-   (error-items field errors)
+   (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
    (form/email-field (e/field-attribs entity field) field (form-data field))
    (help-text (e/field-options entity field))])
 
-(defmethod row :number [entity field {:keys [form-data errors]}]
+(defmethod row :number [entity field {:keys [form-data errors
+                                             error-field-names]
+                                      :or {form-data {}}}]
   [:div.form-row
-   (error-items field errors)
+   (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
    [:input (merge (e/field-attribs entity field)
                   {:name field :id field :type :number
                    :value (form-data field)})]
    (help-text (e/field-options entity field))])
 
-(defmethod row :default [entity field {:keys [form-data errors]}]
+(defmethod row :default [entity field {:keys [form-data errors
+                                              error-field-names]
+                                       :or {form-data {}}}]
   [:div.form-row
-   (error-items field errors)
+   (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
    (form/text-field (e/field-attribs entity field) field (form-data field))
    (help-text (e/field-options entity field))])
@@ -109,7 +129,7 @@
                 fields)])
         (e/sections entity))
    [:div.bottom-bar
-    (if entity-id
+    (when entity-id
       [:span.delete
        [:a {:href (join-uri "/admin/frame/module/"
                             (m/slug module)
@@ -126,3 +146,15 @@
     [:span.save-add-new
      [:input {:type :submit :class "btn btn-primary"
               :id :_addanother :name :_addanother :value "Save and add another"}]]]))
+
+
+(defn delete-entity-form [module entity {:keys [display-name]}]
+  (form/form-to
+   {:id :delete-form}
+   ["POST" ""]
+   [:h2 "Really delete " display-name "?"]
+   [:div.buttons
+    [:input.btn.btn-primary {:id :_cancel :name :_cancel
+                             :type :submit :value "Cancel"}]
+    [:input.btn.btn-primary {:id :_delete :name :_delete
+                             :type :submit :value "Delete!"}]]))

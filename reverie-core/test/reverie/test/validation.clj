@@ -1,6 +1,6 @@
 (ns reverie.test.validation
   (:require [reverie.admin.validation :as v]
-            [reverie.module :as module>]
+            [reverie.module :as m]
             reverie.modules.auth
             [reverie.system :as sys]
             [midje.sweet :refer :all]
@@ -10,7 +10,7 @@
 (fact
  "validate"
  (->> (v/validate
-       (-> @sys/storage :modules :auth :module (module/get-entity "user"))
+       (-> @sys/storage :modules :auth :module (m/get-entity "user"))
        {})
       (filter (fn [{:keys [selector]}]
                 (some #(= selector %) [[:username] [:email]]))))

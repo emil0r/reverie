@@ -2,7 +2,9 @@
   (:require [clojure.walk :as walk]
             [ez-web.uri :refer [join-uri]]
             [ez-web.breadcrumbs :refer [crumb]]
-            [reverie.admin.looknfeel.form :refer [get-entity-form]]
+            [reverie.admin.looknfeel.form :refer [get-entity-form
+                                                  delete-entity-form]]
+            [reverie.admin.validation :as validation]
             [reverie.database :as db]
             [reverie.module :as m]
             [reverie.module.entity :as e]
@@ -36,6 +38,17 @@
             [:tr [:td [:a {:href (join-uri base-link (m/slug module) (e/slug entity))}
                        (e/name entity)]]]) (m/entities module))]]})
 
+(defn get-display-name [entity entity-data]
+  (get (:form-data entity-data)
+       (first (e/display entity))))
+
+(defn entity-does-not-exist [module]
+  {:nav
+   [:ul
+    [:li [:a {:href (join-uri base-link (m/slug module))}
+          "Back to the start"]]]
+   :content [:div.col-md-12 "This entity does not exist"]})
+
 (defn list-entity [request module {:keys [entity] :as params}]
   (if-let [entity (m/get-entity module entity)]
     (let [db (:database module)
@@ -65,57 +78,124 @@
                                    [:a {:href (join-uri base-link (m/slug module) (e/slug entity) (str (get d pk)))} (get d k)]
                                    (get d k))]) display)])
               data)])})
-    {:nav
-     [:ul
-      [:li [:a {:href (join-uri base-link (m/slug module))}
-            "Back to the start"]]]
-     :content [:div.col-md-12 "This entity does not exist"]}))
+    (entity-does-not-exist module)))
 
-(defn single-entity [request module {:keys [entity id] :as params}]
+(defn single-entity [request module {:keys [entity id] :as params}
+                     & [{:keys [errors]}]]
   (if-let [entity (m/get-entity module entity)]
-    (let [id (pk-cast id)]
+    (let [id (pk-cast id)
+          entity-data (m/get-data module entity params id)]
       {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
                              [(e/slug entity) (e/name entity)]
-                             [(str id) (str id)]]))
+                             [(str id) (get-display-name entity entity-data)]]))
        :content (get-entity-form
                  module
                  entity
-                 (merge {:entity-id id}
+                 (merge {:entity-id id
+                         :errors errors
+                         :error-field-names (when-not (empty? errors)
+                                              (e/error-field-names entity))}
                         (select-keys request [:uri])
-                        (m/get-data module entity id)))})
-    {:nav
-     [:ul
-      [:li [:a {:href (join-uri base-link (m/slug module))}
-            "Back to the start"]]]
-     :content [:div.col-md-12 "This entity does not exist"]}))
+                        entity-data))})
+    (entity-does-not-exist module)))
 
 (defn handle-single-entity [request module {:keys [entity id] :as params}]
   (let [entity (m/get-entity module entity)
         id (pk-cast id)
         post-fn (or (e/post-fn entity) (fn [x & _] x))
-        form-params (clean-form-params (post-fn (:form-params request) true))]
-    (m/save-data module entity id form-params)
-    #spy/t [form-params params]
+        form-params (clean-form-params (post-fn (:form-params request) true))
+        errors (validation/validate entity form-params)]
+    (if (empty? errors)
+      (do
+        (m/save-data module entity id form-params)
+        (cond
+         (contains? params :_addanother)
+         (response/redirect (join-uri base-link
+                                      (m/slug module)
+                                      (e/slug entity)
+                                      "add"))
+
+         (contains? params :_save)
+         (response/redirect (join-uri base-link
+                                      (m/slug module)
+                                      (e/slug entity)))
+
+         :else
+         (single-entity request module params)))
+      (single-entity request module params {:errors errors}))))
+
+(defn add-entity [request module {:keys [entity] :as params}
+                  & [{:keys [errors]}]]
+  (if-let [entity (m/get-entity module entity)]
+    (let [entity-data (m/get-data module entity params)]
+     {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
+                            [(e/slug entity) (e/name entity)]
+                            ["add" "Add"]]))
+      :content (get-entity-form
+                module
+                entity
+                (merge
+                 {:errors errors
+                  :error-field-names (when-not (empty? errors)
+                                       (e/error-field-names entity))}
+                 (select-keys request [:uri])
+                 entity-data))})
+    (entity-does-not-exist module)))
+(defn handle-add-entity [request module {:keys [entity] :as params}]
+  (let [entity (m/get-entity module entity)
+        post-fn (or (e/post-fn entity) (fn [x & _] x))
+        form-params (clean-form-params (post-fn (:form-params request) true))
+        errors (validation/validate entity form-params)]
+    (if (empty? errors)
+      (let [entity-id (m/add-data module entity form-params)]
+        (cond
+         (contains? params :_addanother)
+         (response/redirect (join-uri base-link
+                                      (m/slug module)
+                                      (e/slug entity)
+                                      "add"))
+
+         (contains? params :_save)
+         (response/redirect (join-uri base-link
+                                      (m/slug module)
+                                      (e/slug entity)))
+
+         :else
+         (response/redirect (join-uri base-link
+                                      (m/slug module)
+                                      (e/slug entity)
+                                      (str entity-id)))))
+      (add-entity request module params {:errors errors}))))
+
+(defn delete-entity [request module {:keys [entity id] :as params}]
+  (if-let [entity (m/get-entity module entity)]
+    (let [id (pk-cast id)
+          entity-data (m/get-data module entity params id)]
+      {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
+                             [(e/slug entity) (e/name entity)]
+                             [(str id) (get (:form-data entity-data)
+                                            (first (e/display entity)))]
+                             ["delete" "Delete?"]]))
+       :content (delete-entity-form module entity
+                                    {:entity-id id
+                                     :display-name (get-display-name entity entity-data)})})
+    (entity-does-not-exist module)))
+(defn handle-delete-entity [request module {:keys [entity id] :as params}]
+  (let [entity (m/get-entity module entity)
+        id (pk-cast id)]
+
     (cond
-     (contains? params :_addanother)
+     (contains? params :_delete)
+     (do
+       (m/delete-data module entity id true)
+       (response/redirect (join-uri base-link
+                                    (m/slug module)
+                                    (e/slug entity))))
+     :else
      (response/redirect (join-uri base-link
                                   (m/slug module)
                                   (e/slug entity)
-                                  "add"))
-
-     (contains? params :_save)
-     (response/redirect (join-uri base-link
-                                  (m/slug module)
-                                  (e/slug entity)))
-
-     :else
-     (single-entity request module params))))
-
-(defn add-entity [request module {:keys [entity id] :as params}])
-(defn handle-add-entity [request module {:keys [entity id] :as params}])
-
-(defn delete-entity [request module {:keys [entity id] :as params}])
-(defn handle-delete-entity [request module {:keys [entity id] :as params}])
+                                  (str id))))))
 
 
 (swap! sys/storage assoc :module-default-routes
