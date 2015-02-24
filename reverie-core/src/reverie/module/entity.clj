@@ -20,7 +20,10 @@
     "Field name for the field")
   (error-field-names [entity]
     "Return a hashmap for vlad error messages")
-  (post-fn [entity])
+  (post-fn [entity]
+    "Function data is run through after a post")
+  (pre-save-fn [entity]
+    "Function data is run through before saving the data")
   (display [entity]
     "What to display in admin interface for listings of this entity")
   (sections [entity]
@@ -40,7 +43,8 @@
   (field [this field] (get-in options [:fields field]))
   (display [this] (or (:display options)
                       (pk this)))
-  (post-fn [this] (get-in options [:fields field :post]))
+  (post-fn [this] (get-in options [:post]))
+  (pre-save-fn [this] (get-in options [:pre-save]))
   (field-options [this field]
     (get-in options [:fields field]))
   (field-attribs [this field]

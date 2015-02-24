@@ -115,7 +115,7 @@
                             ;; pour it into a hash-map
                             (into #{})))))
                 {} m2m))]
-         {:form-data (merge data shared-m2m-data)
+         {:form-params (merge data shared-m2m-data)
           ;; the data for the m2m tables
           :m2m-data m2m-data})))
 

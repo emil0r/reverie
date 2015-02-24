@@ -43,12 +43,12 @@
     [:div.row-form (f entity field data)]
     [:div.row-form]))
 
-(defmethod row :m2m [entity field {:keys [form-data m2m-data errors
+(defmethod row :m2m [entity field {:keys [form-params m2m-data errors
                                           error-field-names]
-                                   :or {form-data {}}}]
+                                   :or {form-params {}}}]
   (let [values (cond
-                (sequential? (get field form-data)) (get field form-data)
-                (not (nil? (get field form-data))) [(get field form-data)]
+                (sequential? (get field form-params)) (get field form-params)
+                (not (nil? (get field form-params))) [(get field form-params)]
                 :else nil)
         m2m-data (get m2m-data field)
         [option-value option-name] (get-m2m-options entity field)]
@@ -61,58 +61,58 @@
             [:option (merge
                       {:value (get data option-value)}
                       (if (some #(= (get data option-value) %)
-                                (get form-data field))
+                                (get form-params field))
                         {:selected true}
                         nil))
              (get data option-name)])
           m2m-data)]
     (help-text (e/field-options entity field))]))
 
-(defmethod row :boolean [entity field {:keys [form-data errors
+(defmethod row :boolean [entity field {:keys [form-params errors
                                               error-field-names]
-                                       :or {form-data {}}}]
+                                       :or {form-params {}}}]
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
-   (form/check-box (e/field-attribs entity field) field (form-data field))
+   (form/check-box (e/field-attribs entity field) field (form-params field))
    (help-text (e/field-options entity field))])
 
-(defmethod row :password [entity field {:keys [form-data errors
+(defmethod row :password [entity field {:keys [form-params errors
                                                error-field-names]
-                                        :or {form-data {}}}]
+                                        :or {form-params {}}}]
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
-   (form/password-field (e/field-attribs entity field) field (form-data field))
+   (form/password-field (e/field-attribs entity field) field (form-params field))
    (help-text (e/field-options entity field))])
 
-(defmethod row :email [entity field {:keys [form-data errors
+(defmethod row :email [entity field {:keys [form-params errors
                                             error-field-names]
-                                     :or {form-data {}}}]
+                                     :or {form-params {}}}]
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
-   (form/email-field (e/field-attribs entity field) field (form-data field))
+   (form/email-field (e/field-attribs entity field) field (form-params field))
    (help-text (e/field-options entity field))])
 
-(defmethod row :number [entity field {:keys [form-data errors
+(defmethod row :number [entity field {:keys [form-params errors
                                              error-field-names]
-                                      :or {form-data {}}}]
+                                      :or {form-params {}}}]
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
    [:input (merge (e/field-attribs entity field)
                   {:name field :id field :type :number
-                   :value (form-data field)})]
+                   :value (form-params field)})]
    (help-text (e/field-options entity field))])
 
-(defmethod row :default [entity field {:keys [form-data errors
+(defmethod row :default [entity field {:keys [form-params errors
                                               error-field-names]
-                                       :or {form-data {}}}]
+                                       :or {form-params {}}}]
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
-   (form/text-field (e/field-attribs entity field) field (form-data field))
+   (form/text-field (e/field-attribs entity field) field (form-params field))
    (help-text (e/field-options entity field))])
 
 

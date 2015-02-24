@@ -70,7 +70,10 @@
                         (map entity/module-entity (:entities ~options))
                         ~options
                         (map route/route (if ~interface?
-                                           (:module-default-routes @sys/storage)
+                                           (vec
+                                            (concat
+                                             ~routes
+                                             (:module-default-routes @sys/storage)))
                                            ~routes)))}))))
 
 (defmacro defobject [name options methods]

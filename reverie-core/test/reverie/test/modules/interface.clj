@@ -4,6 +4,7 @@
             reverie.auth
             [reverie.database :as database]
             [reverie.module :as module]
+            [reverie.module.entity :as entity]
             reverie.modules.auth
             [reverie.modules.sql :as msql]
             [reverie.system :as sys]

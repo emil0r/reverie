@@ -11,21 +11,49 @@
             [reverie.system :as sys]
             [ring.util.response :as response]))
 
-(def ^:private base-link "admin/frame/module")
+(def base-link "admin/frame/module")
 
-(defn- pk-cast [pk]
+(defn pk-cast [pk]
   (try
     (Integer/parseInt pk)
     (catch Exception e
       pk)))
 
-(defn clean-form-params [form-data]
+(defn get-display-name [entity entity-data]
+  (get (:form-params entity-data)
+       (first (e/display entity))))
+
+(defn clean-form-params [form-params]
   (walk/keywordize-keys
-   (dissoc form-data
+   (dissoc form-params
            "_method"
            "_continue"
            "_addanother"
            "_save")))
+
+(defn select-errors [errors pickings]
+  (let [pickings (map (fn [error] [error]) pickings)]
+   (reduce (fn [out error]
+             (if (some #(= (or (:selector error)
+                               (:first-selector error)) %)
+                       pickings)
+               (conj out error)
+               out))
+           [] errors)))
+
+(defn process-request [request module edit?]
+  (let [{:keys [entity id]} (:params request)
+        entity (m/get-entity module entity)
+        id (pk-cast id)
+        post-fn (or (e/post-fn entity) (fn [x & _] x))
+        pre-save-fn (or (e/pre-save-fn entity) (fn [x & _] x))
+        form-params (clean-form-params (post-fn (:form-params request) edit?))
+        errors (validation/validate entity form-params)]
+    {:entity entity
+     :id id
+     :pre-save-fn pre-save-fn
+     :form-params form-params
+     :errors errors}))
 
 (defn list-entities [request module params]
   {:nav (crumb [[(join-uri base-link (m/slug module)) (m/name module)]])
@@ -38,9 +66,6 @@
             [:tr [:td [:a {:href (join-uri base-link (m/slug module) (e/slug entity))}
                        (e/name entity)]]]) (m/entities module))]]})
 
-(defn get-display-name [entity entity-data]
-  (get (:form-data entity-data)
-       (first (e/display entity))))
 
 (defn entity-does-not-exist [module]
   {:nav
@@ -100,14 +125,14 @@
     (entity-does-not-exist module)))
 
 (defn handle-single-entity [request module {:keys [entity id] :as params}]
-  (let [entity (m/get-entity module entity)
-        id (pk-cast id)
-        post-fn (or (e/post-fn entity) (fn [x & _] x))
-        form-params (clean-form-params (post-fn (:form-params request) true))
-        errors (validation/validate entity form-params)]
+  (let [{:keys [entity
+                id
+                pre-save-fn
+                form-params
+                errors]} (process-request request module true)]
     (if (empty? errors)
       (do
-        (m/save-data module entity id form-params)
+        (m/save-data module entity id (pre-save-fn form-params true))
         (cond
          (contains? params :_addanother)
          (response/redirect (join-uri base-link
@@ -141,13 +166,14 @@
                  (select-keys request [:uri])
                  entity-data))})
     (entity-does-not-exist module)))
+
 (defn handle-add-entity [request module {:keys [entity] :as params}]
-  (let [entity (m/get-entity module entity)
-        post-fn (or (e/post-fn entity) (fn [x & _] x))
-        form-params (clean-form-params (post-fn (:form-params request) true))
-        errors (validation/validate entity form-params)]
+  (let [{:keys [entity
+                pre-save-fn
+                form-params
+                errors]} (process-request request module true)]
     (if (empty? errors)
-      (let [entity-id (m/add-data module entity form-params)]
+      (let [entity-id (m/add-data module entity (pre-save-fn form-params false))]
         (cond
          (contains? params :_addanother)
          (response/redirect (join-uri base-link
@@ -173,7 +199,7 @@
           entity-data (m/get-data module entity params id)]
       {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
                              [(e/slug entity) (e/name entity)]
-                             [(str id) (get (:form-data entity-data)
+                             [(str id) (get (:form-params entity-data)
                                             (first (e/display entity)))]
                              ["delete" "Delete?"]]))
        :content (delete-entity-form module entity
