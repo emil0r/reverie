@@ -49,6 +49,27 @@ INSERT INTO auth_user_role VALUES (1, 1);
 
 -- group
 INSERT INTO auth_group VALUES (default, 'administrators');
+INSERT INTO auth_group VALUES (default, '1');
+INSERT INTO auth_group VALUES (default, '2');
+INSERT INTO auth_group VALUES (default, '3');
+INSERT INTO auth_group VALUES (default, '4');
+INSERT INTO auth_group VALUES (default, '5');
+INSERT INTO auth_group VALUES (default, '6');
+INSERT INTO auth_group VALUES (default, '7');
+INSERT INTO auth_group VALUES (default, '8');
+INSERT INTO auth_group VALUES (default, '9');
+INSERT INTO auth_group VALUES (default, '10');
+INSERT INTO auth_group VALUES (default, '11');
+INSERT INTO auth_group VALUES (default, '12');
+INSERT INTO auth_group VALUES (default, '13');
+INSERT INTO auth_group VALUES (default, '14');
+INSERT INTO auth_group VALUES (default, '15');
+INSERT INTO auth_group VALUES (default, '16');
+INSERT INTO auth_group VALUES (default, '17');
+INSERT INTO auth_group VALUES (default, '18');
+INSERT INTO auth_group VALUES (default, '19');
+INSERT INTO auth_group VALUES (default, '20');
+
 INSERT INTO auth_user_group VALUES (1,1);
 INSERT INTO auth_group_role VALUES (1,1);
 INSERT INTO auth_group_role VALUES (1,2);

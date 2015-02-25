@@ -1,5 +1,7 @@
 (ns reverie.modules.default
-  (:require [clojure.walk :as walk]
+  (:require [clojure.string :as str]
+            [clojure.walk :as walk]
+            [ez-web.paginator :as paginator]
             [ez-web.uri :refer [join-uri]]
             [ez-web.breadcrumbs :refer [crumb]]
             [reverie.admin.looknfeel.form :refer [get-entity-form
@@ -13,6 +15,7 @@
             [ring.util.response :as response]))
 
 (def base-link "admin/frame/module")
+(def pagination-limit 5)
 
 (defn pk-cast [pk]
   (try
@@ -77,7 +80,58 @@
           "Back to the start"]]]
    :content [:div.col-md-12 "This entity does not exist"]})
 
-(defn list-entity [request module {:keys [entity] :as params}]
+(defn plural? [length singular plural]
+  (if (> length 1)
+    (str length " " plural)
+    (str length " " singular)))
+
+(defn- qsize [qs]
+  (str/join "&" (map (fn [[k v]] (str (name k) "=" v)) qs)))
+
+(defn pagination [{:keys [uri params query-params] :as request} module entity]
+  (let [qs query-params
+        db (:database module)
+        page (or (:page params) 1)
+
+        {:keys [pages page
+                next-seq
+                prev-seq]
+         :as paginated} (paginator/paginate
+                         (-> (db/query db
+                                       {:select [:%count.*]
+                                        :from [(e/table entity)]})
+                             first :count)
+                         pagination-limit page)
+        first 1
+        last pages
+        prev-seq (reverse (take 2 prev-seq))
+        next-seq (take 2 next-seq)]
+    (if (> pages 1)
+      [:ul
+       [:li.page
+        [:a
+         {:href (str uri "?" (qsize (assoc qs "page" first)))}
+         "first"]]
+       (map (fn [page]
+              [:li.page
+               [:a
+                {:href (str uri "?" (qsize (assoc qs "page" page)))}
+                (str page)]])
+            prev-seq)
+       [:li.page [:span (str page)]]
+       (map (fn [page]
+              [:li.page
+               [:a
+                {:href (str uri "?" (qsize (assoc qs "page" page)))}
+                (str page)]])
+            next-seq)
+       [:li.page
+        [:a
+         {:href (str uri "?" (qsize (assoc qs "page" last)))}
+         "last"]]])))
+
+
+(defn list-entity [request module {:keys [entity page] :as params}]
   (with-access
     (get-in request [:reverie :user]) (:required-roles (m/options module))
     (if-let [entity (m/get-entity module entity)]
@@ -85,10 +139,16 @@
             {:keys [order]} (:options entity)
             pk (e/pk entity)
             table (e/table entity)
+            page (try (Integer/parseInt page)
+                      (catch Exception _
+                        1))
             display (e/display entity)
             data (db/query db {:select (into #{} (concat display [pk]))
                                :from [table]
-                               :order-by [order]})]
+                               :order-by [order]
+                               :limit pagination-limit
+                               :offset (* pagination-limit
+                                          (dec page))})]
         {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
                                [(join-uri base-link (m/slug module) (e/slug entity))  (e/name entity)]]))
          :content
@@ -107,7 +167,8 @@
                               [:td (if (= k (first display))
                                      [:a {:href (join-uri base-link (m/slug module) (e/slug entity) (str (get d pk)))} (get d k)]
                                      (get d k))]) display)])
-                data)])})
+                data)])
+         :pagination (pagination request module entity)})
       (entity-does-not-exist module))))
 
 (defn single-entity [request module {:keys [entity id] :as params}
