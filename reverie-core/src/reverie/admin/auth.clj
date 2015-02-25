@@ -9,8 +9,8 @@
 (defn login-view [request page params] {})
 
 (defn handle-login [request {:keys [database] :as page}
-                    {:keys [username password]}]
-  (if (auth/login database username password)
+                    params]
+  (if (auth/login params database)
       (response/get 302 "/admin")
       (response/get 302 "/admin/login")))
 

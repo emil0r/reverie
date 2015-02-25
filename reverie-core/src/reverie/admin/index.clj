@@ -4,8 +4,7 @@
             reverie.admin.auth
             reverie.admin.frames
             reverie.admin.templates
-            [reverie.core :refer [defpage]]
-            ))
+            [reverie.core :refer [defpage]]))
 
 
 

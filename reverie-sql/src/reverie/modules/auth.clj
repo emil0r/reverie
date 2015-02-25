@@ -6,7 +6,8 @@
             [hiccup.form :as form]
             [noir.session :as session]
             [reverie.admin.looknfeel.form :as looknfeel]
-            [reverie.auth :refer [IUserDatabase] :as auth]
+            [reverie.auth :refer [IUserDatabase
+                                  IUserLogin] :as auth]
             [reverie.core :refer [defmodule]]
             [reverie.database :as db]
             reverie.database.sql
@@ -294,7 +295,11 @@
                               nil?
                               (map #(-> % :group_name keyword)
                                    (get groups id))))}))))))
-  (login [db username password]
+  )
+
+(extend-type clojure.lang.PersistentArrayMap
+  IUserLogin
+  (login [{:keys [username password]} db]
     (let [username (str/lower-case username)
           user (-> (db/query db {:select [:id :password]
                                  :from [:auth_user]

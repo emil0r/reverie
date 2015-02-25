@@ -15,7 +15,7 @@
             [ring.util.response :as response]))
 
 (def base-link "admin/frame/module")
-(def pagination-limit 5)
+(def pagination-limit 20)
 
 (defn pk-cast [pk]
   (try

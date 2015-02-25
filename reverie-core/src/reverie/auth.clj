@@ -10,8 +10,10 @@
 
 (defprotocol IUserDatabase
   (get-users [db])
-  (get-user [db] [db id-or-email])
-  (login [db username password]))
+  (get-user [db] [db id-or-email]))
+
+(defprotocol IUserLogin
+  (login [data db]))
 
 
 (defn logged-in? []
