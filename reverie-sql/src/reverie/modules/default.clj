@@ -56,7 +56,7 @@
      :errors errors}))
 
 (defn list-entities [request module params]
-  {:nav (crumb [[(join-uri base-link (m/slug module)) (m/name module)]])
+  {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]] {:last? true}))
    :content
    [:div.col-md-12
     [:table.table.entities
@@ -80,7 +80,7 @@
           {:keys [order]} (:options entity)
           pk (e/pk entity)
           table (e/table entity)
-          display (e/display entity)
+          display #spy/t (e/display entity)
           data (db/query db {:select (into #{} (concat display [pk]))
                              :from [table]
                              :order-by [order]})]

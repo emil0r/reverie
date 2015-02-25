@@ -161,25 +161,24 @@
                        :fields [:active_p :roles]}
                       {:name "Groups"
                        :fields [:groups]}]
-           :related {:groups {:relation :many
-                              :m2m_table :auth_user_group
-                              :table :auth_group}
-                     :roles {:relation :many
-                             :m2m_table :auth_user_role
-                             :table :auth_role}}
            :post user-post-fn
            :pre-save user-pre-save-fn}
     :group {:name "Group"
             :order :name
             :table :auth_group
+            :display [:name]
             :fields {:name {:name "Name"
                             :type :text
                             :max 255
-                            :validation []}
+                            :validation (vlad/present [:name])}
                      :roles {:name "Roles"
                              :type :m2m
+                             :cast :int
                              :table :auth_role
-                             :m2m_table :auth_group_role}}
+                             :options [:id :name]
+                             :order :name
+                             :m2m {:table :auth_group_role
+                                   :joining [:group_id :role_id]}}}
             :sections [{:fields [:name]}
                        {:name "Rights"
                         :fields [:roles]}]}}}

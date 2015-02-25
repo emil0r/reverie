@@ -42,7 +42,7 @@
   (fields [this] (:fields options))
   (field [this field] (get-in options [:fields field]))
   (display [this] (or (:display options)
-                      (pk this)))
+                      [(pk this)]))
   (post-fn [this] (get-in options [:post]))
   (pre-save-fn [this] (get-in options [:pre-save]))
   (field-options [this field]
