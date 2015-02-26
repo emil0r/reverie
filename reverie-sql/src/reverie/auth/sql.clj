@@ -12,7 +12,7 @@
                                 :from [:auth_storage]
                                 :where [:and
                                         [:= :what "reverie.page/Page"]
-                                        [:= :id_int (page/id page)]
+                                        [:= :id_int (page/serial page)]
                                         [:in :role (map util/kw->str (:roles user))]
                                         [:= :action (util/kw->str action)]]})
                   first)]
@@ -21,7 +21,7 @@
     (try
       (db/query! db {:insert :auth_storage
                      :values [{:what "reverie.page/Page"
-                               :id_int (page/id page)
+                               :id_int (page/serial page)
                                :role (util/kw->str role)
                                :action (util/kw->str action)}]})
       (catch Exception _)))
@@ -29,7 +29,7 @@
     (db/query! db {:delete-from :auth_storage
                    :where [:and
                            [:= :what "reverie.page/Page"]
-                           [:= :id_int (page/id page)]
+                           [:= :id_int (page/serial page)]
                            [:= :role (util/kw->str role)]
                            [:= :action (util/kw->str action)]]})))
 
@@ -40,7 +40,7 @@
                                 :from [:auth_storage]
                                 :where [:and
                                         [:= :what "reverie.page/AppPage"]
-                                        [:= :id_int (page/id page)]
+                                        [:= :id_int (page/serial page)]
                                         [:in :role (map util/kw->str (:roles user))]
                                         [:= :action (util/kw->str action)]]})
                   first)]
@@ -49,7 +49,7 @@
     (try
       (db/query! db {:insert :auth_storage
                      :values [{:what "reverie.page/AppPage"
-                               :id_int (page/id page)
+                               :id_int (page/serial page)
                                :role (util/kw->str role)
                                :action (util/kw->str action)}]})
       (catch Exception _)))
@@ -57,7 +57,7 @@
     (db/query! db {:delete-from :auth_storage
                    :where [:and
                            [:= :what "reverie.page/AppPage"]
-                           [:= :id_int (page/id page)]
+                           [:= :id_int (page/serial page)]
                            [:= :role (util/kw->str role)]
                            [:= :action (util/kw->str action)]]})))
 
@@ -68,7 +68,7 @@
                                 :from [:auth_storage]
                                 :where [:and
                                         [:= :what "reverie.page/RawPage"]
-                                        [:= :id_int (page/id page)]
+                                        [:= :id_string (page/path page)]
                                         [:in :role (map util/kw->str (:roles user))]
                                         [:= :action (util/kw->str action)]]})
                   first)]
@@ -77,7 +77,7 @@
     (try
       (db/query! db {:insert :auth_storage
                      :values [{:what "reverie.page/RawPage"
-                               :id_int (page/id page)
+                               :id_string (page/path page)
                                :role (util/kw->str role)
                                :action (util/kw->str action)}]})
       (catch Exception _)))
@@ -85,6 +85,6 @@
     (db/query! db {:delete-from :auth_storage
                    :where [:and
                            [:= :what "reverie.page/RawPage"]
-                           [:= :id_int (page/id page)]
+                           [:= :id_string (page/path page)]
                            [:= :role (util/kw->str role)]
                            [:= :action (util/kw->str action)]]})))

@@ -83,7 +83,7 @@
       (seed!)
       (let [db (component/start (get-db))]
         (try
-          (let [p (db/get-page db 2)
+          (let [p (db/get-page db 1 false)
                 u (auth/get-user db 1)]
             (fact "view page"
                   (auth/authorize? p u db :view)
