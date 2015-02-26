@@ -74,3 +74,5 @@ INSERT INTO auth_user_group VALUES (1,1);
 INSERT INTO auth_group_role VALUES (1,1);
 INSERT INTO auth_group_role VALUES (1,2);
 INSERT INTO auth_group_role VALUES (1,3);
+
+INSERT INTO auth_storage VALUES ('reverie.page/Page', 2, null, 'user', 'view');

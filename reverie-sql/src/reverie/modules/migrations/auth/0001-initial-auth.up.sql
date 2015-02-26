@@ -45,3 +45,13 @@ CREATE TABLE auth_group_role (
     role_id integer references auth_role(id) ON DELETE CASCADE
 );
 ALTER TABLE auth_group_role ADD CONSTRAINT auth_group_role_unique UNIQUE(group_id, role_id);
+
+
+CREATE TABLE auth_storage (
+    what text NOT NULL,
+    id_int integer NULL,
+    id_string text NULL,
+    role text NOT NULL,
+    action text NOT NULL
+);
+ALTER TABLE auth_storage ADD CONSTRAINT auth_storage_unique UNIQUE(what, id_int, id_string, role, action);

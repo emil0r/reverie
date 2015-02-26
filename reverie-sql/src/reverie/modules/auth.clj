@@ -101,8 +101,17 @@
    :interface? true
    :migration {:path "src/reverie/modules/migrations/auth/"
                :automatic? true}
+   ;; TODO
+   ;; roles and actions need to be controlled on a high
+   ;; level kind of view and a low level view where it
+   ;; is on an individual basis
+   ;; the high level view can be controlled by the module/page/whatever
+   ;; by itself, but the low level view will require an interface
+   ;; that should be under the auth module
    :roles #{:admin :staff :user}
-   :required-roles #{:admin}
+   :actions #{:view :edit}
+   :required-roles {:view #{:admin :staff}
+                    :edit #{:admin :staff}}
    :template :admin/main
    :entities
    {:user {:name "User"
@@ -294,8 +303,7 @@
                              (remove
                               nil?
                               (map #(-> % :group_name keyword)
-                                   (get groups id))))}))))))
-  )
+                                   (get groups id))))})))))))
 
 (extend-type clojure.lang.PersistentArrayMap
   IUserLogin
