@@ -15,10 +15,13 @@
   ([name]
      (let [name (keyword name)
            params (keys &env)]
-       (if (and (some #(= 'request %) params)
-                (some #(= 'page %) params))
-         `(render/render (a/area ~name) ~'request ~'page)
-         (throw (AreaException. "area assumes variables 'request' and 'page' to be present. If you wish to use other named variables send them after the name of the area like this -> (area :a req p)")))))
+       (cond
+        (some #(= name %) [:body :headers :status])
+        (throw (AreaException. "areas can't be named body, headers or status"))
+        (and (some #(= 'request %) params)
+             (some #(= 'page %) params))
+        `(render/render (a/area ~name) ~'request ~'page)
+        :else (throw (AreaException. "area assumes variables 'request' and 'page' to be present. If you wish to use other named variables send them after the name of the area like this -> (area :a req p)")))))
   ([name request page]
      (let [name (keyword name)]
        `(render/render (a/area ~name) ~request ~page))))
