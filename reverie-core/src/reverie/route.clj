@@ -1,8 +1,7 @@
 (ns reverie.route
   (:require [clojure.string :as str]
             [clout.core :as clout]
-            [reverie.cast :as cast]
-            [reverie.security :refer [with-access]]))
+            [reverie.cast :as cast]))
 
 (defprotocol IRouting
   (match? [component request])
@@ -12,26 +11,24 @@
 (defrecord Route [path compiled roles matching casting methods]
   IRouting
   (match? [this request]
-    (with-access
-      (get-in request [:reverie :user]) roles
-      (let [temp-request (if (:shortened-uri request)
-                           (assoc request :uri (:shortened-uri request))
-                           request)]
-        (if-let [matched (clout/route-matches compiled temp-request)]
-          (let [method (if methods
-                         (or (get methods (:request-method request))
-                             (:any methods)))]
-            {:request (if casting
-                        (assoc request
-                          :params
-                          (reduce (fn [params [key cast-to]]
-                                    (if (get params key)
-                                      (assoc params key (cast/cast cast-to (get params key)))
-                                      params))
-                                  (merge (:params request) matched) casting))
-                        (assoc request :params (merge (:params request) matched)))
-             :matched matched
-             :method method})))))
+    (let [temp-request (if (:shortened-uri request)
+                         (assoc request :uri (:shortened-uri request))
+                         request)]
+      (if-let [matched (clout/route-matches compiled temp-request)]
+        (let [method (if methods
+                       (or (get methods (:request-method request))
+                           (:any methods)))]
+          {:request (if casting
+                      (assoc request
+                        :params
+                        (reduce (fn [params [key cast-to]]
+                                  (if (get params key)
+                                    (assoc params key (cast/cast cast-to (get params key)))
+                                    params))
+                                (merge (:params request) matched) casting))
+                      (assoc request :params (merge (:params request) matched)))
+           :matched matched
+           :method method}))))
   (get-route [this] this))
 
 

@@ -7,10 +7,10 @@
             [reverie.admin.looknfeel.form :refer [get-entity-form
                                                   delete-entity-form]]
             [reverie.admin.validation :as validation]
+            [reverie.auth :refer [with-access]]
             [reverie.database :as db]
             [reverie.module :as m]
             [reverie.module.entity :as e]
-            [reverie.security :refer [with-access]]
             [reverie.system :as sys]
             [ring.util.response :as response]))
 

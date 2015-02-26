@@ -1,7 +1,7 @@
-(ns reverie.security.sql
+(ns reverie.auth.sql
   (:require [reverie.database :as db]
             [reverie.page :as page]
-            [reverie.security :refer [IAuthorize]]
+            [reverie.auth :refer [IAuthorize]]
             [reverie.util :as util])
   (:import [reverie.page Page AppPage RawPage]))
 

@@ -10,7 +10,7 @@
             [reverie.site :as site]
             [reverie.middleware :refer [wrap-admin
                                         wrap-error-log
-                                        wrap-access
+                                        wrap-authorized
                                         wrap-forker
                                         wrap-reverie-data]]
             [ring.middleware.content-type :refer [wrap-content-type]]
@@ -55,7 +55,7 @@
                               (vec
                                (concat
                                 [[wrap-admin]
-                                 [wrap-access]
+                                 [wrap-authorized]
                                  [wrap-reverie-data]
                                  [wrap-content-type (:content-type middleware-options)]
                                  [wrap-content-type]

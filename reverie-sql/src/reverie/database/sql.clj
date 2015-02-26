@@ -5,6 +5,7 @@
             [joplin.core :as joplin]
             joplin.jdbc.database
             [honeysql.core :as sql]
+            [reverie.auth :as auth]
             [reverie.database :as db]
             [reverie.movement :as movement]
             [reverie.object :as object]
@@ -318,6 +319,10 @@
                    :version 0)
             {:keys [id] :as page-data} (db/query! db add-page<! data)]
         (recalculate-routes db id)
+        (auth/add-authorization! (db/get-page db id)
+                                 db
+                                 :user
+                                 :view)
         page-data)))
 
   (update-page! [db id data]

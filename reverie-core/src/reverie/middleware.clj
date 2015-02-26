@@ -14,7 +14,7 @@
          (not (re-find #"^/admin/logout" uri)))
       (try+
        (handler request)
-       (catch [:type :reverie.security/not-allowed] {}
+       (catch [:type :reverie.auth/not-allowed] {}
          (log/info "Unauthorized request for admin area"
                    {:user (get-in request [:reverie :user])
                     :request (select-keys request [:headers
@@ -34,11 +34,11 @@
             (log/error "Caught an exception" e)
             (response/get 500)))))))
 
-(defn wrap-access [handler]
+(defn wrap-authorized [handler]
   (fn [request]
     (try+
      (handler request)
-     (catch [:type :reverie.security/not-allowed] {}
+     (catch [:type :reverie.auth/not-allowed] {}
        (response/get 401)))))
 
 (defn wrap-reverie-data [handler]

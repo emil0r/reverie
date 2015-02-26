@@ -13,4 +13,4 @@
 
 
 (defpage "/admin" {:template :admin/index
-                   :required-roles #{:admin}} [["/" {:get admin-index}]])
+                   :required-roles {:view #{:admin}}} [["/" {:get admin-index}]])

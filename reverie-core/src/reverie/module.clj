@@ -1,10 +1,10 @@
 (ns reverie.module
-  (:require [reverie.module.entity :as entity]
+  (:require [reverie.auth :refer [with-access]]
+            [reverie.module.entity :as entity]
             [reverie.page :as page]
             [reverie.render :as render]
             [reverie.response :as response]
             [reverie.route :as route]
-            [reverie.security :refer [with-access]]
             [reverie.system :as sys]
             [reverie.util :as util])
   (:refer-clojure :exclude [list name])

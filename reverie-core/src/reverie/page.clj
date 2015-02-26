@@ -1,12 +1,12 @@
 (ns reverie.page
   (:refer-clojure :exclude [type name])
   (:require [clojure.string :as str]
+            [reverie.auth :refer [with-access]]
             [reverie.database :as db]
             [reverie.object :as object]
             [reverie.route :as route]
             [reverie.render :as render]
             [reverie.response :as response]
-            [reverie.security :refer [with-access]]
             [reverie.system :as sys]
             [reverie.util :as util])
   (:import [reverie RenderException]))
