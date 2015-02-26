@@ -321,7 +321,7 @@
         (recalculate-routes db id)
         (auth/add-authorization! (db/get-page db id)
                                  db
-                                 :user
+                                 :all
                                  :view)
         page-data)))
 

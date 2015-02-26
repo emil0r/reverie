@@ -49,6 +49,16 @@
       => :reverie.auth/not-allowed)
 
 
+(fact "with-access - :all, anyone allowed"
+      (try+
+       (with-access nil {:view #{:all}
+                         :edit #{:admin :staff}}
+         true)
+       (catch Object o
+         (:type o)))
+      => true)
+
+
 (fact "with-access - user accessed"
       (try+
        (with-access {:roles #{:admin}} {:view #{:staff}
@@ -90,7 +100,7 @@
                   => true)
             (fact "edit page"
                   (auth/authorize? p u db :edit)
-                  => false))
+                  => true))
           (catch Exception e
             #spy/d e))
         (component/stop db)))

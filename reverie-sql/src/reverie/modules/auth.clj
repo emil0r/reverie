@@ -108,7 +108,7 @@
    ;; the high level view can be controlled by the module/page/whatever
    ;; by itself, but the low level view will require an interface
    ;; that should be under the auth module
-   :roles #{:admin :staff :user}
+   :roles #{:admin :staff :user :all}
    :actions #{:view :edit}
    :required-roles {:view #{:admin :staff}
                     :edit #{:admin :staff}}

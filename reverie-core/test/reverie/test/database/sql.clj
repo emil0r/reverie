@@ -111,19 +111,19 @@
  "authorization added"
  (seed!)
  (let [db (component/start (get-db))
-       page-id (:id (db/add-page! db {:parent 1 :title ""
-                                      :name "Test page 1"
-                                      :route "/test-page-1"
-                                      :template :foobaz
-                                      :type :page :app ""}))]
+       serial (:serial (db/add-page! db {:parent 1 :title ""
+                                         :name "Test page 1"
+                                         :route "/test-page-1"
+                                         :template :foobaz
+                                         :type :page :app ""}))]
 
    (-> (db/query db
                  {:select [:*]
                   :from [:auth_storage]
                   :where [:and
                           [:= :what "reverie.page/Page"]
-                          [:= :id_int page-id]]})
-       first :id_int) => page-id
+                          [:= :id_int serial]]})
+       first :id_int) => serial
    (component/stop db)))
 
 (fact

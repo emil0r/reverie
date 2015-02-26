@@ -8,18 +8,20 @@
 (extend-type Page
   IAuthorize
   (authorize? [page user db action]
-    (let [row (-> (db/query db {:select [:*]
-                                :from [:auth_storage]
-                                :where [:and
-                                        [:= :what "reverie.page/Page"]
-                                        [:= :id_int (page/serial page)]
-                                        [:in :role (map util/kw->str (:roles user))]
-                                        [:= :action (util/kw->str action)]]})
-                  first)]
-      (not (nil? row))))
+    (or
+     (contains? (:roles user) :admin)
+     (let [row (-> (db/query db {:select [:*]
+                                 :from [:auth_storage]
+                                 :where [:and
+                                         [:= :what "reverie.page/Page"]
+                                         [:= :id_int (page/serial page)]
+                                         [:in :role (map util/kw->str (:roles user))]
+                                         [:= :action (util/kw->str action)]]})
+                   first)]
+       (not (nil? row)))))
   (add-authorization! [page db role action]
     (try
-      (db/query! db {:insert :auth_storage
+      (db/query! db {:insert-into :auth_storage
                      :values [{:what "reverie.page/Page"
                                :id_int (page/serial page)
                                :role (util/kw->str role)
@@ -36,18 +38,20 @@
 (extend-type AppPage
   IAuthorize
   (authorize? [page user db action]
-    (let [row (-> (db/query db {:select [:*]
-                                :from [:auth_storage]
-                                :where [:and
-                                        [:= :what "reverie.page/AppPage"]
-                                        [:= :id_int (page/serial page)]
-                                        [:in :role (map util/kw->str (:roles user))]
-                                        [:= :action (util/kw->str action)]]})
-                  first)]
-      (not (nil? row))))
+    (or
+     (contains? (:roles user) :admin)
+     (let [row (-> (db/query db {:select [:*]
+                                 :from [:auth_storage]
+                                 :where [:and
+                                         [:= :what "reverie.page/AppPage"]
+                                         [:= :id_int (page/serial page)]
+                                         [:in :role (map util/kw->str (:roles user))]
+                                         [:= :action (util/kw->str action)]]})
+                   first)]
+       (not (nil? row)))))
   (add-authorization! [page db role action]
     (try
-      (db/query! db {:insert :auth_storage
+      (db/query! db {:insert-into :auth_storage
                      :values [{:what "reverie.page/AppPage"
                                :id_int (page/serial page)
                                :role (util/kw->str role)
@@ -64,18 +68,20 @@
 (extend-type RawPage
   IAuthorize
   (authorize? [page user db action]
-    (let [row (-> (db/query db {:select [:*]
-                                :from [:auth_storage]
-                                :where [:and
-                                        [:= :what "reverie.page/RawPage"]
-                                        [:= :id_string (page/path page)]
-                                        [:in :role (map util/kw->str (:roles user))]
-                                        [:= :action (util/kw->str action)]]})
-                  first)]
-      (not (nil? row))))
+    (or
+     (contains? (:roles user) :admin)
+     (let [row (-> (db/query db {:select [:*]
+                                 :from [:auth_storage]
+                                 :where [:and
+                                         [:= :what "reverie.page/RawPage"]
+                                         [:= :id_string (page/path page)]
+                                         [:in :role (map util/kw->str (:roles user))]
+                                         [:= :action (util/kw->str action)]]})
+                   first)]
+       (not (nil? row)))))
   (add-authorization! [page db role action]
     (try
-      (db/query! db {:insert :auth_storage
+      (db/query! db {:insert-into :auth_storage
                      :values [{:what "reverie.page/RawPage"
                                :id_string (page/path page)
                                :role (util/kw->str role)
