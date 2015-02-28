@@ -29,12 +29,12 @@
 ;; authorization
 
 (defmacro with-access [user required-roles & body]
-  (let [required-roles (apply set/union (vals required-roles))]
-    `(if (or (contains? (:roles ~user) :admin)
-             (empty? ~required-roles)
-             (contains? ~required-roles :all)
+  `(let [~'roles (apply set/union (vals ~required-roles))]
+     (if (or (contains? (:roles ~user) :admin)
+             (empty? ~'roles)
+             (contains? ~'roles :all)
              (not (empty? (set/intersection
-                           (:roles ~user) ~required-roles))))
+                           (:roles ~user) ~'roles))))
        ~@body
        (throw+ {:type ::not-allowed}))))
 

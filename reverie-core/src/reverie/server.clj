@@ -9,10 +9,12 @@
             [reverie.settings :as settings]
             [reverie.site :as site]
             [reverie.middleware :refer [wrap-admin
-                                        wrap-error-log
                                         wrap-authorized
+                                        wrap-csrf-token
+                                        wrap-error-log
                                         wrap-forker
                                         wrap-reverie-data]]
+            [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file-info :refer [wrap-file-info]]
             [ring.middleware.head :refer [wrap-head]]
@@ -56,7 +58,9 @@
                                (concat
                                 [[wrap-admin]
                                  [wrap-authorized]
-                                 [wrap-reverie-data]
+                                 [wrap-reverie-data {:dev? dev?}]
+                                 [wrap-csrf-token]
+                                 [wrap-anti-forgery]
                                  [wrap-content-type (:content-type middleware-options)]
                                  [wrap-content-type]
                                  [wrap-keyword-params]

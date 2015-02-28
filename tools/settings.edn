@@ -1,10 +1,10 @@
 {:reverie-editing
- {:notify ["../reverie-core/resources/public/media/admin/css/editing.css"]
-  :actions [{:command "lessc ../less/editing/admin.editing.less ../reverie-core/resources/public/media/admin/css/editing.css"
+ {:notify ["../reverie-core/resources/public/static/admin/css/editing.css"]
+  :actions [{:command "lessc ../less/editing/admin.editing.less ../reverie-core/resources/public/static/admin/css/editing.css"
              :watch-dir "../less/editing/"
              :pattern "^[\\w+0-9]+"}]}
  :reverie-admin
- {:notify ["../reverie-core/resources/public/media/admin/css/main.css"]
-  :actions [{:command "lessc ../less/admin.less ../reverie-core/resources/public/media/admin/css/main.css"
+ {:notify ["../reverie-core/resources/public/static/admin/css/main.css"]
+  :actions [{:command "lessc ../less/admin.less ../reverie-core/resources/public/static/admin/css/main.css"
              :watch-dir "../less/"
              :pattern "^[\\w+0-9]+"}]}}

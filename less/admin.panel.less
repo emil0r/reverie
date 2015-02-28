@@ -31,13 +31,17 @@
         color: @primary;
         &:hover {
             cursor: pointer;
-            text-shadow: 1px 1px 1px @black;
         }
     }
     #tree {
         margin: 5px 0 5px 0;
-        min-height: 250px;
+        height: 250px;
         border: 1px @gray-light solid;
+        overflow: scroll;
+        .fancytree-container {
+            border: 0;
+            outline: none;
+        }
     }
     #tree-search-form {
         i {

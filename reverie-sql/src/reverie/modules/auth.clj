@@ -18,6 +18,7 @@
                                              process-request
                                              select-errors]]
             [reverie.modules.sql :as msql]
+            [ring.util.anti-forgery :refer :all]
             [ring.util.response :as response]
             vlad)
   (:import [reverie.database.sql DatabaseSQL]))
@@ -42,6 +43,7 @@
                            ["password" "Change password"]]))
      :content (form/form-to {:id :password-form}
                             ["POST" ""]
+                            (anti-forgery-field)
                             [:fieldset
                              [:legend "Change password"]
                              [:div.form-row

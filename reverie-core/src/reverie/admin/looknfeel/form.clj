@@ -4,6 +4,7 @@
             [hiccup.form :as form]
             [reverie.module :as m]
             [reverie.module.entity :as e]
+            [ring.util.anti-forgery :refer :all]
             vlad))
 
 (defn field-name [field options]
@@ -121,6 +122,7 @@
   (form/form-to
    {:id :edit-form}
    ["POST" ""]
+   (anti-forgery-field)
    (map (fn [{:keys [name fields]}]
           [:fieldset
            (if name [:legend name])
@@ -152,6 +154,7 @@
   (form/form-to
    {:id :delete-form}
    ["POST" ""]
+   (anti-forgery-field)
    [:h2 "Really delete " display-name "?"]
    [:div.buttons
     [:input.btn.btn-primary {:id :_cancel :name :_cancel

@@ -1,10 +1,10 @@
 body,html {
     padding: 0;
     margin: 0;
+    height: 100%;
 }
 
 html {
-    height: 100%;
     border-right: @black 2px solid;
 }
 
@@ -16,13 +16,28 @@ body {
 a {
     color: @primary;
     text-decoration: none;
-    &:hover {
-        color: @primary;
-        text-shadow: 1px 1px 1px @black;
-        text-decoration: none;
-    }
 }
 
 h1,h2,h3,h4,h5,h6 {
     color: @primary;
+}
+
+#container {
+    display: flex;
+    height: 100%;
+}
+
+#framecontrol {
+    flex-grow: 1;
+    width: 240px;
+    height: 100%;
+}
+
+#framemain, #frameoptions {
+    flex-grow: 100;
+    height: 100%;
+}
+
+#frameoptions {
+    display: none;
 }

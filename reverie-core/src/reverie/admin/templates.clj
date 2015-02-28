@@ -1,23 +1,18 @@
 (ns reverie.admin.templates
   (:require [hiccup.page :refer [html5]]
             [hiccup.form :as form]
-            [reverie.admin.looknfeel.common :refer [head]]
-            [reverie.core :refer [deftemplate area]]))
+            [reverie.admin.looknfeel.common :refer [head footer]]
+            [reverie.core :refer [deftemplate area]]
+            [ring.util.anti-forgery :refer :all]))
 
 (defn admin-index [request page properties params]
   (html5
-   (head "Admin reverie")
+   (head "Admin reverie" {:request request})
    [:body
-    [:table.controller
-     {:cellpadding 0 :cellspacing 0
-      :style "width: 100%; height: 100%;"}
-     [:tr
-      [:td#controlpanel {:style "width: 240px;"}
-       [:iframe {:src "/admin/frame/controlpanel" :frameborder "no" :id "framecontrol" :name "framecontrol"}]]
-      [:td#main
-       [:iframe {:src "/" :frameborder "no" :id "framemain" :name "framemain"}]]
-      [:td#options
-       [:iframe {:src "/admin/frame/options" :frameborder "no" :id "frameoptions" :name "frameoptions"}]]]]]))
+    [:div#container
+     [:iframe {:src "/admin/frame/controlpanel" :frameborder "no" :id "framecontrol" :name "framecontrol"}]
+     [:iframe {:src "/" :frameborder "no" :id "framemain" :name "framemain"}]
+     [:iframe {:src "/admin/frame/options" :frameborder "no" :id "frameoptions" :name "frameoptions"}]]]))
 
 (defn admin-login [request page properties {:keys [username password]}]
   (html5
@@ -26,6 +21,7 @@
     [:div.row
      [:div.col-md-4.col-md-offset-4
       [:form {:method "POST"}
+       (anti-forgery-field)
        [:table.table
         [:tr
          [:th (form/label :username "Username")]
@@ -40,8 +36,9 @@
 (defn- admin-controlpanel [request page properties params]
   (html5
    (head "reverie Control Panel")
-   [:body
-    "control panel"]))
+   [:body.controlpanel
+    (area panel)
+    (footer {:request request})]))
 
 (defn- admin-main [request page properties params]
   (html5

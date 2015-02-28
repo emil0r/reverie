@@ -1,7 +1,9 @@
 (ns reverie.middleware
-  (:require [reverie.auth :as auth]
+  (:require [noir.cookies :as cookies]
+            [reverie.auth :as auth]
             [reverie.system :as sys]
             [reverie.response :as response]
+            [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log]))
 
@@ -41,14 +43,28 @@
      (catch [:type :reverie.auth/not-allowed] {}
        (response/get 401)))))
 
-(defn wrap-reverie-data [handler]
+(defn wrap-reverie-data [handler {:keys [dev?]}]
   (fn [{:keys [uri] :as request}]
     (let [db (sys/get-db)
           user (auth/get-user db)]
       (handler (assoc request
                  :reverie {:user user
-                           :database db})))))
+                           :database db
+                           :dev? dev?})))))
 
+(defn- session-token [request]
+  (get-in request [:session :ring.middleware.anti-forgery/anti-forgery-token]))
+
+
+(defn wrap-csrf-token [handler]
+  (fn [request]
+    (let [old-token (session-token request)
+          response (handler request)]
+      (if (= old-token *anti-forgery-token*)
+        response
+        (do
+          (cookies/put! "csrftoken" *anti-forgery-token*)
+          response)))))
 
 (defn wrap-forker [handler & handlers]
   (fn [request]
