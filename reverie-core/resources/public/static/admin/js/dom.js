@@ -19,7 +19,7 @@
         window.parent.framemain.frameElement.style.display = "none";
     };
     var __show_main = function() {
-        window.parent.framemain.frameElement.style.display = "none";
+        window.parent.framemain.frameElement.style.display = "block";
     };
 
     var hide_main = function() {
@@ -46,6 +46,12 @@
         window.parent.framemain.location = uri;
     };
 
+    reload_main = function() {
+        var href = window.parent.framemain.location.pathname;
+        var search = window.parent.framemain.location.search;
+        main_uri(href + search);
+    };
+
     window.dom = {options_uri: options_uri,
                   main_uri: main_uri,
                   hide_main: hide_main,
@@ -54,5 +60,6 @@
                   show_options: show_options,
                   $o: $o,
                   $m: $m,
-                  $m_ready: $m_ready};
+                  $m_ready: $m_ready,
+                  reload_main: reload_main};
 })(window);

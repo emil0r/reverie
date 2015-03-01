@@ -1,5 +1,6 @@
 (ns reverie.site
   (:require [com.stuartsierra.component :as component]
+            [reverie.admin.api.editors :as editors]
             [reverie.database :as db]
             [reverie.object :as object]
             [reverie.page :as page]
@@ -50,7 +51,7 @@
                second))]
         (if route
           (let [{:keys [template app type name serial]} properties
-                public? (not (= :edit (:mode reverie)))]
+                public? (not (get-in request [:reverie :editor?]))]
             (case type
               :page (let [p (db/get-page database
                                          serial
@@ -90,14 +91,20 @@
        (or (get system-pages 404)
            (response/get 404)) ;; no match for against the host names -> 404
        (if-let [p (get-page this request)]
-         (if-let [resp (render/render p request)]
-           (if (map? resp)
-             (assoc resp :body (render-fn (:body resp)))
-             {:status 200
-              :body (render-fn resp)
-              :headers {"Content-Type" "text/html; charset=utf-8;"}})
-           (or (get system-pages 404)
-               (response/get 404))) ;; got back nil -> 404
+         (do
+           (editors/edit-follow! p (get-in request [:reverie :user]))
+           (let [request (assoc-in request [:reverie :edit?]
+                                   (editors/edit? p (get-in request [:reverie :user])))]
+             (if-let [resp (render/render p request)]
+               (editors/assoc-admin-css
+                request
+                (if (map? resp)
+                  (assoc resp :body (render-fn (:body resp)))
+                  {:status 200
+                   :body (render-fn resp)
+                   :headers {"Content-Type" "text/html; charset=utf-8;"}}))
+               (or (get system-pages 404)
+                   (response/get 404))))) ;; got back nil -> 404
          (or (get system-pages 404)
              (response/get 404)))) ;; didn't find page -> 404
      (catch [:type :response] {:keys [status args]}

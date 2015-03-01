@@ -2,6 +2,9 @@
 
 .reverie-area {
     position: relative;
+    .hidden {
+        display: none !important;
+    }
     .reverie-area-holder {
         margin-bottom: 15px;
     }
@@ -24,7 +27,7 @@
         display: inline-block;
         background-color: @gray-light;
         border: 1px @gray solid;
-        
+
         li {
             padding: 5px;
         }
@@ -53,12 +56,12 @@
                     cursor: pointer;
                 }
             }
-            
+
         }
     }
 
 
-    // object
+
     .reverie-object, .reverie-origo {
         margin-bottom: 15px;
         sup.reverie-app-path {

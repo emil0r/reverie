@@ -1,5 +1,6 @@
 (ns reverie.admin.auth
   (:require [hiccup.form :as form]
+            [reverie.admin.api.editors :as editors]
             [reverie.auth :as auth]
             [reverie.core :refer [defpage]]
             [reverie.response :as response]))
@@ -11,8 +12,10 @@
 (defn handle-login [request {:keys [database] :as page}
                     params]
   (if (auth/login params database)
-      (response/get 302 "/admin")
-      (response/get 302 "/admin/login")))
+    (do
+      (editors/editor! (auth/get-user database))
+      (response/get 302 "/admin"))
+    (response/get 302 "/admin/login")))
 
 
 (defn logout [request page params]

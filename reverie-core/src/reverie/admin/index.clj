@@ -1,5 +1,6 @@
 (ns reverie.admin.index
-  (:require reverie.modules.default
+  (:require reverie.nsloader
+            reverie.modules.default
             reverie.admin.api
             reverie.admin.auth
             reverie.admin.frames

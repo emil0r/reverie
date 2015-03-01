@@ -34,4 +34,13 @@
                 [:i.icon-edit-sign {:title "Edit mode"}]
                 [:i.icon-eye-open.hidden {:title "View mode"}]
                 [:i.icon-trash {:title "Trash it"}]]]
-              [:div.meta]])}))
+              [:div.meta
+               [:table.meta
+                [:tr [:th "Name"] [:td.name ""]]
+                [:tr [:th "Title"] [:td.title ""]]
+                [:tr [:th "Created"] [:td.created ""]]
+                [:tr [:th "Updated"] [:td.updated ""]]
+                [:tr [:th "Published?"] [:td.published_p ""]]]
+               [:div.buttons
+                [:div.btn.btn-primary.publish "Publishing"]
+                [:div.btn.btn-primary.meta "Meta"]]]])}))

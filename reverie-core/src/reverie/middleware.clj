@@ -1,5 +1,6 @@
 (ns reverie.middleware
   (:require [noir.cookies :as cookies]
+            [reverie.admin.api.editors :as editors]
             [reverie.auth :as auth]
             [reverie.system :as sys]
             [reverie.response :as response]
@@ -24,6 +25,13 @@
                                                    :uri])})
          (response/get 302 "/admin/login")))
       (handler request))))
+
+(defn wrap-editor [handler]
+  (fn [request]
+    (handler
+     (assoc-in request
+               [:reverie :editor?]
+               (editors/editor? (get-in request [:reverie :user]))))))
 
 (defn wrap-error-log [handler dev?]
   (fn [request]

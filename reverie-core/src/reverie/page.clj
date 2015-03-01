@@ -29,7 +29,9 @@
   (objects [page])
   (type [page])
   (version [page])
-  (published? [page]))
+  (published? [page])
+  (created [page])
+  (updated [page]))
 
 
 (defn type? [page expected]
@@ -71,6 +73,8 @@
   (path [this] (:path route))
   (objects [this] (sort-by :order objects))
   (type [page] :page)
+  (created [page] created)
+  (updated [page] updated)
 
   render/IRender
   (render [this request]
@@ -104,6 +108,8 @@
   (path [this] (:path route))
   (objects [this])
   (type [page] :raw)
+  (created [page] nil)
+  (updated [page] nil)
 
   render/IRender
   (render [this {:keys [request-method] :as request}]
@@ -168,6 +174,8 @@
   (path [this] (:path route))
   (objects [this] (sort-by :order objects))
   (type [page] :app)
+  (created [page] created)
+  (updated [page] updated)
 
   render/IRender
   (render [this request]

@@ -323,6 +323,14 @@
                                  db
                                  :all
                                  :view)
+        (auth/add-authorization! (db/get-page db id)
+                                 db
+                                 :edit
+                                 :staff)
+        (auth/add-authorization! (db/get-page db id)
+                                 db
+                                 :add
+                                 :staff)
         page-data)))
 
   (update-page! [db id data]
@@ -331,7 +339,8 @@
       (assert (not (empty? data)) "update-page! does not take an empty data set")
       (db/query! db {:update :reverie_page
                      :set data})
-      (recalculate-routes db id)))
+      (recalculate-routes db id)
+      true))
 
   (move-page! [db id origo-id movement]
     (let [movement (keyword movement)]
