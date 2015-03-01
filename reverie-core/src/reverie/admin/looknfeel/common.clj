@@ -29,6 +29,7 @@
                      "util.js"
                      "tabs.js"
                      "tree.js"
+                     "objects.js"
                      "main.js"
                      "eyespy.js"
                      "init.js"])))))

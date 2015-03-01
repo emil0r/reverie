@@ -68,11 +68,18 @@
             :serial (page/serial page)
             :time (t/now)})))
 
-(defn assoc-admin-css [request response]
+(defn assoc-admin-links [page request response]
   (if (get-in request [:reverie :edit?])
     (assoc response :body
-           (str/replace (:body response)
-                        #"</head>"
-                        (str "<link rel='stylesheet' href='/static/admin/css/editing.css' type='text/css' />"
-                             "</head>")))
+           (-> (:body response)
+               (str/replace
+                #"</head>"
+                (str "<link rel='stylesheet' href='/static/admin/css/editing.css' type='text/css' />"
+                     "</head>"))
+               (str/replace
+                #"</body>"
+                (if (some #(= (page/type page) %) [:page :app])
+                  (str "<script type='text/javascript'>parent.dom.\\$m_on_loaded();</script>"
+                       "</body>")
+                  "</body>"))))
     response))

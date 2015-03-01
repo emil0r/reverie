@@ -1,12 +1,20 @@
 (function(window){
+    var $m_ready_functions = [];
+
     var $m = function(selector) {
-        $(window.parent.framemain.document.body).find(selector);
+        return $(window.parent.document.framemain.document).find(selector);
     };
     var $m_ready = function(fn) {
-        $(window.parent.framemain.document).ready(fn);
+        $m_ready_functions.push(fn);
     };
     var $o = function(selector) {
-        $(window.parent.frameoptions.document.body).find(selector);
+        return $(window.parent.document.frameoptions.document).find(selector);
+    };
+
+    var $m_on_loaded = function() {
+        for (var i = 0, ii = $m_ready_functions.length; i < ii; i++) {
+            $m_ready_functions[i]();
+        }
     };
 
     var __hide_options = function() {
@@ -61,5 +69,10 @@
                   $o: $o,
                   $m: $m,
                   $m_ready: $m_ready,
-                  reload_main: reload_main};
+                  $m_on_loaded: $m_on_loaded,
+                  reload_main: reload_main
+                 };
+
+    window.parent.dom = window.dom;
+    window.parent.$ = $;
 })(window);

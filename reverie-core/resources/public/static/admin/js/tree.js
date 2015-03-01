@@ -1,4 +1,4 @@
-(function(window){
+(function(window, $){
 
     var tree_search = $("#tree-search");
     var tree_search_form = $("#tree-search-form");
@@ -122,5 +122,4 @@
 
 
     window.tree = {};
-    window.parent.tree = tree;
-})(window);
+})(window, jQuery);

@@ -96,7 +96,8 @@
            (let [request (assoc-in request [:reverie :edit?]
                                    (editors/edit? p (get-in request [:reverie :user])))]
              (if-let [resp (render/render p request)]
-               (editors/assoc-admin-css
+               (editors/assoc-admin-links
+                p
                 request
                 (if (map? resp)
                   (assoc resp :body (render-fn (:body resp)))
