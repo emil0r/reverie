@@ -1,8 +1,16 @@
 (ns reverie.object
   (:refer-clojure :exclude [name])
   (:require [reverie.render :as render]
-            [reverie.route :as route])
+            [reverie.route :as route]
+            [reverie.system :as sys])
   (:import [reverie RenderException]))
+
+
+(defn initial-properties [object-name]
+  (let [object-name (keyword object-name)]
+   (into {} (map (fn [[k {:keys [initial]}]]
+                   {k initial})
+                 (-> @sys/storage :objects object-name :options :properties)))))
 
 (defprotocol IObject
   (id [object])

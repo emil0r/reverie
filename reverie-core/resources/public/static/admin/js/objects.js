@@ -61,6 +61,27 @@
             }
         });
 
+        dom.$m(".reverie-area .add-objects li").on('click', function() {
+            var object = $(this).html();
+            if (object !== '' && object.length > 0) {
+                var area = $(this).parents(".reverie-area").attr("area");
+                var url = null;
+                var data = {};
+
+                $.post('/admin/api/interface/objects/add',
+                       {area: area,
+                        object: object,
+                        page_serial: tree.selected_node().key},
+                       function(data) {
+                           if (!data.success) {
+                               alert(data.error);
+                           } else {
+                               dom.reload_main();
+                           }
+                       });
+            }
+        });
+
         dom.$m(".reverie-area-panel").on('click', function(e) {
             $(this).siblings(".reverie-area-menu").removeClass("hidden");
             e.stopPropagation();

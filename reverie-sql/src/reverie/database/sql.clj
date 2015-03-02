@@ -412,7 +412,9 @@
                  :object_id)
           table (get-in obj-meta [:options :table])
           obj-id (:id obj)
-          properties (merge (select-keys (:properties data) field-ks)
+          properties (merge (object/initial-properties
+                             (-> data :name keyword))
+                            (select-keys (:properties data) field-ks)
                             {fk obj-id})]
       (db/query! db {:insert-into (sql/raw table)
                      :values [properties]})

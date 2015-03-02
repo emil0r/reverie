@@ -14,7 +14,8 @@
             [reverie.render :as render]
             [reverie.server :as server]
             [reverie.settings :as settings]
-            [reverie.site :as site]))
+            [reverie.site :as site]
+            [reverie.system :as sys]))
 
 
 (defn- stop-server [server]
@@ -52,6 +53,9 @@
 (defonce ^:private test-server (atom {}))
 (defn- start-test-server []
   (let [db (component/start (get-db))
+        system (component/start (assoc (sys/get-system)
+                                  :database db))
+        db (assoc db :system system)
         settings (-> "test/reverie/test/settings.edn"
                      settings/settings
                      component/start)
@@ -75,6 +79,8 @@
   (do
     (when-let [db (:db @test-server)]
       (component/stop db))
+    (when-let [system (:system (:db @test-server))]
+      (component/stop system))
     (when-let [settings (:settings @test-server)]
       (component/stop settings))
     (when-let [site (:site @test-server)]
@@ -92,7 +98,8 @@
   (start-test-server))
 
 
-(-> @(client/get "http://127.0.0.1:9090/admin/frame/module/auth")
+(-> @(client/get "http://127.0.0.1:9090/admin/frame/module/auth"
+                 )
     ;;:body
     ;;slurp
     )

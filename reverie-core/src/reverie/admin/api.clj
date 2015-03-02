@@ -11,4 +11,5 @@
    ["/interface/pages/edit-page" {:post ipages/edit-page!}]
    ["/interface/paged/updated-page" {:post ipages/update-page!}]
 
-   ["/interface/objects/delete" {:post iobjects/delete-object!}]])
+   ["/interface/objects/delete" {:post iobjects/delete-object!}]
+   ["/interface/objects/add" {:post iobjects/add-object!}]])

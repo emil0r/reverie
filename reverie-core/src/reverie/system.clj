@@ -100,3 +100,7 @@
     (:migrations @storage))
   (migration [this key]
     (get-in @storage [:migrations key])))
+
+
+(defn get-system []
+  (ReverieSystem. nil))

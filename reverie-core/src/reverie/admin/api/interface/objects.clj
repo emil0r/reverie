@@ -18,9 +18,25 @@
          serial (edn/read-string page_serial)
          object-id (edn/read-string object_id)
          page (db/get-page db serial false)]
-     #spy/t [serial object-id]
      (if (auth/authorize? page user db "edit")
        (do (publish/trash-object! db object-id)
+           true)
+       {:success false
+        :error "You do not have the rights to edit this page!"}))))
+
+
+(defn add-object! [request page {:keys [page_serial area object]}]
+  (json-response
+   (let [db (get-in request [:reverie :database])
+         user (get-in request [:reverie :user])
+         serial (edn/read-string page_serial)
+         page (db/get-page db serial false)]
+     (if (auth/authorize? page user db "edit")
+       (do (db/add-object! db {:page_id (page/id page)
+                               :area area
+                               :route ""
+                               :name object
+                               :properties {}})
            true)
        {:success false
         :error "You do not have the rights to edit this page!"}))))
