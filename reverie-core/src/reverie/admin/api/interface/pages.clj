@@ -1,25 +1,15 @@
 (ns reverie.admin.api.interface.pages
-  (:require [cheshire.core :as json]
-            [clojure.core.match :refer [match]]
+  (:require [clojure.core.match :refer [match]]
             [clojure.edn :as edn]
             [clojure.string :as str]
             [reverie.admin.api.editors :as editors]
+            [reverie.admin.api.util :refer [boolean? json-response]]
             [reverie.auth :as auth]
             [reverie.database :as db]
             [reverie.page :as page]
             [reverie.time :as time]
             [taoensso.timbre :as log]))
 
-(defn- boolean? [x]
-  (= java.lang.Boolean (type x)))
-
-(defn json-response [body]
-  (let [body (cond
-              (boolean? body) {:success body}
-              :else body)]
-   {:status 200
-    :headers {"Content-Type" "json/application"}
-    :body (json/generate-string body)}))
 
 (defn- get-node-data [page]
   {:title (page/name page)
@@ -47,24 +37,6 @@
             :selected true)
           (map get-node-data (page/children root)))]))
    json-response))
-
-(defn allow? [request module {:keys [serial action]}]
-  (json-response
-   (let [serial (edn/read-string serial)
-         user (get-in request [:reverie :user])
-         db (:database module)
-         page (db/get-page db serial false)]
-     (case action
-       "edit" (cond
-               (nil? (get @editors/edits serial))
-               (auth/authorize? page user db action)
-
-               (not= (:id user) (get @editors/edits serial))
-               false
-
-               :else
-               true)
-       (auth/authorize? page user db action)))))
 
 (defn edit-page! [request module {:keys [serial edit_p]}]
   (json-response

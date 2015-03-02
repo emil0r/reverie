@@ -120,6 +120,5 @@
     });
 
 
-
-    window.tree = {};
+    window.tree = {selected_node: get_selected_node};
 })(window, jQuery);

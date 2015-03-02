@@ -15,10 +15,10 @@
 
        "<ul class='move-object-to'>"
        "<li class='reverie-bar'></li>"
-       "<li action='top'>Move to top</li>"
-       "<li action='up'>Move up</li>"
-       "<li action='down'>Move down</li>"
-       "<li action='bottom'>Move to bottom</li>"
+       "<li action='move-top'>Move to top</li>"
+       "<li action='move-up'>Move up</li>"
+       "<li action='move-down'>Move down</li>"
+       "<li action='move-bottom'>Move to bottom</li>"
        "</ul>"
 
        "</li>"
