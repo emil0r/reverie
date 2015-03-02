@@ -12,4 +12,6 @@
    ["/interface/paged/updated-page" {:post ipages/update-page!}]
 
    ["/interface/objects/delete" {:post iobjects/delete-object!}]
-   ["/interface/objects/add" {:post iobjects/add-object!}]])
+   ["/interface/objects/add" {:post iobjects/add-object!}]
+   ["/interface/objects/move" {:post iobjects/move-object!}]
+   ["/interface/objects/move-to-area" {:post iobjects/move-object-to-area!}]])

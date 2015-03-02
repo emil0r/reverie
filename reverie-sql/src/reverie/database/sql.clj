@@ -441,7 +441,14 @@
   (move-object! [db id direction]
     (assert (some #(= % (keyword direction)) [:up :down :bottom :top])
             "direction has to be :up, :down, :bottom or :top")
-    (let [objs (->
+    (let [type (-> (db/query db {:select [:p.type]
+                                 :from [[:reverie_page :p]]
+                                 :join [[:reverie_object :o]
+                                        [:= :o.page_id :p.id]]
+                                 :where [:= :o.id id]})
+                   first :type)
+          origo? (= type "app")
+          objs (->
                 (map
                  (fn [{:keys [order id]}]
                    [order id])
@@ -452,7 +459,7 @@
                                :where [:and
                                        [:= :f.id id]
                                        [:= :f.area :o.area]]}))
-                (movement/move id direction :origo))]
+                (movement/move id direction origo?))]
       (doseq [[order id] objs]
         (if-not (nil? id)
           (db/query! db {:update :reverie_object
@@ -461,12 +468,13 @@
 
   (move-object! [db id page-id area]
     (let [area (kw->str area)
-          order (-> (db/query db {:select [:%max.o.order]
-                                  :from [[:reverie_object :o]]
-                                  :where [:and
-                                          [:= :o.page_id page-id]
-                                          [:= :o.area area]]})
-                    first :max inc)]
+          order (inc (or (-> (db/query db {:select [:%max.o.order]
+                                           :from [[:reverie_object :o]]
+                                           :where [:and
+                                                   [:= :o.page_id page-id]
+                                                   [:= :o.area area]]})
+                             first :max)
+                         0))]
       (db/query! db {:update :reverie_object
                      :set {(sql/raw "\"order\"") order
                            :area area

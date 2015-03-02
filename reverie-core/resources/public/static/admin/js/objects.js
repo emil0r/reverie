@@ -35,18 +35,51 @@
 
         dom.$m(".reverie-object li").on('click', function() {
             var action = $(this).attr('action');
-            if (action !== '' && action.length > 0) {
+            if (typeof action != 'undefined'
+                && action !== ''
+                && action.length > 0) {
                 var object_id = $(this).parents(".reverie-object").attr("object-id");
                 var url = null;
                 var data = {};
 
                 switch (action) {
-                    case 'edit':
+
+                case 'edit':
                     break;
-                    case 'delete':
+                case 'delete':
                     url = '/admin/api/interface/objects/delete';
                     data = {object_id: object_id,
                             page_serial: tree.selected_node().key};
+                    break;
+                case 'move-top':
+                    url = '/admin/api/interface/objects/move';
+                    data = {object_id: object_id,
+                            page_serial: tree.selected_node().key,
+                            direction: 'top'};
+                    break;
+                case 'move-up':
+                    url = '/admin/api/interface/objects/move';
+                    data = {object_id: object_id,
+                            page_serial: tree.selected_node().key,
+                            direction: 'up'};
+                    break;
+                case 'move-down':
+                    url = '/admin/api/interface/objects/move';
+                    data = {object_id: object_id,
+                            page_serial: tree.selected_node().key,
+                            direction: 'down'};
+                    break;
+                case 'move-bottom':
+                    url = '/admin/api/interface/objects/move';
+                    data = {object_id: object_id,
+                            page_serial: tree.selected_node().key,
+                            direction: 'bottom'};
+                    break;
+                case 'move-to-area':
+                    url = '/admin/api/interface/objects/move-to-area';
+                    data = {object_id: object_id,
+                            page_serial: tree.selected_node().key,
+                            area: $(this).attr('area')};
                     break;
                 }
                 if (url !== null) {
@@ -91,8 +124,6 @@
             $(this).find(".reverie-object-menu").removeClass("hidden");
             e.stopPropagation();
         });
-
-
     };
     dom.$m_ready(init_main);
     window.objects = {init_main: init_main};
