@@ -124,7 +124,7 @@
       (assoc frame-options
         :title "Edit object")
       (get-object-table request attributes attr-order data)))]
-  
+
   [:post ["/" form-data]
    (let [object-id (read-string (get-in request [:params :object-id]))
          [data object-name] (object/get object-id :name-object)
@@ -171,5 +171,3 @@
                          (str ", " (encode {:title "Custom", :items format}))
                          ""))
             "</script>"))))])
-
-

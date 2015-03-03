@@ -8,8 +8,8 @@
   {:table "batteries_text"
    :migration {:path "src/reverie/sql/objects/migrations/text/"
                :automatic? true}
-   :properties-order [:text]
-   :properties {:text {:initial ""
-                       :input :richtext
-                       :name "Text"}}}
+   :fields {:text {:initial ""
+                   :type :richtext
+                   :name "Text"}}
+   :sections [{:fields [:text]}]}
   {:any text})

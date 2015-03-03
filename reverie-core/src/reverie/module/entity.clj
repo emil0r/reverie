@@ -65,8 +65,7 @@
           (map (fn [[k opt]]
                  [[k] (or (:name opt)
                           (-> k clojure.core/name str/capitalize))])
-               (get-in options [:fields])))
-    )
+               (get-in options [:fields]))))
   (sections [this] (:sections options))
   (name [this] (or (:name options)
                    (-> key clojure.core/name str/capitalize)))

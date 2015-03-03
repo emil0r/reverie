@@ -2,8 +2,10 @@
   (:require [clojure.string :as str]
             [ez-web.uri :refer [join-uri]]
             [hiccup.form :as form]
+            [reverie.object :as o]
             [reverie.module :as m]
             [reverie.module.entity :as e]
+            [reverie.util :as util]
             [ring.util.anti-forgery :refer :all]
             vlad))
 
@@ -56,7 +58,8 @@
    [:div.form-row
     (error-items field errors error-field-names)
     (form/label field (e/field-name entity field))
-    [:select (merge {:name field :id field :multiple true}
+    [:select (merge {:class :form-control}
+                    {:name field :id field :multiple true}
                     (e/field-attribs entity field))
      (map (fn [data]
             [:option (merge
@@ -69,13 +72,27 @@
           m2m-data)]
     (help-text (e/field-options entity field))]))
 
+(defmethod row :richtext [entity field {:keys [form-params errors
+                                               error-field-names
+                                               id]
+                                        :or {form-params {}}}]
+  [:div.row-form
+   (error-items field errors error-field-names)
+   (form/label field (e/field-name entity field))
+   [:span (merge {:field field
+                  :onclick (str "window.open('/admin/api/interface/frames/object/richtext/" id "?field=" (util/kw->str field) "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
+                 (e/field-attribs entity field))
+    "Edit text..."]
+   (form/hidden-field field (form-params field))])
+
 (defmethod row :boolean [entity field {:keys [form-params errors
                                               error-field-names]
                                        :or {form-params {}}}]
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
-   (form/check-box (e/field-attribs entity field) field (form-params field))
+   (form/check-box (merge {:class :form-control}
+                          (e/field-attribs entity field)) field (form-params field))
    (help-text (e/field-options entity field))])
 
 (defmethod row :password [entity field {:keys [form-params errors
@@ -84,7 +101,9 @@
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
-   (form/password-field (e/field-attribs entity field) field (form-params field))
+   (form/password-field (merge
+                         {:class :form-control}
+                         (e/field-attribs entity field)) field (form-params field))
    (help-text (e/field-options entity field))])
 
 (defmethod row :email [entity field {:keys [form-params errors
@@ -93,7 +112,8 @@
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
-   (form/email-field (e/field-attribs entity field) field (form-params field))
+   (form/email-field (merge {:class :form-control}
+                            (e/field-attribs entity field)) field (form-params field))
    (help-text (e/field-options entity field))])
 
 (defmethod row :number [entity field {:keys [form-params errors
@@ -102,7 +122,8 @@
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
-   [:input (merge (e/field-attribs entity field)
+   [:input (merge {:class :form-control}
+                  (e/field-attribs entity field)
                   {:name field :id field :type :number
                    :value (form-params field)})]
    (help-text (e/field-options entity field))])
@@ -113,7 +134,9 @@
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
-   (form/text-field (e/field-attribs entity field) field (form-params field))
+   (form/text-field (merge
+                     {:class :form-control}
+                     (e/field-attribs entity field)) field (form-params field))
    (help-text (e/field-options entity field))])
 
 
@@ -139,13 +162,13 @@
                             (str entity-id)
                             "delete")}
         [:i.icon-remove] "Delete"]])
-    [:span.save-only
+    [:span.save-only.pull-right
      [:input {:type :submit :class "btn btn-primary"
               :id :_save :name :_save :value "Save"}]]
-    [:span.save-continue-editing
+    [:span.save-continue-editing.pull-right
      [:input {:type :submit :class "btn btn-primary"
               :id :_continue :name :_continue :value "Save and continue"}]]
-    [:span.save-add-new
+    [:span.save-add-new.pull-right
      [:input {:type :submit :class "btn btn-primary"
               :id :_addanother :name :_addanother :value "Save and add another"}]]]))
 
@@ -161,3 +184,21 @@
                              :type :submit :value "Cancel"}]
     [:input.btn.btn-primary {:id :_delete :name :_delete
                              :type :submit :value "Delete!"}]]))
+
+
+(defn get-object-form [object data]
+  (form/form-to
+   {:id :edit-form}
+   ["POST" ""]
+   (anti-forgery-field)
+   (map (fn [{:keys [name fields]}]
+          [:fieldset
+           (if name [:legend name])
+           (map (fn [field]
+                  (row object field data))
+                fields)])
+        (e/sections object))
+   [:div.bottom-bar
+    [:span.save-only.pull-left
+     [:input {:type :submit :class "btn btn-primary"
+              :id :_save :name :_save :value "Save"}]]]))

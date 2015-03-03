@@ -45,6 +45,9 @@
                 switch (action) {
 
                 case 'edit':
+                    window.open("/admin/api/interface/frames/object/" + object_id,
+                                '_blank',
+                                'fullscreen=no, width=400, height=640');
                     break;
                 case 'delete':
                     url = '/admin/api/interface/objects/delete';

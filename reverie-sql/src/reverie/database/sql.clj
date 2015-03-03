@@ -405,17 +405,17 @@
                     1)
           obj (db/query! db add-object<! (-> data
                                              (assoc :order order)
-                                             (dissoc :properties)))
+                                             (dissoc :fields)))
           obj-meta (sys/object system (-> data :name keyword))
-          field-ks (->> obj-meta :options :properties keys)
+          field-ks (->> obj-meta :options :fields keys)
           fk (or (->> obj-meta :options :foreign-key)
                  :object_id)
           table (get-in obj-meta [:options :table])
           obj-id (:id obj)
-          properties (merge (object/initial-properties
-                             (-> data :name keyword))
-                            (select-keys (:properties data) field-ks)
-                            {fk obj-id})]
+          properties (merge (object/initial-fields
+                         (-> data :name keyword))
+                        (select-keys (:properties data) field-ks)
+                        {fk obj-id})]
       (db/query! db {:insert-into (sql/raw table)
                      :values [properties]})
       obj))
@@ -428,14 +428,14 @@
           obj-meta (sys/object system obj-name)
           fk (or (->> obj-meta :options :foreign-key)
                  :object_id)
-          field-ks (->> obj-meta :options :properties keys)
+          field-ks (->> obj-meta :options :fields keys)
           table (or (get-in obj-meta [:options :table])
                     obj-name)
-          properties (merge (select-keys data field-ks))]
-      (assert (not (empty? properties))
+          fields (merge (select-keys data field-ks))]
+      (assert (not (empty? fields))
               "update-object! does not take an empty data set")
       (db/query! db {:update (sql/raw table)
-                     :set properties
+                     :set fields
                      :where [:= fk id]})))
 
   (move-object! [db id direction]
@@ -565,6 +565,20 @@
                                 [:= :parent serial]]})
           first
           :count)))
+
+  (get-object [db id]
+    ;; go through the page method instead because objects
+    ;; are supposed to have the page record with all of the objects
+    ;; associated with it
+    (let [page-id (->> (db/query db {:select [:page_id]
+                                     :from [:reverie_object]
+                                     :where [:= :id id]})
+                       first :page_id)
+          page (db/get-page db page-id)
+          object (->> (page/objects page)
+                      (filter #(= id (object/id %)))
+                      first)]
+      object))
 
   (get-objects [db page]
     (let [objs-meta

@@ -21,19 +21,19 @@
                :automatic? true}
    :properties-order [:title :alt :src :width :height]
    :properties {:title {:name "Title"
-                        :input :text
+                        :type :text
                         :initial ""
                         :max 100}
                 :alt {:name "Alt"
-                      :input :text
+                      :type :text
                       :initial ""
                       :max 100}
                 :src {:name "src"
-                      :input :image
+                      :type :image
                       :initial ""
                       :max 255}
                 :height {:name "Height"
-                         :input :number}
+                         :type :number}
                 :width {:name "Width"
-                        :input :number}}}
+                        :type :number}}}
   {:any image})

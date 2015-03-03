@@ -16,6 +16,7 @@
   (get-children [database page])
   (get-children-count [database page])
 
+  (get-object [database id])
   (get-objects [database page])
   (add-object! [database data])
   (update-object! [database id data])

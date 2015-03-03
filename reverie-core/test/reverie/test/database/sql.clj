@@ -186,11 +186,11 @@
                => [[11 1 :reverie/text] [9 2 :reverie/text]])
          (fact ":down"
                (seed!)
-               (db/move-object! db 9 :up)
+               (db/move-object! db 9 :down)
                (map
                 (juxt :id :order :name)
                 (page/objects (db/get-page db 5)))
-               => [[9 -1 :reverie/text] [11 1 :reverie/text]]))
+               => [[11 1 :reverie/text] [9 2 :reverie/text]]))
    (fact "other page and area"
          (seed!)
          (db/move-object! db 9 3 :b)

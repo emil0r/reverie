@@ -67,7 +67,6 @@
          object-id (edn/read-string object_id)
          serial (edn/read-string page_serial)
          page (db/get-page db serial false)]
-     #spy/t [object-id (page/id page) area]
      (if (and (auth/authorize? page user db "edit")
               (object-belongs? page object-id))
        (do (db/move-object! db object-id (page/id page) area)
