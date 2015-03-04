@@ -56,7 +56,7 @@
                     (assoc out k (k options))
                     out)))
               {}
-              [:max :min :placeholder])))
+              [:max :min :placeholder :for])))
   (field-name [this field]
     (or (get-in options [:fields field :name])
         (-> field clojure.core/name str/capitalize)))

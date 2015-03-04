@@ -31,8 +31,8 @@
         (when (= (:request-method request) :post)
           [:script {:type "text/javascript"}
            "opener.dom.reload_main();"
-           "window.close();"])])
-
+           "window.close();"])
+        (common/footer {:filter-by #{:base :editing}})])
       (html5
        [:head
         [:title "Object editing"]]

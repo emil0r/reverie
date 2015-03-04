@@ -147,6 +147,18 @@
                    :value (form-params field)})]
    (help-text (e/field-options entity field))])
 
+(defmethod row :slug [entity field {:keys [form-params errors
+                                           error-field-names]
+                                    :or {form-params {}}}]
+  [:div.form-row
+   (error-items field errors error-field-names)
+   (form/label field (e/field-name entity field))
+   (form/text-field (merge
+                     {:class :form-control
+                      :_type :slug}
+                     (e/field-attribs entity field)) field (form-params field))
+   (help-text (e/field-options entity field))])
+
 (defmethod row :default [entity field {:keys [form-params errors
                                               error-field-names]
                                        :or {form-params {}}}]
@@ -241,7 +253,7 @@
                     (assoc out k (k options))
                     out)))
               {}
-              [:max :min :placeholder])))
+              [:max :min :placeholder :for])))
   (field-name [this field]
     (or (get-in options [:fields field :name])
         (-> field clojure.core/name str/capitalize)))

@@ -40,11 +40,12 @@
                         [#{:all :meta} "fancy-tree/jquery.fancytree-all.min.js"]
                         [#{:all :meta} "csrf.js"]
                         [#{:all :meta} "dom.js"]
-                        [#{:all :meta} "util.js"]
+                        [#{:all :meta :editing} "util.js"]
                         [#{:all :meta} "tabs.js"]
                         [#{:all :meta} "tree.js"]
                         [#{:all :meta} "objects.js"]
                         [#{:all :meta} "main.js"]
+                        [#{:editing} "editing.js"]
                         [#{:richtext} "tinymce/tinymce.min.js"]
                         [#{:all :dev} "eyespy.js"]
                         [#{:all :dev} "init.js"]])))))

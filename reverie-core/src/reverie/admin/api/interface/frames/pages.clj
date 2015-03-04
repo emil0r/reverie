@@ -31,6 +31,7 @@
             :validation (vlad/present [:name])}
      :slug {:name "Slug"
             :type :slug
+            :for :name
             :validation (vlad/present [:slug])
             :help "A slug is a part of a URL. Normally it's a normalized string of the name of the page"}
      :title {:name "Title"
@@ -55,6 +56,7 @@
             :validation (vlad/present [:name])}
      :slug {:name "Slug"
             :type :slug
+            :for :name
             :validation (vlad/present [:slug])
             :help "A slug is a part of a URL. Normally it's a normalized string of the name of the page"}
      :title {:name "Title"
@@ -103,7 +105,7 @@
                               {:form-params form-params
                                :errors errors})]
          [:footer
-          (common/footer {:filter-by #{:base}})]]])
+          (common/footer {:filter-by #{:base :editing}})]]])
 
       (html5
        [:head
@@ -218,7 +220,7 @@
                               {:form-params form-params
                                :errors errors})]
          [:footer
-          (common/footer {:filter-by #{:base}})]]])
+          (common/footer {:filter-by #{:base :editing}})]]])
 
       (html5
        [:head
