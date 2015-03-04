@@ -9,6 +9,9 @@
     var icon_view = $(".icons i.icon-eye-open");
     var icon_trash = $(".icons i.icon-trash");
 
+    var icon_publish = $(".meta .buttons .publish");
+    var icon_meta = $(".meta .buttons .meta");
+
     var meta_info_name = $(".meta .name");
     var meta_info_title = $(".meta .title");
     var meta_info_created = $(".meta .created");
@@ -146,7 +149,15 @@
         if (node != null) {
             dom.options_uri("/admin/api/interface/frames/pages/trash/" + node.key);
             dom.show_options();
-        };
+        }
+    });
+
+    icon_publish.click(function() {
+        var node = get_selected_node();
+        if (node != null) {
+            dom.options_uri("/admin/api/interface/frames/pages/publish/" + node.key);
+            dom.show_options();
+        }
     });
 
 

@@ -24,6 +24,10 @@
     {:page-serial #"\d+"} {:page-serial Integer}
     {:get ifpages/trash-page
      :post ifpages/handle-trash-page}]
+   ["/interface/frames/pages/publish/:page-serial"
+    {:page-serial #"\d+"} {:page-serial Integer}
+    {:get ifpages/publish-page
+     :post ifpages/handle-publish-page}]
 
    ;; pages
    ["/interface/pages" {:get ipages/get-pages}]

@@ -186,6 +186,47 @@
 
 (defn handle-meta-page [request page params])
 
-(defn publish-page [request page params])
+(defn publish-page [request page {:keys [page-serial] :as params}]
+  (let [db (get-in request [:reverie :database])
+        user (get-in request [:reverie :user])
+        page (db/get-page db page-serial false)]
+    (if (auth/authorize? page user db "edit")
+      (html5
+       (common/head "reverie - publish page")
+       [:body
+        [:nav
+         [:div.container "Publish page"]]
+        [:div.container
+         [:h1 "Publish page " (page/name page)]
+         (hf/form-to
+          ["POST" ""]
+          (anti-forgery-field)
+          [:table.table
+           [:tr [:th "Name"] [:td (page/name page)]]
+           [:tr [:th "Title"] [:td (page/title page)]]
+           [:tr [:th "Created"] [:td (time/format (page/created page) :mysql)]]
+           [:tr [:th "Updated"] [:td (time/format (page/updated page) :mysql)]]
+           [:tr [:th]
+            [:td (hf/submit-button {:class "btn btn-primary"} "Publish this page")]]])]])
+      (html5
+       [:head
+        [:title "reverie - publish page"]]
+       [:body "You are not allowed to edit this page"]))))
 
-(defn handle-publish-page [request page params])
+(defn handle-publish-page [request page {:keys [page-serial] :as params}]
+  (let [db (get-in request [:reverie :database])
+        user (get-in request [:reverie :user])
+        page (db/get-page db page-serial false)]
+    (if (auth/authorize? page user db "edit")
+      (html5
+       (common/head "reverie - publish page")
+       [:body
+        [:nav
+         [:div.container "Publish page"]]
+        [:div.container
+         (do (publish/publish-page! db (page/id page))
+           [:h1 "Published page " (page/name page)])]])
+      (html5
+       [:head
+        [:title "reverie - publish page"]]
+       [:body "You are not allowed to edit this page"]))))
