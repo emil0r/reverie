@@ -48,7 +48,9 @@
   true)
 
 (defn edit? [page user]
-  (= (:id user) (:user-id (get @edits (page/serial page)))))
+  (and (not (nil? user))
+       (not (nil? page))
+       (= (:id user) (:user-id (get @edits (page/serial page))))))
 
 
 (defn editor! [user]
@@ -57,7 +59,8 @@
 
 
 (defn editor? [user]
-  (contains? @editors (:id user)))
+  (and (not (nil? (:id user)))
+       (contains? @editors (:id user))))
 
 
 (defn edit-follow! [page user]

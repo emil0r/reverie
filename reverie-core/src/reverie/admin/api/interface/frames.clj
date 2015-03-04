@@ -20,7 +20,7 @@
         object (db/get-object db object-id)
         data {:id object-id
               :form-params
-              (merge (object/initial-properties (object/name object))
+              (merge (object/initial-fields (object/name object))
                      (object/properties object)
                      (walk/keywordize-keys (:form-params request)))}]
     (if (auth/authorize? (object/page object) user db "edit")
