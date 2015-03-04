@@ -160,6 +160,14 @@
         }
     });
 
+    icon_meta.click(function() {
+        var node = get_selected_node();
+        if (node != null) {
+            dom.options_uri("/admin/api/interface/frames/pages/meta/" + node.key);
+            dom.show_options();
+        }
+    });
+
 
     window.tree = {selected_node: get_selected_node,
                    add_child: add_child,

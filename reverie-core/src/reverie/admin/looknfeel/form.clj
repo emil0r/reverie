@@ -254,7 +254,7 @@
   (sections [this] (:sections options)))
 
 
-(defn get-add-page-form [page data & extra]
+(defn get-page-form [page data & extra]
   (let [error-field-names (e/error-field-names page)]
     (form/form-to
      {:id :edit-form}

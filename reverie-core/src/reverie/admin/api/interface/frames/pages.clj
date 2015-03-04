@@ -17,8 +17,6 @@
             [reverie.object :as object]
             [reverie.page :as page]
             [reverie.publish :as publish]
-            [reverie.route :as route]
-            [reverie.site :as site]
             [reverie.system :as sys]
             [reverie.time :as time]
             [ring.util.anti-forgery :refer :all])
@@ -26,6 +24,30 @@
 
 
 (defn get-page-form []
+  (form/PageForm.
+   {:fields
+    {:name {:name "Name"
+            :type :text
+            :validation (vlad/present [:name])}
+     :slug {:name "Slug"
+            :type :slug
+            :validation (vlad/present [:slug])
+            :help "A slug is a part of a URL. Normally it's a normalized string of the name of the page"}
+     :title {:name "Title"
+             :type :text}
+     :type {:name "Type of page"
+            :type :dropdown
+            :options [["Normal page" "page"] ["App" "app"]]}
+     :template {:name "Template"
+                :type :dropdown
+                :options helpers/get-template-names}
+     :app {:name "App"
+           :type :dropdown
+           :options helpers/get-app-names}}
+    :sections [{:fields [:name :slug :title]}
+               {:name "Meta" :fields [:template :type :app]}]}))
+
+(defn get-meta-form []
   (form/PageForm.
    {:fields
     {:name {:name "Name"
@@ -57,7 +79,7 @@
            "_addanother"
            "_save")))
 
-(defn process-add-page [request page-form]
+(defn process-page-form [request page-form]
   (let [form-params (clean-form-params (:form-params request))
         errors (validation/validate page-form form-params)]
     {:form-params form-params
@@ -77,9 +99,9 @@
         [:div.container
          [:h1 "Add child to " (page/name page)]
          [:div.row.admin-interface
-          (form/get-add-page-form (get-page-form)
-                                  {:form-params form-params
-                                   :errors errors})]
+          (form/get-page-form (get-page-form)
+                              {:form-params form-params
+                               :errors errors})]
          [:footer
           (common/footer {:filter-by #{:base}})]]])
 
@@ -97,10 +119,6 @@
                     errors]} (process-add-page request (get-page-form))]
         (if (empty? errors)
           (let [page (db/add-page! db (assoc form-params :parent parent-serial))]
-            (doseq [[route page-data] (db/get-page-with-route db (page/serial page))]
-              (site/add-route! (sys/get-site)
-                               (route/route [route])
-                               page-data))
             (html5
              (common/head "reverie - add page")
              [:body
@@ -180,11 +198,54 @@
         [:title "reverie - delete page"]]
        [:body "You are not allowed to edit this page"]))))
 
+(defn meta-page [request _ {:keys [page-serial errors] :as params}]
+  (let [db (get-in request [:reverie :database])
+        user (get-in request [:reverie :user])
+        page (db/get-page db page-serial false)
+        {:keys [form-params]} (process-page-form
+                               (update-in request [:form-params] merge (page/raw page))
+                               (get-page-form))]
+    (if (auth/authorize? page user db "edit")
+      (html5
+       (common/head "reverie - meta")
+       [:body
+        [:nav
+         [:div.container "Meta"]]
+        [:div.container
+         [:h1 "Editing " (page/name page)]
+         [:div.row.admin-interface
+          (form/get-page-form (get-meta-form)
+                              {:form-params form-params
+                               :errors errors})]
+         [:footer
+          (common/footer {:filter-by #{:base}})]]])
 
+      (html5
+       [:head
+        [:title "reverie - meta"]]
+       [:body "You are not allowed to edit this page"]))))
 
-(defn meta-page [request page params])
-
-(defn handle-meta-page [request page params])
+(defn handle-meta-page [request page {:keys [page-serial] :as params}]
+  (let [db (get-in request [:reverie :database])
+        user (get-in request [:reverie :user])
+        page (db/get-page db page-serial false)]
+    (if (auth/authorize? page user db "edit")
+      (let [{:keys [form-params
+                    errors]} (process-page-form request (get-page-form))]
+        (if (empty? errors)
+          (let [page (db/update-page! db (page/id page) form-params)]
+            (html5
+             (common/head "reverie - meta")
+             [:body
+              [:nav
+               [:div.container "Meta"]]
+              [:div.container
+               [:h1 "Page " (page/name page) " has been updated"]]]))
+          (meta-page request page (assoc params :errors errors))))
+      (html5
+       [:head
+        [:title "reverie - meta"]]
+       [:body "You are not allowed to edit this page"]))))
 
 (defn publish-page [request page {:keys [page-serial] :as params}]
   (let [db (get-in request [:reverie :database])

@@ -13,6 +13,7 @@
             [reverie.publish :as publish]
             [reverie.route :as route]
             [reverie.system :as sys]
+            [reverie.site :as site]
             [reverie.util :refer [slugify kw->str str->kw]]
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log]
@@ -53,6 +54,7 @@
 
 (defn- massage-page-data [data]
   (assoc data
+    :raw-data data
     :type (keyword (:type data))
     :template (keyword (:template data))
     :app (if (str/blank? (:app data))
@@ -68,7 +70,8 @@
                        (assoc data
                          :template (get-in @sys/storage
                                            [:templates template])
-                         :database database))]
+                         :database database
+                         :raw-data (:raw-data data)))]
                 (assoc p :objects (db/get-objects database p)))
         :app (let [page-data (get-in @sys/storage
                                      [:apps app])
@@ -78,7 +81,8 @@
                                           [:templates template])
                         :options (:options page-data)
                         :app-routes (:app-routes page-data)
-                        :database database))]
+                        :database database
+                        :raw-data (:raw-data data)))]
                (assoc p :objects (db/get-objects database p)))))))
 
 (defn- get-migrator-map [{:keys [subprotocol subname user password]} table path]
@@ -104,7 +108,7 @@
                            (sys/migrations system)))]
     paths))
 
-(defn- recalculate-routes [db page-ids]
+(defn- recalculate-routes-db [db page-ids]
   (let [page-ids (if (sequential? page-ids)
                    page-ids
                    [page-ids])]
@@ -125,6 +129,10 @@
                                             [:= :o.serial :p.parent]]
                                      :where [:in :o.id page-ids]}))]
         (recur db page-ids)))))
+
+(defn- recalculate-routes [db page-ids]
+  (recalculate-routes-db db page-ids)
+  (site/reset-routes! (sys/get-site)))
 
 (defn- shift-versions! [db serial]
   (let [;; pages-published
@@ -338,9 +346,10 @@
                                   :route :type :app :slug])]
       (assert (not (empty? data)) "update-page! does not take an empty data set")
       (db/query! db {:update :reverie_page
-                     :set data})
+                     :set (assoc data :updated (sql/raw "now()"))
+                     :where [:= :id id]})
       (recalculate-routes db id)
-      true))
+      (db/get-page db id)))
 
   (move-page! [db id origo-id movement]
     (let [movement (keyword movement)]

@@ -14,27 +14,31 @@
 (defonce routes (atom {}))
 
 (defprotocol ISite
-  (add-route! [system route page-data])
-  (get-page [system request])
-  (host-match? [system request])
-  (set-system-page! [system status rendered-page]))
+  (add-route! [site route page-data])
+  (reset-routes! [site])
+  (get-page [site request])
+  (host-match? [site request])
+  (set-system-page! [site status rendered-page]))
 
 
 (defrecord Site [host-names system
                  system-pages settings database render-fn]
   component/Lifecycle
   (start [this]
-    (swap! routes merge (into
-                         {}
-                         (map (fn [[route properties]]
-                                {route [(route/route [route]) properties]})
-                              (db/get-pages-by-route database))))
+    (reset-routes! this)
     this)
   (stop [this] this)
 
   ISite
   (add-route! [this route properties]
     (swap! routes assoc (:path route) [route properties]))
+  (reset-routes! [this]
+    (swap! routes merge
+           (into
+            {}
+            (map (fn [[route properties]]
+                   {route [(route/route [route]) properties]})
+                 (db/get-pages-by-route database)))))
   (get-page [this {:keys [reverie] :as request}]
     (let [uri (:uri request)]
       (let [[route properties]
@@ -52,7 +56,6 @@
         (if route
           (let [{:keys [template app type name serial]} properties
                 public? (not (get-in request [:reverie :editor?]))]
-            #spy/t properties
             (case type
               :page (let [p (db/get-page database
                                          serial

@@ -61,6 +61,7 @@
                                 :database db
                                 :system (:system db)
                                 :render-fn (fn [data] (hiccup.compiler/render-html data))}))
+        site (assoc site :db db)
         system (component/start (assoc (sys/get-system)
                                   :database db
                                   :site site))

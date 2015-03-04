@@ -31,7 +31,8 @@
   (version [page])
   (published? [page])
   (created [page])
-  (updated [page]))
+  (updated [page])
+  (raw [page]))
 
 
 (defn type? [page expected]
@@ -50,7 +51,7 @@
 
 (defrecord Page [route id serial name title properties template
                  created updated parent database version slug
-                 published-date published? objects]
+                 published-date published? objects raw-data]
   route/IRouting
   (get-route [this] route)
   (match? [this request] (route/match? route request))
@@ -75,6 +76,7 @@
   (type [page] :page)
   (created [page] created)
   (updated [page] updated)
+  (raw [page] raw-data)
 
   render/IRender
   (render [this request]
@@ -110,6 +112,7 @@
   (type [page] :raw)
   (created [page] nil)
   (updated [page] nil)
+  (raw [page] nil)
 
   render/IRender
   (render [this {:keys [request-method] :as request}]
@@ -140,7 +143,7 @@
 (defrecord AppPage [route app app-routes app-area-mappings slug
                     id serial name title properties options template
                     created updated parent database version
-                    published-date published? objects]
+                    published-date published? objects raw-data]
   route/IRouting
   (get-route [this] route)
   (match? [this request]
@@ -176,6 +179,7 @@
   (type [page] :app)
   (created [page] created)
   (updated [page] updated)
+  (raw [page] raw-data)
 
   render/IRender
   (render [this request]
