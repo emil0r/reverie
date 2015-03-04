@@ -2,7 +2,8 @@
   (:require [clj-time.core :as t]
             [clojure.core.match :refer [match]]
             [clojure.string :as str]
-            [reverie.page :as page]))
+            [reverie.page :as page])
+  (:import [reverie.page Page AppPage RawPage]))
 
 (defonce edits (atom {}))
 (defonce editors (atom {}))
@@ -47,8 +48,16 @@
       (swap! edits dissoc k)))
   true)
 
+(defn- page? [page]
+  (condp = (type page)
+    Page true
+    AppPage true
+    RawPage true
+    false))
+
 (defn edit? [page user]
-  (and (not (nil? user))
+  (and (page? page)
+       (not (nil? user))
        (not (nil? page))
        (= (:id user) (:user-id (get @edits (page/serial page))))))
 

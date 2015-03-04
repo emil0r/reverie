@@ -66,6 +66,20 @@
         return null;
     };
 
+    var add_child = function(data) {
+        var node = get_selected_node();
+        if (node != null && node.isExpanded()) {
+            node.addChildren(data);
+        }
+    };
+
+    var remove_node = function() {
+        var node = get_selected_node();
+        if (node != null) {
+            node.remove();
+        };
+    };
+
     icon_refresh.click(function() {
         var nodes = tree.getSelectedNodes();
         for (var i = 0, ii = nodes.length; i < ii; i++) {
@@ -119,6 +133,25 @@
         }
     });
 
+    icon_add_page.click(function() {
+        var node = get_selected_node();
+        if (node != null) {
+            dom.options_uri("/admin/api/interface/frames/pages/add/" + node.key);
+            dom.show_options();
+        }
+    });
 
-    window.tree = {selected_node: get_selected_node};
+    icon_trash.click(function() {
+        var node = get_selected_node();
+        if (node != null) {
+            dom.options_uri("/admin/api/interface/frames/pages/trash/" + node.key);
+            dom.show_options();
+        };
+    });
+
+
+    window.tree = {selected_node: get_selected_node,
+                   add_child: add_child,
+                   remove_node: remove_node};
+    parent.window.tree = window.tree;
 })(window, jQuery);

@@ -52,6 +52,7 @@
         (if route
           (let [{:keys [template app type name serial]} properties
                 public? (not (get-in request [:reverie :editor?]))]
+            #spy/t properties
             (case type
               :page (let [p (db/get-page database
                                          serial

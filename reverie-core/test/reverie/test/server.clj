@@ -53,9 +53,6 @@
 (defonce ^:private test-server (atom {}))
 (defn- start-test-server []
   (let [db (component/start (get-db))
-        system (component/start (assoc (sys/get-system)
-                                  :database db))
-        db (assoc db :system system)
         settings (-> "test/reverie/test/settings.edn"
                      settings/settings
                      component/start)
@@ -64,6 +61,10 @@
                                 :database db
                                 :system (:system db)
                                 :render-fn (fn [data] (hiccup.compiler/render-html data))}))
+        system (component/start (assoc (sys/get-system)
+                                  :database db
+                                  :site site))
+        db (assoc db :system system)
         server (component/start
                 (reverie.server/get-server {:dev? true
                                             :site site

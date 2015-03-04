@@ -331,7 +331,7 @@
                                  db
                                  :add
                                  :staff)
-        page-data)))
+        (db/get-page db (:id page-data)))))
 
   (update-page! [db id data]
     (let [data (select-keys data [:template :name :title
@@ -521,6 +521,18 @@
                        :from [:reverie_page]
                        :where [:= :version (if published? 1 0)]
                        :order-by [(sql/raw "\"order\"")]})))
+
+  (get-page-with-route [db serial]
+    (map (fn [page-data]
+           [(:route page-data) page-data])
+         (map massage-page-data
+              (db/query db {:select [:*]
+                            :from [:reverie_page]
+                            :where [:and
+                                    [:= :serial serial]
+                                    [:or
+                                     [:= :version 0]
+                                     [:= :version 1]]]}))))
 
   (get-pages-by-route [db]
     (map (fn [page-data]

@@ -1,4 +1,5 @@
 (ns reverie.admin.api.interface.pages
+  "Namespace for manipulating pages through JSON. Mostly used by the user interface tree"
   (:require [clojure.core.match :refer [match]]
             [clojure.edn :as edn]
             [clojure.string :as str]
@@ -29,13 +30,13 @@
   (->>
    (let [db (:database page)]
      (let [root (db/get-page db (or id 1) false)]
-       [(if (nil? id)
-          (assoc (get-node-data root)
+       (if (nil? id)
+         [(assoc (get-node-data root)
             :children (map get-node-data (page/children root))
             :lazy false
             :expanded true
-            :selected true)
-          (map get-node-data (page/children root)))]))
+            :selected true)]
+         (map get-node-data (page/children root)))))
    json-response))
 
 (defn edit-page! [request module {:keys [serial edit_p]}]

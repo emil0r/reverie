@@ -5,7 +5,7 @@
             [cheshire.core :refer [encode]]
             [hiccup.page :refer [html5]]
             [reverie.admin.looknfeel.common :as common]
-            [reverie.admin.looknfeel.form :as lnf-form]
+            [reverie.admin.looknfeel.form :as form]
             [reverie.auth :as auth]
             [reverie.database :as db]
             [reverie.module.entity :as e]
@@ -27,7 +27,7 @@
       (html5
        (common/head "Object editing")
        [:body
-        (lnf-form/get-object-form object data)
+        (form/get-object-form object data)
         (when (= (:request-method request) :post)
           [:script {:type "text/javascript"}
            "opener.dom.reload_main();"

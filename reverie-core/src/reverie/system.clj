@@ -12,10 +12,14 @@
                         :modules {}
                         :module-default-routes []
                         :migrations {}
-                        :database nil}))
+                        :database nil
+                        :site nil}))
 
 (defn get-db []
   (:database @storage))
+
+(defn get-site []
+  (:site @storage))
 
 (defprotocol ISystem
   (add-object-type! [system key object-type])
@@ -46,13 +50,15 @@
 
 
 
-(defrecord ReverieSystem [database]
+(defrecord ReverieSystem [database site]
   component/Lifecycle
   (start [this]
     (swap! storage assoc :database database)
+    (swap! storage assoc :site site)
     this)
   (stop [this]
     (swap! storage assoc :database nil)
+    (swap! storage assoc :site nil)
     this)
 
   ISystem
@@ -103,4 +109,4 @@
 
 
 (defn get-system []
-  (ReverieSystem. nil))
+  (map->ReverieSystem {}))

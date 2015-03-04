@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [ez-web.uri :refer [join-uri]]
             [hiccup.form :as form]
+            [reverie.admin.helpers :as helpers]
             [reverie.object :as o]
             [reverie.module :as m]
             [reverie.module.entity :as e]
@@ -95,16 +96,34 @@
                           (e/field-attribs entity field)) field (form-params field))
    (help-text (e/field-options entity field))])
 
-(defmethod row :password [entity field {:keys [form-params errors
-                                               error-field-names]
-                                        :or {form-params {}}}]
+(defmethod row :boolean [entity field {:keys [form-params errors
+                                              error-field-names]
+                                       :or {form-params {}}}]
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
-   (form/password-field (merge
-                         {:class :form-control}
-                         (e/field-attribs entity field)) field (form-params field))
+   (form/check-box (merge {:class :form-control}
+                          (e/field-attribs entity field)) field (form-params field))
    (help-text (e/field-options entity field))])
+
+
+
+(defmethod row :dropdown [entity field {:keys [form-params errors
+                                               error-field-names]
+                                        :or {form-params {}}}]
+  (let [options (:options (e/field entity field))]
+    [:div.form-row
+     (error-items field errors error-field-names)
+     (form/label field (e/field-name entity field))
+     (form/drop-down (merge
+                      {:class :form-control}
+                      (e/field-attribs entity field))
+                     field
+                     (if (fn? options)
+                       (options)
+                       options)
+                     (form-params field))
+     (help-text (e/field-options entity field))]))
 
 (defmethod row :email [entity field {:keys [form-params errors
                                             error-field-names]
@@ -202,3 +221,56 @@
     [:span.save-only.pull-left
      [:input {:type :submit :class "btn btn-primary"
               :id :_save :name :_save :value "Save"}]]]))
+
+
+(defrecord PageForm [options]
+  e/IModuleEntity
+  (fields [this] (:fields options))
+  (field [this field] (get-in options [:fields field]))
+  (display [this] (:display options))
+  (post-fn [this] (get-in options [:post]))
+  (pre-save-fn [this] (get-in options [:pre-save]))
+  (field-options [this field]
+    (get-in options [:fields field]))
+  (field-attribs [this field]
+    (let [options (get-in options [:fields field])]
+      (reduce (fn [out k]
+                (if (nil? out)
+                  out
+                  (if (k options)
+                    (assoc out k (k options))
+                    out)))
+              {}
+              [:max :min :placeholder])))
+  (field-name [this field]
+    (or (get-in options [:fields field :name])
+        (-> field clojure.core/name str/capitalize)))
+  (error-field-names [this]
+    (into {}
+          (map (fn [[k opt]]
+                 [[k] (or (:name opt)
+                          (-> k clojure.core/name str/capitalize))])
+               (get-in options [:fields]))))
+  (sections [this] (:sections options)))
+
+
+(defn get-add-page-form [page data & extra]
+  (let [error-field-names (e/error-field-names page)]
+    (form/form-to
+     {:id :edit-form}
+     ["POST" ""]
+     (anti-forgery-field)
+     extra
+     (map (fn [{:keys [name fields]}]
+            [:fieldset
+             (if name [:legend name])
+             (map (fn [field]
+                    (row page field (assoc data
+                                      :error-field-names
+                                      error-field-names)))
+                  fields)])
+          (e/sections page))
+     [:div.bottom-bar
+      [:span.save-only.pull-left
+       [:input {:type :submit :class "btn btn-primary"
+                :id :_save :name :_save :value "Save"}]]])))

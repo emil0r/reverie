@@ -11,6 +11,7 @@
   (update-page! [database id data])
   (move-page! [database id origo-id movement]) ;; movement = :before/after
   (get-pages [database] [database published?])
+  (get-page-with-route [database serial])
   (get-pages-by-route [database])
   (get-page [database id] [database serial published?])
   (get-children [database page])

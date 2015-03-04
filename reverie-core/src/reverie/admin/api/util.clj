@@ -8,6 +8,6 @@
   (let [body (cond
               (boolean? body) {:success body}
               :else body)]
-   {:status 200
-    :headers {"Content-Type" "json/application"}
-    :body (json/generate-string body)}))
+    {:status 200
+     :headers {"Content-Type" "json/application"}
+     :body (json/generate-string body)}))
