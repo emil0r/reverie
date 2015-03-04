@@ -240,7 +240,17 @@
               [:nav
                [:div.container "Meta"]]
               [:div.container
-               [:h1 "Page " (page/name page) " has been updated"]]]))
+               [:h1 "Page " (page/name page) " has been updated"]
+               (str "<script type='text/javascript'>"
+                    "parent.framecontrol.window.tree.update_node("
+                    (json/generate-string
+                     {:title (page/name page)
+                      :path (page/path page)
+                      :page_title (page/title page)
+                      :created (time/format (page/created page) :mysql)
+                      :updated (time/format (page/updated page) :mysql)})
+                    ");"
+                    "</script>")]]))
           (meta-page request page (assoc params :errors errors))))
       (html5
        [:head

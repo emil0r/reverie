@@ -83,6 +83,14 @@
         };
     };
 
+    var update_node = function(data) {
+        var node = get_selected_node();
+        if (node != null) {
+            node.fromDict(data);
+            show_meta_info_node(node);
+        }
+    };
+
     icon_refresh.click(function() {
         var nodes = tree.getSelectedNodes();
         for (var i = 0, ii = nodes.length; i < ii; i++) {
@@ -171,6 +179,7 @@
 
     window.tree = {selected_node: get_selected_node,
                    add_child: add_child,
-                   remove_node: remove_node};
+                   remove_node: remove_node,
+                   update_node: update_node};
     parent.window.tree = window.tree;
 })(window, jQuery);
