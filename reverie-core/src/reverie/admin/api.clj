@@ -38,6 +38,7 @@
    ["/interface/pages/:id" {:id #"\d+"} {:id Integer} {:get ipages/get-pages}]
    ["/interface/pages/edit-page" {:post ipages/edit-page!}]
    ["/interface/pages/update-page" {:post ipages/update-page!}]
+   ["/interface/pages/move" {:post ipages/move-page!}]
 
    ;; objects
    ["/interface/objects/delete" {:post iobjects/delete-object!}]

@@ -91,7 +91,7 @@
   (let [db (get-in request [:reverie :database])
         user (get-in request [:reverie :user])
         page (db/get-page db parent-serial false)
-        {:keys [form-params]} (process-add-page request (get-page-form))]
+        {:keys [form-params]} (process-page-form request (get-page-form))]
     (if (auth/authorize? page user db "edit")
       (html5
        (common/head "reverie - add page")
@@ -118,7 +118,7 @@
         page (db/get-page db parent-serial false)]
     (if (auth/authorize? page user db "edit")
       (let [{:keys [form-params
-                    errors]} (process-add-page request (get-page-form))]
+                    errors]} (process-page-form request (get-page-form))]
         (if (empty? errors)
           (let [page (db/add-page! db (assoc form-params :parent parent-serial))]
             (html5

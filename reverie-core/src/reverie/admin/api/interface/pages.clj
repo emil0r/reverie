@@ -64,3 +64,25 @@
            (log/warn e)
            false))
        false))))
+
+
+(defn move-page! [request module {:keys [serial origo_serial movement]
+                                  :as params}]
+  (json-response
+   (let [serial (edn/read-string serial)
+         origo-serial (edn/read-string origo_serial)
+         user (get-in request [:reverie :user])
+         db (:database module)
+         page (db/get-page db serial false)
+         origo (db/get-page db origo-serial false)]
+     (if (and (auth/authorize? page user db "edit")
+              (auth/authorize? origo user db "edit"))
+       (try
+         (db/move-page! db (page/id page) (page/id origo) movement)
+         true
+         (catch Exception e
+           (log/warn e)
+           {:success false
+            :error "You are not allowed to move this page here"}))
+       {:success false
+        :error "You are not allowed to move this page here"}))))

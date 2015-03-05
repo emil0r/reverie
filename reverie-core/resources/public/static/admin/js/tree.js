@@ -42,6 +42,53 @@
             }
         }),
         extensions: ["dnd"],
+        dnd: {
+
+            preventVoidMoves: true, // prevent node being dropped in front of itself
+            preventRecursiveMoves: true, // prevent node being dropped on its own descendants
+            dragStart: function(node, data) {
+                /** This function MUST be defined to enable dragging for the tree.
+                 *  Return false to cancel dragging of node.
+                 */
+                return true;
+            },
+            dragEnter: function(node, data) {
+                /** data.otherNode may be null for non-fancytree droppables.
+                 *  Return false to disallow dropping on node. In this case
+                 *  dragOver and dragLeave are not called.
+                 *  Return 'over', 'before, or 'after' to force a hitMode.
+                 *  Return ['before', 'after'] to restrict available hitModes.
+                 *  Any other return value will calc the hitMode from the cursor position.
+                 */
+                // Prevent dropping a parent below another parent (only sort
+                // nodes under the same parent)
+
+                /*  if(node.parent !== data.otherNode.parent){
+                       return false;
+                    }
+                    // Don't allow dropping *over* a node (would create a child)
+                    return ["before", "after"];
+                 */
+                return true;
+            },
+            dragDrop: function(node, data) {
+                /** This function MUST be defined to enable dropping of items on
+                 *  the tree.
+                 */
+
+                $.post("/admin/api/interface/pages/move",
+                       {serial: data.otherNode.key,
+                        origo_serial: node.key,
+                        movement: data.hitMode},
+                       function(return_data) {
+                           if (!return_data.success) {
+                               alert(return_data.error);
+                           } else {
+                               data.otherNode.moveTo(node, data.hitMode);
+                           }
+                       });
+            }
+        },
         lazyLoad: function(event, data) {
             data.result = $.ajax({
                 url: "/admin/api/interface/pages/" + data.node.key,

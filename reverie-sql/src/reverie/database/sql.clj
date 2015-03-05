@@ -355,49 +355,75 @@
     (let [movement (keyword movement)]
       (assert id "id has to be non-nil")
       (assert origo-id "origo-id has to be non-nil")
-      (assert (some #(= % movement) [:after :before]) "movement has to be :after or :before")
-      (let [parent
-            (-> (db/query db {:select [:parent]
-                              :from [:reverie_page]
-                              :where [:= :id origo-id]})
-                first :parent)
-            parent-id
-            (-> (db/query db {:select [:parent]
-                              :from [:reverie_page]
-                              :where [:= :id id]})
-                first :parent)
-            objs
-            (->> (db/query db {:select [:p.order :p.id]
-                               :from [[:reverie_page :p]]
-                               :join [[:reverie_page :o]
-                                      [:= :p.parent :o.parent]]
-                               :where [:and
-                                       [:= :p.version 0]
-                                       [:= :o.id origo-id]]
-                               :order-by [(sql/raw "\"order\"")]})
-                 (map (fn [{:keys [order id]}]
-                        [order id])))
-            objs
-            (cond
-             (and (= parent parent-id)
-                  (= movement :after))
-             (movement/move objs id :down)
-
-             (and (= parent parent-id)
-                  (= movement :before))
-             (movement/move objs id :up)
-
-             (= movement :after)
-             (movement/after objs origo-id id)
-
-             :else
-             (movement/before objs origo-id id))]
-        (doseq [[order id] objs]
+      (assert (some #(= % movement) [:after :before :over]) "movement has to be :after, :before or :over")
+      (if (= movement :over)
+        (let [new-parent
+              (-> (db/query db {:select [:serial]
+                                :from [:reverie_page]
+                                :where [:= :id origo-id]})
+                  first :serial)
+              order
+              (or
+               (-> (db/query db {:select [:%max.p.order]
+                                 :from [[:reverie_page :p]]
+                                 :join [[:reverie_page :parent]
+                                        [:= :parent.serial :p.parent]]
+                                 :where [:and
+                                         [:= :parent.id origo-id]
+                                         [:= :parent.version 0]]})
+                   first
+                   :max)
+               0)]
           (db/query! db {:update :reverie_page
-                         :set {(sql/raw "\"order\"") order
-                               :parent parent}
-                         :where [:= :id id]}))
-        (recalculate-routes db id))))
+                         :set {(sql/raw "\"order\"") (inc order)
+                               :parent new-parent}
+                         :where [:= :id id]})
+          (recalculate-routes db id))
+        (let [parent-origo
+              (-> (db/query db {:select [:parent]
+                                :from [:reverie_page]
+                                :where [:= :id origo-id]})
+                  first :parent)
+              parent
+              (-> (db/query db {:select [:parent]
+                                :from [:reverie_page]
+                                :where [:= :id id]})
+                  first :parent)
+              objs
+              (->> (db/query db {:select [:p.order :p.id]
+                                 :from [[:reverie_page :p]]
+                                 :join [[:reverie_page :o]
+                                        [:= :p.parent :o.parent]]
+                                 :where [:and
+                                         [:= :p.version 0]
+                                         [:= :o.id origo-id]]
+                                 :order-by [(sql/raw "\"order\"")]})
+                   (map (fn [{:keys [order id]}]
+                          [order id])))
+              objs
+              (cond
+               ;; movement after and before adds a new page
+               ;; so if they have the same parent we do a :up/:down
+               ;; move instead
+               (and (= parent-origo parent)
+                    (= movement :after))
+               (movement/move objs id :down)
+
+               (and (= parent-origo parent)
+                    (= movement :before))
+               (movement/move objs id :up)
+
+               (= movement :after)
+               (movement/after objs origo-id id)
+
+               :else
+               (movement/before objs origo-id id))]
+          (doseq [[order id] objs]
+            (db/query! db {:update :reverie_page
+                           :set {(sql/raw "\"order\"") order
+                                 :parent parent-origo}
+                           :where [:= :id id]}))
+          (recalculate-routes db id)))))
 
   (add-object! [db data]
     (assert (contains? data :page_id) ":page_id key is missing")

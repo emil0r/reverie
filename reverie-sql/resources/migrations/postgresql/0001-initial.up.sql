@@ -61,19 +61,23 @@ RETURNS TABLE(route text, id bigint)
         LANGUAGE sql
         AS $$
         WITH RECURSIVE transverse(slug, parent, id) AS (
-             SELECT slug, parent, id
-             FROM reverie_page
-             WHERE id = start_id
+             SELECT
+                slug, parent, id
+             FROM
+                reverie_page
+             WHERE
+                id = start_id
         UNION ALL
-              SELECT
+             SELECT
                 CASE WHEN p.parent IS NULL THEN '' ELSE p.slug END || '/' || t.slug,
                 p.parent, p.id
-              FROM
+             FROM
                 reverie_page p
                 INNER JOIN transverse t ON serial = t.parent
-              WHERE
+             WHERE
                 t.parent = p.serial
                 AND p.version = 0
+                AND (p.serial != p.parent OR p.parent IS NULL)
 )
 SELECT slug, id FROM transverse WHERE parent IS NULL
 $$;

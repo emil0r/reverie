@@ -134,16 +134,16 @@
                (seed!)
                (db/move-page! db 5 3 :before)
                (map
-                (juxt :order :name)
+                (juxt :order :name :parent)
                 (page/children (db/get-page db 1 false)))
-               => [[1 "Bar"] [2 "Baz"]])
+               => [[1 "Bar" 1] [2 "Baz" 1]])
          (fact ":after"
                (seed!)
                (db/move-page! db 3 5 :after)
                (map
-                (juxt :order :name)
+                (juxt :order :name :parent)
                 (page/children (db/get-page db 1 false)))
-               => [[1 "Bar"] [2 "Baz"]]))
+               => [[1 "Bar" 1] [2 "Baz" 1]]))
    (fact "another level (move-page)"
          (fact ":before"
                (seed!)
@@ -155,9 +155,9 @@
                                        :type :page :app ""})]
                  (db/move-page! db id 5 :before)
                  (map
-                  (juxt :order :name)
+                  (juxt :order :name :parent)
                   (page/children (db/get-page db 1 false))))
-               => [[1 "Baz"] [2 "Test page 1"] [3 "Bar"]])
+               => [[1 "Baz" 1] [2 "Test page 1" 1] [3 "Bar" 1]])
          (fact ":after"
                (seed!)
                (let [{:keys [id]} (db/add-page!
@@ -168,9 +168,22 @@
                                        :type :page :app ""})]
                  (db/move-page! db id 5 :after)
                  (map
-                  (juxt :order :name)
+                  (juxt :order :name :parent)
                   (page/children (db/get-page db 1 false))))
-               => [[1 "Baz"] [2 "Bar"] [3 "Test page 1"]]))
+               => [[1 "Baz" 1] [2 "Bar" 1] [3 "Test page 1" 1]])
+         (fact ":over"
+               (seed!)
+               (let [{:keys [id]} (db/add-page!
+                                   db {:parent 2 :title ""
+                                       :name "Test page 1"
+                                       :route "/baz/test-page-1"
+                                       :template :foobaz
+                                       :type :page :app ""})]
+                 (db/move-page! db 5 3 :over)
+                 (map
+                  (juxt :order :name :parent)
+                  (page/children (db/get-page db 2 false))))
+               => [[1 "Test page 1" 2] [2 "Bar" 2]]))
    (component/stop db)))
 
 (fact
