@@ -60,11 +60,10 @@
     `(do
        (when ~migration
          (swap! sys/storage assoc-in [:migrations ~name] ~migration))
-       (when ~interface?
-         (swap! site/routes assoc ~path
-                [(route/route [~path]) {:name ~name
-                                        :path ~path
-                                        :type :module}]))
+       (swap! site/routes assoc ~path
+              [(route/route [~path]) {:name ~name
+                                      :path ~path
+                                      :type :module}])
        (swap! sys/storage assoc-in [:modules ~name]
               {:options ~options
                :name ~name

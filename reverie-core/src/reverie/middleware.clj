@@ -78,7 +78,16 @@
   (fn [request]
     (loop [resp (handler request)
            [handler & handlers] handlers]
-      (if (or (not= 404 (:status resp))
-              (nil? handler))
-        resp
-        (recur (handler request) handlers)))))
+      (cond
+       ;; was the response nil and we still have more handlers to try?
+       (and (nil? resp) (not (nil? handler)))
+       (recur (handler request) handlers)
+
+       ;; end of the line. no more handlers to try
+       ;; or it was something other than a 404
+       (or (not= 404 (:status resp)) (nil? handler))
+       resp
+
+       ;; continue trying
+       :else
+       (recur (handler request) handlers)))))

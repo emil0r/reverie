@@ -11,6 +11,7 @@
             reverie.admin.index
             [reverie.auth :as auth]
             reverie.modules.auth
+            [reverie.modules.filemanager :as fm]
             [reverie.render :as render]
             [reverie.server :as server]
             [reverie.settings :as settings]
@@ -52,35 +53,46 @@
 
 (defonce ^:private test-server (atom {}))
 (defn- start-test-server []
-  (let [db (component/start (get-db))
-        settings (-> "test/reverie/test/settings.edn"
-                     settings/settings
-                     component/start)
-        site (component/start (site/site
-                               {:host-names []
-                                :database db
-                                :system (:system db)
-                                :render-fn (fn [data] (hiccup.compiler/render-html data))}))
-        site (assoc site :db db)
-        system (component/start (assoc (sys/get-system)
+  (try
+    (let [db (component/start (get-db))
+          settings (-> "test/reverie/test/settings.edn"
+                       settings/settings
+                       component/start)
+          filemanager (component/start
+                       (fm/get-filemanager "media"
+                                           ["media/images"
+                                            "media/files"]))
+          site (component/start (site/site
+                                 {:host-names []
                                   :database db
-                                  :site site))
-        db (assoc db :system system)
-        server (component/start
-                (reverie.server/get-server {:dev? true
-                                            :site site
-                                            :server-options (settings/get settings [:server-options])
-                                            :run-server run-server
-                                            :stop-server stop-server}))]
-    (reset! test-server {:server server
-                         :site site
-                         :db db
-                         :settings settings})))
+                                  :system (:system db)
+                                  :render-fn (fn [data] (hiccup.compiler/render-html data))}))
+          site (assoc site :db db)
+          system (component/start (assoc (sys/get-system)
+                                    :database db
+                                    :site site
+                                    :filemanager filemanager))
+          db (assoc db :system system)
+          server (component/start
+                  (reverie.server/get-server {:dev? true
+                                              :site site
+                                              :server-options (settings/get settings [:server-options])
+                                              :run-server run-server
+                                              :stop-server stop-server
+                                              :filemanager filemanager}))]
+      (reset! test-server {:server server
+                           :site site
+                           :db db
+                           :settings settings}))
+    (catch Exception e
+      (println e))))
 
 (defn- stop-test-server []
   (do
     (when-let [db (:db @test-server)]
       (component/stop db))
+    (when-let [filemanager (-> @test-server :db :system :filemanager)]
+      (component/stop filemanager))
     (when-let [system (:system (:db @test-server))]
       (component/stop system))
     (when-let [settings (:settings @test-server)]

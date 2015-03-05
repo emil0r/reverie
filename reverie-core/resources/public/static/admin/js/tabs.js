@@ -14,6 +14,7 @@
     var click_module = function() {
         var $module = $(this);
         $module.addClass("active");
+        $module.siblings().removeClass("active");
 
         dom.options_uri("/admin/frame/module/" + $module.attr("module"));
         dom.show_options();

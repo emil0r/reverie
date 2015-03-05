@@ -21,6 +21,9 @@
 (defn get-site []
   (:site @sys))
 
+(defn get-filemanager []
+  (:filemanager @sys))
+
 (defprotocol ISystem
   (add-object-type! [system key object-type])
   (objects [system])
@@ -50,7 +53,7 @@
 
 
 
-(defrecord ReverieSystem [database site]
+(defrecord ReverieSystem [database site filemanager]
   component/Lifecycle
   (start [this]
     (reset! sys this)
