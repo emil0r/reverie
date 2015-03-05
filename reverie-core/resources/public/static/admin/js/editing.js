@@ -12,8 +12,14 @@
                 $slug.val(util.slugify($watch.val()));
             };
 
+            var slug_fn = function() {
+                $slug.val(util.slugify($slug.val()));
+            };
+
             $watch.keyup(watch_fn);
             $watch.change(watch_fn);
+
+            $slug.change(slug_fn);
         }
     });
 })(window, jQuery);
