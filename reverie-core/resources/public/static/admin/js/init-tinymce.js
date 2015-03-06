@@ -10,7 +10,7 @@ var getParameterByName = function (name) {
 // file browser callback. see tinymce documentation about it
 var fbc = function(field_name, url, type, win){
   var base = type === "image" ?
-    "/admin/api/interface/frames/file-picker" :
+    "/admin/frame/filepicker" :
     "/admin/api/interface/frames/url-picker";
 
   window.open(base

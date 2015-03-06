@@ -1,4 +1,5 @@
 (ns reverie.modules.filemanager
+  "Filemanager and filepicker"
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [com.stuartsierra.component :as component]
@@ -20,8 +21,20 @@
             [taoensso.timbre :as log]))
 
 
+(defn- join-paths [& paths]
+  (->> paths
+       (map (fn [path]
+              (-> path
+                  (str/replace #"\.\." "")
+                  (str/split #"/"))) )
+       (flatten)
+       (remove str/blank?)
+       (str/join "/")
+       (str "/")))
+
 (defprotocol IFileMananger
-  (base-dir [filemanager]))
+  (base-dir [filemanager])
+  (get-abs-path [filemanager path]))
 
 (defrecord FileManager [base media-dirs]
   component/Lifecycle
@@ -40,7 +53,9 @@
 
   IFileMananger
   (base-dir [this]
-    (.getAbsolutePath (io/file base))))
+    (.getAbsolutePath (io/file base)))
+  (get-abs-path [this path]
+    (join-paths (base-dir this) path)))
 
 
 (defn get-filemanager [base-dir media-dirs]
@@ -59,18 +74,7 @@
 (def ^:private file-type-movie ["3pg" "3gp2" "3gpp" "3gpp2" "amv" "avs" "bik" "dat" "divx" "avi" "mkv" "flv" "enc" "mpeg" "mpg" "m1v" "m2t" "m2ts" "m2v" "m4v" "mod" "mov" "moov" "movie" "mp2v" "mp4" "mpe" "mpcpl" "mtv" "ogm" "ogv" "ogx" "p64" "ppj" "prel" "prproj" "qt" "rec" "rf" "rm" "rmvb" "rts" "rtsl" "rtsp" "rv" "scr" "smi" "sol" "ssm" "tp" "trp" "ts" "vcd" "vbs" "vid" "vob" "wm" "wmv" "xvid"])
 (def ^:private file-type-font ["ttf" "otf" "snf" "t2" "ttc"])
 
-(defn join-paths [& paths]
-  (->> paths
-       (map (fn [path]
-              (-> path
-                  (str/replace #"\.\." "")
-                  (str/split #"/"))) )
-       (flatten)
-       (remove str/blank?)
-       (str/join "/")
-       (str "/")))
-
-(defn path-but-last
+(defn- path-but-last
   "Take any uri and return everything but the last part corresponding to the page"
   [path]
   (->> (str/split path #"/")
@@ -101,18 +105,18 @@
    :else (compare (:name x) (:name y))))
 
 
-(defn get-mod-time [{:keys [mod]}]
+(defn- get-mod-time [{:keys [mod]}]
   (if mod
     (time/format (time/coerce mod) time-display)))
 
-(defn get-size [{:keys [size]}]
+(defn- get-size [{:keys [size]}]
   (cond
    (< 1 (/ size 1073741824)) (str (format "%.2f" (float (/ size 1073741824))) " GiB")
    (< 1 (/ size 1048576)) (str (format "%.2f" (float (/ size 1048576))) " MiB")
    (< 1 (/ size 1024)) (str (format "%.2f" (float (/ size 1024))) " KiB")
    :else (str size " bytes")))
 
-(defn get-file-type [path]
+(defn- get-file-type [path]
   (let [ending (-> path (str/split #"\.") last)]
     (cond
      (some #(= ending %) file-type-document) :document
@@ -142,12 +146,12 @@
 (defmethod get-icon :default [file]
   [:i.icon-file])
 
-(defn get-image-src [{:keys [uri] :as file}]
+(defn- get-image-src [{:keys [uri] :as file}]
   (let [file-type (str/lower-case (-> uri (str/split #"\.") last))]
     (if (some #(= file-type %) ["jpg" "jpeg" "png"])
       (ez/cache (str "media" uri) [:constrain 200]))))
 
-(defn get-path-info [file]
+(defn- get-path-info [file]
   (let [path (.getPath file)]
     {:type (cond
             (fs/directory? file) :directory
@@ -163,7 +167,7 @@
      :name (get-name path)
      :size (fs/size file)}))
 
-(defn list-dir [base path]
+(defn- list-dir [base path]
   (let [base? (str/blank? base)
         base (get-base-path base)
         listed (remove
@@ -267,7 +271,7 @@
      :footer (common/footer {:filter-by #{:base}
                              :extra-js ["filemanager.js"]})}))
 
-(defn handle-filemanager [{:keys [uri]} module {:keys [path] :as params}]
+(defn- handle-filemanager [{:keys [uri]} module {:keys [path] :as params}]
   (cond
    (contains? params :__delete) (let [path (join-paths (get-base-path "") (:delete params))]
                                   (if (fs/exists? path)
@@ -330,7 +334,7 @@
     "Edit image..."]
    (hf/hidden-field field (form-params field))])
 
-(defn filepicker [{:keys [query-params]} page {:keys [path]}]
+(defn- filepicker [{:keys [query-params]} page {:keys [path]}]
   (let [up? (not (str/blank? path))
         path (or path "")]
     {:nav "File picker"

@@ -43,6 +43,11 @@
         return params;
     };
 
+    var undefined_p = function(value) {
+        return typeof value === 'undefined';
+    };
+
     window.util = {slugify: slugify,
-                   query_params: query_params};
+                   query_params: query_params,
+                   undefined_p: undefined_p};
 })(window, jQuery);

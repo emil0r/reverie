@@ -1,15 +1,17 @@
 (ns reverie.sql.objects.image
   (:require [ez-image.core :as ez]
             [me.raynes.fs :as fs]
-            [reverie.core :refer [defobject]]))
+            [reverie.core :refer [defobject]]
+            [reverie.modules.filemanager :as fm]))
 
 (defn- image [request object {:keys [title alt src width height]} params]
-  (let [constrain (cond
+  (let [fm (get-in request [:reverie :filemanager])
+        constrain (cond
                    (and width height) [:constrain width height]
                    width [:constrain width]
                    height [:constrain height]
                    :else nil)]
-    (if (fs/exists? src)
+    (if (fs/exists? (fm/get-abs-path fm src))
       (if constrain
         [:img {:src (ez/cache src constrain)
                :title title :alt alt}]

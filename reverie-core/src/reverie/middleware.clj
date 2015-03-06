@@ -54,10 +54,12 @@
 (defn wrap-reverie-data [handler {:keys [dev?]}]
   (fn [{:keys [uri] :as request}]
     (let [db (sys/get-db)
-          user (auth/get-user db)]
+          user (auth/get-user db)
+          filemanager (sys/get-filemanager)]
       (handler (assoc request
                  :reverie {:user user
                            :database db
+                           :filemanager filemanager
                            :dev? dev?})))))
 
 (defn- session-token [request]
