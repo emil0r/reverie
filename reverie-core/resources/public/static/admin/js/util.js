@@ -27,5 +27,22 @@
             replace(/-{2,}/g, '-').
             toLowerCase();
     };
-    window.util = {slugify: slugify};
+
+    var query_params = function() {
+        var search = location.search.replace('?', '');
+        var terms = search.split('&');
+        var params = {};
+        for (var i = 0, ii = terms.length; i < ii; i++) {
+            var subparams = terms[i].split('=');
+            if (subparams.length == 2) {
+                params[subparams[0]] = subparams[1];
+            } else if (subparams.length == 1) {
+                params[subparams[0]] = "";
+            }
+        }
+        return params;
+    };
+
+    window.util = {slugify: slugify,
+                   query_params: query_params};
 })(window, jQuery);

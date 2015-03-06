@@ -4,22 +4,34 @@
             [com.stuartsierra.component :as component]
             [ez-image.core :as ez]
             [ez-web.uri :refer [join-uri uri-but-last-part]]
+            [hiccup.page :refer [html5]]
+            [hiccup.form :as hf]
             [me.raynes.fs :as fs]
-            [reverie.core :refer [defmodule]]
+            [reverie.admin.looknfeel.common :as common]
+            [reverie.admin.looknfeel.form :as form]
+            [reverie.auth :as auth]
+            [reverie.core :refer [defmodule defpage]]
+            [reverie.database :as db]
+            [reverie.module.entity :as e]
             [reverie.time :as time]
+            [reverie.util :as util]
+            [ring.util.anti-forgery :refer [anti-forgery-field]]
+            [ring.util.response :as response]
             [taoensso.timbre :as log]))
 
 
 (defprotocol IFileMananger
   (base-dir [filemanager]))
 
-(defrecord FileManager [base-dir media-dirs]
+(defrecord FileManager [base media-dirs]
   component/Lifecycle
   (start [this]
     (doseq [dir media-dirs]
       (fs/mkdirs dir))
-    (fs/mkdirs (str base-dir "/cache/images"))
-    (ez/setup! (str base-dir "/cache/images/") "/cache/images/")
+    (fs/mkdirs (str (base-dir this) "/cache/images"))
+    (ez/setup! {:save-path (str (base-dir this) "/cache/images/")
+                :web-path "/cache/images/"
+                :base-dir (base-dir this)})
     (log/info "Starting FileManager")
     this)
   (stop [this]
@@ -28,7 +40,8 @@
 
   IFileMananger
   (base-dir [this]
-    (.getAbsolutePath (io/file base-dir))))
+    (.getAbsolutePath (io/file base))))
+
 
 (defn get-filemanager [base-dir media-dirs]
   (FileManager. base-dir media-dirs))
@@ -50,7 +63,7 @@
   (->> paths
        (map (fn [path]
               (-> path
-                  (str/replace #"\." "")
+                  (str/replace #"\.\." "")
                   (str/split #"/"))) )
        (flatten)
        (remove str/blank?)
@@ -79,13 +92,13 @@
    (and
     (= (:type x) :directory)
     (= (:type y) :directory)) (compare (:name x) (:name y))
-    (and
+   (and
     (= (:type x) :directory)
     (= (:type y) :file)) -1
-    (and
+   (and
     (= (:type x) :file)
     (= (:type y) :directory)) 1
-    :else (compare (:name x) (:name y))))
+   :else (compare (:name x) (:name y))))
 
 
 (defn get-mod-time [{:keys [mod]}]
@@ -136,19 +149,19 @@
 
 (defn get-path-info [file]
   (let [path (.getPath file)]
-   {:type (cond
-           (fs/directory? file) :directory
-           (fs/file? file) :file
-           :else :other)
-    :mod (fs/mod-time file)
-    :file-type (get-file-type path)
-    :uri (-> path
-             (str/replace (re-pattern
-                           (-> path (str/split #"media") first)) "")
-             (str/replace #"media" "")
-             join-uri)
-    :name (get-name path)
-    :size (fs/size file)}))
+    {:type (cond
+            (fs/directory? file) :directory
+            (fs/file? file) :file
+            :else :other)
+     :mod (fs/mod-time file)
+     :file-type (get-file-type path)
+     :uri (-> path
+              (str/replace (re-pattern
+                            (-> path (str/split #"media") first)) "")
+              (str/replace #"media" "")
+              join-uri)
+     :name (get-name path)
+     :size (fs/size file)}))
 
 (defn list-dir [base path]
   (let [base? (str/blank? base)
@@ -162,55 +175,132 @@
     (sort compare-listed
           (map get-path-info listed))))
 
-(defmulti row-file :type)
+(defmulti row :type)
 
-(defmethod row-file :directory [dir]
-  [:tr
-   [:td
-    [:a {:href (join-uri "/admin/frame/module/filemanager" (:uri dir))}
-     [:i.icon-folder-close]
-     (:name dir)]]
-   [:td]
-   [:td (get-mod-time dir)]])
-
-(defmethod row-file :file [file]
-  (let [src (get-image-src file)]
+(defmethod row :directory [{:keys [qs filepicker?] :as dir}]
+  (let [uri-base (if filepicker?
+                   "/admin/frame/filepicker"
+                   "/admin/frame/module/filemanager")]
    [:tr
-    [:td [:span.file {:uri (:uri file)
-                      :mod (get-mod-time file)
-                      :size (get-size file)
-                      :file-type (-> file :uri get-file-type)
-                      :img-src src
-                      :name (:name file)}
-          (get-icon file)
-          (:name file)
-          (if src
-            [:img {:src src}])]]
-    [:td (get-size file)]
-    [:td (get-mod-time file)]]))
+    [:td
+     [:a {:href (str (join-uri uri-base (:uri dir))
+                     (if filepicker?
+                       (str "?" (util/qsize qs))))}
+      [:i.icon-folder-close]
+      (:name dir)]]
+    [:td]
+    [:td (get-mod-time dir)]]))
 
-(defmethod row-file :default [_ _])
+(defmethod row :file [{:keys [filepicker?] :as file}]
+  (let [src (get-image-src file)]
+    [:tr
+     [:td [:span.file.download {:uri (:uri file)
+                                :path (:path file)}
+           (get-icon file)
+           (:name file)
+           (if filepicker?
+             [:i.icon-download])
+           (if src
+             [:img {:src src}])]]
+     [:td (get-size file)]
+     [:td (get-mod-time file)]]))
 
-(defn- file-lister [files {:keys [up? path]}]
-  [:div.row.filemanager
-   [:div#files.col-md-8
-    [:table.table
-     [:tr
-      [:th "Name"] [:th "Size"] [:th "Modified"]]
-     (if up?
-       (row-file {:type :directory
-                  :name ".."
-                  :uri (str "/" (uri-but-last-part path))}))
-     (map row-file files)]]
-   [:div#info.col-md-4]])
+(defmethod row :default [_ _])
+
+(defn- command [name value]
+  [:input.btn.btn-primary {:type :submit :name name :id name
+                           :value value}])
+
+(defn- file-lister [files {:keys [up? path filepicker? qs]}]
+  (let [uri-base (if filepicker?
+                   "/admin/frame/filepicker"
+                   "/admin/frame/module/filemanager")]
+    [:div.row.filemanager
+     [:div#files.col-md-8
+      [:table.table
+       [:tr
+        [:th "Name"] [:th "Size"] [:th "Modified"]]
+       (if up?
+         (row {:type :directory
+               :name ".."
+               :uri (uri-but-last-part path)
+               :filepicker? filepicker?
+               :qs qs}))
+       (map row (map #(assoc %
+                        :filepicker? filepicker?
+                        :qs qs) files))]]
+     (if-not filepicker?
+       [:div#info.col-md-4
+        [:div#directory-commands
+         [:h3 "Directory commands"]
+         (hf/form-to
+          [:post ""]
+          (anti-forgery-field)
+          [:div (hf/text-field {:class :form-control} :dir "")]
+          (command "__create-dir" "Create directory"))
+         (if (empty? files)
+           (hf/form-to
+            [:post ""]
+            (anti-forgery-field)
+            (command "__delete-dir" "Delete directory")))]
+
+        [:div#file-commands
+         [:h3 "File commands"]
+         (hf/form-to
+          {:enctype "multipart/form-data"}
+          [:post ""]
+          (anti-forgery-field)
+          [:div [:input {:type :file :name :upload}]]
+          (command "__upload" "Upload file"))
+         (hf/form-to
+          [:post ""]
+          (anti-forgery-field)
+          (hf/hidden-field :delete "")
+          (command "__delete" "Delete file"))]])]))
 
 (defn- browse [request module {:keys [path]}]
   (let [up? (not (str/blank? path))
         path (or path "")]
     {:nav "Filemanager"
      :content (file-lister (list-dir "" path) {:up? up?
-                                               :path path})}))
+                                               :path path})
+     :footer (common/footer {:filter-by #{:base}
+                             :extra-js ["filemanager.js"]})}))
 
+(defn handle-filemanager [{:keys [uri]} module {:keys [path] :as params}]
+  (cond
+   (contains? params :__delete) (let [path (join-paths (get-base-path "") (:delete params))]
+                                  (if (fs/exists? path)
+                                    (fs/delete path))
+                                  (response/redirect uri))
+   (and
+    (-> params :upload :filename str/blank? not)
+    (contains? params :__upload)) (let [file (:upload params)]
+                                    (fs/copy (:tempfile file)
+                                             (join-paths (get-base-path "")
+                                                         path
+                                                         (:filename file)))
+                                    (response/redirect uri))
+   (and
+    (-> params :dir str/blank? not)
+    (contains? params :__create-dir)) (let [dir (:dir params)
+                                            path (join-paths (get-base-path "")
+                                                             path
+                                                             dir)]
+                                        (fs/mkdir path)
+                                        (response/redirect uri))
+   (contains? params :__delete-dir) (let [dir-path (join-paths (get-base-path "") path)
+                                          empty-dir? (empty? (fs/list-dir dir-path))]
+                                      (if empty-dir?
+                                        (do (fs/delete-dir dir-path)
+                                            (response/redirect (join-uri
+                                                                "/admin/frame/module/filemanager"
+                                                                (uri-but-last-part path))))
+                                        (response/redirect uri)))
+   :else (response/redirect uri)))
+
+
+;; define module
 (defmodule filemanager
   {:name "File manager"
    :roles #{:filemanager}
@@ -220,5 +310,41 @@
                     :delete #{:filemanager}
                     :move #{:filemanager}}
    :template :admin/main}
-  [["/" {:get browse}]
-   ["/:path" {:path #".*"} {:get browse}]])
+  [["/" {:get browse :post handle-filemanager}]
+   ["/:path" {:path #".*"} {:get browse :post handle-filemanager}]])
+
+
+;; define file picker
+(defmethod form/row :image [entity field {:keys [form-params errors
+                                                 error-field-names]
+                                          :or {form-params {}}}]
+  [:div.row-form
+   (form/error-items field errors error-field-names)
+   (hf/label field (e/field-name entity field))
+   [:span (merge {:onclick (str "window.open('/admin/frame/filepicker/"
+                                (form-params field)
+                                "?field=" (util/kw->str field)
+
+                                "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
+                 (e/field-attribs entity field))
+    "Edit image..."]
+   (hf/hidden-field field (form-params field))])
+
+(defn filepicker [{:keys [query-params]} page {:keys [path]}]
+  (let [up? (not (str/blank? path))
+        path (or path "")]
+    {:nav "File picker"
+     :content (file-lister (list-dir "" path) {:up? up?
+                                               :path path
+                                               :filepicker? true
+                                               :qs query-params})
+     :footer (map (fn [js]
+                    [:script {:type "text/javascript"
+                              :src (str "/static/admin/js/" js)}])
+                  ["jquery.min.js"
+                   "util.js"
+                   "filepicker.js"])}))
+
+(defpage "/admin/frame/filepicker" {:template :admin/main}
+  [["/" {:get filepicker}]
+   ["/:path" {:path #".*"} {:get filepicker}]])

@@ -20,7 +20,9 @@
                (map (fn [{:keys [module] :as mod}]
                       [:li {:module (m/slug module)}
                        (m/name module)])
-                    (-> @sys/storage :modules vals))]]
+                    (sort-by
+                     #(-> % :module m/name)
+                     (-> @sys/storage :modules vals)))]]
 
              [:div.navigation-meta
               [:div.tree

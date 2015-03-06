@@ -13,7 +13,6 @@
    ["/interface/frames/object/:object-id" {:object-id #"\d+"} {:object-id Integer} {:get iframes/edit-object :post iframes/handle-object}]
    ["/interface/frames/object/richtext/:object-id" {:object-id #"\d+"} {:object-id Integer} {:get iframes/richtext}]
    ["/interface/frames/url-picker" {:get iframes/url-picker}]
-   ["/interface/frames/file-picker" {:get iframes/file-picker}]
 
    ;; frames pages
    ["/interface/frames/pages/add/:parent-serial"

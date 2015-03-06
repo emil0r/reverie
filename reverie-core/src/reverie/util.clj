@@ -53,3 +53,6 @@
   (if (string? x)
     (keyword x)
     x))
+
+(defn qsize [qs]
+  (str/join "&" (map (fn [[k v]] (str (name k) "=" v)) qs)))

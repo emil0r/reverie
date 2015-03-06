@@ -12,6 +12,7 @@
             [reverie.module :as m]
             [reverie.module.entity :as e]
             [reverie.system :as sys]
+            [reverie.util :refer [qsize]]
             [ring.util.response :as response]))
 
 (def base-link "admin/frame/module")
@@ -84,9 +85,6 @@
   (if (> length 1)
     (str length " " plural)
     (str length " " singular)))
-
-(defn- qsize [qs]
-  (str/join "&" (map (fn [[k v]] (str (name k) "=" v)) qs)))
 
 (defn pagination [{:keys [uri params query-params] :as request} module entity]
   (let [qs query-params

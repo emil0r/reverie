@@ -32,9 +32,14 @@
                               :database db
                               :system (:system db)
                               :render-fn (fn [data] (hiccup.compiler/render-html data))}))
+      filemanager (component/start
+                       (fm/get-filemanager "media"
+                                           ["media/images"
+                                            "media/files"]))
       server (component/start
               (reverie.server/get-server {:dev? true
                                           :site site
+                                          :filemanager filemanager
                                           :server-options (settings/get settings [:server-options])
                                           :run-server run-server
                                           :stop-server stop-server}))]

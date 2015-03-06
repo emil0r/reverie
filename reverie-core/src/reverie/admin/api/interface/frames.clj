@@ -13,6 +13,20 @@
             [reverie.page :as page]))
 
 
+(defmulti cast-field (fn [options & _] (:type options)))
+(defmethod cast-field :number [_ value]
+  (if (str/blank? value)
+    nil
+    (Integer/parseInt value)))
+(defmethod cast-field :default [_ value]
+  value)
+
+(defn clean-params [object params]
+  (let [fields (e/fields object)]
+    (reduce (fn [out [k options]]
+              (assoc out k (cast-field options (params k))))
+            params fields)))
+
 
 (defn edit-object [request page {:keys [object-id]}]
   (let [db (get-in request [:reverie :database])
@@ -44,7 +58,7 @@
         user (get-in request [:reverie :user])
         object (db/get-object db object-id)]
     (if (auth/authorize? (object/page object) user db "edit")
-      (do (db/update-object! db object-id params)
+      (do (db/update-object! db object-id (clean-params object params))
           (edit-object request page params))
       (html5
        [:head

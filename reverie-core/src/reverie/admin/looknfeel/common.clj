@@ -23,29 +23,33 @@
        (map (fn [[_ js]]
               js))))
 
-(defn footer [& [{:keys [request filter-by] :as opts}]]
+(defn footer [& [{:keys [request filter-by extra-js extra-css] :as opts}]]
   (let [dev? (get-in request [:reverie :dev?])
         filter-by (set/union
                    (if dev? #{:dev})
                    (or filter-by #{:all}))]
     (list
-     (map link-css (filter-links
+     (map link-css (concat
+                    (filter-links
+                     filter-by
+                     [[#{:all :meta} "../js/fancy-tree/skin-win7/ui.fancytree.min.css"]
+                      [#{:richtext} "../js/tinymce/skins/lightgray/skin.ie7.min.css"]])
+                    extra-css))
+     (map link-js (concat
+                   (filter-links
                     filter-by
-                    [[#{:all :meta} "../js/fancy-tree/skin-win7/ui.fancytree.min.css"]
-                     [#{:richtext} "../js/tinymce/skins/lightgray/skin.ie7.min.css"]]))
-     (map link-js (filter-links
-                   filter-by
-                   [[#{:all :base} "jquery-2.1.3.min.js"]
-                        [#{:all :meta} "jquery-ui/jquery-ui.min.js"]
-                        [#{:all :meta} "fancy-tree/jquery.fancytree-all.min.js"]
-                        [#{:all :meta} "csrf.js"]
-                        [#{:all :meta} "dom.js"]
-                        [#{:all :meta :editing} "util.js"]
-                        [#{:all :meta} "tabs.js"]
-                        [#{:all :meta} "tree.js"]
-                        [#{:all :meta} "objects.js"]
-                        [#{:all :meta} "main.js"]
-                        [#{:editing} "editing.js"]
-                        [#{:richtext} "tinymce/tinymce.min.js"]
-                        [#{:all :dev} "eyespy.js"]
-                        [#{:all :dev} "init.js"]])))))
+                    [[#{:all :base} "jquery.min.js"]
+                     [#{:all :meta} "jquery-ui/jquery-ui.min.js"]
+                     [#{:all :meta} "fancy-tree/jquery.fancytree-all.min.js"]
+                     [#{:all :meta} "csrf.js"]
+                     [#{:all :meta} "dom.js"]
+                     [#{:all :meta :editing} "util.js"]
+                     [#{:all :meta} "tabs.js"]
+                     [#{:all :meta} "tree.js"]
+                     [#{:all :meta} "objects.js"]
+                     [#{:all :meta} "main.js"]
+                     [#{:editing} "editing.js"]
+                     [#{:richtext} "tinymce/tinymce.min.js"]
+                     [#{:all :dev} "eyespy.js"]
+                     [#{:all :dev} "init.js"]])
+                   extra-js)))))
