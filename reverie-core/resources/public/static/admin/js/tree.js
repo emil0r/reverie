@@ -32,6 +32,18 @@
         return false;
     };
 
+    var update_children_paths = function(root) {
+        var children = root.getChildren();
+        if (!util.undefined_p(children) && children != null) {
+            var path = root.data.path;
+            for (var i = 0, ii = children.length; i < ii; i++) {
+                var child = children[i];
+                child.data.path = util.join_uri(path, child.data.slug);
+                update_children_paths(child);
+            }
+        }
+    };
+
     $("#tree").fancytree({
         source: $.ajax({
             type: "GET",
@@ -85,6 +97,9 @@
                                alert(return_data.error);
                            } else {
                                data.otherNode.moveTo(node, data.hitMode);
+                               var path = data.otherNode.parent.data.path;
+                               data.otherNode.data.path = util.join_uri(path, data.otherNode.data.slug);
+                               update_children_paths(data.otherNode);
                            }
                        });
             }

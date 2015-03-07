@@ -47,7 +47,23 @@
         return typeof value === 'undefined';
     };
 
+    var join_uri = function() {
+        var parts = [];
+        for (var i = 0, ii = arguments.length; i < ii; i++) {
+            var path_parts = arguments[i].split('/');
+            for (var j = 0, jj = path_parts.length; j < jj; j++) {
+                var part = path_parts[j];
+                if (!undefined_p(part) && part !== '' && part !== '/') {
+                    parts.push(part);
+                }
+            }
+        }
+
+        return '/' + parts.join('/');
+    };
+
     window.util = {slugify: slugify,
                    query_params: query_params,
-                   undefined_p: undefined_p};
+                   undefined_p: undefined_p,
+                   join_uri: join_uri};
 })(window, jQuery);

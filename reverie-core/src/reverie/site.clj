@@ -37,7 +37,12 @@
            (into
             {}
             (map (fn [[route properties]]
-                   {route [(route/route [route]) properties]})
+                   {route [(route/route [route]) (select-keys properties
+                                                              [:template
+                                                               :app
+                                                               :type
+                                                               :name
+                                                               :serial])]})
                  (db/get-pages-by-route database)))))
   (get-page [this {:keys [reverie] :as request}]
     (let [uri (:uri request)]
@@ -57,12 +62,10 @@
           (let [{:keys [template app type name serial]} properties
                 public? (not (get-in request [:reverie :editor?]))]
             (case type
-              :page (let [p (db/get-page database
-                                         serial
-                                         public?)]
-                      (if p
-                        (assoc p
-                          :route route)
+              :page (let [p (db/get-page database serial public?)]
+                      (if (and p
+                               (= (:path route) (-> p :route :path)))
+                        (assoc p :route route)
                         nil))
               :raw (let [page-data (sys/raw-page system name)]
                      (page/raw-page
@@ -73,13 +76,10 @@
               :module (assoc (:module (sys/module system name))
                         :route route
                         :database database)
-              :app (let [p (db/get-page
-                            database
-                            serial
-                            public?)]
-                     (if p
-                       (assoc p
-                         :route route)
+              :app (let [p (db/get-page database serial public?)]
+                     (if (and p
+                              (= (:path route) (-> p :route :path)))
+                       (assoc p :route route)
                        nil))))))))
 
   (host-match? [this {:keys [server-name]}]

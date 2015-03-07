@@ -248,6 +248,7 @@
                     (json/generate-string
                      {:title (page/name page)
                       :path (page/path page)
+                      :slug (page/slug page)
                       :page_title (page/title page)
                       :created (time/format (page/created page) :mysql)
                       :updated (time/format (page/updated page) :mysql)})

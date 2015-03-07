@@ -127,7 +127,10 @@
                                      :from [[:reverie_page :p]]
                                      :join [[:reverie_page :o]
                                             [:= :o.serial :p.parent]]
-                                     :where [:in :o.id page-ids]}))]
+                                     :where [:and
+                                             [:in :o.id page-ids]
+                                             [:= :p.version 0]
+                                             [:= :o.version 0]]}))]
         (recur db page-ids)))))
 
 (defn- recalculate-routes [db page-ids]

@@ -22,6 +22,7 @@
 
    :published_p (page/published? page)
    :path (page/path page)
+   :slug (page/slug page)
    :page_title (page/title page)
    :created (time/format (page/created page) :mysql)
    :updated (time/format (page/updated page) :mysql)})
@@ -50,20 +51,6 @@
             [false _] false
             [_ true] (editors/edit! page user)
             [_ false] (editors/stop-edit! user)))))
-
-(defn update-page! [request module {:keys [serial] :as params}]
-  (json-response
-   (let [serial (edn/read-string serial)
-         user (get-in request [:reverie :user])
-         db (:database module)
-         page (db/get-page db serial false)]
-     (if (auth/authorize? page user db "edit")
-       (try
-         (db/update-page! db (page/id page) params)
-         (catch Exception e
-           (log/warn e)
-           false))
-       false))))
 
 
 (defn move-page! [request module {:keys [serial origo_serial movement]

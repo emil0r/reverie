@@ -60,9 +60,9 @@ CREATE OR REPLACE FUNCTION get_route(start_id integer)
 RETURNS TABLE(route text, id bigint)
         LANGUAGE sql
         AS $$
-        WITH RECURSIVE transverse(slug, parent, id) AS (
+        WITH RECURSIVE transverse(slug, parent, id, iterator) AS (
              SELECT
-                slug, parent, id
+                slug, parent, id, 1 AS iterator
              FROM
                 reverie_page
              WHERE
@@ -70,7 +70,7 @@ RETURNS TABLE(route text, id bigint)
         UNION ALL
              SELECT
                 CASE WHEN p.parent IS NULL THEN '' ELSE p.slug END || '/' || t.slug,
-                p.parent, p.id
+                p.parent, p.id, 1 + iterator AS iterator
              FROM
                 reverie_page p
                 INNER JOIN transverse t ON serial = t.parent
@@ -78,8 +78,9 @@ RETURNS TABLE(route text, id bigint)
                 t.parent = p.serial
                 AND p.version = 0
                 AND (p.serial != p.parent OR p.parent IS NULL)
+                AND iterator < 100
 )
-SELECT slug, id FROM transverse WHERE parent IS NULL
+SELECT slug, id FROM transverse WHERE parent IS NULL OR iterator = 100
 $$;
 
 
