@@ -23,7 +23,6 @@
   {:table "batteries_image"
    :migration {:path "src/reverie/sql/objects/migrations/image/"
                :automatic? true}
-   :properties-order [:title :alt :src :width :height]
    :fields {:title {:name "Title"
                     :type :text
                     :initial ""
