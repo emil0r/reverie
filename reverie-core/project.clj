@@ -22,6 +22,11 @@
                  [ez-image "1.0.2"]
                  [me.raynes/fs "1.4.6"]
                  [im.chit/cronj "1.4.3"]]
+  :aot [reverie.AreaException
+        reverie.DatabaseException
+        reverie.ModuleException
+        reverie.ObjectException
+        reverie.RenderException]
   :profiles {:dev {:dependencies [[midje "1.6.3"]
                                   [ring-mock "0.1.5"]
                                   [reverie-sql "0.1.0-SNAPSHOT"]
