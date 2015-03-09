@@ -67,13 +67,13 @@
                                (= (:path route) (-> p :route :path)))
                         (assoc p :route route)
                         nil))
-              :raw (let [page-data (sys/raw-page system name)]
+              :raw (let [page-data (sys/raw-page name)]
                      (page/raw-page
                       {:route route
                        :options (:options page-data)
                        :routes (:routes page-data)
                        :database database}))
-              :module (assoc (:module (sys/module system name))
+              :module (assoc (:module (sys/module name))
                         :route route
                         :database database)
               :app (let [p (db/get-page database serial public?)]

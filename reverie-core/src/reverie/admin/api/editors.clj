@@ -108,9 +108,9 @@
     (when-not (empty? expired-edits)
       (apply swap! edits dissoc expired-edits))))
 
-(defn get-edits-task []
+(defn get-edits-task [minutes]
   (scheduler/get-task {:id "admin-edits"
                        :desc "Remove unused edits"
                        :handler edits-task-handler!
                        :schedule "* 1 * * * * *" ;; every minute
-                       :opts {:minutes 30}}))
+                       :opts {:minutes minutes}}))

@@ -94,7 +94,7 @@
                   "&password=" password)}
    :migrator path})
 
-(defn- get-migrators [system]
+(defn- get-migrators []
   (let [paths (map (fn [[kw {:keys [table path]}]]
                      (let [table (or table
                                      (str
@@ -105,7 +105,7 @@
                        [table path]))
                    (filter (fn [[_ {:keys [automatic?]}]]
                              automatic?)
-                           (sys/migrations system)))]
+                           (sys/migrations)))]
     paths))
 
 (defn- recalculate-routes-db [db page-ids]
@@ -158,7 +158,7 @@
     (assoc (get db-specs key) :connection *connection*)
     (get db-specs key)))
 
-(defrecord DatabaseSQL [system db-specs ds-specs]
+(defrecord DatabaseSQL [db-specs ds-specs]
   component/Lifecycle
   (start [this]
     (if (get-in db-specs [:default :datasource])
@@ -168,7 +168,7 @@
               migrators (concat
                          [["migrations" (str "resources/migrations/"
                                              (:subprotocol default-spec))]]
-                         (get-migrators system))
+                         (get-migrators))
               mmaps (map (fn [[table path]]
                            (get-migrator-map default-spec table path))
                          migrators)]
@@ -444,7 +444,7 @@
           obj (db/query! db add-object<! (-> data
                                              (assoc :order order)
                                              (dissoc :fields)))
-          obj-meta (sys/object system (-> data :name keyword))
+          obj-meta (sys/object (-> data :name keyword))
           field-ks (->> obj-meta :options :fields keys)
           fk (or (->> obj-meta :options :foreign-key)
                  :object_id)
@@ -463,7 +463,7 @@
                                      :from [:reverie_object]
                                      :where [:= :id id]})
                        first :name keyword)
-          obj-meta (sys/object system obj-name)
+          obj-meta (sys/object obj-name)
           fk (or (->> obj-meta :options :foreign-key)
                  :object_id)
           field-ks (->> obj-meta :options :fields keys)
@@ -708,7 +708,7 @@
                                           {:pageid id
                                            :id (object/id obj)})
                   ;; get meta data for meta object
-                  obj-meta (sys/object system (-> new-meta-obj :name keyword))
+                  obj-meta (sys/object (-> new-meta-obj :name keyword))
                   ;; foreign key
                   fk (or (->> obj-meta :options :foreign-key)
                          :object_id)]
