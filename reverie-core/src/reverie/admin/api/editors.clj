@@ -2,7 +2,8 @@
   (:require [clj-time.core :as t]
             [clojure.core.match :refer [match]]
             [clojure.string :as str]
-            [reverie.page :as page])
+            [reverie.page :as page]
+            [reverie.scheduler :as scheduler])
   (:import [reverie.page Page AppPage RawPage]))
 
 (defonce edits (atom {}))
@@ -95,3 +96,21 @@
                        "</body>")
                   "</body>"))))
     response))
+
+
+(defn- edits-task-handler! [t {:keys [minutes] :as opts}]
+  (let [now (t/now)
+        expired-edits (map first
+                           (filter (fn [[k {:keys [time]}]]
+                                     (t/after? now (t/plus time
+                                                           (t/seconds minutes))))
+                                   @edits))]
+    (when-not (empty? expired-edits)
+      (apply swap! edits dissoc expired-edits))))
+
+(defn get-edits-task []
+  (scheduler/get-task {:id "admin-edits"
+                       :desc "Remove unused edits"
+                       :handler edits-task-handler!
+                       :schedule "* 1 * * * * *" ;; every minute
+                       :opts {:minutes 30}}))
