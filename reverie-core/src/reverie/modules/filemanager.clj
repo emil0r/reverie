@@ -162,7 +162,7 @@
      :uri (-> path
               (str/replace (re-pattern
                             (-> path (str/split #"media") first)) "")
-              (str/replace #"media" "")
+              (str/replace-first #"media" "")
               join-uri)
      :name (get-name path)
      :size (fs/size file)}))

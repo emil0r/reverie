@@ -73,6 +73,7 @@
                                  [wrap-params]
                                  [wrap-multipart-params
                                   (:multipart-opts middleware-options)]
+                                 [wrap-noir-flash]
                                  [wrap-noir-session
                                   {:store (or store (memory-store))
                                    ;; store session

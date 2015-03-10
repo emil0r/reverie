@@ -21,7 +21,9 @@
                  [ez-web "0.2.4"]
                  [ez-image "1.0.2"]
                  [me.raynes/fs "1.4.6"]
-                 [im.chit/cronj "1.4.3"]]
+                 [im.chit/cronj "1.4.3"]
+                 [digest "1.4.4"]
+                 [org.clojure/core.memoize "0.5.6"]]
   :aot [reverie.AreaException
         reverie.DatabaseException
         reverie.ModuleException

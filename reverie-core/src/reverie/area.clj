@@ -31,10 +31,10 @@
                (object/id obj)
                "'>")
           "<div class='reverie-object-holder'>"
-          "<span class='reverie-object-panel'>object "
+          "<div class='reverie-object-panel'>object "
           (object/name obj)
           (get-object-menu)
-          "</span></div>"
+          "</div></div>"
           (render/render obj request)
           "</div>")
     (render/render obj request)))
@@ -72,9 +72,9 @@
                                     (page/id page)
                                     "'>")
                                (str "<div class='reverie-area-holder'>"
-                                    "<span class='reverie-area-panel'>area "
+                                    "<div class='reverie-area-panel'>area "
                                     (util/kw->str name)
-                                    "</span>"
+                                    "</div>"
 
                                     "<ul class='reverie-area-menu hidden'>"
                                     "<li class='add-objects'>Add object"
