@@ -15,7 +15,7 @@
             [reverie.system :as sys]
             [reverie.site :as site]
             [reverie.util :refer [slugify kw->str str->kw]]
-            [slingshot.slingshot :refer [try+]]
+            [slingshot.slingshot :refer [try+ throw+]]
             [taoensso.timbre :as log]
             [yesql.core :refer [defqueries]])
   (:import [reverie.database IDatabase]
@@ -152,11 +152,25 @@
 
 (def ^:dynamic *connection* nil)
 
-
 (defn- get-connection [db-specs key]
   (if-not (nil? *connection*)
     (assoc (get db-specs key) :connection *connection*)
     (get db-specs key)))
+
+(defmacro try-query [& body]
+  `(try+
+    ~@body
+    (catch Object ~'e
+      (throw+ {:exception ~'e
+               :query ~'query}))))
+
+(defmacro try-query-args [& body]
+  `(try+
+    ~@body
+    (catch Object ~'e
+      (throw+ {:exception ~'e
+               :query ~'query
+               :args ~'args}))))
 
 (defrecord DatabaseSQL [db-specs ds-specs]
   component/Lifecycle
@@ -201,99 +215,108 @@
 
   IDatabase
   (query [db query]
-    (cond
-     (string? query) (jdbc/query (get-connection db-specs :default) [query])
-     (fn? query) (query {} {:connection (get-connection db-specs :default)})
-     :else (jdbc/query (get-connection db-specs :default) (sql/format query))))
+    (try-query
+     (cond
+      (string? query) (jdbc/query (get-connection db-specs :default) [query])
+      (fn? query) (query {} {:connection (get-connection db-specs :default)})
+      :else (jdbc/query (get-connection db-specs :default) (sql/format query)))))
   (query [db key? query]
     (let [[key query args] (if (get db-specs key?)
                              [key? query nil]
                              [:default key? query])]
-      (cond
-       (and (nil? args) (fn? query))
-       (query {} {:connection (get-connection db-specs key)})
+      (try-query-args
+       (cond
+        (and (nil? args) (fn? query))
+        (query {} {:connection (get-connection db-specs key)})
 
-       (fn? query)
-       (query args {:connection (get-connection db-specs key)})
+        (fn? query)
+        (query args {:connection (get-connection db-specs key)})
 
-       (nil? args)
-       (jdbc/query (get-connection db-specs key) (sql/format query))
+        (nil? args)
+        (jdbc/query (get-connection db-specs key) (sql/format query))
 
-       :else
-       (jdbc/query (get-connection db-specs key) (sql/format query args)))))
+        :else
+        (jdbc/query (get-connection db-specs key) (sql/format query args))))))
   (query [db key query args]
-    (if (fn? query)
-      (query args {:connection (get-connection db-specs key)})
-      (jdbc/query (get-connection db-specs key) (sql/format query args))))
+    (try-query-args
+     (if (fn? query)
+       (query args {:connection (get-connection db-specs key)})
+       (jdbc/query (get-connection db-specs key) (sql/format query args)))))
   (query! [db query]
-    (cond
-     (string? query)
-     (jdbc/execute! (get-connection db-specs :default) [query])
+    (try-query
+     (cond
+      (string? query)
+      (jdbc/execute! (get-connection db-specs :default) [query])
 
-     (fn? query)
-     (query {} (get-connection db-specs :default))
+      (fn? query)
+      (query {} (get-connection db-specs :default))
 
-     :else
-     (jdbc/execute! (get-connection db-specs :default) (sql/format query))))
+      :else
+      (jdbc/execute! (get-connection db-specs :default) (sql/format query)))))
   (query! [db key? query]
     (let [[key query args] (if (get db-specs key?)
                              [key? query nil]
                              [:default key? query])]
-      (cond
-       (and (fn? query) (nil? args))
-       (query {} {:connection (get-connection db-specs key)})
+      (try-query
+       (cond
+        (and (fn? query) (nil? args))
+        (query {} {:connection (get-connection db-specs key)})
 
-       (fn? query)
-       (query args {:connection (get-connection db-specs key)})
+        (fn? query)
+        (query args {:connection (get-connection db-specs key)})
 
-       (nil? args)
-       (jdbc/execute! (get-connection db-specs key) (sql/format query))
+        (nil? args)
+        (jdbc/execute! (get-connection db-specs key) (sql/format query))
 
-       :else
-       (jdbc/execute! (get-connection db-specs key) (sql/format query args)))))
+        :else
+        (jdbc/execute! (get-connection db-specs key) (sql/format query args))))))
   (query! [db key query args]
-    (if (fn? query)
-      (query args {:connection (get-connection db-specs key)})
-      (jdbc/execute! (get-connection db-specs key) (sql/format query args))))
+    (try-query-args
+     (if (fn? query)
+       (query args {:connection (get-connection db-specs key)})
+       (jdbc/execute! (get-connection db-specs key) (sql/format query args)))))
 
   (query<! [db query]
-    (cond
-     (string? query)
-     (throw (DatabaseException. "String is not allowed for query<!"))
+    (try-query
+     (cond
+      (string? query)
+      (throw (DatabaseException. "String is not allowed for query<!"))
 
-     (fn? query)
-     (query {} (get-connection db-specs :default))
+      (fn? query)
+      (query {} (get-connection db-specs :default))
 
-     :else
-     (let [table (:insert-into query)
-           values (:values query)]
-       (apply jdbc/insert! (get-connection db-specs :default) table values))))
+      :else
+      (let [table (:insert-into query)
+            values (:values query)]
+        (apply jdbc/insert! (get-connection db-specs :default) table values)))))
   (query<! [db key? query]
     (let [[key query args] (if (get db-specs key?)
                              [key? query nil]
                              [:default key? query])]
-      (cond
-       (and (fn? query) (nil? args))
-       (query {} {:connection (get-connection db-specs key)})
+      (try-query-args
+       (cond
+        (and (fn? query) (nil? args))
+        (query {} {:connection (get-connection db-specs key)})
 
-       (fn? query)
-       (query args {:connection (get-connection db-specs key)})
+        (fn? query)
+        (query args {:connection (get-connection db-specs key)})
 
-       (nil? args)
-       (let [table (:insert-into query)
-             values (:values query)]
-         (apply jdbc/insert! (get-connection db-specs key) table values))
+        (nil? args)
+        (let [table (:insert-into query)
+              values (:values query)]
+          (apply jdbc/insert! (get-connection db-specs key) table values))
 
-       :else
-       (let [table (:insert-into query)
-             values (:values query)]
-         (apply jdbc/insert! (get-connection db-specs :default) table values)))))
+        :else
+        (let [table (:insert-into query)
+              values (:values query)]
+          (apply jdbc/insert! (get-connection db-specs :default) table values))))))
   (query<! [db key query args]
-    (if (fn? query)
-      (query args {:connection (get-connection db-specs key)})
-      (let [table (:insert-into query)
+    (try-query-args
+     (if (fn? query)
+       (query args {:connection (get-connection db-specs key)})
+       (let [table (:insert-into query)
              values (:values query)]
-        (apply jdbc/insert! (get-connection db-specs key) table values))))
+         (apply jdbc/insert! (get-connection db-specs key) table values)))))
 
   (databases [db]
     (keys db-specs))
