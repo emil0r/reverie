@@ -56,7 +56,7 @@
                           (str "<li>" (util/kw->str k)  "</li>")))))
        "</ul>"))
 
-(defrecord Area [name]
+(defrecord Area [name display]
   render/IRender
   (render [this _]
     (throw (RenderException. "[component request] not implemented for reverie.area/Area")))
@@ -73,7 +73,7 @@
                                     "'>")
                                (str "<div class='reverie-area-holder'>"
                                     "<div class='reverie-area-panel'>area "
-                                    (util/kw->str name)
+                                    (util/kw->str display)
                                     "</div>"
 
                                     "<ul class='reverie-area-menu hidden'>"
@@ -97,5 +97,8 @@
          after)))))
 
 
-(defn area [name]
-  (Area. name))
+(defn area
+  ([name]
+     (Area. name name))
+  ([name display]
+     (Area. name display)))

@@ -106,11 +106,3 @@
      (common/head "URL:s")
      [:body
       "url picker"])))
-
-
-(defn file-picker [request page params]
-  (let [db (get-in request [:reverie :database])]
-    (html5
-     (common/head "Files")
-     [:body
-      "file picker"])))

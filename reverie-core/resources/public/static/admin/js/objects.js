@@ -13,7 +13,16 @@
 
         var areas = [];
         dom.$m(".reverie-area").each(function() {
-            areas.push($(this).attr("area"));
+            var area = $(this).attr("area");
+            var exists_p = false;
+            for (var i, ii = areas.length; i < ii; i++) {
+                if (area === areas[i]) {
+                    exists_p = true;
+                }
+            }
+            if (!exists_p) {
+                areas.push(area);
+            }
         });
 
         dom.$m(".reverie-area").each(function() {
@@ -22,13 +31,17 @@
                 if (areas.length === 0) {
                     $(this).remove();
                 } else {
+                    var $areas = $(this).parents(".reverie-area");
                     var html = "";
                     for (var i = 0, ii = areas.length; i < ii; i++) {
                         if (areas[i] !== area) {
                             html += "<li action='move-to-area' area='" + areas[i] + "'>area " + areas[i] + "</li>";
                         }
                     }
-                    $(this).before(html);
+                    // in the event of areas under areas we check that we are under the immediate area
+                    if ($areas.length > 0 && $($areas[0]).attr("area") === area) {
+                        $(this).before(html);
+                    }
                 }
             });
         });

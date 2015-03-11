@@ -112,6 +112,8 @@
                    (response/get 404))))) ;; got back nil -> 404
          (or (get system-pages 404)
              (response/get 404)))) ;; didn't find page -> 404
+     (catch [:type :ring-response] {:keys [response]}
+       response)
      (catch [:type :response] {:keys [status args]}
        (or
         (response/get (get system-pages status))

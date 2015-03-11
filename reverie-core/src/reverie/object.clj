@@ -10,8 +10,10 @@
 
 (defn initial-fields [object-name]
   (let [object-name (keyword object-name)]
-   (into {} (map (fn [[k {:keys [initial]}]]
-                   {k initial})
+    (into {} (map (fn [[k {:keys [initial]}]]
+                    (if (fn? initial)
+                      {k (initial)}
+                      {k initial}))
                  (-> @sys/storage :objects object-name :options :fields)))))
 
 (defprotocol IObject
