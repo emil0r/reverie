@@ -232,6 +232,13 @@
         (fn? query)
         (query args {:connection (get-connection db-specs key)})
 
+        (and (string? query)
+             (nil? args))
+        (jdbc/query (get-connection db-specs key) [query])
+
+        (string? query)
+        (jdbc/query (get-connection db-specs key) (concat [query] args))
+
         (nil? args)
         (jdbc/query (get-connection db-specs key) (sql/format query))
 
@@ -239,9 +246,13 @@
         (jdbc/query (get-connection db-specs key) (sql/format query args))))))
   (query [db key query args]
     (try-query-args
-     (if (fn? query)
-       (query args {:connection (get-connection db-specs key)})
-       (jdbc/query (get-connection db-specs key) (sql/format query args)))))
+     (cond
+      (fn? query) (query args {:connection (get-connection db-specs key)})
+
+      (string? query)
+      (jdbc/query (get-connection db-specs key) (concat [query] args))
+
+      :else (jdbc/query (get-connection db-specs key) (sql/format query args)))))
   (query! [db query]
     (try-query
      (cond
@@ -265,6 +276,13 @@
         (fn? query)
         (query args {:connection (get-connection db-specs key)})
 
+        (and (string? query)
+             (nil? args))
+        (jdbc/execute! (get-connection db-specs key) [query])
+
+        (string? query)
+        (jdbc/execute! (get-connection db-specs key) (concat [query] args))
+
         (nil? args)
         (jdbc/execute! (get-connection db-specs key) (sql/format query))
 
@@ -272,9 +290,10 @@
         (jdbc/execute! (get-connection db-specs key) (sql/format query args))))))
   (query! [db key query args]
     (try-query-args
-     (if (fn? query)
-       (query args {:connection (get-connection db-specs key)})
-       (jdbc/execute! (get-connection db-specs key) (sql/format query args)))))
+     (cond
+      (fn? query) (query args {:connection (get-connection db-specs key)})
+      (string? query) (jdbc/execute! (get-connection db-specs key) (concat [query] args))
+      :else (jdbc/execute! (get-connection db-specs key) (sql/format query args)))))
 
   (query<! [db query]
     (try-query
@@ -295,6 +314,9 @@
                              [:default key? query])]
       (try-query-args
        (cond
+        (string? query)
+        (throw (DatabaseException. "String is not allowed for query<!"))
+
         (and (fn? query) (nil? args))
         (query {} {:connection (get-connection db-specs key)})
 
@@ -312,11 +334,14 @@
           (apply jdbc/insert! (get-connection db-specs :default) table values))))))
   (query<! [db key query args]
     (try-query-args
-     (if (fn? query)
-       (query args {:connection (get-connection db-specs key)})
-       (let [table (:insert-into query)
-             values (:values query)]
-         (apply jdbc/insert! (get-connection db-specs key) table values)))))
+     (cond
+      (string? query)
+      (throw (DatabaseException. "String is not allowed for query<!"))
+
+      (fn? query) (query args {:connection (get-connection db-specs key)})
+      :else (let [table (:insert-into query)
+                  values (:values query)]
+              (apply jdbc/insert! (get-connection db-specs key) table values)))))
 
   (databases [db]
     (keys db-specs))
@@ -489,7 +514,8 @@
           obj-meta (sys/object obj-name)
           fk (or (->> obj-meta :options :foreign-key)
                  :object_id)
-          field-ks (->> obj-meta :options :fields keys)
+          field-ks (->> obj-meta :options :sections
+                        (map (fn [{:keys [fields]}] fields)) flatten set)
           table (or (get-in obj-meta [:options :table])
                     obj-name)
           fields (merge (select-keys data field-ks))]
