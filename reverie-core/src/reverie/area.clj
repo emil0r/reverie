@@ -32,7 +32,7 @@
                "'>")
           "<div class='reverie-object-holder'>"
           "<div class='reverie-object-panel'>object "
-          (object/name obj)
+          (util/kw->str (object/name obj))
           (get-object-menu)
           "</div></div>"
           (render/render obj request)

@@ -16,8 +16,10 @@
 
 
 (defn get-app-names []
-  (->> @sys/storage
-       :apps
-       (map (fn [[k _]]
-              (util/kw->str k)))
-       sort))
+  (concat
+   [""]
+   (->> @sys/storage
+        :apps
+        (map (fn [[k _]]
+               (util/kw->str k)))
+        sort)))

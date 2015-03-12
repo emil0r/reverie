@@ -51,7 +51,7 @@
 
 (defn modules []
   (:modules @storage))
-(defn module [this key]
+(defn module [key]
   (get-in @storage [:modules key]))
 
 (defn migrations []
