@@ -159,6 +159,17 @@
                      (e/field-attribs entity field)) field (form-params field))
    (help-text (e/field-options entity field))])
 
+(defmethod row :textarea [entity field {:keys [form-params errors
+                                              error-field-names]
+                                       :or {form-params {}}}]
+  [:div.form-row
+   (error-items field errors error-field-names)
+   (form/label field (e/field-name entity field))
+   (form/text-area (merge
+                    {:class :form-control}
+                    (e/field-attribs entity field)) field (form-params field))
+   (help-text (e/field-options entity field))])
+
 (defmethod row :default [entity field {:keys [form-params errors
                                               error-field-names]
                                        :or {form-params {}}}]

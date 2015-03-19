@@ -18,7 +18,8 @@
 
 (defmacro area
   ([name]
-     (let [params (keys &env)]
+     (let [name (if (symbol? name) (keyword name) name)
+           params (keys &env)]
        (cond
         (some #(= name %) [:body :headers :status])
         (throw (AreaException. "areas can't be named body, headers or status"))
@@ -27,7 +28,9 @@
         `(render/render (a/area (keyword ~name)) ~'request ~'page)
         :else (throw (AreaException. "area assumes variables 'request' and 'page' to be present. If you wish to use other named variables send them after the name of the area like this -> (area :a req p)")))))
   ([name display]
-     (let [params (keys &env)]
+     (let [name (if (symbol? name) (keyword name) name)
+           display (if (symbol? display) (keyword display) display)
+           params (keys &env)]
        (cond
         (some #(= name %) [:body :headers :status])
         (throw (AreaException. "areas can't be named body, headers or status"))
@@ -36,9 +39,12 @@
         `(render/render (a/area ~(keyword name) ~(keyword display)) ~'request ~'page)
         :else (throw (AreaException. "area assumes variables 'request' and 'page' to be present. If you wish to use other named variables send them after the name of the area like this -> (area :a req p)")))))
   ([name request page]
-     `(render/render (a/area (keyword ~name)) ~request ~page))
+     (let [name (if (symbol? name) (keyword name) name)]
+      `(render/render (a/area (keyword ~name)) ~request ~page)))
   ([name display request page]
-     `(render/render (a/area (keyword ~name) (keyword ~display)) ~request ~page)))
+     (let [name (if (symbol? name) (keyword name) name)
+           display (if (symbol? display) (keyword display) display)]
+      `(render/render (a/area (keyword ~name) (keyword ~display)) ~request ~page))))
 
 (defmacro deftemplate [name function]
   (let [name (keyword name)]

@@ -62,7 +62,7 @@ RETURNS TABLE(route text, id bigint)
         AS $$
         WITH RECURSIVE transverse(slug, parent, id, iterator) AS (
              SELECT
-                slug, parent, id, 1 AS iterator
+                CASE WHEN parent IS NULL THEN '/' ELSE slug END, parent, id, 1 AS iterator
              FROM
                 reverie_page
              WHERE
