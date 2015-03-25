@@ -52,6 +52,7 @@
        (apply str (->>
                    @sys/storage
                    :objects
+                   (sort-by #(-> % first str))
                    (map (fn [[k _]]
                           (str "<li>" (util/kw->str k)  "</li>")))))
        "</ul>"))

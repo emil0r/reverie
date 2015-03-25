@@ -98,16 +98,21 @@
          (do
            (editors/edit-follow! p (get-in request [:reverie :user]))
            (let [request (assoc-in request [:reverie :edit?]
-                                   (editors/edit? p (get-in request [:reverie :user])))]
+                                   (editors/edit? p (get-in request [:reverie :user])))
+                 headers (-> p page/options :headers)]
              (if-let [resp (render/render p request)]
-               (editors/assoc-admin-links
-                p
-                request
-                (if (map? resp)
-                  (assoc resp :body (render-fn (:body resp)))
-                  {:status 200
-                   :body (render-fn resp)
-                   :headers {"Content-Type" "text/html; charset=utf-8;"}}))
+               (update-in
+                (editors/assoc-admin-links
+                 p
+                 request
+                 (if (map? resp)
+                   (assoc resp :body (render-fn (:body resp)))
+                   {:status 200
+                    :body (render-fn resp)
+                    :headers {"Content-Type" "text/html; charset=utf-8;"}}))
+                [:headers]
+                merge
+                headers)
                (or (get system-pages 404)
                    (response/get 404))))) ;; got back nil -> 404
          (or (get system-pages 404)

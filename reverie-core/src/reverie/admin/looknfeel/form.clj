@@ -77,7 +77,7 @@
                                                error-field-names
                                                id]
                                         :or {form-params {}}}]
-  [:div.row-form
+  [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
    [:span (merge {:field field
