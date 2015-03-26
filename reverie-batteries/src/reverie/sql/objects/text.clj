@@ -2,7 +2,7 @@
   (:require [reverie.core :refer [defobject]]))
 
 (defn- text [request object {:keys [text]} params]
-  [:p text])
+  text)
 
 (defobject reverie/text
   {:table "batteries_text"
