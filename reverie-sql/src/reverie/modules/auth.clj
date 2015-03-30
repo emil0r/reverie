@@ -56,23 +56,19 @@
                              [:input.btn.btn-primary {:type :submit :id :_change :name :_change :value "Change password"}]])}))
 
 (defn- handle-change-password [request module params]
-  (let [{:keys [entity
-                id
-                pre-save-fn
-                form-params
-                errors]} (process-request request module true)
-        errors (select-errors errors [[:password] [:repeat-password]])]
-    (if (empty? errors)
-      (do
-        (db/query! (:database module)
-                   {:update (e/table entity)
-                    :set {:password (hashers/encrypt (:password form-params))}
-                    :where [:= (e/pk entity) id]})
-        (response/redirect (join-uri base-link
-                                     (m/slug module)
-                                     (e/slug entity)
-                                     (str id))))
-      (change-password request module params errors))))
+  (let [{:keys [entity id pre-save-fn form-params errors]} (process-request request module true)
+        errors (select-errors errors [[:password] [:repeat-password]])
+        redirect-url (join-uri base-link (m/slug module) (e/slug entity) (str id))]
+    (if (contains? params :_cancel)
+      (response/redirect redirect-url)
+      (if (empty? errors)
+        (do
+          (db/query! (:database module)
+                     {:update (e/table entity)
+                      :set {:password (hashers/encrypt (:password form-params))}
+                      :where [:= (e/pk entity) id]})
+          (response/redirect redirect-url))
+        (change-password request module params errors)))))
 
 (defn- password-html [entity field {:keys [form-params entity-id uri
                                            errors error-field-names]}]
