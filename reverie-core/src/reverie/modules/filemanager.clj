@@ -20,6 +20,8 @@
             [ring.util.response :as response]
             [taoensso.timbre :as log]))
 
+(defn- fs-list-dir [path]
+  (map #(if (string? %) (io/file %) %) (fs/list-dir path)))
 
 (defn- join-paths [& paths]
   (->> paths
@@ -170,12 +172,13 @@
 (defn- list-dir [base path]
   (let [base? (str/blank? base)
         base (get-base-path base)
+        path (join-paths base path)
         listed (remove
                 #(or
                   (and base?
                        (.endsWith (.getPath %) "cache"))
                   (re-find #"/\." (.getPath %)))
-                (-> base (join-paths path) fs/list-dir))]
+                (map #(io/file (join-paths path %)) (fs/list-dir path)))]
     (sort compare-listed
           (map get-path-info listed))))
 
