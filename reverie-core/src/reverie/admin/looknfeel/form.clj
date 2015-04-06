@@ -84,7 +84,8 @@
                   :onclick (str "window.open('/admin/api/interface/frames/object/richtext/" id "?field=" (util/kw->str field) "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
                  (e/field-attribs entity field))
     "Edit text..."]
-   (form/hidden-field field (form-params field))])
+   (form/hidden-field field (form-params field))
+   (help-text (e/field-options entity field))])
 
 (defmethod row :boolean [entity field {:keys [form-params errors
                                               error-field-names]
