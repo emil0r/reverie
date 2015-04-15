@@ -71,8 +71,9 @@
                          :template (get-in @sys/storage
                                            [:templates template])
                          :database database
-                         :raw-data (:raw-data data)))]
-                (assoc p :objects (db/get-objects database p)))
+                         :raw-data (:raw-data data)))
+                    objects (map #(assoc % :page p) (db/get-objects database p))]
+                (assoc p :objects objects))
         :app (let [page-data (get-in @sys/storage
                                      [:apps app])
                    p (page/app-page
@@ -82,8 +83,9 @@
                         :options (:options page-data)
                         :app-routes (:app-routes page-data)
                         :database database
-                        :raw-data (:raw-data data)))]
-               (assoc p :objects (db/get-objects database p)))))))
+                        :raw-data (:raw-data data)))
+                   objects (map #(assoc % :page p) (db/get-objects database p))]
+               (assoc p :objects objects))))))
 
 (defn- get-migrator-map [{:keys [subprotocol subname user password]} table path]
   {:db {:type :sql
