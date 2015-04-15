@@ -9,7 +9,9 @@
             [taoensso.timbre :as log]))
 
 
-(defn wrap-admin [handler]
+(defn wrap-admin
+  "Wrap admin access"
+  [handler]
   (fn [{:keys [uri] :as request}]
     (if (and
          (re-find #"^/admin" uri)
@@ -26,14 +28,18 @@
          (response/get 302 "/admin/login")))
       (handler request))))
 
-(defn wrap-editor [handler]
+(defn wrap-editor
+  "Wrap editor awareness"
+  [handler]
   (fn [request]
     (handler
      (assoc-in request
                [:reverie :editor?]
                (editors/editor? (get-in request [:reverie :user]))))))
 
-(defn wrap-error-log [handler dev?]
+(defn wrap-error-log
+  "Log errors"
+  [handler dev?]
   (fn [request]
     (if dev?
       (handler request)
@@ -44,14 +50,18 @@
             (log/error "Caught an exception" e)
             (response/get 500)))))))
 
-(defn wrap-authorized [handler]
+(defn wrap-authorized
+  "Wrap authorization"
+  [handler]
   (fn [request]
     (try+
      (handler request)
      (catch [:type :reverie.auth/not-allowed] {}
        (response/get 401)))))
 
-(defn wrap-reverie-data [handler {:keys [dev?]}]
+(defn wrap-reverie-data
+  "Add commonly used data from reverie into the request"
+  [handler {:keys [dev?]}]
   (fn [{:keys [uri] :as request}]
     (let [db (sys/get-db)
           user (auth/get-user db)
@@ -81,7 +91,7 @@
     (loop [resp (handler request)
            [handler & handlers] handlers]
       (cond
-       ;; was the response nil and we still have more handlers to try?
+       ;; was the response nil and do we still have more handlers to try?
        (and (nil? resp) (not (nil? handler)))
        (recur (handler request) handlers)
 

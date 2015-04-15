@@ -8,6 +8,7 @@
             [reverie.response :as response]
             [reverie.route :as route]
             [reverie.system :as sys]
+            [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
             [slingshot.slingshot :refer [try+]])
   (:import [reverie RenderException]))
 
@@ -20,6 +21,9 @@
   (host-match? [site request])
   (set-system-page! [site status rendered-page]))
 
+(defn- render-page [p]
+  (fn [request]
+    (render/render p request)))
 
 (defrecord Site [host-names system
                  system-pages settings database render-fn]
@@ -100,7 +104,15 @@
            (let [request (assoc-in request [:reverie :edit?]
                                    (editors/edit? p (get-in request [:reverie :user])))
                  headers (-> p page/options :headers)]
-             (if-let [resp (render/render p request)]
+             (if-let [resp (if (and
+                                (page/type? p :raw)
+                                (not (:forgery? (page/options p))))
+                             ;; if the type of page is raw and
+                             ;; the forgery? option is not set to true
+                             ;; then we render the page as is
+                             (render/render p request)
+                             ;; otherwise we wrap in in the anti-forgery middleware and run it
+                             ((wrap-anti-forgery (render-page p)) request))]
                (update-in
                 (editors/assoc-admin-links
                  p

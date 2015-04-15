@@ -23,7 +23,8 @@
   (response/get 302 "/"))
 
 
-(defpage "/admin/login" {:template :admin/login}
+(defpage "/admin/login" {:template :admin/login
+                         :forgery? true}
   [["/" {:get login-view :post handle-login}]])
 
 (defpage "/admin/logout" {}
