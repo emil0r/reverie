@@ -1,10 +1,10 @@
--- name: add-page<!
+-- name: sql-add-page<!
 INSERT INTO reverie_page VALUES (default, :serial, :parent, default, default, :template, :name, :title, :version, :slug, '', :type, :app, :order);
 
--- name: add-object<!
+-- name: sql-add-object<!
 INSERT INTO reverie_object VALUES (default, default, default, :name, :area, :route, :order, default, :page_id);
 
--- name: copy-page<!
+-- name: sql-copy-page<!
 INSERT INTO
        reverie_page (serial, parent, template, name,
                      title, slug, route, type, app, "order", version)
@@ -16,7 +16,7 @@ FROM
 WHERE
        id = :id;
 
--- name: copy-object-meta<!
+-- name: sql-copy-object-meta<!
 INSERT INTO
        reverie_object (name, area, route, "order", version, page_id)
 SELECT
@@ -27,7 +27,7 @@ WHERE
        id = :id;
 
 
--- name: update-published-pages-order!
+-- name: sql-update-published-pages-order!
 UPDATE
      reverie_page
 SET
@@ -38,3 +38,83 @@ FROM (      SELECT serial, "order"
 WHERE
      version = 1
      AND reverie_page.serial = pu.serial;
+
+
+-- name: sql-get-pages-1
+WITH published AS (
+     SELECT serial, version
+     FROM reverie_page
+     WHERE version = 1
+)
+SELECT
+        p.*, COALESCE(pub.version, 0) AS published_p
+FROM
+        reverie_page p
+        LEFT JOIN published pub ON p.serial = pub.serial
+WHERE
+        p.version = 0
+        OR p.version = 1
+ORDER BY
+        p.order;
+
+
+-- name: sql-get-pages-2
+WITH published AS (
+     SELECT serial, version
+     FROM reverie_page
+     WHERE version = 1
+)
+SELECT
+        p.*, COALESCE(pub.version, 0) AS published_p
+FROM
+        reverie_page p
+        LEFT JOIN published pub ON p.serial = pub.serial
+WHERE
+        p.version = :version
+ORDER BY
+        p.order;
+
+
+-- name: sql-get-page-1
+WITH published AS (
+     SELECT serial, version
+     FROM reverie_page
+     WHERE version = 1
+)
+SELECT
+        p.*, COALESCE(pub.version, 0) AS published_p
+FROM
+        reverie_page p
+        LEFT JOIN published pub ON p.serial = pub.serial
+WHERE
+        p.id = :id;
+
+-- name: sql-get-page-2
+WITH published AS (
+     SELECT serial, version
+     FROM reverie_page
+     WHERE version = 1
+)
+SELECT
+        p.*, COALESCE(pub.version, 0) AS published_p
+FROM
+        reverie_page p
+        LEFT JOIN published pub ON p.serial = pub.serial
+WHERE
+        p.serial = :serial
+        AND p.version = :version;
+
+-- name: sql-get-page-children
+WITH published AS (
+     SELECT serial, version
+     FROM reverie_page
+     WHERE version = 1
+)
+SELECT
+        p.*, COALESCE(pub.version, 0) AS published_p
+FROM
+        reverie_page p
+        LEFT JOIN published pub ON p.serial = pub.serial
+WHERE
+        p.parent = :parent
+        AND p.version = :version;

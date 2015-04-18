@@ -53,13 +53,15 @@
     (assoc db-spec :datasource ds)))
 
 (defn- massage-page-data [data]
-  (assoc data
-    :raw-data data
-    :type (keyword (:type data))
-    :template (keyword (:template data))
-    :app (if (str/blank? (:app data))
-           ""
-           (keyword (:app data)))))
+  (-> data
+      (assoc :published? (:published_p data)
+             :raw-data data
+             :type (keyword (:type data))
+             :template (keyword (:template data))
+             :app (if (str/blank? (:app data))
+                    ""
+                    (keyword (:app data))))
+      (dissoc :published_p)))
 
 
 (defn- get-page [database data]
@@ -378,7 +380,7 @@
                              (slugify (:name data)))
                    :order (inc order)
                    :version 0)
-            {:keys [id] :as page-data} (db/query! db add-page<! data)]
+            {:keys [id] :as page-data} (db/query! db sql-add-page<! data)]
         (recalculate-routes db id)
         (auth/add-authorization! (db/get-page db id)
                                  db
@@ -491,9 +493,9 @@
                         first
                         :max)
                     1)
-          obj (db/query! db add-object<! (-> data
-                                             (assoc :order order)
-                                             (dissoc :fields)))
+          obj (db/query! db sql-add-object<! (-> data
+                                                 (assoc :order order)
+                                                 (dissoc :fields)))
           obj-meta (sys/object (-> data :name keyword))
           field-ks (->> obj-meta :options :fields keys)
           fk (or (->> obj-meta :options :foreign-key)
@@ -501,9 +503,9 @@
           table (get-in obj-meta [:options :table])
           obj-id (:id obj)
           properties (merge (object/initial-fields
-                         (-> data :name keyword))
-                        (select-keys (:properties data) field-ks)
-                        {fk obj-id})]
+                             (-> data :name keyword))
+                            (select-keys (:properties data) field-ks)
+                            {fk obj-id})]
       (db/query! db {:insert-into (sql/raw table)
                      :values [properties]})
       obj))
@@ -597,19 +599,11 @@
 
   (get-pages [db]
     (map (partial get-page db)
-         (db/query db {:select [:*]
-                       :from [:reverie_page]
-                       :where [:or
-                               [:= :version 0]
-                               [:= :version 1]]
-                       :order-by [(sql/raw "\"order\"")]})))
+         (db/query db sql-get-pages-1)))
 
   (get-pages [db published?]
     (map (partial get-page db)
-         (db/query db {:select [:*]
-                       :from [:reverie_page]
-                       :where [:= :version (if published? 1 0)]
-                       :order-by [(sql/raw "\"order\"")]})))
+         (db/query db sql-get-pages-2 {:version (if published? 1 0)})))
 
   (get-page-with-route [db serial]
     (map (fn [page-data]
@@ -634,26 +628,17 @@
                                     [:= :version 1]]
                             :order-by [(sql/raw "\"order\"")]}))))
   (get-page [db id]
-    (get-page db (first (db/query db {:select [:*]
-                                      :from [:reverie_page]
-                                      :where [:= :id id]}))))
+    (get-page db (first (db/query db sql-get-page-1 {:id id}))))
   (get-page [db serial published?]
-    (get-page db (first (db/query db {:select [:*]
-                                      :from [:reverie_page]
-                                      :where [:and
-                                              [:= :serial serial]
-                                              [:= :version (if published? 1 0)]]}))))
+    (get-page db (first (db/query db sql-get-page-2 {:serial serial
+                                                     :version (if published? 1 0)}))))
   (get-children [db page]
     (let [serial (if (number? page)
                    page
                    (page/serial page))]
       (map (partial get-page db)
-           (db/query db {:select [:*]
-                         :from [:reverie_page]
-                         :where [:and
-                                 [:= :version (page/version page)]
-                                 [:= :parent serial]]
-                         :order-by [(sql/raw "\"order\"")]}))))
+           (db/query db sql-get-page-children {:version (page/version page)
+                                               :parent serial}))))
   (get-children-count [db page]
     (let [serial (if (number? page)
                    page
@@ -752,10 +737,10 @@
                   [pu])]
       (doseq [pu pages]
         (shift-versions! db (page/serial pu))
-        (let [{:keys [id] :as copied} (db/query! db copy-page<! {:id (page/id pu)})]
+        (let [{:keys [id] :as copied} (db/query! db sql-copy-page<! {:id (page/id pu)})]
           (doseq [obj (page/objects pu)]
             (let [;; copy meta object
-                  new-meta-obj (db/query! db copy-object-meta<!
+                  new-meta-obj (db/query! db sql-copy-object-meta<!
                                           {:pageid id
                                            :id (object/id obj)})
                   ;; get meta data for meta object
@@ -767,7 +752,7 @@
                              :values [(assoc (object/properties obj)
                                         fk (:id new-meta-obj))]}))))
         (recalculate-routes db (page/id pu))
-        (db/query! db update-published-pages-order! {:parent (page/parent pu)}))))
+        (db/query! db sql-update-published-pages-order! {:parent (page/parent pu)}))))
 
   (unpublish-page! [db page-id]
     (let [;; page-unpublished

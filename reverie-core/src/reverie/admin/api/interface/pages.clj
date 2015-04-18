@@ -18,7 +18,7 @@
    :lazy (page/children? page)
    :extraClasses (str/join " "
                            (when (page/published? page)
-                             "published"))
+                             ["published"]))
 
    :published_p (page/published? page)
    :path (page/path page)
