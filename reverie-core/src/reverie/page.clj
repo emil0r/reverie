@@ -32,7 +32,8 @@
   (published? [page])
   (created [page])
   (updated [page])
-  (raw [page]))
+  (raw [page])
+  (cache? [page]))
 
 
 (defn type? [page expected]
@@ -77,6 +78,7 @@
   (created [page] created)
   (updated [page] updated)
   (raw [page] raw-data)
+  (cache? [page] (get-in properties [:cache :cache?]))
 
   render/IRender
   (render [this request]
@@ -93,26 +95,27 @@
   (match? [this request] (route/match? route request))
 
   IPage
-  (id [this])
-  (serial [this])
-  (version [this])
-  (published? [this])
-  (parent [this])
+  (id [this] (:path route))
+  (serial [this] (:path route))
+  (version [this] 1)
+  (published? [this] true)
+  (parent [this] nil)
   (root? [this] false)
-  (children [this])
+  (children [this] nil)
   (children? [this] false)
-  (title [this])
-  (name [this])
-  (order [this])
+  (title [this] nil)
+  (name [this] nil)
+  (order [this] nil)
   (options [this] options)
   (properties [this] nil)
   (slug [this] nil)
   (path [this] (:path route))
-  (objects [this])
+  (objects [this] nil)
   (type [page] :raw)
   (created [page] nil)
   (updated [page] nil)
   (raw [page] nil)
+  (cache? [page] (get-in options [:cache :cache?]))
 
   render/IRender
   (render [this {:keys [request-method] :as request}]
@@ -179,6 +182,11 @@
   (created [page] created)
   (updated [page] updated)
   (raw [page] raw-data)
+  ;; allow overriding options through properties
+  (cache? [page] (->> [(get-in properties [:cache :cache?])
+                       (get-in options [:cache :cache?])]
+                      (remove nil?)
+                      first))
 
   render/IRender
   (render [this request]

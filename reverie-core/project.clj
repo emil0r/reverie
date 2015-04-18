@@ -13,6 +13,7 @@
                  [buddy/buddy-hashers "0.4.0"]
                  [buddy/buddy-auth "0.4.0"]
                  [org.clojure/core.match "0.2.2"]
+                 [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
                  [com.taoensso/timbre "3.4.0"]
                  [com.stuartsierra/component "0.2.2"]
                  [hiccup "1.0.5"]
@@ -25,6 +26,7 @@
                  [digest "1.4.4"]
                  [org.clojure/core.memoize "0.5.6"]]
   :aot [reverie.AreaException
+        reverie.CacheException
         reverie.DatabaseException
         reverie.ModuleException
         reverie.ObjectException
