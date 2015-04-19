@@ -43,7 +43,7 @@
   nil)
 
 (defprotocol ICacheMananger
-  (cache! [manager page] [manager page request])
+  (cache! [manager page request] [manager page rendered request])
   (evict! [manager page])
   (lookup [manager page request]))
 
@@ -55,14 +55,13 @@
       this
       (let [c (async/chan)
             running? (atom true)]
-        (async/go
+        (async/thread
           (while @running?
-            (let [v (async/<! c)]
+            (let [v (async/<!! c)]
               (evict-cache! (assoc v
                               :store store
                               :internal internal
-                              :database database))
-              )))
+                              :database database)))))
         (assoc this
           :running? running?
           :internal (atom {})
@@ -80,9 +79,9 @@
           :c nil))))
 
   ICacheMananger
-  (cache! [this page]
-    (cache! this page (page/path page)))
   (cache! [this page request]
+    (cache! this page (render/render page request) request))
+  (cache! [this page rendered request]
     (let [k (get-hash-key page request)
           serial (page/serial page)
           data (get @internal serial)]
@@ -90,7 +89,7 @@
       (write-cache store
                    {:request request}
                    k
-                   (render/render page request))))
+                   rendered)))
 
   (evict! [this page]
     (evict-cache! {:type :page-eviction
@@ -101,3 +100,7 @@
   (lookup [this page request]
     (when (= (:request-method request) :get)
       (read-cache store {:request request} (get-hash-key page request)))))
+
+
+(defn cachemananger [data]
+  (map->CacheManager data))

@@ -70,12 +70,15 @@
 (defn get-filemanager []
   (:filemanager @sys))
 
+(defn get-cachemanager []
+  (:cachemanager @sys))
+
 (defn get-settings []
   (:settings @sys))
 
 
 (defrecord ReverieSystem [database site filemanager scheduler
-                          settings server logger]
+                          settings server logger cachemanager]
   component/Lifecycle
   (start [this]
     (reset! sys this)

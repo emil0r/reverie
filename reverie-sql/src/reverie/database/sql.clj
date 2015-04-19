@@ -1,5 +1,6 @@
 (ns reverie.database.sql
-  (:require [clojure.string :as str]
+  (:require [clojure.edn :as edn]
+            [clojure.string :as str]
             [clojure.java.jdbc :as jdbc]
             [com.stuartsierra.component :as component]
             [joplin.core :as joplin]
@@ -58,10 +59,13 @@
              :raw-data data
              :type (keyword (:type data))
              :template (keyword (:template data))
+             :properties (merge
+                          (if-not (nil? (:cache data))
+                            (edn/read-string (:cache data))))
              :app (if (str/blank? (:app data))
                     ""
                     (keyword (:app data))))
-      (dissoc :published_p)))
+      (dissoc :published_p :cache)))
 
 
 (defn- get-page [database data]

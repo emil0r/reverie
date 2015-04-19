@@ -35,13 +35,12 @@
        r1 (request :get "/")
        r2 (request :get "/" {:foo "bar"})]
    (fact "cache page"
-         (cache/cache! cm p r1)
-         (cache/cache! cm p r2)
+         (cache/cache! cm p "hi" r1)
+         (cache/cache! cm p "foo=bar" r2)
          (cache/lookup cm p r1) => "hi")
 
    (fact "evict page"
          (cache/evict! cm p)
          (cache/lookup cm p r1) => nil)
-
 
    (component/stop cm)))

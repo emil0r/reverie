@@ -10,6 +10,9 @@
             reverie.sql.objects.image
             reverie.admin.index
             [reverie.auth :as auth]
+            [reverie.cache :as cache]
+            [reverie.cache.memory :refer [mem-store]]
+            [reverie.core :refer [defpage]]
             reverie.modules.auth
             [reverie.modules.filemanager :as fm]
             [reverie.render :as render]
@@ -67,16 +70,21 @@
                        (fm/get-filemanager "media"
                                            ["media/images"
                                             "media/files"]))
+          cachemanager (component/start
+                        (cache/cachemananger {:database db
+                                              :store (mem-store)}))
           site (component/start (site/site
                                  {:host-names []
                                   :database db
+                                  :cachemanager cachemanager
                                   :system (:system db)
                                   :render-fn (fn [data] (hiccup.compiler/render-html data))}))
           site (assoc site :db db)
           system (component/start (assoc (sys/get-system)
                                     :database db
                                     :site site
-                                    :filemanager filemanager))
+                                    :filemanager filemanager
+                                    :cachemanager cachemanager))
           db (assoc db :system system)
           server (component/start
                   (reverie.server/get-server {:dev? true
@@ -98,6 +106,8 @@
       (component/stop db))
     (when-let [filemanager (-> @test-server :db :system :filemanager)]
       (component/stop filemanager))
+    (when-let [cachemanager (-> @test-server :db :system :cachemanager)]
+      (component/stop cachemanager))
     (when-let [system (:system (:db @test-server))]
       (component/stop system))
     (when-let [settings (:settings @test-server)]
@@ -107,6 +117,17 @@
     (when-let [server (:server @test-server)]
       (component/stop server))))
 
+
+(defn testus-get-fn [request page params]
+  (Thread/sleep 5000)
+  "get")
+(defn testus-post-fn [request page params]
+  "post")
+
+(defpage "/testus"
+  {:headers {"Content-Type" "text/plain; charset=utf-8;"}
+   :cache {:cache? true}}
+  [["/" {:get testus-get-fn :post testus-post-fn}]])
 
 (comment
 

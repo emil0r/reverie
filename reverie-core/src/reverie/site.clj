@@ -1,6 +1,7 @@
 (ns reverie.site
   (:require [com.stuartsierra.component :as component]
             [reverie.admin.api.editors :as editors]
+            [reverie.cache :as cache]
             [reverie.database :as db]
             [reverie.object :as object]
             [reverie.page :as page]
@@ -25,7 +26,7 @@
   (fn [request]
     (render/render p request)))
 
-(defrecord Site [host-names system
+(defrecord Site [host-names system cachemanager
                  system-pages settings database render-fn]
   component/Lifecycle
   (start [this]
@@ -95,43 +96,68 @@
   (render [this request]
     (try+
      (if-not (host-match? this request)
-
+       ;; no match for against the host names -> 404
        (or (get system-pages 404)
-           (response/get 404)) ;; no match for against the host names -> 404
+           (response/get 404))
+       ;; match found, go through the complicated maze towards the end...
        (if-let [p (get-page this request)]
+         ;; in the event of a page found...
          (do
+           ;; update edits for the admin panel
            (editors/edit-follow! p (get-in request [:reverie :user]))
+           ;; update the request with required information
            (let [request (assoc-in request [:reverie :edit?]
                                    (editors/edit? p (get-in request [:reverie :user])))
-                 headers (-> p page/options :headers)]
-             (if-let [resp (if (or
-                                (and
-                                 (page/type? p :raw)
-                                 (not (:forgery? (page/options p))))
-                                (false? (:forgery? (page/options p))))
-                             ;; if the type of page is raw and
-                             ;; the forgery? option is not set to true
-                             ;; OR the forgery? option is set to false
-                             ;; then we render the page as is
-                             (render/render p request)
-                             ;; otherwise we wrap in in the anti-forgery middleware and run it
-                             ((wrap-anti-forgery (render-page p)) request))]
-               (update-in
-                (editors/assoc-admin-links
-                 p
-                 request
-                 (if (map? resp)
-                   (assoc resp :body (render-fn (:body resp)))
-                   {:status 200
-                    :body (render-fn resp)
-                    :headers {"Content-Type" "text/html; charset=utf-8;"}}))
-                [:headers]
-                merge
-                headers)
+                 ;; get cache hit
+                 hit (if (page/cache? p)
+                       (cache/lookup cachemanager p request))]
+             ;; can we even get a response?
+             (if-let [resp (or hit
+                               ;; only run this if hit is nil
+                               (if (or
+                                    (and
+                                     (page/type? p :raw)
+                                     (not (:forgery? (page/options p))))
+                                    (false? (:forgery? (page/options p))))
+                                 ;; if the type of page is raw and
+                                 ;; the forgery? option is not set to true
+                                 ;; OR the forgery? option is set to false
+                                 ;; then we render the page as is
+                                 (render/render p request)
+                                 ;; otherwise we wrap in in the anti-forgery middleware and run it
+                                 ((wrap-anti-forgery (render-page p)) request)))]
+               ;; final adjustments on the response before we return it
+               (let [final-resp
+                     (update-in
+                      (editors/assoc-admin-links
+                       p
+                       request
+                       (if (map? resp)
+                         (assoc resp :body (render-fn (:body resp)))
+                         {:status 200
+                          ;; body is either the hit or the rendered response
+                          :body (or hit
+                                    (render-fn resp))
+                          :headers {"Content-Type" "text/html; charset=utf-8;"}}))
+                      [:headers]
+                      merge
+                      (-> p page/options :headers))]
+                 ;; when
+                 ;; the request method is a GET
+                 ;; AND we can cache the page
+                 ;; AND the hit is nil -> cache the page
+                 (when (and (nil? hit)
+                            (= (:request-method request) :get)
+                            (page/cache? p))
+                   (cache/cache! cachemanager p (:body final-resp) request))
+                 final-resp)
+               ;; in the event of being unable to give a response we return a 404
                (or (get system-pages 404)
-                   (response/get 404))))) ;; got back nil -> 404
+                   (response/get 404)))))
+         ;; didn't find page -> 404
          (or (get system-pages 404)
-             (response/get 404)))) ;; didn't find page -> 404
+             (response/get 404))))
+     ;; TODO: fix the response types from reverie.core/raise-response
      (catch [:type :ring-response] {:keys [response]}
        response)
      (catch [:type :response] {:keys [status args]}

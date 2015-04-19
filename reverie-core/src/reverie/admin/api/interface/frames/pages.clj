@@ -69,9 +69,14 @@
                 :options helpers/get-template-names}
      :app {:name "App"
            :type :dropdown
-           :options helpers/get-app-names}}
+           :options helpers/get-app-names}
+     :cache_p {:name "Cache this page?"
+               :type :boolean}
+     :cache_per_user_p {:name "Cache per user?"
+                        :type :boolean}}
     :sections [{:fields [:name :slug :title]}
-               {:name "Meta" :fields [:template :type :app]}]}))
+               {:name "Meta" :fields [:template :type :app]}
+               {:name "Caching" :fields [:cache_p :cache_per_user_p]}]}))
 
 (defn clean-form-params [form-params]
   (walk/keywordize-keys
@@ -299,7 +304,7 @@
          [:div.container "Publish page"]]
         [:div.container
          (do (publish/publish-page! db (page/id page))
-           [:h1 "Published page " (page/name page)])]])
+             [:h1 "Published page " (page/name page)])]])
       (html5
        [:head
         [:title "reverie - publish page"]]
