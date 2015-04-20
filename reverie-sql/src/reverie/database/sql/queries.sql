@@ -45,12 +45,19 @@ WITH published AS (
      SELECT serial, version
      FROM reverie_page
      WHERE version = 1
+), menu AS (
+   SELECT page_serial, value
+   FROM reverie_page_properties
+   WHERE key = 'menu'
 )
 SELECT
-        p.*, COALESCE(pub.version, 0) AS published_p
+        p.*,
+        COALESCE(pub.version, 0) AS published_p,
+        m.value AS menu
 FROM
         reverie_page p
         LEFT JOIN published pub ON p.serial = pub.serial
+        LEFT JOIN menu m ON p.serial = m.page_serial
 WHERE
         p.version = 0
         OR p.version = 1
@@ -63,12 +70,19 @@ WITH published AS (
      SELECT serial, version
      FROM reverie_page
      WHERE version = 1
+), menu AS (
+   SELECT page_serial, value
+   FROM reverie_page_properties
+   WHERE key = 'menu'
 )
 SELECT
-        p.*, COALESCE(pub.version, 0) AS published_p
+        p.*,
+        COALESCE(pub.version, 0) AS published_p,
+        m.value AS menu
 FROM
         reverie_page p
         LEFT JOIN published pub ON p.serial = pub.serial
+        LEFT JOIN menu m ON p.serial = m.page_serial
 WHERE
         p.version = :version
 ORDER BY
@@ -80,12 +94,19 @@ WITH published AS (
      SELECT serial, version
      FROM reverie_page
      WHERE version = 1
+), menu AS (
+   SELECT page_serial, value
+   FROM reverie_page_properties
+   WHERE key = 'menu'
 )
 SELECT
-        p.*, COALESCE(pub.version, 0) AS published_p
+        p.*,
+        COALESCE(pub.version, 0) AS published_p,
+        m.value AS menu
 FROM
         reverie_page p
         LEFT JOIN published pub ON p.serial = pub.serial
+        LEFT JOIN menu m ON p.serial = m.page_serial
 WHERE
         p.id = :id;
 
@@ -94,12 +115,19 @@ WITH published AS (
      SELECT serial, version
      FROM reverie_page
      WHERE version = 1
+), menu AS (
+   SELECT page_serial, value
+   FROM reverie_page_properties
+   WHERE key = 'menu'
 )
 SELECT
-        p.*, COALESCE(pub.version, 0) AS published_p
+        p.*,
+        COALESCE(pub.version, 0) AS published_p,
+        m.value AS menu
 FROM
         reverie_page p
         LEFT JOIN published pub ON p.serial = pub.serial
+        LEFT JOIN menu m ON p.serial = m.page_serial
 WHERE
         p.serial = :serial
         AND p.version = :version;
@@ -109,12 +137,19 @@ WITH published AS (
      SELECT serial, version
      FROM reverie_page
      WHERE version = 1
+), menu AS (
+   SELECT page_serial, value
+   FROM reverie_page_properties
+   WHERE key = 'menu'
 )
 SELECT
-        p.*, COALESCE(pub.version, 0) AS published_p
+        p.*,
+        COALESCE(pub.version, 0) AS published_p,
+        m.value AS menu
 FROM
         reverie_page p
         LEFT JOIN published pub ON p.serial = pub.serial
+        LEFT JOIN menu m ON p.serial = m.page_serial
 WHERE
         p.parent = :parent
         AND p.version = :version;

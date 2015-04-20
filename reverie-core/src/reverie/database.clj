@@ -14,7 +14,7 @@
   (get-page-with-route [database serial])
   (get-pages-by-route [database])
   (get-page [database id] [database serial published?])
-  (get-children [database page])
+  (get-children [database page] [database serial published?])
   (get-children-count [database page])
 
   (get-object [database id])

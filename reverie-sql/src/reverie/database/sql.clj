@@ -1,5 +1,6 @@
 (ns reverie.database.sql
-  (:require [clojure.string :as str]
+  (:require [clojure.edn :as edn]
+            [clojure.string :as str]
             [clojure.java.jdbc :as jdbc]
             [com.stuartsierra.component :as component]
             [joplin.core :as joplin]
@@ -56,11 +57,13 @@
       (assoc :published? (:published_p data)
              :raw-data data
              :type (keyword (:type data))
+             :properties (merge (if-not (nil? (:menu data))
+                                  {:menu (edn/read-string (:menu data))}))
              :template (keyword (:template data))
              :app (if (str/blank? (:app data))
                     ""
                     (keyword (:app data))))
-      (dissoc :published_p)))
+      (dissoc :published_p :menu)))
 
 
 (defn- get-page [database data]
@@ -632,12 +635,14 @@
     (get-page db (first (db/query db sql-get-page-2 {:serial serial
                                                      :version (if published? 1 0)}))))
   (get-children [db page]
-    (let [serial (if (number? page)
-                   page
-                   (page/serial page))]
-      (map (partial get-page db)
-           (db/query db sql-get-page-children {:version (page/version page)
-                                               :parent serial}))))
+    (map (partial get-page db)
+         (db/query db sql-get-page-children {:version (page/version page)
+                                             :parent (page/serial page)})))
+  (get-children [db serial published?]
+    (map (partial get-page db)
+         (db/query db sql-get-page-children {:version (if published? 1 0)
+                                             :parent serial})))
+
   (get-children-count [db page]
     (let [serial (if (number? page)
                    page
