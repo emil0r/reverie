@@ -5,12 +5,13 @@
             [joplin.core :as joplin]
             joplin.jdbc.database
             [honeysql.core :as sql]
-            [reverie.auth :as auth]
-            [reverie.database :as db]
+            [noir.session :as session]
+            [reverie.auth :as auth :refer [IUserDatabase]]
+            [reverie.database :as db :refer [IDatabase]]
             [reverie.movement :as movement]
             [reverie.object :as object]
             [reverie.page :as page]
-            [reverie.publish :as publish]
+            [reverie.publish :as publish :refer [IPublish]]
             [reverie.route :as route]
             [reverie.system :as sys]
             [reverie.site :as site]
@@ -18,9 +19,7 @@
             [slingshot.slingshot :refer [try+ throw+]]
             [taoensso.timbre :as log]
             [yesql.core :refer [defqueries]])
-  (:import [reverie.database IDatabase]
-           [reverie DatabaseException]
-           [reverie.publish IPublish]
+  (:import [reverie DatabaseException]
            [com.jolbox.bonecp BoneCPDataSource]))
 
 (defqueries "reverie/database/sql/queries.sql")
@@ -778,7 +777,115 @@
   (trash-object! [db obj-id]
     (db/query! db {:update :reverie_object
                    :set {:version -1}
-                   :where [:= :id obj-id]})))
+                   :where [:= :id obj-id]}))
+
+  IUserDatabase
+  (get-users [db]
+    (let [users
+          (db/query db {:select [:id :created :username :email
+                                 :spoken_name :full_name :last_login]
+                        :from [:auth_user]
+                        :order-by [:id]})
+          roles (group-by
+                 :user_id
+                 (db/query db {:select [:ur.user_id :r.name]
+                               :from [[:auth_user_role :ur]]
+                               :join [[:auth_role :r]
+                                      [:= :r.id :ur.role_id]]
+                               :order-by [:ur.user_id]}))
+          groups (group-by
+                  :user_id
+                  (db/query db {:select [:ug.user_id
+                                         [:g.name :group_name]
+                                         [:r.name :role_name]]
+                                :from [[:auth_user_group :ug]]
+                                :join [[:auth_group :g]
+                                       [:= :ug.group_id :g.id]]
+                                :left-join [[:auth_group_role :gr]
+                                            [:= :gr.group_id :ug.group_id]
+                                            [:auth_role :r]
+                                            [:= :gr.role_id :r.id]]
+                                :order-by [:ug.user_id]}))]
+      (reduce (fn [out {:keys [id created username
+                               email spoken_name full_name last_login]}]
+                (conj
+                 out
+                 (auth/map->User
+                  {:id id :created created
+                   :username username :email email
+                   :spoken-name spoken_name :full-name full_name
+                   :last-login last_login
+                   :roles (into #{}
+                                (remove
+                                 nil?
+                                 (flatten
+                                  [(map #(-> % :name keyword)
+                                        (get roles id))
+                                   (map #(-> % :role_name keyword)
+                                        (get groups id))])))
+                   :groups (into #{}
+                                 (remove
+                                  nil?
+                                  (map #(-> % :group_name keyword)
+                                       (get groups id))))})))
+              [] users)))
+
+  (get-user [db]
+    (when-let [user-id (session/get :user-id)]
+      (auth/get-user db user-id)))
+  (get-user [db id]
+    (let [users
+          (db/query db (merge
+                        {:select [:id :created :username :email
+                                  :spoken_name :full_name :last_login]
+                         :from [:auth_user]}
+                        (cond
+                         (and (string? id)
+                              (re-find #"@" id)) {:where [:= :email id]}
+                              (string? id) {:where [:= :username id]}
+                              :else {:where [:= :id id]})))
+          id (-> users first :id)
+          roles (group-by
+                 :user_id
+                 (db/query db {:select [:ur.user_id :r.name]
+                               :from [[:auth_user_role :ur]]
+                               :join [[:auth_role :r]
+                                      [:= :r.id :ur.role_id]]
+                               :where [:= :ur.user_id id]}))
+          groups (group-by
+                  :user_id
+                  (db/query db {:select [:ug.user_id
+                                         [:g.name :group_name]
+                                         [:r.name :role_name]]
+                                :from [[:auth_user_group :ug]]
+                                :join [[:auth_group :g]
+                                       [:= :ug.group_id :g.id]]
+                                :left-join [[:auth_group_role :gr]
+                                            [:= :gr.group_id :ug.group_id]
+                                            [:auth_role :r]
+                                            [:= :gr.role_id :r.id]]
+                                :where [:= :ug.user_id id]}))]
+      (if (first users)
+        (let [{:keys [id created username
+                      email spoken_name full_name last_login]} (first users)]
+          (auth/map->User
+           {:id id :created created
+            :username username :email email
+            :spoken-name spoken_name :full-name full_name
+            :last-login last_login
+            :roles (into #{}
+                         (remove
+                          nil?
+                          (flatten
+                           [(map #(-> % :name keyword)
+                                 (get roles id))
+                            (map #(-> % :role_name keyword)
+                                 (get groups id))])))
+            :groups (into #{}
+                          (remove
+                           nil?
+                           (map #(-> % :group_name keyword)
+                                (get groups id))))}))))))
 
 (defn database
   ([db-specs]
