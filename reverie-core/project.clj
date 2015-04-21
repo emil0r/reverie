@@ -19,7 +19,7 @@
                  [vlad "1.1.0"]
                  [lib-noir "0.9.5"]
                  [ez-web "0.2.4"]
-                 [ez-image "1.0.2"]
+                 [ez-image "1.0.3"]
                  [me.raynes/fs "1.4.6"]
                  [im.chit/cronj "1.4.3"]
                  [digest "1.4.4"]
