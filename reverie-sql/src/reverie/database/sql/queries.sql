@@ -152,4 +152,6 @@ FROM
         LEFT JOIN menu m ON p.serial = m.page_serial
 WHERE
         p.parent = :parent
-        AND p.version = :version;
+        AND p.version = :version
+ORDER BY
+      p.order;
