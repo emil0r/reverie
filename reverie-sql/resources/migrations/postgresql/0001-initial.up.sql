@@ -18,10 +18,9 @@ CREATE TABLE reverie_page (
 CREATE TABLE reverie_page_properties (
     id bigserial primary key,
     created timestamp with time zone NOT NULL DEFAULT now(),
-    name text NOT NULL,
     key text NOT NULL,
     value text NOT NULL,
-    page_id bigint NOT NULL references reverie_page(id)
+    page_serial bigint NOT NULL
 );
 
 CREATE TABLE reverie_object (
