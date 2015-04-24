@@ -1,8 +1,10 @@
 (ns reverie.modules.sql
-  (:require [honeysql.core :as sql]
+  (:require [clojure.string :as str]
+            [honeysql.core :as sql]
             [reverie.database :as db]
             [reverie.module :as m]
-            [reverie.module.entity :as e])
+            [reverie.module.entity :as e]
+            [reverie.time :as time])
   (:import [reverie.module Module]))
 
 
@@ -59,6 +61,10 @@
   true)
 (defmethod convert-data [:boolean nil] [_ v]
   false)
+(defmethod convert-data [:datetime java.lang.String] [_ v]
+  (if (str/blank? v)
+    nil
+    (time/coerce (time/coerce v "YYYY-MM-dd HH:mm") :java.sql.Timestamp)))
 (defmethod convert-data :default [_ v]
   v)
 

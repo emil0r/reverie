@@ -11,7 +11,8 @@
 
    ;; frames
    ["/interface/frames/object/:object-id" {:object-id #"\d+"} {:object-id Integer} {:get iframes/edit-object :post iframes/handle-object}]
-   ["/interface/frames/object/richtext/:object-id" {:object-id #"\d+"} {:object-id Integer} {:get iframes/richtext}]
+   ["/interface/frames/richtext/:module-p" {:module-p #"\w+"} {:get iframes/richtext}]
+   ["/interface/frames/richtext/:object-id" {:object-id #"\d+"} {:object-id Integer} {:get iframes/richtext}]
    ["/interface/frames/url-picker" {:get iframes/url-picker}]
 
    ;; frames pages

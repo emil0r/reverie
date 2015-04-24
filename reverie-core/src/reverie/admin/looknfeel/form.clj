@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [ez-web.uri :refer [join-uri]]
             [hiccup.form :as form]
+            [hiccup.util :refer [escape-html]]
             [reverie.admin.helpers :as helpers]
             [reverie.object :as o]
             [reverie.module :as m]
@@ -75,15 +76,16 @@
 
 (defmethod row :richtext [entity field {:keys [form-params errors
                                                error-field-names
-                                               id]
+                                               id module? module]
                                         :or {form-params {}}}]
   [:div.form-row
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
    [:span (merge {:field field
-                  :onclick (str "window.open('/admin/api/interface/frames/object/richtext/" id "?field=" (util/kw->str field) "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
+                  :onclick (str "window.open('/admin/api/interface/frames/richtext/" (if module? (m/slug module) id) "?field=" (util/kw->str field) "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
                  (e/field-attribs entity field))
-    "Edit text..."]
+    "Edit text... "
+    [:i (take 100 (escape-html (str/replace (form-params field) #"<.*?>" "")))]]
    (form/hidden-field field (form-params field))
    (help-text (e/field-options entity field))])
 
@@ -161,6 +163,20 @@
                     (e/field-attribs entity field)) field (form-params field))
    (help-text (e/field-options entity field))])
 
+(defmethod row :datetime [entity field {:keys [form-params errors
+                                               error-field-names]
+                                        :or {form-params {}}}]
+  [:div.form-row
+   (error-items field errors error-field-names)
+   (form/label field (e/field-name entity field))
+   [:input (merge {:type :_datetime
+                   :class :form-control
+                   :id field
+                   :name field
+                   :value (form-params field)}
+                  (e/field-attribs entity field))]
+   (help-text (e/field-options entity field))])
+
 (defmethod row :default [entity field {:keys [form-params errors
                                               error-field-names]
                                        :or {form-params {}}}]
@@ -183,7 +199,9 @@
           [:fieldset
            (if name [:legend name])
            (map (fn [field]
-                  (row entity field data))
+                  (row entity field (assoc data
+                                      :module? true
+                                      :module module)))
                 fields)])
         (e/sections entity))
    [:div.bottom-bar

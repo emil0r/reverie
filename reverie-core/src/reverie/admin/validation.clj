@@ -3,9 +3,14 @@
             vlad))
 
 (defn validate [entity params]
-  (let [validations (apply vlad/join
-                           (remove nil?
-                                   (map (fn [[_ v]]
-                                          (:validation v))
-                                        (entity/fields entity))))]
+  (let [validations (->> entity
+                         (entity/fields)
+                         (map (fn [[k v]]
+                                [(condp = (:type v)
+                                   :datetime (vlad/matches #"^\d{4,4}-\d{2,2}-\d{2,2} \d{2,2}:\d{2,2}$" [k])
+                                   nil)
+                                 (:validation v)]))
+                         (flatten)
+                         (remove nil?)
+                         (apply vlad/join))]
     (vlad/validate validations params)))

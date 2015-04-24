@@ -2484,8 +2484,12 @@ nav ul li a {
 #password-form fieldset input[type=email],
 #edit-form fieldset input[type=password],
 #password-form fieldset input[type=password],
-#edit-form fieldset select,
-#password-form fieldset select {
+#edit-form fieldset input[type=_date],
+#password-form fieldset input[type=_date],
+#edit-form fieldset input[type=_datetime],
+#password-form fieldset input[type=_datetime],
+#edit-form fieldset input[type=text] select,
+#password-form fieldset input[type=text] select {
   max-width: 500px;
 }
 #edit-form fieldset input[type=checkbox],

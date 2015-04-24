@@ -4,6 +4,7 @@
             [ez-web.paginator :as paginator]
             [ez-web.uri :refer [join-uri]]
             [ez-web.breadcrumbs :refer [crumb]]
+            [reverie.admin.looknfeel.common :as common]
             [reverie.admin.looknfeel.form :refer [get-entity-form
                                                   delete-entity-form]]
             [reverie.admin.validation :as validation]
@@ -73,7 +74,6 @@
               [:tr [:td [:a {:href (join-uri base-link (m/slug module) (e/slug entity))}
                          (e/name entity)]]]) (m/entities module))]]}))
 
-
 (defn entity-does-not-exist [module]
   {:nav
    [:ul
@@ -128,7 +128,6 @@
          {:href (str uri "?" (qsize (assoc qs "page" last)))}
          "last"]]])))
 
-
 (defn list-entity [request module {:keys [entity page] :as params}]
   (with-access
     (get-in request [:reverie :user]) (:required-roles (m/options module))
@@ -155,7 +154,7 @@
            [:ul
             [:li [:a.btn.btn-primary
                   {:href (join-uri base-link (m/slug module) (e/slug entity) "add")}
-                  "Add user"]]]]
+                  (str "Add " (e/name entity))]]]]
           [:table.table.entity
            [:tr
             (map (fn [h]
@@ -187,7 +186,8 @@
                            :error-field-names (when-not (empty? errors)
                                                 (e/error-field-names entity))}
                           (select-keys request [:uri])
-                          entity-data))})
+                          entity-data))
+         :footer (common/footer {:filter-by #{:base :editing}})})
       (entity-does-not-exist module))))
 
 (defn handle-single-entity [request module {:keys [entity id] :as params}]
@@ -234,7 +234,8 @@
                      :error-field-names (when-not (empty? errors)
                                           (e/error-field-names entity))}
                     (select-keys request [:uri])
-                    entity-data))})
+                    entity-data))
+         :footer (common/footer {:filter-by #{:base :editing}})})
       (entity-does-not-exist module))))
 
 (defn handle-add-entity [request module {:keys [entity] :as params}]
@@ -299,7 +300,6 @@
                                     (m/slug module)
                                     (e/slug entity)
                                     (str id)))))))
-
 
 (swap! sys/storage assoc :module-default-routes
        [["/" {:get list-entities}]
