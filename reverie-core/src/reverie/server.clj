@@ -13,6 +13,7 @@
             [reverie.middleware :refer [wrap-admin
                                         wrap-authorized
                                         wrap-csrf-token
+                                        wrap-downstream
                                         wrap-editor
                                         wrap-error-log
                                         wrap-forker
@@ -59,7 +60,8 @@
                           (or site-handlers
                               (vec
                                (concat
-                                [[wrap-editor]
+                                [[wrap-downstream]
+                                 [wrap-editor]
                                  [wrap-admin]
                                  [wrap-authorized]
                                  [wrap-reverie-data {:dev? dev?}]
