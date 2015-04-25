@@ -85,7 +85,7 @@
                   :onclick (str "window.open('/admin/api/interface/frames/richtext/" (if module? (m/slug module) id) "?field=" (util/kw->str field) "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
                  (e/field-attribs entity field))
     "Edit text... "
-    [:i (take 100 (escape-html (str/replace (form-params field) #"<.*?>" "")))]]
+    [:i (take 100 (escape-html (str/replace (or (form-params field) "") #"<.*?>" "")))]]
    (form/hidden-field field (form-params field))
    (help-text (e/field-options entity field))])
 
