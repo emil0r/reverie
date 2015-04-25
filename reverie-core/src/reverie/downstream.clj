@@ -1,5 +1,5 @@
 (ns reverie.downstream
-  (:refer-clojure :exclude [get]))
+  (:refer-clojure :exclude [get assoc! dissoc!]))
 
 (def ^:dynamic *downstream* nil)
 
