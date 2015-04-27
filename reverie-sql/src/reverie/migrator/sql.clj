@@ -47,7 +47,7 @@
                          migrators)]
           (log/info "Starting migrations")
           (doseq [mmap mmaps]
-            (log/info "Migration " (get-in mmap [:migrator]))
+            (log/info "Migration:" (get-in mmap [:migrator]))
             (joplin/migrate-db mmap)))))))
 
 (defn get-migrator [database]
