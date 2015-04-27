@@ -91,29 +91,6 @@
                    objects (map #(assoc % :page p) (db/get-objects database p))]
                (assoc p :objects objects))))))
 
-(defn- get-migrator-map [{:keys [subprotocol subname user password]} table path]
-  {:db {:type :sql
-        :migration-table table
-        :url (str "jdbc:" subprotocol ":"
-                  subname
-                  "?user=" user
-                  "&password=" password)}
-   :migrator path})
-
-(defn- get-migrators []
-  (let [paths (map (fn [[kw {:keys [table path]}]]
-                     (let [table (or table
-                                     (str
-                                      "migrations"
-                                      (str/replace (str kw)
-                                                   #":|/|\."
-                                                   "_")))]
-                       [table path]))
-                   (filter (fn [[_ {:keys [automatic?]}]]
-                             automatic?)
-                           (sys/migrations)))]
-    paths))
-
 (defn- recalculate-routes-db [db page-ids]
   (let [page-ids (if (sequential? page-ids)
                    page-ids
@@ -184,16 +161,6 @@
     (if (get-in db-specs [:default :datasource])
       this
       (do
-        (let [default-spec (:default db-specs)
-              migrators (concat
-                         [["migrations" (str "resources/migrations/"
-                                             (:subprotocol default-spec))]]
-                         (get-migrators))
-              mmaps (map (fn [[table path]]
-                           (get-migrator-map default-spec table path))
-                         migrators)]
-          (doseq [mmap mmaps]
-            (joplin/migrate-db mmap)))
         (log/info "Starting database")
         (let [db-specs (into
                         {}

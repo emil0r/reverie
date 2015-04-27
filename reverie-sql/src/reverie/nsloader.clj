@@ -3,6 +3,8 @@
             reverie.settings
             reverie.database
             reverie.database.sql
+            reverie.migrator
+            reverie.migrator.sql
             reverie.page
             reverie.object
             reverie.auth.sql
