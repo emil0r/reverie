@@ -47,8 +47,7 @@
     (render/render site request)))
 
 (defrecord Server [dev? server store run-server stop-server
-                   site resource-routes media-routes
-                   middleware-options server-options settings
+                   site middleware-options server-options settings
                    site-handlers resource-handlers media-handlers
                    extra-handlers filemanager]
   component/Lifecycle
@@ -88,16 +87,20 @@
                                    [wrap-stacktrace]]
                                   []))))
                           (site-route site))
-            resource-handler (create-handler [[wrap-resource resource]
-                                              [wrap-file-info (:mime-types middleware-options)]
-                                              [wrap-content-type (:content-type-resources middleware-options)]
-                                              [wrap-not-modified]]
-                                             {:status 404 :body "404, Page Not Found" :headers {}})
-            media-handler (create-handler [[wrap-file (fm/base-dir filemanager)]
-                                           [wrap-file-info (:mime-types middleware-options)]
-                                           [wrap-content-type (:content-type-resources middleware-options)]
-                                           [wrap-not-modified]]
-                                          {:status 404 :body "404, Page Not Found" :headers {}})
+            resource-handler (or
+                              resource-handlers
+                              (create-handler [[wrap-resource resource]
+                                               [wrap-file-info (:mime-types middleware-options)]
+                                               [wrap-content-type (:content-type-resources middleware-options)]
+                                               [wrap-not-modified]]
+                                              {:status 404 :body "404, Page Not Found" :headers {}}))
+            media-handler (or
+                           media-handlers
+                           (create-handler [[wrap-file (fm/base-dir filemanager)]
+                                            [wrap-file-info (:mime-types middleware-options)]
+                                            [wrap-content-type (:content-type-resources middleware-options)]
+                                            [wrap-not-modified]]
+                                           {:status 404 :body "404, Page Not Found" :headers {}}))
             handler (wrap-forker site-handler resource-handler media-handler)
             server (run-server handler server-options)]
         (log/info (format "Running server on port %s..." (:port server-options)))
