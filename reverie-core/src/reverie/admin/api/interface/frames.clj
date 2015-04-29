@@ -12,7 +12,8 @@
             [reverie.module.entity :as e]
             [reverie.object :as object]
             [reverie.page :as page]
-            [reverie.system :as sys]))
+            [reverie.system :as sys]
+            [reverie.time :as time]))
 
 
 (defmulti cast-field (fn [options & _] (:type options)))
@@ -20,6 +21,10 @@
   (if (str/blank? value)
     nil
     (Integer/parseInt value)))
+(defmethod cast-field :datetime [_ value]
+  (if (str/blank? value)
+    nil
+    (time/coerce value "YYYY-MM-DD HH:mm" :java.sql.Timestamp)))
 (defmethod cast-field :default [_ value]
   value)
 
@@ -35,7 +40,7 @@
         object (db/get-object db object-id)
         data {:id object-id
               :form-params
-              (merge (object/initial-fields (object/name object))
+              (merge (object/initial-fields (object/name object) {:database db})
                      (object/properties object)
                      (walk/keywordize-keys (:form-params request)))}]
     (if (auth/authorize? (object/page object) user db "edit")
