@@ -8,11 +8,11 @@
   (:import [reverie RenderException ObjectException]))
 
 
-(defn initial-fields [object-name]
+(defn initial-fields [object-name data]
   (let [object-name (keyword object-name)]
     (into {} (map (fn [[k {:keys [initial]}]]
                     (if (fn? initial)
-                      {k (initial)}
+                      {k (initial data)}
                       {k initial}))
                  (-> @sys/storage :objects object-name :options :fields)))))
 
