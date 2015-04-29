@@ -50,7 +50,7 @@
                    site resource-routes media-routes
                    middleware-options server-options settings
                    site-handlers resource-handlers media-handlers
-                   filemanager]
+                   extra-handlers filemanager]
   component/Lifecycle
   (start [this]
     (if server
@@ -60,6 +60,7 @@
                           (or site-handlers
                               (vec
                                (concat
+                                extra-handlers
                                 [[wrap-downstream]
                                  [wrap-editor]
                                  [wrap-admin]
