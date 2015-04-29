@@ -472,7 +472,8 @@
           table (get-in obj-meta [:options :table])
           obj-id (:id obj)
           properties (merge (object/initial-fields
-                             (-> data :name keyword))
+                             (-> data :name keyword)
+                             {:database db})
                             (select-keys (:properties data) field-ks)
                             {fk obj-id})]
       (db/query! db {:insert-into (sql/raw table)
@@ -518,7 +519,8 @@
                                       [:= :f.page_id :o.page_id]]
                                :where [:and
                                        [:= :f.id id]
-                                       [:= :f.area :o.area]]}))
+                                       [:= :f.area :o.area]]
+                               :order-by [:o.order]}))
                 (movement/move id direction origo?))]
       (doseq [[order id] objs]
         (if-not (nil? id)
