@@ -71,7 +71,8 @@
     (throw (RenderException. "[component request sub-component] not implemented for reverie.module/Module")))
 
   page/IPage
-  (properties [this] nil))
+  (properties [this] nil)
+  (type [this] :module))
 
 (defn module [name entities options routes]
   (map->Module {:name name :entities entities

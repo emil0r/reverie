@@ -2,12 +2,19 @@
   (:require [noir.cookies :as cookies]
             [reverie.admin.api.editors :as editors]
             [reverie.auth :as auth]
+            [reverie.downstream :refer [*downstream*]]
             [reverie.system :as sys]
             [reverie.response :as response]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log]))
 
+(defn wrap-downstream
+  "Wrap downstream. Used for sending data downstream for later use during a request response cycle."
+  [handler]
+  (fn [request]
+    (binding [*downstream* (atom {})]
+      (handler request))))
 
 (defn wrap-admin
   "Wrap admin access"

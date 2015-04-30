@@ -13,6 +13,7 @@
             [reverie.middleware :refer [wrap-admin
                                         wrap-authorized
                                         wrap-csrf-token
+                                        wrap-downstream
                                         wrap-editor
                                         wrap-error-log
                                         wrap-forker
@@ -46,10 +47,9 @@
     (render/render site request)))
 
 (defrecord Server [dev? server store run-server stop-server
-                   site resource-routes media-routes
-                   middleware-options server-options settings
+                   site middleware-options server-options settings
                    site-handlers resource-handlers media-handlers
-                   filemanager]
+                   extra-handlers filemanager]
   component/Lifecycle
   (start [this]
     (if server
@@ -59,7 +59,9 @@
                           (or site-handlers
                               (vec
                                (concat
-                                [[wrap-editor]
+                                extra-handlers
+                                [[wrap-downstream]
+                                 [wrap-editor]
                                  [wrap-admin]
                                  [wrap-authorized]
                                  [wrap-reverie-data {:dev? dev?}]
@@ -85,16 +87,20 @@
                                    [wrap-stacktrace]]
                                   []))))
                           (site-route site))
-            resource-handler (create-handler [[wrap-resource resource]
-                                              [wrap-file-info (:mime-types middleware-options)]
-                                              [wrap-content-type (:content-type-resources middleware-options)]
-                                              [wrap-not-modified]]
-                                             {:status 404 :body "404, Page Not Found" :headers {}})
-            media-handler (create-handler [[wrap-file (fm/base-dir filemanager)]
-                                           [wrap-file-info (:mime-types middleware-options)]
-                                           [wrap-content-type (:content-type-resources middleware-options)]
-                                           [wrap-not-modified]]
-                                          {:status 404 :body "404, Page Not Found" :headers {}})
+            resource-handler (or
+                              resource-handlers
+                              (create-handler [[wrap-resource resource]
+                                               [wrap-file-info (:mime-types middleware-options)]
+                                               [wrap-content-type (:content-type-resources middleware-options)]
+                                               [wrap-not-modified]]
+                                              {:status 404 :body "404, Page Not Found" :headers {}}))
+            media-handler (or
+                           media-handlers
+                           (create-handler [[wrap-file (fm/base-dir filemanager)]
+                                            [wrap-file-info (:mime-types middleware-options)]
+                                            [wrap-content-type (:content-type-resources middleware-options)]
+                                            [wrap-not-modified]]
+                                           {:status 404 :body "404, Page Not Found" :headers {}}))
             handler (wrap-forker site-handler resource-handler media-handler)
             server (run-server handler server-options)]
         (log/info (format "Running server on port %s..." (:port server-options)))

@@ -34,7 +34,7 @@
 
 
 (defn seed! []
-  (let [jmaps (map (fn [[table path]]
+  (let [mmaps (map (fn [[table path]]
                      {:db {:type :sql
                            :migration-table table
                            :url (str "jdbc:postgresql:"
@@ -46,9 +46,12 @@
                     "migrations_auth" "src/reverie/modules/migrations/auth/"
                     "migrations_reverie_text" "src/reverie/sql/objects/migrations/text/"
                     "migrations_reverie_image" "src/reverie/sql/objects/migrations/image/"
-                    "migrations" "resources/migrations/postgresql"))]
-    (doseq [jmap jmaps]
-      (joplin/rollback-db jmap 9000)))
+                    "migrations" "resources/migrations/postgresql"
+                    ))]
+    (doseq [mmap mmaps]
+      (joplin/rollback-db mmap 9000))
+    (doseq [mmap (reverse mmaps)]
+      (joplin/migrate-db mmap)))
   (let [db (component/start (get-db))
         seed (slurp (io/resource "seeds/postgresql/seed.sql"))]
     (try
@@ -59,4 +62,4 @@
         (println e)))
     (component/stop db)))
 
-;;(seed!)
+(seed!)

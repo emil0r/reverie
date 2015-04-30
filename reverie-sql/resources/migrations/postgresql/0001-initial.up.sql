@@ -20,7 +20,7 @@ CREATE TABLE reverie_page_properties (
     created timestamp with time zone NOT NULL DEFAULT now(),
     key text NOT NULL,
     value text NOT NULL,
-    page_id bigint NOT NULL references reverie_page(id)
+    page_serial bigint NOT NULL
 );
 
 CREATE TABLE reverie_object (

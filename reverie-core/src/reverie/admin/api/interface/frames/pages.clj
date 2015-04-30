@@ -237,10 +237,12 @@
         user (get-in request [:reverie :user])
         page (db/get-page db page-serial false)]
     (if (auth/authorize? page user db "edit")
-      (let [{:keys [form-params
-                    errors]} (process-page-form request (get-page-form))]
+      (let [{:keys [form-params errors]} (process-page-form request (get-page-form))]
         (if (empty? errors)
-          (let [page (db/update-page! db (page/id page) form-params)]
+          (let [page (db/update-page! db (page/id page) (assoc form-params
+                                                          :slug (if (nil? (page/parent page))
+                                                                  "/"
+                                                                  (:slug form-params))))]
             (html5
              (common/head "reverie - meta")
              [:body

@@ -33,7 +33,8 @@
                     (filter-links
                      filter-by
                      [[#{:all :meta} "../js/fancy-tree/skin-win7/ui.fancytree.min.css"]
-                      [#{:richtext} "../js/tinymce/skins/lightgray/skin.ie7.min.css"]])
+                      [#{:richtext} "../js/tinymce/skins/lightgray/skin.ie7.min.css"]
+                      [#{:editing} "jquery.simple-dtpicker.css"]])
                     extra-css))
      (map link-js (concat
                    (filter-links
@@ -49,6 +50,8 @@
                      [#{:all :meta} "objects.js"]
                      [#{:all :meta} "main.js"]
                      [#{:editing} "editing.js"]
+                     [#{:editing} "jquery.simple-dtpicker.js"]
+                     [#{:editing} "dtpicker.js"]
                      [#{:richtext} "tinymce/tinymce.min.js"]
                      [#{:all :dev} "eyespy.js"]
                      [#{:all :dev} "init.js"]])

@@ -32,7 +32,8 @@
   (read-cache [store options key]
     "Key should always be a string. Should raise exception on an empty key string or nil key. Options hold any data that is of interest and can't be held by any record implementing the protocol")
   (write-cache [store options key data])
-  (delete-cache [store options key]))
+  (delete-cache [store options key])
+  (clear-cache [store]))
 
 (defmulti evict-cache! :type)
 (defmethod evict-cache! :page-eviction [{:keys [page store internal]}]
@@ -45,9 +46,12 @@
 (defprotocol ICacheMananger
   (cache! [manager page request] [manager page rendered request])
   (evict! [manager page])
+  (clear! [manager])
+  (prune! [mananger])
   (lookup [manager page request]))
 
-(defrecord CacheManager [store c running? internal database]
+(defrecord CacheManager [store c running? internal database
+                         max-stored]
   component/Lifecycle
   (start [this]
     (log/info "Starting CacheMananger")
@@ -96,6 +100,9 @@
                    :page page
                    :store store
                    :internal internal}))
+
+  (clear! [this]
+    (clear-cache store))
 
   (lookup [this page request]
     (when (= (:request-method request) :get)

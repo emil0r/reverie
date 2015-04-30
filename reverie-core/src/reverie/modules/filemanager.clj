@@ -178,7 +178,7 @@
                   (and base?
                        (.endsWith (.getPath %) "cache"))
                   (re-find #"/\." (.getPath %)))
-                (map #(io/file (join-paths path %)) (fs/list-dir path)))]
+                (fs/list-dir path))]
     (sort compare-listed
           (map get-path-info listed))))
 
@@ -212,7 +212,7 @@
      [:td (get-size file)]
      [:td (get-mod-time file)]]))
 
-(defmethod row :default [_ _])
+(defmethod row :default [_])
 
 (defn- command [name value]
   [:input.btn.btn-primary {:type :submit :name name :id name

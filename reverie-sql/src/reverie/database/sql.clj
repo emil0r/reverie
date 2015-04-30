@@ -6,12 +6,13 @@
             [joplin.core :as joplin]
             joplin.jdbc.database
             [honeysql.core :as sql]
-            [reverie.auth :as auth]
-            [reverie.database :as db]
+            [noir.session :as session]
+            [reverie.auth :as auth :refer [IUserDatabase]]
+            [reverie.database :as db :refer [IDatabase]]
             [reverie.movement :as movement]
             [reverie.object :as object]
             [reverie.page :as page]
-            [reverie.publish :as publish]
+            [reverie.publish :as publish :refer [IPublish]]
             [reverie.route :as route]
             [reverie.system :as sys]
             [reverie.site :as site]
@@ -19,10 +20,13 @@
             [slingshot.slingshot :refer [try+ throw+]]
             [taoensso.timbre :as log]
             [yesql.core :refer [defqueries]])
-  (:import [reverie.database IDatabase]
-           [reverie DatabaseException]
-           [reverie.publish IPublish]
+  (:import [reverie DatabaseException]
            [com.jolbox.bonecp BoneCPDataSource]))
+
+(extend-protocol jdbc/IResultSetReadColumn
+  org.postgresql.jdbc4.Jdbc4Array
+  (result-set-read-column [pgobj metadata i]
+    (vec (.getArray pgobj))))
 
 (defqueries "reverie/database/sql/queries.sql")
 
@@ -58,14 +62,24 @@
       (assoc :published? (:published_p data)
              :raw-data data
              :type (keyword (:type data))
+             :properties (->> data
+                              :properties
+                              (map (fn [x]
+                                     (let [[a b] (str/split x #":")]
+                                       (assoc-in {}
+                                                 (map keyword (str/split a #"_"))
+                                                 (edn/read-string b)))))
+                              (into {}))
              :template (keyword (:template data))
-             :properties (merge
-                          (if-not (nil? (:cache data))
-                            (edn/read-string (:cache data))))
              :app (if (str/blank? (:app data))
                     ""
                     (keyword (:app data))))
-      (dissoc :published_p :cache)))
+      (dissoc :published_p)))
+
+(->> ["cache_cache?:true"]
+     (map (fn [x] (let [[a b] (str/split x #":")]
+                    (assoc-in {} (map keyword (str/split a #"_")) (edn/read-string b)))))
+     (into {}))
 
 
 (defn- get-page [database data]
@@ -92,29 +106,6 @@
                         :raw-data (:raw-data data)))
                    objects (map #(assoc % :page p) (db/get-objects database p))]
                (assoc p :objects objects))))))
-
-(defn- get-migrator-map [{:keys [subprotocol subname user password]} table path]
-  {:db {:type :sql
-        :migration-table table
-        :url (str "jdbc:" subprotocol ":"
-                  subname
-                  "?user=" user
-                  "&password=" password)}
-   :migrator path})
-
-(defn- get-migrators []
-  (let [paths (map (fn [[kw {:keys [table path]}]]
-                     (let [table (or table
-                                     (str
-                                      "migrations"
-                                      (str/replace (str kw)
-                                                   #":|/|\."
-                                                   "_")))]
-                       [table path]))
-                   (filter (fn [[_ {:keys [automatic?]}]]
-                             automatic?)
-                           (sys/migrations)))]
-    paths))
 
 (defn- recalculate-routes-db [db page-ids]
   (let [page-ids (if (sequential? page-ids)
@@ -186,16 +177,6 @@
     (if (get-in db-specs [:default :datasource])
       this
       (do
-        (let [default-spec (:default db-specs)
-              migrators (concat
-                         [["migrations" (str "resources/migrations/"
-                                             (:subprotocol default-spec))]]
-                         (get-migrators))
-              mmaps (map (fn [[table path]]
-                           (get-migrator-map default-spec table path))
-                         migrators)]
-          (doseq [mmap mmaps]
-            (joplin/migrate-db mmap)))
         (log/info "Starting database")
         (let [db-specs (into
                         {}
@@ -507,7 +488,8 @@
           table (get-in obj-meta [:options :table])
           obj-id (:id obj)
           properties (merge (object/initial-fields
-                             (-> data :name keyword))
+                             (-> data :name keyword)
+                             {:database db})
                             (select-keys (:properties data) field-ks)
                             {fk obj-id})]
       (db/query! db {:insert-into (sql/raw table)
@@ -553,7 +535,8 @@
                                       [:= :f.page_id :o.page_id]]
                                :where [:and
                                        [:= :f.id id]
-                                       [:= :f.area :o.area]]}))
+                                       [:= :f.area :o.area]]
+                               :order-by [:o.order]}))
                 (movement/move id direction origo?))]
       (doseq [[order id] objs]
         (if-not (nil? id)
@@ -637,12 +620,14 @@
     (get-page db (first (db/query db sql-get-page-2 {:serial serial
                                                      :version (if published? 1 0)}))))
   (get-children [db page]
-    (let [serial (if (number? page)
-                   page
-                   (page/serial page))]
-      (map (partial get-page db)
-           (db/query db sql-get-page-children {:version (page/version page)
-                                               :parent serial}))))
+    (map (partial get-page db)
+         (db/query db sql-get-page-children {:version (page/version page)
+                                             :parent (page/serial page)})))
+  (get-children [db serial published?]
+    (map (partial get-page db)
+         (db/query db sql-get-page-children {:version (if published? 1 0)
+                                             :parent serial})))
+
   (get-children-count [db page]
     (let [serial (if (number? page)
                    page
@@ -782,7 +767,115 @@
   (trash-object! [db obj-id]
     (db/query! db {:update :reverie_object
                    :set {:version -1}
-                   :where [:= :id obj-id]})))
+                   :where [:= :id obj-id]}))
+
+  IUserDatabase
+  (get-users [db]
+    (let [users
+          (db/query db {:select [:id :created :username :email
+                                 :spoken_name :full_name :last_login]
+                        :from [:auth_user]
+                        :order-by [:id]})
+          roles (group-by
+                 :user_id
+                 (db/query db {:select [:ur.user_id :r.name]
+                               :from [[:auth_user_role :ur]]
+                               :join [[:auth_role :r]
+                                      [:= :r.id :ur.role_id]]
+                               :order-by [:ur.user_id]}))
+          groups (group-by
+                  :user_id
+                  (db/query db {:select [:ug.user_id
+                                         [:g.name :group_name]
+                                         [:r.name :role_name]]
+                                :from [[:auth_user_group :ug]]
+                                :join [[:auth_group :g]
+                                       [:= :ug.group_id :g.id]]
+                                :left-join [[:auth_group_role :gr]
+                                            [:= :gr.group_id :ug.group_id]
+                                            [:auth_role :r]
+                                            [:= :gr.role_id :r.id]]
+                                :order-by [:ug.user_id]}))]
+      (reduce (fn [out {:keys [id created username
+                               email spoken_name full_name last_login]}]
+                (conj
+                 out
+                 (auth/map->User
+                  {:id id :created created
+                   :username username :email email
+                   :spoken-name spoken_name :full-name full_name
+                   :last-login last_login
+                   :roles (into #{}
+                                (remove
+                                 nil?
+                                 (flatten
+                                  [(map #(-> % :name keyword)
+                                        (get roles id))
+                                   (map #(-> % :role_name keyword)
+                                        (get groups id))])))
+                   :groups (into #{}
+                                 (remove
+                                  nil?
+                                  (map #(-> % :group_name keyword)
+                                       (get groups id))))})))
+              [] users)))
+
+  (get-user [db]
+    (when-let [user-id (session/get :user-id)]
+      (auth/get-user db user-id)))
+  (get-user [db id]
+    (let [users
+          (db/query db (merge
+                        {:select [:id :created :username :email
+                                  :spoken_name :full_name :last_login]
+                         :from [:auth_user]}
+                        (cond
+                         (and (string? id)
+                              (re-find #"@" id)) {:where [:= :email id]}
+                              (string? id) {:where [:= :username id]}
+                              :else {:where [:= :id id]})))
+          id (-> users first :id)
+          roles (group-by
+                 :user_id
+                 (db/query db {:select [:ur.user_id :r.name]
+                               :from [[:auth_user_role :ur]]
+                               :join [[:auth_role :r]
+                                      [:= :r.id :ur.role_id]]
+                               :where [:= :ur.user_id id]}))
+          groups (group-by
+                  :user_id
+                  (db/query db {:select [:ug.user_id
+                                         [:g.name :group_name]
+                                         [:r.name :role_name]]
+                                :from [[:auth_user_group :ug]]
+                                :join [[:auth_group :g]
+                                       [:= :ug.group_id :g.id]]
+                                :left-join [[:auth_group_role :gr]
+                                            [:= :gr.group_id :ug.group_id]
+                                            [:auth_role :r]
+                                            [:= :gr.role_id :r.id]]
+                                :where [:= :ug.user_id id]}))]
+      (if (first users)
+        (let [{:keys [id created username
+                      email spoken_name full_name last_login]} (first users)]
+          (auth/map->User
+           {:id id :created created
+            :username username :email email
+            :spoken-name spoken_name :full-name full_name
+            :last-login last_login
+            :roles (into #{}
+                         (remove
+                          nil?
+                          (flatten
+                           [(map #(-> % :name keyword)
+                                 (get roles id))
+                            (map #(-> % :role_name keyword)
+                                 (get groups id))])))
+            :groups (into #{}
+                          (remove
+                           nil?
+                           (map #(-> % :group_name keyword)
+                                (get groups id))))}))))))
 
 (defn database
   ([db-specs]

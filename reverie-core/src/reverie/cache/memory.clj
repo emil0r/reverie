@@ -8,7 +8,9 @@
   (write-cache [_ _ key data]
     (swap! store assoc key data))
   (delete-cache [_ _ key]
-    (swap! store dissoc key)))
+    (swap! store dissoc key))
+  (clear-cache [_]
+    (reset! store (atom {}))))
 
 
 (defn mem-store
