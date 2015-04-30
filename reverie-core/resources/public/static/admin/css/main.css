@@ -2276,9 +2276,6 @@ h6 {
 .controlpanel .table.small th {
   width: 100px;
 }
-.controlpanel .hidden {
-  display: none;
-}
 .controlpanel div.error {
   color: #cc0000;
 }
@@ -2295,6 +2292,9 @@ h6 {
 }
 .controlpanel .buttons #save {
   margin-right: 12px;
+}
+.hidden {
+  display: none;
 }
 #files i[class^="icon-"] {
   margin-right: 10px;

@@ -9,6 +9,7 @@
 
   (add-page! [database data])
   (update-page! [database id data])
+  (save-page-properties! [database serial data])
   (move-page! [database id origo-id movement]) ;; movement = :before/after
   (get-pages [database] [database published?])
   (get-page-with-route [database serial])

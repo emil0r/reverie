@@ -22,4 +22,23 @@
             $slug.change(slug_fn);
         }
     });
+
+    var click = function(e) {
+        var $item = $(this);
+        console.log($item);
+        console.log($item.attr("tab"));
+        var $tab = $("#" + $item.attr("tab"));
+        $item.addClass("goog-tab-selected");
+        $item.siblings().each(function(){
+            $(this).removeClass("goog-tab-selected");
+        });
+        $tab.show();
+        $tab.siblings().each(function() {
+            var $this = $(this);
+            if ($this.attr("id") != "tabbar") {
+                $(this).hide();
+            }
+        });
+    };
+    $("div#tabbar > div").click(click);
 })(window, jQuery);

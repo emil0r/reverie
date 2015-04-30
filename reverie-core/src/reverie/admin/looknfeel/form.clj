@@ -287,7 +287,8 @@
 
 
 (defn get-page-form [page data & extra]
-  (let [error-field-names (e/error-field-names page)]
+  (let [error-field-names (e/error-field-names page)
+        save-as (get-in page [:options :save-as] :_save)]
     (form/form-to
      {:id :edit-form}
      ["POST" ""]
@@ -305,4 +306,4 @@
      [:div.bottom-bar
       [:span.save-only.pull-left
        [:input {:type :submit :class "btn btn-primary"
-                :id :_save :name :_save :value "Save"}]]])))
+                :id save-as :name save-as :value "Save"}]]])))

@@ -64,22 +64,15 @@
              :type (keyword (:type data))
              :properties (->> data
                               :properties
-                              (map (fn [x]
-                                     (let [[a b] (str/split x #":")]
-                                       (assoc-in {}
-                                                 (map keyword (str/split a #"_"))
-                                                 (edn/read-string b)))))
-                              (into {}))
+                              (reduce (fn [out x]
+                                        (let [[a b] (str/split x #":")]
+                                          (assoc-in out (map keyword (str/split a #"_")) (edn/read-string b))))
+                                      {}))
              :template (keyword (:template data))
              :app (if (str/blank? (:app data))
                     ""
                     (keyword (:app data))))
       (dissoc :published_p)))
-
-(->> ["cache_cache?:true"]
-     (map (fn [x] (let [[a b] (str/split x #":")]
-                    (assoc-in {} (map keyword (str/split a #"_")) (edn/read-string b)))))
-     (into {}))
 
 
 (defn- get-page [database data]
@@ -390,6 +383,16 @@
                      :where [:= :id id]})
       (recalculate-routes db id)
       (db/get-page db id)))
+
+  (save-page-properties! [db serial data]
+    (db/query! db {:delete-from :reverie_page_properties
+                   :where [:and
+                           [:in :key (vec (map name (keys data)))]
+                           [:= :page_serial serial]]})
+    (db/query! db {:insert-into :reverie_page_properties
+                   :values (map (fn [[k v]]
+                                  {:key (name k) :value v :page_serial serial})
+                                data)}))
 
   (move-page! [db id origo-id movement]
     (let [movement (keyword movement)]

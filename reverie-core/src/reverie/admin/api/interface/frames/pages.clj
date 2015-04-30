@@ -69,14 +69,43 @@
                 :options helpers/get-template-names}
      :app {:name "App"
            :type :dropdown
-           :options helpers/get-app-names}
-     :cache_p {:name "Cache this page?"
-               :type :boolean}
-     :cache_per_user_p {:name "Cache per user?"
-                        :type :boolean}}
+           :options helpers/get-app-names}}
     :sections [{:fields [:name :slug :title]}
-               {:name "Meta" :fields [:template :type :app]}
-               {:name "Caching" :fields [:cache_p :cache_per_user_p]}]}))
+               {:name "Meta" :fields [:template :type :app]}]}))
+
+(defn get-cache-form []
+  (form/PageForm.
+   {:save-as :_save-cache
+    :fields
+    {:cache_cache? {:name "Cache this page?"
+                    :type :boolean}
+     :cache_key_user? {:name "Cache per user?"
+                       :type :boolean
+                       :help "If set to true the caching system will cache the page on a per user basis. It will still cache the page for users not logged in"}
+     :cache_clear_time {:name "Clear the cache based on time"
+                        :type :dropdown
+                        :options [["Don't clear the cache based on time" nil]
+                                  ["Clear the cache every minute" 1]
+                                  ["Clear the cache every 5 minutes" 5]
+                                  ["Clear the cache every 10 minutes" 10]
+                                  ["Clear the cache every 15 minutes" 15]
+                                  ["Clear the cache every 20 minutes" 20]
+                                  ["Clear the cache every 30 minutes" 30]
+                                  ["Clear the cache every 45 minutes" 45]
+                                  ["Clear the cache every hour" 60]
+                                  ["Clear the cache every 2 hours" 120 ]]
+                        :help "Set this option if you wish to clear the cache based on time"}}
+    :sections [{:name "Caching" :fields [:cache_cache? :cache_key_user? :cache_clear_time]}]}))
+
+(defn get-menu-form []
+  (form/PageForm.
+   {:save-as :_save-menu
+    :fields
+    {:menu_hide? {:name "Hide in menu?"
+                  :type :boolean
+                  :help "If set to true, the page will not show up in various menus"}}
+    :sections [{:name "Menu" :fields [:menu_hide?]}]}))
+
 
 (defn clean-form-params [form-params]
   (walk/keywordize-keys
@@ -209,9 +238,24 @@
   (let [db (get-in request [:reverie :database])
         user (get-in request [:reverie :user])
         page (db/get-page db page-serial false)
+        [k form-used] (cond
+                       (contains? params :_save-cache)
+                       [:cache (get-cache-form)]
+
+                       (contains? params :_save-menu)
+                       [:menu (get-menu-form)]
+
+                       :else
+                       [:page (get-page-form)])
         {:keys [form-params]} (process-page-form
-                               (update-in request [:form-params] merge (page/raw page))
-                               (get-page-form))]
+                               (update-in request [:form-params]
+                                          merge
+                                          (page/raw page)
+                                          {:cache_cache? (get-in (page/properties page) [:cache :cache?])
+                                           :cache_key_user? (get-in (page/properties page) [:cache :key :user?])
+                                           :cache_clear_time (get-in (page/properties page) [:cache :clear :time])}
+                                          {:menu_hide? (get-in (page/properties page) [:menu :hide?])})
+                               form-used)]
     (if (auth/authorize? page user db "edit")
       (html5
        (common/head "reverie - meta")
@@ -221,9 +265,28 @@
         [:div.container
          [:h1 "Editing " (page/name page)]
          [:div.row.admin-interface
-          (form/get-page-form (get-meta-form)
-                              {:form-params form-params
-                               :errors errors})]
+          [:div#tabbar
+           (map (fn [[id name]]
+                  [:div {:class (if (= "page" id)
+                                  "goog-tab goog-tab-selected"
+                                  "goog-tab")
+                         :tab id}
+                   name])
+                [["page" "Page"]
+                 ["cache" "Cache"]
+                 ["menu" "Menu"]])]
+          [:div#page
+           (form/get-page-form (get-meta-form)
+                               {:form-params form-params
+                                :errors errors})]
+          [:div#cache.hidden
+           (form/get-page-form (get-cache-form)
+                               {:form-params form-params
+                                :errors errors})]
+          [:div#menu.hidden
+           (form/get-page-form (get-menu-form)
+                               {:form-params form-params
+                                :errors errors})]]
          [:footer
           (common/footer {:filter-by #{:base :editing}})]]])
 
@@ -237,12 +300,30 @@
         user (get-in request [:reverie :user])
         page (db/get-page db page-serial false)]
     (if (auth/authorize? page user db "edit")
-      (let [{:keys [form-params errors]} (process-page-form request (get-page-form))]
+      (let [[k form-used] (cond
+
+                           (contains? params :_save-cache)
+                           [:cache (get-cache-form)]
+
+                           (contains? params :_save-menu)
+                           [:menu (get-menu-form)]
+
+                           :else
+                           [:page (get-page-form)])
+            {:keys [form-params errors]} (process-page-form request form-used)]
         (if (empty? errors)
-          (let [page (db/update-page! db (page/id page) (assoc form-params
-                                                          :slug (if (nil? (page/parent page))
-                                                                  "/"
-                                                                  (:slug form-params))))]
+          (let [page (if (= k :page)
+                       (db/update-page!
+                        db (page/id page)
+                        (assoc form-params
+                          :slug (if (nil? (page/parent page))
+                                  "/"
+                                  (:slug form-params))))
+                       page)]
+            (when (= k :cache)
+              (db/save-page-properties! db (page/serial page) (dissoc form-params :_save-cache :__anti-forgery-token)))
+            (when (= k :menu)
+              (db/save-page-properties! db (page/serial page) (dissoc form-params :_save-menu :__anti-forgery-token)))
             (html5
              (common/head "reverie - meta")
              [:body
@@ -250,17 +331,18 @@
                [:div.container "Meta"]]
               [:div.container
                [:h1 "Page " (page/name page) " has been updated"]
-               (str "<script type='text/javascript'>"
-                    "parent.framecontrol.window.tree.update_node("
-                    (json/generate-string
-                     {:title (page/name page)
-                      :path (page/path page)
-                      :slug (page/slug page)
-                      :page_title (page/title page)
-                      :created (time/format (page/created page) :mysql)
-                      :updated (time/format (page/updated page) :mysql)})
-                    ");"
-                    "</script>")]]))
+               (if (= k :page)
+                 (str "<script type='text/javascript'>"
+                      "parent.framecontrol.window.tree.update_node("
+                      (json/generate-string
+                       {:title (page/name page)
+                        :path (page/path page)
+                        :slug (page/slug page)
+                        :page_title (page/title page)
+                        :created (time/format (page/created page) :mysql)
+                        :updated (time/format (page/updated page) :mysql)})
+                      ");"
+                      "</script>"))]]))
           (meta-page request page (assoc params :errors errors))))
       (html5
        [:head
