@@ -10,7 +10,7 @@
   (delete-cache [_ _ key]
     (swap! store dissoc key))
   (clear-cache [_]
-    (reset! store (atom {}))))
+    (reset! store {})))
 
 
 (defn mem-store
