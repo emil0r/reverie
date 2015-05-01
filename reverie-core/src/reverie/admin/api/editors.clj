@@ -98,7 +98,7 @@
     response))
 
 
-(defn- edits-task-handler! [t {:keys [minutes] :as opts}]
+(defn edits-task-handler! [t {:keys [minutes] :as opts}]
   (let [now (t/now)
         expired-edits (map first
                            (filter (fn [[k {:keys [time]}]]
@@ -108,9 +108,11 @@
     (when-not (empty? expired-edits)
       (apply swap! edits dissoc expired-edits))))
 
-(defn get-edits-task [minutes]
-  (scheduler/get-task {:id "admin-edits"
+(defn get-edits-task
+  "Scheduled task to run for the editors atom. Minutes determines how many minutes need to pass before a user is removed"
+  [minutes]
+  (scheduler/get-task {:id :admin-edits
                        :desc "Remove unused edits"
                        :handler edits-task-handler!
-                       :schedule "* 1 * * * * *" ;; every minute
+                       :schedule "0 * * * * * *" ;; every minute
                        :opts {:minutes minutes}}))
