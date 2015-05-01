@@ -11,11 +11,13 @@
             reverie.admin.index
             [reverie.auth :as auth]
             [reverie.cache :as cache]
+            [reverie.cache.sql :as cache-sql]
             [reverie.cache.memory :refer [mem-store]]
             [reverie.core :refer [defpage]]
             reverie.modules.auth
             [reverie.modules.filemanager :as fm]
             [reverie.render :as render]
+            [reverie.scheduler :as scheduler]
             [reverie.server :as server]
             [reverie.settings :as settings]
             [reverie.site :as site]
@@ -73,6 +75,13 @@
           cachemanager (component/start
                         (cache/cachemananger {:database db
                                               :store (mem-store)}))
+
+          scheduler (component/start
+                     (scheduler/get-scheduler
+                      [(cache/get-prune-task
+                        (cache-sql/get-basicstrategy)
+                        cachemanager
+                        {})]))
           site (component/start (site/site
                                  {:host-names []
                                   :database db
@@ -83,6 +92,7 @@
           system (component/start (assoc (sys/get-system)
                                     :database db
                                     :site site
+                                    :scheduler scheduler
                                     :filemanager filemanager
                                     :cachemanager cachemanager))
           db (assoc db :system system)
@@ -96,6 +106,7 @@
       (reset! test-server {:server server
                            :site site
                            :db db
+                           :system system
                            :settings settings}))
     (catch Exception e
       (println e))))
@@ -104,11 +115,13 @@
   (do
     (when-let [db (:db @test-server)]
       (component/stop db))
-    (when-let [filemanager (-> @test-server :db :system :filemanager)]
+    (when-let [filemanager (-> @test-server :system :filemanager)]
       (component/stop filemanager))
-    (when-let [cachemanager (-> @test-server :db :system :cachemanager)]
+    (when-let [cachemanager (-> @test-server :system :cachemanager)]
       (component/stop cachemanager))
-    (when-let [system (:system (:db @test-server))]
+    (when-let [scheduler (-> @test-server :system :scheduler)]
+      (component/stop scheduler))
+    (when-let [system (:system @test-server)]
       (component/stop system))
     (when-let [settings (:settings @test-server)]
       (component/stop settings))
@@ -135,7 +148,8 @@
 
   (stop-test-server)
 
-  (start-test-server))
+  (start-test-server)
+  )
 
 
 (-> @(client/get "http://127.0.0.1:9090/admin/frame/module/auth"

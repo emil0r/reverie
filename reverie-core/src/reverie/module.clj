@@ -73,7 +73,8 @@
   page/IPage
   (properties [this] nil)
   (type [this] :module)
-  (cache? [this] false))
+  (cache? [this] false)
+  (version [this] 0))
 
 (defn module [name entities options routes]
   (map->Module {:name name :entities entities

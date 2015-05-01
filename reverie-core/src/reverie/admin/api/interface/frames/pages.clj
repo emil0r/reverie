@@ -91,9 +91,7 @@
                                   ["Clear the cache every 15 minutes" 15]
                                   ["Clear the cache every 20 minutes" 20]
                                   ["Clear the cache every 30 minutes" 30]
-                                  ["Clear the cache every 45 minutes" 45]
-                                  ["Clear the cache every hour" 60]
-                                  ["Clear the cache every 2 hours" 120 ]]
+                                  ["Clear the cache every hour" 60]]
                         :help "Set this option if you wish to clear the cache based on time"}}
     :sections [{:name "Caching" :fields [:cache_cache? :cache_key_user? :cache_clear_time]}]}))
 

@@ -109,7 +109,8 @@
            (let [request (assoc-in request [:reverie :edit?]
                                    (editors/edit? p (get-in request [:reverie :user])))
                  ;; get cache hit
-                 hit (if (page/cache? p)
+                 hit (if (and  (page/cache? p)
+                               (= 1 (page/version p)))
                        (cache/lookup cachemanager p request))]
              ;; can we even get a response?
              (if-let [resp (or hit
@@ -148,7 +149,8 @@
                  ;; AND the hit is nil -> cache the page
                  (when (and (nil? hit)
                             (= (:request-method request) :get)
-                            (page/cache? p))
+                            (page/cache? p)
+                            (= 1 (page/version p)))
                    (cache/cache! cachemanager p (:body final-resp) request))
                  final-resp)
                ;; in the event of being unable to give a response we return a 404

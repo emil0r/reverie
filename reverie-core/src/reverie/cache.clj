@@ -6,6 +6,7 @@
             [reverie.object :as object]
             [reverie.page :as page]
             [reverie.render :as render]
+            [reverie.scheduler :as scheduler]
             [taoensso.timbre :as log])
   (:import [reverie CacheException]))
 
@@ -47,11 +48,13 @@
   (cache! [manager page request] [manager page rendered request])
   (evict! [manager page])
   (clear! [manager])
-  (prune! [mananger])
   (lookup [manager page request]))
 
-(defrecord CacheManager [store c running? internal database
-                         max-stored]
+
+(defprotocol IPruneStrategy
+  (prune! [strategy cachemanager]))
+
+(defrecord CacheManager [store c running? internal database]
   component/Lifecycle
   (start [this]
     (log/info "Starting CacheMananger")
@@ -108,6 +111,19 @@
     (when (= (:request-method request) :get)
       (read-cache store {:request request} (get-hash-key page request)))))
 
+(defn prune-task! [t {:keys [strategy cachemanager] :as opts}]
+  (prune! strategy cachemanager))
+
+(defn get-prune-task
+  "Scheduled task for pruning the cache. Schedule is optional, default is every minute"
+  [strategy cachemanager {:keys [schedule]}]
+  (scheduler/get-task {:id :prune-cache
+                       :desc "Prune the cache according to selected strategy"
+                       :handler prune-task!
+                       :schedule (or schedule
+                                     "0 * * * * * *") ;; every minute
+                       :opts {:strategy strategy
+                              :cachemanager cachemanager}}))
 
 (defn cachemananger [data]
   (map->CacheManager data))
