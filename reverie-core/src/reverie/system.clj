@@ -88,5 +88,8 @@
     this))
 
 
-(defn get-system []
-  (map->ReverieSystem {}))
+(defn get-system
+  ([]
+     (map->ReverieSystem {}))
+  ([data]
+     (map->ReverieSystem data)))

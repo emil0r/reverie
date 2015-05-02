@@ -89,12 +89,12 @@
                                   :system (:system db)
                                   :render-fn (fn [data] (hiccup.compiler/render-html data))}))
           site (assoc site :db db)
-          system (component/start (assoc (sys/get-system)
-                                    :database db
+          system (component/start (sys/get-system
+                                   {:database db
                                     :site site
                                     :scheduler scheduler
                                     :filemanager filemanager
-                                    :cachemanager cachemanager))
+                                    :cachemanager cachemanager}))
           db (assoc db :system system)
           server (component/start
                   (reverie.server/get-server {:dev? true

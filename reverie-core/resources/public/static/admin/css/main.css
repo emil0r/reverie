@@ -2829,3 +2829,15 @@ nav ul li a {
 #object-properties div.save .btn-primary {
   margin: 10px 0 10px 20px;
 }
+.cache {
+  margin-top: 40px;
+}
+.cache .clear {
+  margin-top: 10px;
+}
+.cached-pages {
+  margin-top: 40px;
+}
+.cached-page {
+  margin-bottom: 5px;
+}
