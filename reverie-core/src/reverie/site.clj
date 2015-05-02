@@ -109,8 +109,8 @@
            (let [request (assoc-in request [:reverie :edit?]
                                    (editors/edit? p (get-in request [:reverie :user])))
                  ;; get cache hit
-                 hit (if (and  (page/cache? p)
-                               (= 1 (page/version p)))
+                 hit (if (and (page/cache? p)
+                              (= 1 (page/version p)))
                        (cache/lookup cachemanager p request))]
              ;; can we even get a response?
              (if-let [resp (or hit

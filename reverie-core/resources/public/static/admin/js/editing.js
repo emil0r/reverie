@@ -25,8 +25,6 @@
 
     var click = function(e) {
         var $item = $(this);
-        console.log($item);
-        console.log($item.attr("tab"));
         var $tab = $("#" + $item.attr("tab"));
         $item.addClass("goog-tab-selected");
         $item.siblings().each(function(){

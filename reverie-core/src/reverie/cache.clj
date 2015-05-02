@@ -11,30 +11,44 @@
   (:import [reverie CacheException]))
 
 
-(defn- get-hash-key [page request]
-  (let [cache-opts (merge (:cache (page/properties page))
-                          (:cache (page/options page)))
-        extra (merge (if (get-in cache-opts [:key :user?])
-                       {:user-id (get-in request [:reverie :user :id])})
-                     (if (fn? (get-in cache-opts [:key :fn]))
-                       ((get-in cache-opts [:key :fn])
-                        {:page page
-                         :request request})))]
-    (->>  {:serial (page/serial page)
-           :uri (:uri request)
-           :query-string (:query-string request)}
-          (merge extra)
-          (map str)
-          sort
-          str
-          md5)))
-
 (defprotocol ICacheStore
   (read-cache [store options key]
     "Key should always be a string. Should raise exception on an empty key string or nil key. Options hold any data that is of interest and can't be held by any record implementing the protocol")
   (write-cache [store options key data])
   (delete-cache [store options key])
   (clear-cache [store]))
+
+(defprotocol ICacheMananger
+  (cache! [manager page request] [manager page rendered request])
+  (evict! [manager page])
+  (clear! [manager])
+  (lookup [manager page request]))
+
+(defprotocol IPruneStrategy
+  (prune! [strategy cachemanager]))
+
+(defprotocol ICacheKeyStrategy
+  (get-hash-key [cache-key-strategy page request]))
+
+(defrecord BasicHashKeyStrategy []
+  ICacheKeyStrategy
+  (get-hash-key [this page request]
+    (let [cache-opts (merge (:cache (page/properties page))
+                            (:cache (page/options page)))
+          extra (merge (if (get-in cache-opts [:key :user?])
+                         {:user-id (get-in request [:reverie :user :id])})
+                       (if (fn? (get-in cache-opts [:key :fn]))
+                         ((get-in cache-opts [:key :fn])
+                          {:page page
+                           :request request})))]
+      (->>  {:serial (page/serial page)
+             :uri (:uri request)
+             :query-string (:query-string request)}
+            (merge extra)
+            (map str)
+            sort
+            str
+            md5))))
 
 (defmulti evict-cache! :type)
 (defmethod evict-cache! :page-eviction [{:keys [page store internal]}]
@@ -44,17 +58,8 @@
 (defmethod evict-cache! :default [_]
   nil)
 
-(defprotocol ICacheMananger
-  (cache! [manager page request] [manager page rendered request])
-  (evict! [manager page])
-  (clear! [manager])
-  (lookup [manager page request]))
-
-
-(defprotocol IPruneStrategy
-  (prune! [strategy cachemanager]))
-
-(defrecord CacheManager [store c running? internal database]
+(defrecord CacheManager [store c running? internal database
+                         hash-key-strategy]
   component/Lifecycle
   (start [this]
     (log/info "Starting CacheMananger")
@@ -70,6 +75,8 @@
                               :internal internal
                               :database database)))))
         (assoc this
+          :hash-key-strategy (or hash-key-strategy
+                                 (BasicHashKeyStrategy.))
           :running? running?
           :internal (atom {})
           :c c))))
@@ -89,7 +96,7 @@
   (cache! [this page request]
     (cache! this page (render/render page request) request))
   (cache! [this page rendered request]
-    (let [k (get-hash-key page request)
+    (let [k (get-hash-key hash-key-strategy page request)
           serial (page/serial page)
           data (get @internal serial)]
       (swap! internal assoc serial (set/union data #{k}))
@@ -109,7 +116,7 @@
 
   (lookup [this page request]
     (when (= (:request-method request) :get)
-      (read-cache store {:request request} (get-hash-key page request)))))
+      (read-cache store {:request request} (get-hash-key hash-key-strategy page request)))))
 
 (defn prune-task! [t {:keys [strategy cachemanager] :as opts}]
   (prune! strategy cachemanager))
