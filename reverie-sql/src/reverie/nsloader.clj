@@ -8,6 +8,7 @@
             reverie.page
             reverie.object
             reverie.auth.sql
+            reverie.cache.sql
             reverie.module
             reverie.module.entity
             reverie.modules.sql
