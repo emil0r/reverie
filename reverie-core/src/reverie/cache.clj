@@ -109,7 +109,8 @@
     (evict-cache! {:type :page-eviction
                    :page page
                    :store store
-                   :internal internal}))
+                   :internal internal})
+    (swap! internal dissoc (page/serial page)))
 
   (clear! [this]
     (clear-cache store))
