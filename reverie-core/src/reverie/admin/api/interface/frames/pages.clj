@@ -12,6 +12,7 @@
             [reverie.admin.looknfeel.form :as form]
             [reverie.admin.validation :as validation]
             [reverie.auth :as auth]
+            [reverie.cache :as cache]
             [reverie.database :as db]
             [reverie.module.entity :as e]
             [reverie.object :as object]
@@ -386,6 +387,8 @@
          [:div.container "Publish page"]]
         [:div.container
          (do (publish/publish-page! db (page/id page))
+             (when-let [cm (sys/get-cachemanager)]
+               (cache/evict! cm page))
              [:h1 "Published page " (page/name page)])]])
       (html5
        [:head
