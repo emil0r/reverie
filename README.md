@@ -7,9 +7,7 @@ Content Management System. Useful if you don't want to fill in the same pieces o
 
 ## Usage
 
-http://reveriecms.org
-
-Documentation is lacking. Working on it.
+Coming soon.
 
 ## License
 
