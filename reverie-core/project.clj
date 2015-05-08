@@ -1,6 +1,6 @@
 (defproject reverie-core "0.1.0-SNAPSHOT"
-  :description ""
-  :url ""
+  :description "The core of reverie, a CMS written in Clojure"
+  :url "https://github.com/emil0r/reverie"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]

@@ -1,5 +1,6 @@
 (ns reverie.site
   (:require [com.stuartsierra.component :as component]
+            [noir.session :as session]
             [reverie.admin.api.editors :as editors]
             [reverie.cache :as cache]
             [reverie.database :as db]
@@ -147,9 +148,11 @@
                  ;; the request method is a GET
                  ;; AND we can cache the page
                  ;; AND the hit is nil -> cache the page
+                 ;; AND no session flash is present to skip it
                  (when (and (nil? hit)
                             (= (:request-method request) :get)
                             (page/cache? p)
+                            (not (session/flash-get :skip-cache? false))
                             (= 1 (page/version p)))
                    (cache/cache! cachemanager p (:body final-resp) request))
                  final-resp)
