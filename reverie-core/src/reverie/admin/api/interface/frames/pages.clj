@@ -115,7 +115,19 @@
            "_save")))
 
 (defn process-page-form [request page-form]
-  (let [form-params (clean-form-params (:form-params request))
+  ;; get the boolean types, create a map of false values
+  ;; and merge it with the cleaned params in such a manner
+  ;; that the cleaned params will override the values
+  ;; of the booleans map. this is for boolean values not
+  ;; being sent by the browser when they're not filled in
+  (let [booleans (->> (get-in page-form [:options :fields])
+                      (filter (fn [[k {:keys [type]}]]
+                                (= type :boolean)))
+                      (map (fn [[k _]]
+                             {k false}))
+                      (into {}))
+        form-params (merge booleans
+                           (clean-form-params (:form-params request)))
         errors (validation/validate page-form form-params)]
     {:form-params form-params
      :errors errors}))
