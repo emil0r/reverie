@@ -270,12 +270,12 @@ textarea {
   background-image: none;
 }
 a {
-  color: #1553ad;
+  color: #0000b4;
   text-decoration: none;
 }
 a:hover,
 a:focus {
-  color: #0d3269;
+  color: #000068;
   text-decoration: underline;
 }
 a:focus {
@@ -349,7 +349,7 @@ cite {
   color: #999999;
 }
 .text-primary {
-  color: #1553ad;
+  color: #0000b4;
 }
 .text-warning {
   color: #c09853;
@@ -1829,8 +1829,8 @@ fieldset[disabled] .btn-default.active {
 }
 .btn-primary {
   color: #ffffff;
-  background-color: #1553ad;
-  border-color: #124896;
+  background-color: #0000b4;
+  border-color: #00009b;
 }
 .btn-primary:hover,
 .btn-primary:focus,
@@ -1838,8 +1838,8 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
   color: #ffffff;
-  background-color: #114289;
-  border-color: #0c2e60;
+  background-color: #00008b;
+  border-color: #00005d;
 }
 .btn-primary:active,
 .btn-primary.active,
@@ -1861,8 +1861,8 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
-  background-color: #1553ad;
-  border-color: #124896;
+  background-color: #0000b4;
+  border-color: #00009b;
 }
 .btn-warning {
   color: #ffffff;
@@ -2013,7 +2013,7 @@ fieldset[disabled] .btn-info.active {
   border-color: #46b8da;
 }
 .btn-link {
-  color: #1553ad;
+  color: #0000b4;
   font-weight: normal;
   cursor: pointer;
   border-radius: 0;
@@ -2034,7 +2034,7 @@ fieldset[disabled] .btn-link {
 }
 .btn-link:hover,
 .btn-link:focus {
-  color: #0d3269;
+  color: #000068;
   text-decoration: underline;
   background-color: transparent;
 }
@@ -2089,7 +2089,7 @@ body {
   color: #333333;
 }
 a {
-  color: #ff7f00;
+  color: #cf1020;
   text-decoration: none;
 }
 h1,
@@ -2098,7 +2098,7 @@ h3,
 h4,
 h5,
 h6 {
-  color: #ff7f00;
+  color: #cf1020;
 }
 #container {
   display: flex;
@@ -2119,11 +2119,11 @@ h6 {
 }
 .user-info {
   text-align: right;
-  border-bottom: 1px dotted #ff7f00;
+  border-bottom: 1px dotted #cf1020;
   padding: 5px 10px;
 }
 .user-info span {
-  color: #1553ad;
+  color: #0000b4;
   font-weight: bold;
 }
 .user-info .logout {
@@ -2135,19 +2135,19 @@ h6 {
   font-size: 20px;
 }
 .user-info .logout a {
-  color: #ff7f00;
+  color: #cf1020;
   display: inline-block;
 }
 .tree {
   padding: 5px 5px 10px 5px;
-  border-bottom: 1px dotted #ff7f00;
+  border-bottom: 1px dotted #cf1020;
 }
 .tree input[type=text] {
   width: 88%;
 }
 .tree i {
   margin-left: 5px;
-  color: #ff7f00;
+  color: #cf1020;
 }
 .tree i:hover {
   cursor: pointer;
@@ -2185,7 +2185,7 @@ h6 {
 }
 #app-navigation {
   padding: 5px;
-  border-bottom: 1px dotted #ff7f00;
+  border-bottom: 1px dotted #cf1020;
 }
 #app-navigation h2 {
   margin: 0 0 10px 0;
@@ -2204,7 +2204,7 @@ h6 {
 #app-navigation ul li span {
   padding: 3px 10px;
   margin-right: 10px;
-  background-color: #1553ad;
+  background-color: #0000b4;
   color: #ffffff;
   border-radius: 5px;
 }
@@ -2221,7 +2221,7 @@ h6 {
 #tabbar {
   margin: 5px 0;
   padding-bottom: 5px;
-  border-bottom: 1px dotted #ff7f00;
+  border-bottom: 1px dotted #cf1020;
   outline: 0;
 }
 #tabbar .goog-tab {
@@ -2230,13 +2230,13 @@ h6 {
   padding: 5px;
 }
 #tabbar .goog-tab:hover {
-  background-color: #ff7f00;
+  background-color: #cf1020;
   color: #ffffff;
   cursor: pointer;
   box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
 }
 #tabbar .goog-tab-selected {
-  background-color: #ff7f00;
+  background-color: #cf1020;
   color: #ffffff;
 }
 .modules ul {
@@ -2249,13 +2249,13 @@ h6 {
 }
 .modules ul li.active,
 .modules ul li:hover {
-  background-color: #ff7f00;
+  background-color: #cf1020;
   color: #ffffff;
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
 }
 .ui-fancytree .published .fancytree-title {
-  background-color: #1553ad;
+  background-color: #0000b4;
   color: #ffffff;
 }
 .ui-fancytree .published .fancytree-title:hover {
@@ -2299,7 +2299,7 @@ h6 {
 #files i[class^="icon-"] {
   margin-right: 10px;
   font-size: 1.5em;
-  color: #ff7f00;
+  color: #cf1020;
 }
 #files i[class=icon-folder-close] {
   position: relative;
@@ -2312,13 +2312,13 @@ h6 {
 #files span:hover,
 #files span.selected {
   cursor: pointer;
-  color: #ff7f00;
+  color: #cf1020;
 }
 #files span img {
   margin-left: 15px;
 }
 #files a:hover {
-  color: #ff7f00;
+  color: #cf1020;
 }
 #url-picker {
   padding: 5px;
@@ -2356,7 +2356,7 @@ h6 {
   margin-bottom: 20px;
 }
 nav {
-  background-color: #1553ad;
+  background-color: #0000b4;
   color: #ffffff;
   padding: 5px 10px;
 }
@@ -2370,7 +2370,7 @@ nav ul li {
   display: inline-block;
 }
 nav ul li a {
-  color: #ff9011;
+  color: #e02131;
 }
 .admin-interface .table {
   margin-left: 2px;
@@ -2378,7 +2378,7 @@ nav ul li a {
 .admin-interface .options {
   margin: 20px 10px 60px 10px;
   padding-bottom: 10px;
-  border-bottom: 1px #1553ad solid;
+  border-bottom: 1px #0000b4 solid;
 }
 .admin-interface .options ul {
   list-style: none;
@@ -2386,8 +2386,8 @@ nav ul li a {
   margin: 0;
 }
 .admin-interface .options .btn-primary {
-  background-color: #ff7f00;
-  border: 1px solid #dd5d00;
+  background-color: #cf1020;
+  border: 1px solid #ad0000;
 }
 .admin-interface .pagination {
   margin: 40px 0 0 10px;
@@ -2410,14 +2410,14 @@ nav ul li a {
 }
 .admin-interface .pagination ul li a {
   padding: 3px 6px;
-  background-color: #ff7f00;
-  border: 1px solid #ee6e00;
+  background-color: #cf1020;
+  border: 1px solid #be000f;
   color: #ffffff;
   border-radius: 3px;
 }
 .admin-interface .pagination ul li a:hover {
-  background-color: #dd5d00;
-  border: 1px solid #cc4c00;
+  background-color: #ad0000;
+  border: 1px solid #9c0000;
   box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
 }
 #edit-form,
@@ -2433,7 +2433,7 @@ nav ul li a {
 #edit-form fieldset legend,
 #password-form fieldset legend {
   border: 1px solid #cccccc;
-  background-color: #1553ad;
+  background-color: #0000b4;
   color: #ffffff;
   padding: 2px 10px;
   font-size: 1.35em;
@@ -2469,7 +2469,7 @@ nav ul li a {
 }
 #edit-form fieldset .help.section i,
 #password-form fieldset .help.section i {
-  color: #1553ad;
+  color: #0000b4;
 }
 #edit-form fieldset .help i,
 #password-form fieldset .help i {
@@ -2507,13 +2507,13 @@ nav ul li a {
 #password-form .bottom-bar span.save-continue-editing .btn,
 #edit-form .bottom-bar span.save-only .btn,
 #password-form .bottom-bar span.save-only .btn {
-  background-color: #1553ad;
-  background-image: -webkit-gradient(linear, left 0, left 70, from(#1553ad), to(#00318b));
-  background-image: -webkit-linear-gradient(top, #1553ad, 0, #00318b, 70);
-  background-image: -moz-linear-gradient(top, #1553ad 0, #00318b 70);
-  background-image: linear-gradient(to bottom, #1553ad 0, #00318b 70);
+  background-color: #0000b4;
+  background-image: -webkit-gradient(linear, left 0, left 70, from(#0000b4), to(#000092));
+  background-image: -webkit-linear-gradient(top, #0000b4, 0, #000092, 70);
+  background-image: -moz-linear-gradient(top, #0000b4 0, #000092 70);
+  background-image: linear-gradient(to bottom, #0000b4 0, #000092 70);
   background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff1553ad', endColorstr='#ff00318b', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0000b4', endColorstr='#ff000092', GradientType=0);
 }
 #edit-form .bottom-bar span.save-add-new .btn:hover,
 #password-form .bottom-bar span.save-add-new .btn:hover,
@@ -2521,17 +2521,17 @@ nav ul li a {
 #password-form .bottom-bar span.save-continue-editing .btn:hover,
 #edit-form .bottom-bar span.save-only .btn:hover,
 #password-form .bottom-bar span.save-only .btn:hover {
-  background-color: #04429c;
-  background-image: -webkit-gradient(linear, left 0, left 40, from(#1553ad), to(#00207a));
-  background-image: -webkit-linear-gradient(top, #1553ad, 0, #00207a, 40);
-  background-image: -moz-linear-gradient(top, #1553ad 0, #00207a 40);
-  background-image: linear-gradient(to bottom, #1553ad 0, #00207a 40);
+  background-color: #0000a3;
+  background-image: -webkit-gradient(linear, left 0, left 40, from(#0000b4), to(#000081));
+  background-image: -webkit-linear-gradient(top, #0000b4, 0, #000081, 40);
+  background-image: -moz-linear-gradient(top, #0000b4 0, #000081 40);
+  background-image: linear-gradient(to bottom, #0000b4 0, #000081 40);
   background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff1553ad', endColorstr='#ff00207a', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0000b4', endColorstr='#ff000081', GradientType=0);
 }
 #edit-form .bottom-bar span.delete i,
 #password-form .bottom-bar span.delete i {
-  color: #ff7f00;
+  color: #cf1020;
   font-size: 1.3em;
   margin-right: 10px;
 }
@@ -2572,12 +2572,12 @@ nav ul li a {
   margin-right: 25px;
 }
 #password-form .buttons #_change {
-  background-color: #ff7f00;
-  border: 1px solid #dd5d00;
+  background-color: #cf1020;
+  border: 1px solid #ad0000;
 }
 #password-form .buttons #_change:hover {
-  background-color: #ee6e00;
-  border: 1px solid #cc4c00;
+  background-color: #be000f;
+  border: 1px solid #9c0000;
 }
 #auth {
   background: url(/admin/images/reverie-300x300.png) no-repeat 150px 110px transparent;
@@ -2596,7 +2596,7 @@ nav ul li a {
 }
 .datepicker > .datepicker_header {
   padding: 5px;
-  background-color: #1553ad;
+  background-color: #0000b4;
   color: #ffffff;
   text-align: center;
   font-size: 9pt;
@@ -2616,10 +2616,10 @@ nav ul li a {
   color: #ffffff;
 }
 .datepicker > .datepicker_header > a:hover {
-  color: #ff7f00;
+  color: #cf1020;
 }
 .datepicker > .datepicker_header > a:hover > svg > g > path {
-  fill: #ff7f00;
+  fill: #cf1020;
   /* Icon button hover color */
 }
 .datepicker > .datepicker_header > a:active {
@@ -2683,7 +2683,7 @@ nav ul li a {
   padding: 10px;
 }
 .datepicker > .datepicker_inner_container > .datepicker_calendar > .datepicker_table > tbody > tr > th {
-  color: #ff7f00;
+  color: #cf1020;
   width: 18px;
   font-size: small;
   font-weight: normal;
@@ -2718,11 +2718,11 @@ nav ul li a {
 }
 .datepicker > .datepicker_inner_container > .datepicker_calendar > .datepicker_table > tbody > tr > td.active {
   color: #ffffff;
-  background-color: #1553ad;
+  background-color: #0000b4;
 }
 .datepicker > .datepicker_inner_container > .datepicker_calendar > .datepicker_table > tbody > tr > td.hover {
   color: #ffffff;
-  background-color: #ff7f00;
+  background-color: #cf1020;
   cursor: pointer;
 }
 .datepicker > .datepicker_inner_container > .datepicker_timelist {
@@ -2794,11 +2794,11 @@ nav ul li a {
 }
 .datepicker > .datepicker_inner_container > .datepicker_timelist > div.timelist_item.active {
   color: #ffffff;
-  background-color: #1553ad;
+  background-color: #0000b4;
 }
 .datepicker > .datepicker_inner_container > .datepicker_timelist > div.timelist_item.hover {
   color: #ffffff;
-  background-color: #ff7f00;
+  background-color: #cf1020;
 }
 .container.frame table.area-mapping {
   width: 100%;
@@ -2814,7 +2814,7 @@ nav ul li a {
 }
 #object-properties #paths .path label {
   color: #ffffff;
-  background-color: #1553ad;
+  background-color: #0000b4;
   font-weight: normal;
   padding: 3px 5px;
   margin: 0 5px;
