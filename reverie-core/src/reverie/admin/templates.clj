@@ -17,7 +17,10 @@
 (defn admin-login [request page properties {:keys [username password]}]
   (html5
    (head "reverie Admin Login")
-   [:body
+   [:body.admin-login
+    [:div.row
+     [:div.col-md-4.col-md-offset-4
+      [:img.img-responsive {:src "/static/admin/img/reveriecms.png" :alt "reverie/CMS"}]]]
     [:div.row
      [:div.col-md-4.col-md-offset-4
       [:form {:method "POST"}
@@ -31,7 +34,7 @@
          [:td (form/password-field :password)]]
         [:tr
          [:th]
-         [:td (form/submit-button "Log in")]]]]]]]))
+         [:td (form/submit-button {:class "btn btn-primary"} "Log in")]]]]]]]))
 
 (defn- admin-controlpanel [request page properties params]
   (html5

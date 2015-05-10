@@ -1,5 +1,5 @@
 nav {
-    background-color: @secondary;
+    background-color: @black;
     color: @white;
     padding: 5px 10px;
     ul {
@@ -10,7 +10,7 @@ nav {
             margin-right: 5px;
             display: inline-block;
             a {
-                color: @primary + #111;
+                color: @brand-primary;
             }
         }
     }
@@ -129,14 +129,7 @@ nav {
         span.save-add-new,
         span.save-continue-editing,
         span.save-only {
-            .btn {
-                background-color: @secondary;
-                #gradient .vertical(@secondary, @secondary - #222, 0, 70);
-                &:hover {
-                    background-color: @secondary - #111;
-                    #gradient .vertical(@secondary, @secondary - #333, 0, 40);
-                }
-            }
+            margin-left: 15px;
         }
         margin-bottom: 20px;
         span.delete {

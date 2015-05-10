@@ -270,12 +270,12 @@ textarea {
   background-image: none;
 }
 a {
-  color: #0000b4;
+  color: #cf1020;
   text-decoration: none;
 }
 a:hover,
 a:focus {
-  color: #000068;
+  color: #880b15;
   text-decoration: underline;
 }
 a:focus {
@@ -349,7 +349,7 @@ cite {
   color: #999999;
 }
 .text-primary {
-  color: #0000b4;
+  color: #cf1020;
 }
 .text-warning {
   color: #c09853;
@@ -1829,8 +1829,8 @@ fieldset[disabled] .btn-default.active {
 }
 .btn-primary {
   color: #ffffff;
-  background-color: #0000b4;
-  border-color: #00009b;
+  background-color: #cf1020;
+  border-color: #b70e1c;
 }
 .btn-primary:hover,
 .btn-primary:focus,
@@ -1838,8 +1838,8 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
   color: #ffffff;
-  background-color: #00008b;
-  border-color: #00005d;
+  background-color: #a90d1a;
+  border-color: #7f0a14;
 }
 .btn-primary:active,
 .btn-primary.active,
@@ -1861,6 +1861,43 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
+  background-color: #cf1020;
+  border-color: #b70e1c;
+}
+.btn-secondary {
+  color: #ffffff;
+  background-color: #0000b4;
+  border-color: #00009b;
+}
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active,
+.btn-secondary.active,
+.open .dropdown-toggle.btn-secondary {
+  color: #ffffff;
+  background-color: #00008b;
+  border-color: #00005d;
+}
+.btn-secondary:active,
+.btn-secondary.active,
+.open .dropdown-toggle.btn-secondary {
+  background-image: none;
+}
+.btn-secondary.disabled,
+.btn-secondary[disabled],
+fieldset[disabled] .btn-secondary,
+.btn-secondary.disabled:hover,
+.btn-secondary[disabled]:hover,
+fieldset[disabled] .btn-secondary:hover,
+.btn-secondary.disabled:focus,
+.btn-secondary[disabled]:focus,
+fieldset[disabled] .btn-secondary:focus,
+.btn-secondary.disabled:active,
+.btn-secondary[disabled]:active,
+fieldset[disabled] .btn-secondary:active,
+.btn-secondary.disabled.active,
+.btn-secondary[disabled].active,
+fieldset[disabled] .btn-secondary.active {
   background-color: #0000b4;
   border-color: #00009b;
 }
@@ -2013,7 +2050,7 @@ fieldset[disabled] .btn-info.active {
   border-color: #46b8da;
 }
 .btn-link {
-  color: #0000b4;
+  color: #cf1020;
   font-weight: normal;
   cursor: pointer;
   border-radius: 0;
@@ -2034,7 +2071,7 @@ fieldset[disabled] .btn-link {
 }
 .btn-link:hover,
 .btn-link:focus {
-  color: #000068;
+  color: #880b15;
   text-decoration: underline;
   background-color: transparent;
 }
@@ -2116,6 +2153,9 @@ h6 {
 }
 #frameoptions {
   display: none;
+}
+.admin-login img {
+  margin: 50px auto;
 }
 .user-info {
   text-align: right;
@@ -2356,7 +2396,7 @@ h6 {
   margin-bottom: 20px;
 }
 nav {
-  background-color: #0000b4;
+  background-color: #000000;
   color: #ffffff;
   padding: 5px 10px;
 }
@@ -2370,7 +2410,7 @@ nav ul li {
   display: inline-block;
 }
 nav ul li a {
-  color: #e02131;
+  color: #cf1020;
 }
 .admin-interface .table {
   margin-left: 2px;
@@ -2501,33 +2541,13 @@ nav ul li a {
 #password-form .bottom-bar {
   margin-bottom: 20px;
 }
-#edit-form .bottom-bar span.save-add-new .btn,
-#password-form .bottom-bar span.save-add-new .btn,
-#edit-form .bottom-bar span.save-continue-editing .btn,
-#password-form .bottom-bar span.save-continue-editing .btn,
-#edit-form .bottom-bar span.save-only .btn,
-#password-form .bottom-bar span.save-only .btn {
-  background-color: #0000b4;
-  background-image: -webkit-gradient(linear, left 0, left 70, from(#0000b4), to(#000092));
-  background-image: -webkit-linear-gradient(top, #0000b4, 0, #000092, 70);
-  background-image: -moz-linear-gradient(top, #0000b4 0, #000092 70);
-  background-image: linear-gradient(to bottom, #0000b4 0, #000092 70);
-  background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0000b4', endColorstr='#ff000092', GradientType=0);
-}
-#edit-form .bottom-bar span.save-add-new .btn:hover,
-#password-form .bottom-bar span.save-add-new .btn:hover,
-#edit-form .bottom-bar span.save-continue-editing .btn:hover,
-#password-form .bottom-bar span.save-continue-editing .btn:hover,
-#edit-form .bottom-bar span.save-only .btn:hover,
-#password-form .bottom-bar span.save-only .btn:hover {
-  background-color: #0000a3;
-  background-image: -webkit-gradient(linear, left 0, left 40, from(#0000b4), to(#000081));
-  background-image: -webkit-linear-gradient(top, #0000b4, 0, #000081, 40);
-  background-image: -moz-linear-gradient(top, #0000b4 0, #000081 40);
-  background-image: linear-gradient(to bottom, #0000b4 0, #000081 40);
-  background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0000b4', endColorstr='#ff000081', GradientType=0);
+#edit-form .bottom-bar span.save-add-new,
+#password-form .bottom-bar span.save-add-new,
+#edit-form .bottom-bar span.save-continue-editing,
+#password-form .bottom-bar span.save-continue-editing,
+#edit-form .bottom-bar span.save-only,
+#password-form .bottom-bar span.save-only {
+  margin-left: 15px;
 }
 #edit-form .bottom-bar span.delete i,
 #password-form .bottom-bar span.delete i {
