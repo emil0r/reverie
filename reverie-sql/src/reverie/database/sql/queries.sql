@@ -55,7 +55,7 @@ WITH published AS (
 )
 SELECT
         p.*,
-        COALESCE(pub.version, 0) AS published_p,
+        COALESCE(pub.version, 0) = 1 AS published_p,
         prop.value AS properties
 FROM
         reverie_page p
@@ -83,7 +83,7 @@ WITH published AS (
 )
 SELECT
         p.*,
-        COALESCE(pub.version, 0) AS published_p,
+        COALESCE(pub.version, 0) = 1 AS published_p,
         prop.value AS properties
 FROM
         reverie_page p
@@ -110,7 +110,7 @@ WITH published AS (
 )
 SELECT
         p.*,
-        COALESCE(pub.version, 0) AS published_p,
+        COALESCE(pub.version, 0) = 1 AS published_p,
         prop.value AS properties
 FROM
         reverie_page p
@@ -134,7 +134,7 @@ WITH published AS (
 )
 SELECT
         p.*,
-        COALESCE(pub.version, 0) AS published_p,
+        COALESCE(pub.version, 0) = 1 AS published_p,
         prop.value AS properties
 FROM
         reverie_page p
@@ -159,7 +159,7 @@ WITH published AS (
 )
 SELECT
         p.*,
-        COALESCE(pub.version, 0) AS published_p,
+        COALESCE(pub.version, 0) = 1 AS published_p,
         prop.value AS properties
 FROM
         reverie_page p
