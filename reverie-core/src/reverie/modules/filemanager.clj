@@ -328,12 +328,17 @@
   [:div.row-form
    (form/error-items field errors error-field-names)
    (hf/label field (e/field-name entity field))
-   [:span (merge {:onclick (str "window.open('/admin/frame/filepicker/"
-                                (form-params field)
-                                "?field=" (util/kw->str field)
-
-                                "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
-                 (e/field-attribs entity field))
+   [:span.hover
+    (merge {:onclick (str "window.open('/admin/frame/filepicker/"
+                          (form-params field)
+                          "?field=" (util/kw->str field)
+                          "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
+           (e/field-attribs entity field))
+    (if (form-params field)
+      (try [:img {:src (ez/cache (form-params field) [:constrain 100])
+                  :style "margin-right: 10px;"}]
+           (catch Exception e
+             (format "Tried to open the image but got an error: %s" (str e)))))
     "Edit image..."]
    (hf/hidden-field field (form-params field))])
 

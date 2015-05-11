@@ -2599,6 +2599,9 @@ nav ul li a {
   background-color: #be000f;
   border: 1px solid #9c0000;
 }
+.row-form .hover:hover {
+  cursor: pointer;
+}
 #auth {
   background: url(/admin/images/reverie-300x300.png) no-repeat 150px 110px transparent;
   width: 600px;
