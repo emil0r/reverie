@@ -4,7 +4,7 @@
             [slingshot.slingshot :refer [throw+]]))
 
 
-(defrecord User [id username email
+(defrecord User [id username email active?
                  created last-login
                  spoken-name full-name
                  roles groups])
@@ -17,6 +17,8 @@
 (defprotocol IUserLogin
   (login [data db]))
 
+(defprotocol IUserAdd
+  (add-user! [data roles groups db]))
 
 (defn logged-in? []
   (not (nil? (session/get :user-id))))
