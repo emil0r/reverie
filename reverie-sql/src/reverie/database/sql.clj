@@ -775,7 +775,7 @@
   IUserDatabase
   (get-users [db]
     (let [users
-          (db/query db {:select [:id :created :username :email
+          (db/query db {:select [:id :created :username :email :active_p
                                  :spoken_name :full_name :last_login]
                         :from [:auth_user]
                         :order-by [:id]})
@@ -799,12 +799,12 @@
                                             [:auth_role :r]
                                             [:= :gr.role_id :r.id]]
                                 :order-by [:ug.user_id]}))]
-      (reduce (fn [out {:keys [id created username
+      (reduce (fn [out {:keys [id created username active_p
                                email spoken_name full_name last_login]}]
                 (conj
                  out
                  (auth/map->User
-                  {:id id :created created
+                  {:id id :created created :active? active_p
                    :username username :email email
                    :spoken-name spoken_name :full-name full_name
                    :last-login last_login
@@ -829,7 +829,7 @@
   (get-user [db id]
     (let [users
           (db/query db (merge
-                        {:select [:id :created :username :email
+                        {:select [:id :created :username :email :active_p
                                   :spoken_name :full_name :last_login]
                          :from [:auth_user]}
                         (cond
@@ -859,13 +859,14 @@
                                             [:= :gr.role_id :r.id]]
                                 :where [:= :ug.user_id id]}))]
       (if (first users)
-        (let [{:keys [id created username
+        (let [{:keys [id created username active_p
                       email spoken_name full_name last_login]} (first users)]
           (auth/map->User
            {:id id :created created
             :username username :email email
             :spoken-name spoken_name :full-name full_name
             :last-login last_login
+            :active? active_p
             :roles (into #{}
                          (remove
                           nil?
