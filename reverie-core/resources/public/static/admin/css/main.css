@@ -2429,8 +2429,14 @@ nav ul li a {
   background-color: #cf1020;
   border: 1px solid #ad0000;
 }
+.admin-interface .content,
+.admin-interface .pagination,
+.admin-interface footer {
+  margin: 25px 0;
+}
 .admin-interface .pagination {
   margin: 40px 0 0 10px;
+  text-align: center;
 }
 .admin-interface .pagination .num-pages {
   margin-bottom: 10px;

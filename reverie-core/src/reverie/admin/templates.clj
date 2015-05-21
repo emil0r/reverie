@@ -52,11 +52,12 @@
 
     [:div.container
      [:div.row.admin-interface
-      (area content)]
-     [:div.pagination
-      (area pagination)]
-     [:footer
-      (area footer)]]]))
+      [:div.content
+       (area content)]
+      [:div.pagination
+       (area pagination)]
+      [:footer
+       (area footer)]]]]))
 
 (deftemplate admin/main admin-main)
 (deftemplate admin/login admin-login)
