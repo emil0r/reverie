@@ -151,7 +151,13 @@
 (defn- get-image-src [{:keys [uri] :as file}]
   (let [file-type (str/lower-case (-> uri (str/split #"\.") last))]
     (if (some #(= file-type %) ["jpg" "jpeg" "png"])
-      (ez/cache (str "media" uri) [:constrain 200]))))
+      (try
+        (ez/cache (str "media" uri) [:constrain 200])
+        (catch Exception e
+          (log/error {:what ::cache-jpeg
+                      :exception e
+                      :exception-msg (str e)})
+          (str "media" uri))))))
 
 (defn- get-path-info [file]
   (let [path (.getPath file)]
