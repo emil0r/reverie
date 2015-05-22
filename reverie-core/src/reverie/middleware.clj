@@ -50,12 +50,19 @@
   (fn [request]
     (if dev?
       (handler request)
-      (try
-        (handler request)
-        (catch Exception e
-          (do
-            (log/error "Caught an exception" e)
-            (response/get 500)))))))
+      (try+
+       (handler request)
+       (catch Object _
+         (do
+           (let [{:keys [message cause throwable]} &throw-context]
+             (log/error {:where ::wrap-error-log
+                         :uri (:uri request)
+                         :message message
+                         :cause cause
+                         :stacktrace (if throwable
+                                       (log/stacktrace throwable))
+                         :request (dissoc request :reverie)}))
+           (response/get 500)))))))
 
 (defn wrap-authorized
   "Wrap authorization"

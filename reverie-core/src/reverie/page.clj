@@ -123,7 +123,8 @@
                          {:shortened-uri (util/shorten-uri
                                           (:uri request) (:path route))})]
       (with-access
-        (get-in request [:reverie :user]) (:required-roles options)
+        (get-in request [:reverie :user])
+        (:required-roles options)
         (handle-response
          options
          (if-let [page-route (first (filter #(route/match? % request) routes))]
@@ -150,7 +151,8 @@
   (get-route [this] route)
   (match? [this request]
     (with-access
-      (get-in request [:reverie :user]) (:required-roles options)
+      (get-in request [:reverie :user])
+      (:required-roles options)
       (let [pattern (re-pattern (str "^" (:path route)))]
         (if (re-find pattern (:uri request))
           (let [uri (:uri request)
