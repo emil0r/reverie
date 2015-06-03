@@ -5,9 +5,9 @@
 (defn raw [request object {:keys [text] :as properties} params]
   text)
 
-(defobject raw
+(defobject reverie/raw
   {:table "batteries_raw"
-   :migration {:path "src/reverie/sql/objects/migrations/image/"
+   :migration {:path "src/reverie/sql/objects/migrations/raw/"
                :automatic? true}
    :fields {:text {:name "Text"
                    :type :textarea
