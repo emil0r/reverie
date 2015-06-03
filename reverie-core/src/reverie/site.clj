@@ -147,8 +147,9 @@
                  ;; when
                  ;; the request method is a GET
                  ;; AND we can cache the page
-                 ;; AND the hit is nil -> cache the page
+                 ;; AND the hit is nil
                  ;; AND no session flash is present to skip it
+                 ;; -> cache the page
                  (when (and (nil? hit)
                             (= (:request-method request) :get)
                             (page/cache? p)
