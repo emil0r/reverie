@@ -2,6 +2,7 @@
   (:require [ez-image.core :as ez]
             [me.raynes.fs :as fs]
             [reverie.core :refer [defobject]]
+            [reverie.downstream :as downstream]
             [reverie.modules.filemanager :as fm]))
 
 (defn- image [request object {:keys [title alt src width height]} params]
@@ -13,9 +14,10 @@
                    :else nil)]
     (if (fs/exists? (fm/get-abs-path fm src))
       (if constrain
-        [:img {:src (ez/cache src constrain)
-               :title title :alt alt}]
-        [:img {:src src :title title :alt alt}]))))
+        [:img {:src (ez/cache src constrain) :title title :alt alt
+               :class (downstream/get :reverie.image/class)}]
+        [:img {:class (downstream/get :reverie.image/class)
+               :src src :title title :alt alt}]))))
 
 
 
