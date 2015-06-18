@@ -153,14 +153,16 @@
   `(try+
     ~@body
     (catch Object ~'e
-      (throw+ {:exception ~'e
+      (throw+ {:type ::try-query
+               :exception ~'e
                :query ~'query}))))
 
 (defmacro try-query-args [& body]
   `(try+
     ~@body
     (catch Object ~'e
-      (throw+ {:exception ~'e
+      (throw+ {:type ::try-query-args
+               :exception ~'e
                :query ~'query
                :args ~'args}))))
 
