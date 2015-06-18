@@ -52,6 +52,8 @@
        :java.util.Date (c/to-date value)
        :epoch (c/to-epoch value)
        :long (c/to-long value)
+       :joda (c/to-date-time value)
+       :org.joda.time.DateTime (c/to-date-time value)
        value)))
 
 
