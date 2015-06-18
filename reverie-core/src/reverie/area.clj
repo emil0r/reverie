@@ -65,7 +65,9 @@
     (if (contains? page :rendered)
       (get-in page [:rendered name])
       (let [edit? (get-in request [:reverie :edit?])
-            [before after] (if edit?
+            [before after] (if (and edit? ;; edit the page?
+                                    (zero? (page/version page)) ;; page is unpublished?
+                                    )
                              [(list
                                (str "<div class='reverie-area' area='"
                                     (util/kw->str name)
