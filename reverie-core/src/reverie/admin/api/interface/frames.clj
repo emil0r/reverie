@@ -43,7 +43,8 @@
               (merge (object/initial-fields (object/name object) {:database db})
                      (object/properties object)
                      (walk/keywordize-keys (:form-params request)))}]
-    (if (auth/authorize? (object/page object) user db "edit")
+    (if (and (auth/authorize? (object/page object) user db "edit")
+             (zero? (page/version (object/page object))))
       (html5
        (common/head "Object editing")
        [:body
@@ -62,7 +63,8 @@
   (let [db (get-in request [:reverie :database])
         user (get-in request [:reverie :user])
         object (db/get-object db object-id)]
-    (if (auth/authorize? (object/page object) user db "edit")
+    (if (and (auth/authorize? (object/page object) user db "edit")
+             (zero? (page/version (object/page object))))
       (do (db/update-object! db object-id (clean-params object params))
           (edit-object request page params))
       (html5

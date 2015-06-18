@@ -49,12 +49,10 @@
          page (db/get-page db serial false)]
      (match [(auth/authorize? page user db "edit") ;; are we authorized to edit the page?
              edit? ;; do we want to edit the page?
-             (zero? (page/version page)) ;; is the page unpublished?
              ]
-            [false _ _] false
-            [_ _ false] false
-            [_ true _] (editors/edit! page user)
-            [_ false _] (editors/stop-edit! user)))))
+            [false _] false
+            [_ true] (editors/edit! page user)
+            [_ false] (editors/stop-edit! user)))))
 
 
 (defn move-page! [request module {:keys [serial origo_serial movement]
