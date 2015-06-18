@@ -13,6 +13,8 @@
             reverie.module.entity
             reverie.modules.sql
             reverie.admin.index
+            reverie.admin.storage
+            reverie.admin.storage.sql
             reverie.modules.auth
             reverie.modules.filemanager
             reverie.modules.role))
