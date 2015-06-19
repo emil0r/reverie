@@ -381,7 +381,13 @@
            [:tr [:th "Created"] [:td (time/format (page/created page) :mysql)]]
            [:tr [:th "Updated"] [:td (time/format (page/updated page) :mysql)]]
            [:tr [:th]
-            [:td (hf/submit-button {:class "btn btn-primary"} "Publish this page")]]])]])
+            [:td
+             (hf/submit-button {:class "btn btn-primary"
+                                :name :__publish} "Publish this page")
+             (if (page/published? page)
+               (hf/submit-button {:class "btn btn-warning"
+                                  :style "margin-left: 15px;"
+                                  :name :__unpublish} "Unpublish this page"))]]])]])
       (html5
        [:head
         [:title "reverie - publish page"]]
@@ -390,19 +396,26 @@
 (defn handle-publish-page [request page {:keys [page-serial] :as params}]
   (let [db (get-in request [:reverie :database])
         user (get-in request [:reverie :user])
-        page (db/get-page db page-serial false)]
+        page (db/get-page db page-serial false)
+        publish? (contains? params :__publish)
+        unpublish? (contains? params :__unpublish)]
     (if (auth/authorize? page user db "edit")
       (html5
-       (common/head "reverie - publish page")
+       (common/head "reverie - un/publish page")
        [:body
         [:nav
-         [:div.container "Publish page"]]
+         [:div.container "un/publish page"]]
         [:div.container
-         (do (publish/publish-page! db (page/id page))
-             (when-let [cm (sys/get-cachemanager)]
-               (cache/evict! cm page))
-             [:h1 "Published page " (page/name page)])]])
+         (if publish?
+           (do (publish/publish-page! db (page/id page))
+               (when-let [cm (sys/get-cachemanager)]
+                 (cache/evict! cm page))
+              [:h1 "Published page " (page/name page)])
+           (do (publish/unpublish-page! db (page/id page))
+               (when-let [cm (sys/get-cachemanager)]
+                 (cache/evict! cm page))
+               [:h1 "Unpublished page " (page/name page)]))]])
       (html5
        [:head
-        [:title "reverie - publish page"]]
+        [:title "reverie - un/publish page"]]
        [:body "You are not allowed to edit this page"]))))
