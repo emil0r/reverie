@@ -1,20 +1,28 @@
 (ns reverie.nsloader
   (:require reverie.core
             reverie.settings
+
+            ;; define protocols
             reverie.database
-            reverie.database.sql
             reverie.migrator
-            reverie.migrator.sql
             reverie.page
             reverie.object
-            reverie.auth.sql
-            reverie.cache.sql
             reverie.module
             reverie.module.entity
-            reverie.modules.sql
-            reverie.admin.index
             reverie.admin.storage
+
+            ;; implement protocols
+            reverie.database.sql
             reverie.admin.storage.sql
+            reverie.migrator.sql
+            reverie.auth.sql
+            reverie.cache.sql
+            reverie.modules.sql
+
+            ;; load admin
+            reverie.admin.index
+
+            ;load modules
             reverie.modules.auth
             reverie.modules.filemanager
             reverie.modules.role))
