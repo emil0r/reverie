@@ -1,6 +1,7 @@
 (ns reverie.cache
   (:require [clojure.core.async :as async]
             [clojure.set :as set]
+            [clojure.string :as str]
             [com.stuartsierra.component :as component]
             [digest :refer [md5]]
             [reverie.object :as object]
@@ -8,8 +9,45 @@
             [reverie.render :as render]
             [reverie.scheduler :as scheduler]
             [taoensso.timbre :as log])
-  (:import [reverie CacheException]))
+  (:import [reverie CacheException RenderException]))
 
+;; atom of fns to be skipped by the caching, requiring
+;; them to be run every time a request comes in
+(def skip-fns (atom {}))
+;; are we caching during this rendering phase? control
+;; mechanism for the skip macro
+(def ^:dynamic *caching?* false)
+
+(defmacro skip
+  "Pass in a function to be skipped by the caching system. The function will be called every time for every request hitting the server. The functions must always take a request parameter"
+  [function]
+  (let [params (keys &env)]
+    (cond
+
+     (not (some #(= 'request %) params))
+     (throw (CacheException. "reverie.cache/skip requires a request var inside the function it is called from"))
+
+     :else
+     `(if *caching?*
+        (let [x# (str *ns* "/" '~function)]
+          (if (nil? (get @skip-fns (str *ns* "/" '~function)))
+            (swap! skip-fns assoc (keyword x#) ~function))
+          (str "#reverie.cache/skip-start " x# " #reverie.cache/skip-end"))
+        (~function ~'request)))))
+
+
+(defn- get-skipped-rendering [rendered skips]
+  (->> (str/split rendered #"\#reverie.cache/skip-start ")
+       (map (fn [fragment]
+              (if-let [skip (->> skips
+                                 (filter #(.startsWith fragment (str % " #reverie.cache/skip-end")))
+                                 first)]
+                [(keyword skip) (subs fragment
+                                      (+ (count skip)
+                                         (count " #reverie.cache/skip-end"))
+                                      (count fragment))]
+                fragment)))
+       flatten))
 
 (defprotocol ICacheStore
   (read-cache [store options key]
@@ -92,18 +130,36 @@
           :internal nil
           :c nil))))
 
+  render/IRender
+  (render [this _]
+    (throw (RenderException. "[component request] not implemented for reverie.cache/CacheManager")))
+  (render [this request hit]
+    (if (string? hit)
+      hit
+      (map (fn [fragment]
+             (if (keyword? fragment)
+               (if-let [f (get @skip-fns fragment)]
+                 (f request))
+               fragment)) hit)))
+
   ICacheMananger
   (cache! [this page request]
     (cache! this page (render/render page request) request))
   (cache! [this page rendered request]
     (let [k (get-hash-key hash-key-strategy page request)
           serial (page/serial page)
-          data (get @internal serial)]
+          data (get @internal serial)
+          skips (->> rendered
+                     (re-seq #"\#reverie.cache/skip-start ([^ ]*) \#reverie.cache/skip-end")
+                     (map last))
+          cache-this (if (empty? skips)
+                       rendered
+                       (get-skipped-rendering rendered skips))]
       (swap! internal assoc serial (set/union data #{k}))
       (write-cache store
                    {:request request}
                    k
-                   rendered)))
+                   cache-this)))
 
   (evict! [this page]
     (evict-cache! {:type :page-eviction

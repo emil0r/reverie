@@ -131,9 +131,12 @@
       (component/stop server))))
 
 
+(defn testus-rand-fn [request]
+  (rand-int 100))
+
 (defn testus-get-fn [request page params]
   (Thread/sleep 5000)
-  "get")
+  (str "get foo" (cache/skip testus-rand-fn)))
 (defn testus-post-fn [request page params]
   "post")
 
@@ -152,8 +155,9 @@
   )
 
 
-(-> @(client/get "http://127.0.0.1:9090/admin/frame/module/auth"
+(-> @(client/get ;;"http://127.0.0.1:9090/admin/frame/module/auth"
+      "http://127.0.0.1:9090/testus"
                  )
-    ;;:body
+    :body
     ;;slurp
     )

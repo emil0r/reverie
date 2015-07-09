@@ -113,53 +113,71 @@
                  hit (if (and (page/cache? p)
                               (= 1 (page/version p)))
                        (cache/lookup cachemanager p request))]
-             ;; can we even get a response?
-             (if-let [resp (or hit
-                               ;; only run this if hit is nil
-                               (if (or
-                                    (and
-                                     (page/type? p :raw)
-                                     (not (:forgery? (page/options p))))
-                                    (false? (:forgery? (page/options p))))
-                                 ;; if the type of page is raw and
-                                 ;; the forgery? option is not set to true
-                                 ;; OR the forgery? option is set to false
-                                 ;; then we render the page as is
-                                 (render/render p request)
-                                 ;; otherwise we wrap in in the anti-forgery middleware and run it
-                                 ((wrap-anti-forgery (render-page p)) request)))]
-               ;; final adjustments on the response before we return it
-               (let [final-resp
-                     (update-in
-                      (editors/assoc-admin-links
-                       p
-                       request
-                       (if (map? resp)
-                         (assoc resp :body (render-fn (:body resp)))
-                         {:status 200
-                          ;; body is either the hit or the rendered response
-                          :body (or hit
-                                    (render-fn resp))
-                          :headers {"Content-Type" "text/html; charset=utf-8;"}}))
-                      [:headers]
-                      merge
-                      (-> p page/options :headers))]
-                 ;; when
-                 ;; the request method is a GET
-                 ;; AND we can cache the page
-                 ;; AND the hit is nil
-                 ;; AND no session flash is present to skip it
-                 ;; -> cache the page
-                 (when (and (nil? hit)
-                            (= (:request-method request) :get)
-                            (page/cache? p)
-                            (not (session/flash-get :skip-cache? false))
-                            (= 1 (page/version p)))
-                   (cache/cache! cachemanager p (:body final-resp) request))
-                 final-resp)
-               ;; in the event of being unable to give a response we return a 404
-               (or (get system-pages 404)
-                   (response/get 404)))))
+
+             ;; check if we need to cache. needs to be done in the beginning
+             ;; for the reverie.cache/skip macro
+             ;; set really-cache? to true -> when...
+             ;; the request method is a GET
+             ;; AND we can cache the page
+             ;; AND the hit is nil
+             ;; AND no session flash is present to skip it
+             (let [really-cache? (and (nil? hit)
+                                      (= (:request-method request) :get)
+                                      (page/cache? p)
+                                      (not (session/flash-get :skip-cache? false))
+                                      (= 1 (page/version p)))]
+
+               ;; dynamically set *caching*? for the skip macro to work
+               (binding [cache/*caching?* really-cache?]
+                 ;; can we even get a response?
+                 (if-let [resp (or hit
+                                   ;; only run this if hit is nil
+                                   (if (or
+                                        (and
+                                         (page/type? p :raw)
+                                         (not (:forgery? (page/options p))))
+                                        (false? (:forgery? (page/options p))))
+                                     ;; if the type of page is raw AND the forgery? option is not set to true
+
+                                     ;; OR the forgery? option is set to false
+                                     ;; then we render the page as is
+                                     (render/render p request)
+                                     ;; otherwise we wrap in in the anti-forgery middleware and run it
+                                     ((wrap-anti-forgery (render-page p)) request)))]
+                   ;; final adjustments on the response before we return it
+                   (let [final-resp
+                         (update-in
+                          (editors/assoc-admin-links
+                           p
+                           request
+                           (if (map? resp)
+                             (assoc resp :body (render-fn (:body resp)))
+                             {:status 200
+                              ;; body is either the hit or the rendered response
+                              :body (if hit
+                                      (render-fn (render/render cachemanager request hit))
+                                      (render-fn resp))
+                              :headers {"Content-Type" "text/html; charset=utf-8;"}}))
+                          [:headers]
+                          merge
+                          (-> p page/options :headers))]
+                     ;; when really-cache?
+                     ;; -> cache the page
+                     ;; -> lookup the newly cached page
+                     ;; -> render the cached page for the skip macro
+                     ;; -> render using the render-fn
+                     ;; -> give back new final-resp
+                     (if really-cache?
+                       (let [body (:body final-resp)]
+                         (cache/cache! cachemanager p body request)
+                         (->> (cache/lookup cachemanager p request)
+                              (render/render cachemanager request)
+                              (render-fn)
+                              (assoc final-resp :body)))
+                       final-resp))
+                   ;; in the event of being unable to give a response we return a 404
+                   (or (get system-pages 404)
+                       (response/get 404)))))))
          ;; didn't find page -> 404
          (or (get system-pages 404)
              (response/get 404))))
