@@ -154,10 +154,8 @@
   (start-test-server)
   )
 
-
 (-> @(client/get ;;"http://127.0.0.1:9090/admin/frame/module/auth"
-      "http://127.0.0.1:9090/testus"
-                 )
+      "http://127.0.0.1:9090/testus")
     :body
     ;;slurp
     )

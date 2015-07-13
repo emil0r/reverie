@@ -8,21 +8,42 @@
             [reverie.time :as time]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
 
+(defn- evict-public? [meta]
+  (nil? (:user-id meta)))
+
+(defn- evict-private? [meta]
+  (not (nil? (:user-id meta))))
+
 (defrecord BasicStrategy []
   cache/IPruneStrategy
   (prune! [this cachemanager]
     (let [{db :database} cachemanager
-          pages (->> (db/query db {:select [:page_serial :value]
-                                   :from [:reverie_page_properties]
-                                   :where [:and
-                                           [:not= :value ""]
-                                           [:= :key "cache_clear_time"]]})
-                     (map (fn [{:keys [page_serial value]}]
-                            [page_serial (Integer/parseInt value)])))
-          minute (Integer/parseInt (time/format (t/now) "mm"))]
-      (doseq [[serial value] pages]
+          minute (Integer/parseInt (time/format (t/now) "mm"))
+          ;; for public view
+          public-pages
+          (->> (db/query db {:select [:page_serial :value]
+                             :from [:reverie_page_properties]
+                             :where [:and
+                                     [:not= :value ""]
+                                     [:= :key "cache_clear_time"]]})
+               (map (fn [{:keys [page_serial value]}]
+                      [page_serial (Integer/parseInt value)])))
+
+          ;; for private view (i.e., logged in users)
+          private-pages
+          (->> (db/query db {:select [:page_serial :value]
+                             :from [:reverie_page_properties]
+                             :where [:and
+                                     [:not= :value ""]
+                                     [:= :key "cache_clear_user_time"]]})
+               (map (fn [{:keys [page_serial value]}]
+                      [page_serial (Integer/parseInt value)])))]
+      (doseq [[serial value] public-pages]
         (when (zero? (mod minute value))
-          (cache/evict! cachemanager (page/page {:serial serial})))))))
+          (cache/evict! cachemanager (page/page {:serial serial}) evict-public?)))
+      (doseq [[serial value] private-pages]
+        (when (zero? (mod minute value))
+          (cache/evict! cachemanager (page/page {:serial serial}) evict-private?))))))
 
 (defn get-basicstrategy []
   (BasicStrategy.))

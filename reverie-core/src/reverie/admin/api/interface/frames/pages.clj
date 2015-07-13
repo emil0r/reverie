@@ -74,27 +74,34 @@
     :sections [{:fields [:name :slug :title]}
                {:name "Meta" :fields [:template :type :app]}]}))
 
+(def ^:private cache-clear-options [["Don't clear the cache based on time" ""]
+                                    ["Clear the cache every minute" 1]
+                                    ["Clear the cache every 5 minutes" 5]
+                                    ["Clear the cache every 10 minutes" 10]
+                                    ["Clear the cache every 15 minutes" 15]
+                                    ["Clear the cache every 20 minutes" 20]
+                                    ["Clear the cache every 30 minutes" 30]
+                                    ["Clear the cache every hour" 60]])
+
 (defn get-cache-form []
   (form/PageForm.
    {:save-as :_save-cache
     :fields
     {:cache_cache? {:name "Cache this page?"
                     :type :boolean}
+     :cache_clear_time {:name "Clear the cache based on time (for public view only)"
+                        :type :dropdown
+                        :options cache-clear-options
+                        :help "Set this option if you wish to clear the cache based on time"}
+
      :cache_key_user? {:name "Cache per user?"
                        :type :boolean
-                       :help "If set to true the caching system will cache the page on a per user basis. It will still cache the page for users not logged in"}
-     :cache_clear_time {:name "Clear the cache based on time"
-                        :type :dropdown
-                        :options [["Don't clear the cache based on time" nil]
-                                  ["Clear the cache every minute" 1]
-                                  ["Clear the cache every 5 minutes" 5]
-                                  ["Clear the cache every 10 minutes" 10]
-                                  ["Clear the cache every 15 minutes" 15]
-                                  ["Clear the cache every 20 minutes" 20]
-                                  ["Clear the cache every 30 minutes" 30]
-                                  ["Clear the cache every hour" 60]]
-                        :help "Set this option if you wish to clear the cache based on time"}}
-    :sections [{:name "Caching" :fields [:cache_cache? :cache_key_user? :cache_clear_time]}]}))
+                       :help "If set to true the caching system will cache the page on a per user basis in addition to the public view"}
+     :cache_clear_user_time {:name "Clear the cache based on time (for logged in users)"
+                             :type :dropdown
+                             :options cache-clear-options
+                             :help "Set this option if you wish to clear the cache based on time"}}
+    :sections [{:name "Caching" :fields [:cache_cache? :cache_clear_time :cache_key_user? :cache_clear_user_time]}]}))
 
 (defn get-menu-form []
   (form/PageForm.
@@ -264,7 +271,8 @@
                                           (page/raw page)
                                           {:cache_cache? (get-in (page/properties page) [:cache :cache?])
                                            :cache_key_user? (get-in (page/properties page) [:cache :key :user?])
-                                           :cache_clear_time (get-in (page/properties page) [:cache :clear :time])}
+                                           :cache_clear_time (get-in (page/properties page) [:cache :clear :time])
+                                           :cache_clear_user_time (get-in (page/properties page) [:cache :clear :user :time])}
                                           {:menu_hide? (get-in (page/properties page) [:menu :hide?])})
                                form-used)]
     (if (auth/authorize? page user db "edit")

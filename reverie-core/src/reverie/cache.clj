@@ -35,7 +35,6 @@
           (str "#reverie.cache/skip-start " x# " #reverie.cache/skip-end"))
         (~function ~'request)))))
 
-
 (defn- get-skipped-rendering [rendered skips]
   (->> (str/split rendered #"\#reverie.cache/skip-start ")
        (map (fn [fragment]
@@ -58,7 +57,7 @@
 
 (defprotocol ICacheMananger
   (cache! [manager page request] [manager page rendered request])
-  (evict! [manager page])
+  (evict! [manager page] [mananager page evict?-fn])
   (clear! [manager])
   (lookup [manager page request]))
 
@@ -73,26 +72,40 @@
   (get-hash-key [this page request]
     (let [cache-opts (merge (:cache (page/properties page))
                             (:cache (page/options page)))
-          extra (merge (if (get-in cache-opts [:key :user?])
-                         {:user-id (get-in request [:reverie :user :id])})
-                       (if (fn? (get-in cache-opts [:key :fn]))
-                         ((get-in cache-opts [:key :fn])
-                          {:page page
-                           :request request})))]
-      (->>  {:serial (page/serial page)
-             :uri (:uri request)
-             :query-string (:query-string request)}
-            (merge extra)
-            (map str)
-            sort
-            str
-            md5))))
+          meta (merge (if (get-in cache-opts [:key :user?])
+                        {:user-id (get-in request [:reverie :user :id])})
+                      (if (fn? (get-in cache-opts [:key :fn]))
+                        ((get-in cache-opts [:key :fn])
+                         {:page page
+                          :request request})))]
+      [;; key
+       (->>  {:serial (page/serial page)
+              :uri (:uri request)
+              :query-string (:query-string request)}
+             (merge meta)
+             (map str)
+             sort
+             str
+             md5)
+       ;; meta options
+       meta])))
 
 (defmulti evict-cache! :type)
-(defmethod evict-cache! :page-eviction [{:keys [page store internal]}]
-  (doseq [k (get @internal (page/serial page))]
-    (when k
-      (delete-cache store nil k))))
+(defmethod evict-cache! :page-eviction [{:keys [page store internal evict?]}]
+  (reduce
+   (fn [out [k k-meta]]
+     (if (nil? evict?)
+       ;; if we have no meta to mach against,
+       ;; we remove the page from cache
+       (do
+         (delete-cache store nil k)
+         (conj out k))
+       (if (evict? k-meta)
+         (do
+           (delete-cache store nil k)
+           (conj out k))
+         out)))
+   [] (get @internal (page/serial page))))
 (defmethod evict-cache! :default [_]
   nil)
 
@@ -146,7 +159,7 @@
   (cache! [this page request]
     (cache! this page (render/render page request) request))
   (cache! [this page rendered request]
-    (let [k (get-hash-key hash-key-strategy page request)
+    (let [[k k-meta] (get-hash-key hash-key-strategy page request)
           serial (page/serial page)
           data (get @internal serial)
           skips (->> rendered
@@ -155,7 +168,7 @@
           cache-this (if (empty? skips)
                        rendered
                        (get-skipped-rendering rendered skips))]
-      (swap! internal assoc serial (set/union data #{k}))
+      (swap! internal assoc serial (assoc data k k-meta))
       (write-cache store
                    {:request request}
                    k
@@ -168,12 +181,21 @@
                    :internal internal})
     (swap! internal dissoc (page/serial page)))
 
+  (evict! [this page evict?-fn]
+    (let [evicted (evict-cache! {:type :page-eviction
+                                 :page page
+                                 :store store
+                                 :internal internal
+                                 :evict? evict?-fn})
+          meta (get @internal (page/serial page))]
+      (swap! internal assoc (page/serial page) (reduce dissoc meta evicted))))
+
   (clear! [this]
     (clear-cache store))
 
   (lookup [this page request]
     (when (= (:request-method request) :get)
-      (read-cache store {:request request} (get-hash-key hash-key-strategy page request)))))
+      (read-cache store {:request request} (first (get-hash-key hash-key-strategy page request))))))
 
 (defn prune-task! [t {:keys [strategy cachemanager] :as opts}]
   (prune! strategy cachemanager))
