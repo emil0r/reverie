@@ -32,7 +32,7 @@
                         & [errors]]
   (let [{:keys [entity
                 id
-                form-params]} (process-request request module true)
+                form-params]} (process-request request module true :change-password)
         entity-data (m/get-data module entity params id)]
     {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
                            [(e/slug entity) (e/name entity)]
@@ -53,8 +53,8 @@
                              [:input.btn.btn-primary {:type :submit :id :_change :name :_change :value "Change password"}]])}))
 
 (defn- handle-change-password [request module params]
-  (let [{:keys [entity id pre-save-fn form-params errors]} (process-request request module true)
-        errors (select-errors errors [[:password] [:repeat-password]])
+  (let [{:keys [entity id pre-save-fn form-params errors]} (process-request request module true :change-password)
+        errors (select-errors errors [:password :repeat-password])
         redirect-url (join-uri base-link (m/slug module) (e/slug entity) (str id))]
     (if (contains? params :_cancel)
       (response/redirect redirect-url)
@@ -133,6 +133,7 @@
                     :password {:name "Password"
                                :type :html
                                :html password-html
+                               :validation-skip-stages [:edit]
                                :validation (vlad/chain
                                             (vlad/join
                                              (vlad/present [:password])

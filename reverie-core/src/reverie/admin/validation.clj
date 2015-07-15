@@ -5,6 +5,8 @@
 (defn validate [entity params]
   (let [validations (->> entity
                          (entity/fields)
+                         (remove (fn [[k v]]
+                                   (= (get params k) :reverie.modules.default/skip)))
                          (map (fn [[k v]]
                                 [(condp = (:type v)
                                    :datetime (vlad/matches #"^\d{4,4}-\d{2,2}-\d{2,2} \d{2,2}:\d{2,2}$" [k])

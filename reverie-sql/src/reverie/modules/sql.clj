@@ -78,6 +78,13 @@
                 out)))
           {} (keys (e/fields entity))))
 
+(defn scrub-data [data]
+  (reduce (fn [out [k v]]
+            (if (= v :reverie.modules.default/skip)
+              out
+              (assoc out k v)))
+          {} data))
+
 
 (extend-type Module
   m/IModuleDatabase
@@ -127,7 +134,9 @@
 
   (save-data [this entity id data]
     (let [db (:database this)
-          data (cast-data entity data)
+          data (->> data
+                    (cast-data entity)
+                    (scrub-data))
           table (get-entity-table entity)
           pk (get-pk entity)
           m2m (get-m2m-tables entity)]
@@ -151,7 +160,9 @@
 
   (add-data [this entity data]
     (let [db (:database this)
-          data (cast-data entity data)
+          data (->> data
+                    (cast-data entity)
+                    (scrub-data))
           table (get-entity-table entity)
           pk (get-pk entity)
           m2m (get-m2m-tables entity)

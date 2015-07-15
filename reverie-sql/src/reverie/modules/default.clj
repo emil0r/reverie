@@ -39,21 +39,32 @@
 
 (defn select-errors [errors pickings]
   (let [pickings (map (fn [error] [error]) pickings)]
-   (reduce (fn [out error]
-             (if (some #(= (or (:selector error)
-                               (:first-selector error)) %)
-                       pickings)
-               (conj out error)
-               out))
-           [] errors)))
+    (reduce (fn [out error]
+              (if (some #(= (or (:selector error)
+                                (:first-selector error)) %)
+                        pickings)
+                (conj out error)
+                out))
+            [] errors)))
 
-(defn process-request [request module edit?]
+(defn skip-stages [entity stage form-params]
+  (reduce (fn [out k]
+            (let [field (get (e/fields entity) k)
+                  skip-stages (:validation-skip-stages field)]
+              (if (some #(= stage %) skip-stages)
+                (assoc out k ::skip)
+                (assoc out k (get form-params k)))))
+          {} (keys (e/fields entity))))
+
+(defn process-request [request module edit? stage]
   (let [{:keys [entity id]} (:params request)
         entity (m/get-entity module entity)
         id (pk-cast id)
         post-fn (or (e/post-fn entity) (fn [x & _] x))
         pre-save-fn (or (e/pre-save-fn entity) (fn [x & _] x))
-        form-params (clean-form-params (post-fn (:form-params request) edit?))
+        form-params (->> (post-fn (:form-params request) edit?)
+                         (clean-form-params)
+                         (skip-stages entity stage))
         errors (validation/validate entity form-params)]
     {:entity entity
      :id id
@@ -197,7 +208,7 @@
                   id
                   pre-save-fn
                   form-params
-                  errors]} (process-request request module true)]
+                  errors]} (process-request request module true :edit)]
       (if (empty? errors)
         (do
           (m/save-data module entity id (pre-save-fn form-params true))
@@ -244,7 +255,7 @@
     (let [{:keys [entity
                   pre-save-fn
                   form-params
-                  errors]} (process-request request module true)]
+                  errors]} (process-request request module true :add)]
       (if (empty? errors)
         (let [entity-id (m/add-data module entity (pre-save-fn form-params false))]
           (cond
