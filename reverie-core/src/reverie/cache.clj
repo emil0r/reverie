@@ -21,7 +21,8 @@
 (defmacro skip
   "Pass in a function to be skipped by the caching system. The function will be called every time for every request hitting the server. The functions must always take a request parameter"
   [function]
-  (let [params (keys &env)]
+  (let [params (keys &env)
+        ns (str *ns*)]
     (cond
 
      (not (some #(= 'request %) params))
@@ -29,8 +30,8 @@
 
      :else
      `(if *caching?*
-        (let [x# (str *ns* "/" '~function)]
-          (if (nil? (get @skip-fns (str *ns* "/" '~function)))
+        (let [x# (str ~ns "/" '~function)]
+          (if (nil? (get @skip-fns x#))
             (swap! skip-fns assoc (keyword x#) ~function))
           (str "#reverie.cache/skip-start " x# " #reverie.cache/skip-end"))
         (~function ~'request)))))
