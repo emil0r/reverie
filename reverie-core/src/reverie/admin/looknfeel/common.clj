@@ -14,7 +14,8 @@
    (map link-css ["font-awesome.min.css"
                   "main.css"])
    [:meta {:charset "UTF-8"}]
-   [:title title]])
+   [:title title]
+   [:link {:rel "icon" :type "image/png" :href "/static/admin/img/reveriecms-logo.png"}]])
 
 (defn filter-links [filter-by links]
   (->> links

@@ -270,12 +270,12 @@ textarea {
   background-image: none;
 }
 a {
-  color: #cf1020;
+  color: #9400d3;
   text-decoration: none;
 }
 a:hover,
 a:focus {
-  color: #880b15;
+  color: #5e0086;
   text-decoration: underline;
 }
 a:focus {
@@ -349,7 +349,7 @@ cite {
   color: #999999;
 }
 .text-primary {
-  color: #cf1020;
+  color: #9400d3;
 }
 .text-warning {
   color: #c09853;
@@ -1829,8 +1829,8 @@ fieldset[disabled] .btn-default.active {
 }
 .btn-primary {
   color: #ffffff;
-  background-color: #cf1020;
-  border-color: #b70e1c;
+  background-color: #9400d3;
+  border-color: #8200ba;
 }
 .btn-primary:hover,
 .btn-primary:focus,
@@ -1838,8 +1838,8 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
   color: #ffffff;
-  background-color: #a90d1a;
-  border-color: #7f0a14;
+  background-color: #7700aa;
+  border-color: #57007c;
 }
 .btn-primary:active,
 .btn-primary.active,
@@ -1861,8 +1861,8 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
-  background-color: #cf1020;
-  border-color: #b70e1c;
+  background-color: #9400d3;
+  border-color: #8200ba;
 }
 .btn-secondary {
   color: #ffffff;
@@ -2050,7 +2050,7 @@ fieldset[disabled] .btn-info.active {
   border-color: #46b8da;
 }
 .btn-link {
-  color: #cf1020;
+  color: #9400d3;
   font-weight: normal;
   cursor: pointer;
   border-radius: 0;
@@ -2071,7 +2071,7 @@ fieldset[disabled] .btn-link {
 }
 .btn-link:hover,
 .btn-link:focus {
-  color: #880b15;
+  color: #5e0086;
   text-decoration: underline;
   background-color: transparent;
 }
@@ -2126,7 +2126,7 @@ body {
   color: #333333;
 }
 a {
-  color: #cf1020;
+  color: #9400d3;
   text-decoration: none;
 }
 h1,
@@ -2135,7 +2135,7 @@ h3,
 h4,
 h5,
 h6 {
-  color: #cf1020;
+  color: #9400d3;
 }
 #container {
   display: flex;
@@ -2159,7 +2159,7 @@ h6 {
 }
 .user-info {
   text-align: right;
-  border-bottom: 1px dotted #cf1020;
+  border-bottom: 1px dotted #9400d3;
   padding: 5px 10px;
 }
 .user-info span {
@@ -2175,19 +2175,19 @@ h6 {
   font-size: 20px;
 }
 .user-info .logout a {
-  color: #cf1020;
+  color: #9400d3;
   display: inline-block;
 }
 .tree {
   padding: 5px 5px 10px 5px;
-  border-bottom: 1px dotted #cf1020;
+  border-bottom: 1px dotted #9400d3;
 }
 .tree input[type=text] {
   width: 88%;
 }
 .tree i {
   margin-left: 5px;
-  color: #cf1020;
+  color: #9400d3;
 }
 .tree i:hover {
   cursor: pointer;
@@ -2225,7 +2225,7 @@ h6 {
 }
 #app-navigation {
   padding: 5px;
-  border-bottom: 1px dotted #cf1020;
+  border-bottom: 1px dotted #9400d3;
 }
 #app-navigation h2 {
   margin: 0 0 10px 0;
@@ -2261,7 +2261,7 @@ h6 {
 #tabbar {
   margin: 5px 0;
   padding-bottom: 5px;
-  border-bottom: 1px dotted #cf1020;
+  border-bottom: 1px dotted #9400d3;
   outline: 0;
 }
 #tabbar .goog-tab {
@@ -2270,13 +2270,13 @@ h6 {
   padding: 5px;
 }
 #tabbar .goog-tab:hover {
-  background-color: #cf1020;
+  background-color: #9400d3;
   color: #ffffff;
   cursor: pointer;
   box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
 }
 #tabbar .goog-tab-selected {
-  background-color: #cf1020;
+  background-color: #9400d3;
   color: #ffffff;
 }
 .modules ul {
@@ -2289,7 +2289,7 @@ h6 {
 }
 .modules ul li.active,
 .modules ul li:hover {
-  background-color: #cf1020;
+  background-color: #9400d3;
   color: #ffffff;
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
@@ -2339,7 +2339,7 @@ h6 {
 #files i[class^="icon-"] {
   margin-right: 10px;
   font-size: 1.5em;
-  color: #cf1020;
+  color: #9400d3;
 }
 #files i[class=icon-folder-close] {
   position: relative;
@@ -2352,13 +2352,13 @@ h6 {
 #files span:hover,
 #files span.selected {
   cursor: pointer;
-  color: #cf1020;
+  color: #9400d3;
 }
 #files span img {
   margin-left: 15px;
 }
 #files a:hover {
-  color: #cf1020;
+  color: #9400d3;
 }
 #url-picker {
   padding: 5px;
@@ -2396,8 +2396,8 @@ h6 {
   margin-bottom: 20px;
 }
 nav {
-  background-color: #000000;
-  color: #ffffff;
+  background-color: #eeeeee;
+  color: #000000;
   padding: 5px 10px;
 }
 nav ul {
@@ -2410,7 +2410,7 @@ nav ul li {
   display: inline-block;
 }
 nav ul li a {
-  color: #cf1020;
+  color: #9400d3;
 }
 .admin-interface .table {
   margin-left: 2px;
@@ -2426,8 +2426,8 @@ nav ul li a {
   margin: 0;
 }
 .admin-interface .options .btn-primary {
-  background-color: #cf1020;
-  border: 1px solid #ad0000;
+  background-color: #9400d3;
+  border: 1px solid #7200b1;
 }
 .admin-interface .content,
 .admin-interface .pagination,
@@ -2456,14 +2456,14 @@ nav ul li a {
 }
 .admin-interface .pagination ul li a {
   padding: 3px 6px;
-  background-color: #cf1020;
-  border: 1px solid #be000f;
+  background-color: #9400d3;
+  border: 1px solid #8300c2;
   color: #ffffff;
   border-radius: 3px;
 }
 .admin-interface .pagination ul li a:hover {
-  background-color: #ad0000;
-  border: 1px solid #9c0000;
+  background-color: #7200b1;
+  border: 1px solid #6100a0;
   box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
 }
 #edit-form,
@@ -2557,7 +2557,7 @@ nav ul li a {
 }
 #edit-form .bottom-bar span.delete i,
 #password-form .bottom-bar span.delete i {
-  color: #cf1020;
+  color: #9400d3;
   font-size: 1.3em;
   margin-right: 10px;
 }
@@ -2598,12 +2598,12 @@ nav ul li a {
   margin-right: 25px;
 }
 #password-form .buttons #_change {
-  background-color: #cf1020;
-  border: 1px solid #ad0000;
+  background-color: #9400d3;
+  border: 1px solid #7200b1;
 }
 #password-form .buttons #_change:hover {
-  background-color: #be000f;
-  border: 1px solid #9c0000;
+  background-color: #8300c2;
+  border: 1px solid #6100a0;
 }
 .row-form .hover:hover {
   cursor: pointer;
@@ -2645,10 +2645,10 @@ nav ul li a {
   color: #ffffff;
 }
 .datepicker > .datepicker_header > a:hover {
-  color: #cf1020;
+  color: #9400d3;
 }
 .datepicker > .datepicker_header > a:hover > svg > g > path {
-  fill: #cf1020;
+  fill: #9400d3;
   /* Icon button hover color */
 }
 .datepicker > .datepicker_header > a:active {
@@ -2712,7 +2712,7 @@ nav ul li a {
   padding: 10px;
 }
 .datepicker > .datepicker_inner_container > .datepicker_calendar > .datepicker_table > tbody > tr > th {
-  color: #cf1020;
+  color: #9400d3;
   width: 18px;
   font-size: small;
   font-weight: normal;
@@ -2751,7 +2751,7 @@ nav ul li a {
 }
 .datepicker > .datepicker_inner_container > .datepicker_calendar > .datepicker_table > tbody > tr > td.hover {
   color: #ffffff;
-  background-color: #cf1020;
+  background-color: #9400d3;
   cursor: pointer;
 }
 .datepicker > .datepicker_inner_container > .datepicker_timelist {
@@ -2827,7 +2827,7 @@ nav ul li a {
 }
 .datepicker > .datepicker_inner_container > .datepicker_timelist > div.timelist_item.hover {
   color: #ffffff;
-  background-color: #cf1020;
+  background-color: #9400d3;
 }
 .container.frame table.area-mapping {
   width: 100%;
