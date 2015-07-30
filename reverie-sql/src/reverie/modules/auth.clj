@@ -94,7 +94,7 @@
 (defmodule auth
   {:name "Authentication"
    :interface? true
-   :migration {:path "src/reverie/modules/migrations/auth/"
+   :migration {:path "resources/migrations/modules/auth/"
                :automatic? true}
    ;; TODO
    ;; roles and actions need to be controlled on a high

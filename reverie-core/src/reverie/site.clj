@@ -11,7 +11,8 @@
             [reverie.route :as route]
             [reverie.system :as sys]
             [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
-            [slingshot.slingshot :refer [try+]])
+            [slingshot.slingshot :refer [try+]]
+            reverie.RenderException)
   (:import [reverie RenderException]))
 
 (defonce routes (atom {}))

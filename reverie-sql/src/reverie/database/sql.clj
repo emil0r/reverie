@@ -28,7 +28,7 @@
   (result-set-read-column [pgobj metadata i]
     (vec (.getArray pgobj))))
 
-(defqueries "reverie/database/sql/queries.sql")
+(defqueries "queries/database.sql")
 
 
 (defn- bonecp-datasource

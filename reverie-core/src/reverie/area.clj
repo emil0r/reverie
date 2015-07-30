@@ -3,7 +3,8 @@
             [reverie.page :as page]
             [reverie.object :as object]
             [reverie.system :as sys]
-            [reverie.util :as util])
+            [reverie.util :as util]
+            reverie.RenderException)
   (:import [reverie RenderException]))
 
 (defn- get-object-menu []

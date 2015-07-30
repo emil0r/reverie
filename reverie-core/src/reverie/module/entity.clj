@@ -1,6 +1,7 @@
 (ns reverie.module.entity
   (:require [clojure.string :as str]
-            [reverie.util :as util])
+            [reverie.util :as util]
+            reverie.ModuleException)
   (:refer-clojure :exclude [name])
   (:import [reverie ModuleException]))
 

@@ -3,14 +3,14 @@
             [reverie.area :as a]
             [reverie.module :as module]
             [reverie.module.entity :as entity]
-            reverie.modules.default
             [reverie.render :as render]
             [reverie.route :as route]
             [reverie.site :as site]
             [reverie.system :as sys]
             [reverie.template :as template]
             [reverie.util :as util]
-            [slingshot.slingshot :refer [throw+]])
+            [slingshot.slingshot :refer [throw+]]
+            reverie.AreaException)
   (:import [reverie AreaException]))
 
 (defn raise-response [response]

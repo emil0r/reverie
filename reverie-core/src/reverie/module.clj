@@ -6,7 +6,9 @@
             [reverie.response :as response]
             [reverie.route :as route]
             [reverie.system :as sys]
-            [reverie.util :as util])
+            [reverie.util :as util]
+            reverie.ModuleException
+            reverie.RenderException)
   (:refer-clojure :exclude [list name])
   (:import [reverie ModuleException RenderException]))
 

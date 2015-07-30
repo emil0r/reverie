@@ -8,7 +8,9 @@
             [reverie.page :as page]
             [reverie.render :as render]
             [reverie.scheduler :as scheduler]
-            [taoensso.timbre :as log])
+            [taoensso.timbre :as log]
+            reverie.CacheException
+            reverie.RenderException)
   (:import [reverie CacheException RenderException]))
 
 ;; atom of fns to be skipped by the caching, requiring

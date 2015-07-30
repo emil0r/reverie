@@ -23,6 +23,7 @@
             reverie.admin.index
 
             ;load modules
+            reverie.modules.default
             reverie.modules.auth
             reverie.modules.filemanager
             reverie.modules.role))

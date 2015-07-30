@@ -8,7 +8,8 @@
             [reverie.render :as render]
             [reverie.response :as response]
             [reverie.system :as sys]
-            [reverie.util :as util])
+            [reverie.util :as util]
+            reverie.RenderException)
   (:import [reverie RenderException]))
 
 

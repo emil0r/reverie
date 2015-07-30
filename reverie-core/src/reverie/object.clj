@@ -4,7 +4,9 @@
             [reverie.render :as render]
             [reverie.module.entity :as entity]
             [reverie.route :as route]
-            [reverie.system :as sys])
+            [reverie.system :as sys]
+            reverie.RenderException
+            reverie.ObjectException)
   (:import [reverie RenderException ObjectException]))
 
 
