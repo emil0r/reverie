@@ -96,6 +96,8 @@
    (error-items field errors error-field-names)
    (form/label field (e/field-name entity field))
    (form/check-box (merge {:class :form-control}
+                          (if (:initial (e/field-options entity field))
+                            {:checked true})
                           (e/field-attribs entity field)) field (form-params field))
    (help-text (e/field-options entity field))])
 
