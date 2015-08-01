@@ -242,6 +242,7 @@
                             (str entity-id)
                             "delete")}
         [:i.icon-remove] "Delete"]])
+
     [:span.save-only.pull-right
      [:input {:type :submit :class "btn btn-primary"
               :id :_save :name :_save :value "Save"}]]
@@ -250,7 +251,11 @@
               :id :_continue :name :_continue :value "Save and continue"}]]
     [:span.save-add-new.pull-right
      [:input {:type :submit :class "btn btn-primary"
-              :id :_addanother :name :_addanother :value "Save and add another"}]]]))
+              :id :_addanother :name :_addanother :value "Save and add another"}]]
+    (if (e/versioned? entity)
+      [:span.publish.pull-right
+       [:input {:type :submit :class "btn btn-secondary"
+                :id :_publish :name :_publish :value "Publish"}]])]))
 
 
 (defn delete-entity-form [module entity {:keys [display-name]}]

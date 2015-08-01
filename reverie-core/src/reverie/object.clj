@@ -72,6 +72,8 @@
   (sections [this] (:sections options))
   (slug [this] (throw (ObjectException. "IModuleEntity/slug is not implemented for reverie.object/ReverieObject")))
   (table [this] (throw (ObjectException. "IModuleEntity/table is not implemented for reverie.object/ReverieObject")))
+  (versioned? [this]
+    (true? (:versioned? options)))
 
   render/IRender
   (render [this {:keys [request-method] :as request}]

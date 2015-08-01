@@ -37,6 +37,7 @@
   (walk/keywordize-keys
    (dissoc form-params
            "_method"
+           "_publish"
            "_continue"
            "_addanother"
            "_save")))

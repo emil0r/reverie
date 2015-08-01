@@ -36,7 +36,9 @@
   (slug [entity]
     "Get slug to be used as part of a URI")
   (table [entity]
-    "Get table of entity"))
+    "Get table of entity")
+  (versioned? [entity]
+    "Should the entity be versioned?"))
 
 
 (defrecord ModuleEntity [key options]
@@ -79,7 +81,9 @@
   (slug [this]
     (or (:slug options) (util/slugify key)))
   (table [this]
-    (or (:table options) key)))
+    (or (:table options) key))
+  (versioned? [this]
+    (true? (:versioned? options))))
 
 
 (defn module-entity [[key options]]
