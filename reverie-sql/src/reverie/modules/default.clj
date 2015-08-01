@@ -4,6 +4,10 @@
             [ez-web.paginator :as paginator]
             [ez-web.uri :refer [join-uri]]
             [ez-web.breadcrumbs :refer [crumb]]
+            ;; force the evaluation of fields in a certain order
+            ;; with the help of hiccup/html. this is mostly to
+            ;; get downstream to play nice
+            [hiccup.core :refer [html]]
             [reverie.admin.looknfeel.common :as common]
             [reverie.admin.looknfeel.form :refer [get-entity-form
                                                   delete-entity-form]]
@@ -75,22 +79,24 @@
 (defn list-entities [request module params]
   (with-access
     (get-in request [:reverie :user]) (:required-roles (m/options module))
-    {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]] {:last? true}))
+    (array-map
      :content
-     [:div.col-md-12
-      [:table.table.entities
-       [:tr
-        [:th "Name"]]
-       (map (fn [entity]
-              [:tr [:td [:a {:href (join-uri base-link (m/slug module) (e/slug entity))}
-                         (e/name entity)]]]) (m/entities module))]]}))
+     (html [:div.col-md-12
+            [:table.table.entities
+             [:tr
+              [:th "Name"]]
+             (map (fn [entity]
+                    [:tr [:td [:a {:href (join-uri base-link (m/slug module) (e/slug entity))}
+                               (e/name entity)]]]) (m/entities module))]])
+     :nav (html (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]] {:last? true}))))))
 
 (defn entity-does-not-exist [module]
-  {:nav
+  (array-map
+   :content [:div.col-md-12 "This entity does not exist"]
+   :nav
    [:ul
     [:li [:a {:href (join-uri base-link (m/slug module))}
-          "Back to the start"]]]
-   :content [:div.col-md-12 "This entity does not exist"]})
+          "Back to the start"]]]))
 
 (defn plural? [length singular plural]
   (if (> length 1)
@@ -157,26 +163,27 @@
                                :limit pagination-limit
                                :offset (* pagination-limit
                                           (dec page))})]
-        {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
-                               [(join-uri base-link (m/slug module) (e/slug entity))  (e/name entity)]]))
+        (array-map
          :content
-         (list
-          [:div.options
-           [:ul
-            [:li [:a.btn.btn-primary
-                  {:href (join-uri base-link (m/slug module) (e/slug entity) "add")}
-                  (str "Add " (e/name entity))]]]]
-          [:table.table.entity
-           [:tr
-            (map (fn [h]
-                   [:th (name h)]) display)]
-           (map (fn [d]
-                  [:tr (map (fn [k]
-                              [:td (if (= k (first display))
-                                     [:a {:href (join-uri base-link (m/slug module) (e/slug entity) (str (get d pk)))} (get d k)]
-                                     (get d k))]) display)])
-                data)])
-         :pagination (pagination request module entity)})
+         (html (list
+                [:div.options
+                 [:ul
+                  [:li [:a.btn.btn-primary
+                        {:href (join-uri base-link (m/slug module) (e/slug entity) "add")}
+                        (str "Add " (e/name entity))]]]]
+                [:table.table.entity
+                 [:tr
+                  (map (fn [h]
+                         [:th (name h)]) display)]
+                 (map (fn [d]
+                        [:tr (map (fn [k]
+                                    [:td (if (= k (first display))
+                                           [:a {:href (join-uri base-link (m/slug module) (e/slug entity) (str (get d pk)))} (get d k)]
+                                           (get d k))]) display)])
+                      data)]))
+         :nav (html (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
+                                     [(join-uri base-link (m/slug module) (e/slug entity))  (e/name entity)]])))
+         :pagination (html (pagination request module entity))))
       (entity-does-not-exist module))))
 
 (defn single-entity [request module {:keys [entity id] :as params}
@@ -186,19 +193,21 @@
     (if-let [entity (m/get-entity module entity)]
       (let [id (pk-cast id)
             entity-data (m/get-data module entity params id)]
-        {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
-                               [(e/slug entity) (e/name entity)]
-                               [(str id) (get-display-name entity entity-data)]]))
-         :content (get-entity-form
-                   module
-                   entity
-                   (merge {:entity-id id
-                           :errors errors
-                           :error-field-names (when-not (empty? errors)
-                                                (e/error-field-names entity))}
-                          (select-keys request [:uri])
-                          entity-data))
-         :footer (common/footer {:filter-by #{:base :editing}})})
+        (array-map
+         :content (html
+                   (get-entity-form
+                    module
+                    entity
+                    (merge {:entity-id id
+                            :errors errors
+                            :error-field-names (when-not (empty? errors)
+                                                 (e/error-field-names entity))}
+                           (select-keys request [:uri])
+                           entity-data)))
+         :nav (html (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
+                                     [(e/slug entity) (e/name entity)]
+                                     [(str id) (get-display-name entity entity-data)]])))
+         :footer (common/footer {:filter-by #{:base :editing}})))
       (entity-does-not-exist module))))
 
 (defn handle-single-entity [request module {:keys [entity id] :as params}]
@@ -234,19 +243,21 @@
     (get-in request [:reverie :user]) (:required-roles (m/options module))
     (if-let [entity (m/get-entity module entity)]
       (let [entity-data (m/get-data module entity params)]
-        {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
-                               [(e/slug entity) (e/name entity)]
-                               ["add" "Add"]]))
-         :content (get-entity-form
-                   module
-                   entity
-                   (merge
-                    {:errors errors
-                     :error-field-names (when-not (empty? errors)
-                                          (e/error-field-names entity))}
-                    (select-keys request [:uri])
-                    entity-data))
-         :footer (common/footer {:filter-by #{:base :editing}})})
+        (array-map
+         :content (html
+                   (get-entity-form
+                    module
+                    entity
+                    (merge
+                     {:errors errors
+                      :error-field-names (when-not (empty? errors)
+                                           (e/error-field-names entity))}
+                     (select-keys request [:uri])
+                     entity-data)))
+         :nav (html (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
+                                     [(e/slug entity) (e/name entity)]
+                                     ["add" "Add"]])))
+         :footer (common/footer {:filter-by #{:base :editing}})))
       (entity-does-not-exist module))))
 
 (defn handle-add-entity [request module {:keys [entity] :as params}]
@@ -283,14 +294,15 @@
     (if-let [entity (m/get-entity module entity)]
       (let [id (pk-cast id)
             entity-data (m/get-data module entity params id)]
-        {:nav (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
-                               [(e/slug entity) (e/name entity)]
-                               [(str id) (get (:form-params entity-data)
-                                              (first (e/display entity)))]
-                               ["delete" "Delete?"]]))
-         :content (delete-entity-form module entity
-                                      {:entity-id id
-                                       :display-name (get-display-name entity entity-data)})})
+        (array-map
+         :content (html (delete-entity-form module entity
+                                            {:entity-id id
+                                             :display-name (get-display-name entity entity-data)}))
+         :nav (html (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
+                                     [(e/slug entity) (e/name entity)]
+                                     [(str id) (get (:form-params entity-data)
+                                                    (first (e/display entity)))]
+                                     ["delete" "Delete?"]])))))
       (entity-does-not-exist module))))
 
 (defn handle-delete-entity [request module {:keys [entity id] :as params}]

@@ -56,6 +56,10 @@
                     out)))
               {}
               [:max :min :placeholder])))
+  (field-attrib [this field attribute]
+    (get-in options [:fields field attribute]))
+  (field-attrib [this field attribute default]
+    (get-in options [:fields field attribute] default))
   (field-name [this field]
     (or (get-in options [:fields field :name])
         (-> field clojure.core/name str/capitalize)))

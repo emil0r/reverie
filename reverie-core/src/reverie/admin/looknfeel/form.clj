@@ -1,9 +1,13 @@
 (ns reverie.admin.looknfeel.form
-  (:require [clojure.string :as str]
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
+            [clojure.set :as set]
+            [cheshire.core :refer [encode]]
             [ez-web.uri :refer [join-uri]]
             [hiccup.form :as form]
             [hiccup.util :refer [escape-html]]
             [reverie.admin.helpers :as helpers]
+            [reverie.downstream :as downstream]
             [reverie.object :as o]
             [reverie.module :as m]
             [reverie.module.entity :as e]
@@ -78,16 +82,39 @@
                                                error-field-names
                                                id module? module]
                                         :or {form-params {}}}]
-  [:div.form-row
-   (error-items field errors error-field-names)
-   (form/label field (e/field-name entity field))
-   [:span (merge {:field field
-                  :onclick (str "window.open('/admin/api/interface/frames/richtext/" (if module? (m/slug module) id) "?field=" (util/kw->str field) "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
-                 (e/field-attribs entity field))
-    "Edit text... "
-    [:i (take 100 (escape-html (str/replace (or (form-params field) "") #"<.*?>" "")))]]
-   (form/hidden-field field (form-params field))
-   (help-text (e/field-options entity field))])
+  (let [inline? (e/field-attrib entity field :inline? false)]
+    [:div.form-row
+     (error-items field errors error-field-names)
+     (form/label field (e/field-name entity field))
+     (if inline?
+
+       ;; inline. run the richtext editor in this field
+       (let [init-tinymce-js (slurp (io/resource "public/static/admin/js/init-tinymce-inline.js"))
+             format (e/field-attrib entity field :format)
+             down (downstream/get :inline-admin-js [])
+             filter-js (downstream/get :inline-admin-filter-js)
+             script (-> init-tinymce-js
+                        (str/replace  #"\|\|extra-formats\|\|"
+                                      (if format
+                                        (str ", " (encode {:title "Custom", :items format}))
+                                        ""))
+                        (str/replace #"\|selector\|" (name field)))]
+         ;; tell filter-by in the common/footer function to initialize
+         ;; all the js files required by :richtext
+         (downstream/assoc! :inline-admin-filter-js (set/union filter-js #{:richtext}))
+         ;; add the inline script to be rendered in common/footer
+         (downstream/assoc! :inline-admin-js (conj down script))
+         (form/text-area {:class :form-control} field (form-params field)))
+
+       ;; not inline. run the richtext editor in a popup
+       (list
+        [:span (merge {:field field
+                       :onclick (str "window.open('/admin/api/interface/frames/richtext/" (if module? (m/slug module) id) "?field=" (util/kw->str field) "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
+                      (e/field-attribs entity field))
+         "Edit text... "
+         [:i (take 100 (escape-html (str/replace (or (form-params field) "") #"<.*?>" "")))]]
+        (form/hidden-field field (form-params field))))
+     (help-text (e/field-options entity field))]))
 
 (defmethod row :boolean [entity field {:keys [form-params errors
                                               error-field-names]

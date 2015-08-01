@@ -17,6 +17,8 @@
     "Options for the field")
   (field-attribs [entity field]
     "Attributes for the field")
+  (field-attrib [entity field attribute] [entity field attribute default]
+    "Attribute for the field with optional default")
   (field-name [entity field]
     "Field name for the field")
   (error-field-names [entity]
@@ -58,6 +60,10 @@
                     out)))
               {}
               [:max :min :placeholder :for])))
+  (field-attrib [this field attribute]
+    (get-in options [:fields field attribute]))
+  (field-attrib [this field attribute default]
+    (get-in options [:fields field attribute] default))
   (field-name [this field]
     (or (get-in options [:fields field :name])
         (-> field clojure.core/name str/capitalize)))

@@ -1,5 +1,6 @@
 (ns reverie.admin.looknfeel.common
-  (:require [clojure.set :as set]))
+  (:require [clojure.set :as set]
+            [reverie.downstream :as downstream]))
 
 (defn link-css [link-name]
   [:link {:rel "stylesheet" :type "text/css"
@@ -7,7 +8,8 @@
 (defn link-js [src-name]
   [:script {:type "text/javascript"
             :src (str "/static/admin/js/" src-name)}])
-
+(defn inline-js [script]
+  [:script {:type "text/javascript"} script])
 
 (defn head [title & [{:keys [request] :as opts}]]
   [:head
@@ -26,7 +28,10 @@
 
 (defn footer [& [{:keys [request filter-by extra-js extra-css] :as opts}]]
   (let [dev? (get-in request [:reverie :dev?])
+        ;; union between downstream, dev? and filter-by/:all
+        ;; downstream should mostly come from form/row
         filter-by (set/union
+                   (downstream/get :inline-admin-filter-js)
                    (if dev? #{:dev})
                    (or filter-by #{:all}))]
     (list
@@ -56,4 +61,5 @@
                      [#{:richtext} "tinymce/tinymce.min.js"]
                      [#{:all :dev} "eyespy.js"]
                      [#{:all :dev} "init.js"]])
-                   extra-js)))))
+                   extra-js))
+     (map inline-js (downstream/get :inline-admin-js [])))))

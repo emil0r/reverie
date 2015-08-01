@@ -23,6 +23,8 @@
 (defprotocol IModule
   (interface? [entity]
     "Should this be automatically interfaced?")
+  (versioned? [module]
+    "Should the module be versioned?")
   (entities [module]
     "Entities of the module")
   (get-entity [module slug]
@@ -47,6 +49,8 @@
   (name [this] (or (:name options) (clojure.core/name name)))
   (slug [this]
     (or (:slug options) (util/slugify name)))
+  (versioned? [this]
+    (true? (:versioned? options)))
 
 
   render/IRender

@@ -58,6 +58,7 @@ var styles = [
 $(document).ready(function(){
   tinymce.init({
     selector: "textarea",
+    convert_urls: false,
     height: 450,
     width: 798,
     plugins: ["link image charmap contextmenu table code"],
