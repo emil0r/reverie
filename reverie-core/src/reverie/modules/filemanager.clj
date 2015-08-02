@@ -346,7 +346,8 @@
            (catch Exception e
              (format "Tried to open the image but got an error: %s" (str e)))))
     "Edit image..."]
-   (hf/hidden-field field (form-params field))])
+   (hf/hidden-field field (form-params field))
+   (form/help-text (e/field-options entity field))])
 
 (defn- filepicker [{:keys [query-params]} page {:keys [path]}]
   (let [up? (not (str/blank? path))
