@@ -1901,6 +1901,80 @@ fieldset[disabled] .btn-secondary.active {
   background-color: #0000b4;
   border-color: #00009b;
 }
+.btn-tertiary {
+  color: #ffffff;
+  background-color: #00c12b;
+  border-color: #00a825;
+}
+.btn-tertiary:hover,
+.btn-tertiary:focus,
+.btn-tertiary:active,
+.btn-tertiary.active,
+.open .dropdown-toggle.btn-tertiary {
+  color: #ffffff;
+  background-color: #009822;
+  border-color: #006a18;
+}
+.btn-tertiary:active,
+.btn-tertiary.active,
+.open .dropdown-toggle.btn-tertiary {
+  background-image: none;
+}
+.btn-tertiary.disabled,
+.btn-tertiary[disabled],
+fieldset[disabled] .btn-tertiary,
+.btn-tertiary.disabled:hover,
+.btn-tertiary[disabled]:hover,
+fieldset[disabled] .btn-tertiary:hover,
+.btn-tertiary.disabled:focus,
+.btn-tertiary[disabled]:focus,
+fieldset[disabled] .btn-tertiary:focus,
+.btn-tertiary.disabled:active,
+.btn-tertiary[disabled]:active,
+fieldset[disabled] .btn-tertiary:active,
+.btn-tertiary.disabled.active,
+.btn-tertiary[disabled].active,
+fieldset[disabled] .btn-tertiary.active {
+  background-color: #00c12b;
+  border-color: #00a825;
+}
+.btn-cancel {
+  color: #ffffff;
+  background-color: #000000;
+  border-color: #000000;
+}
+.btn-cancel:hover,
+.btn-cancel:focus,
+.btn-cancel:active,
+.btn-cancel.active,
+.open .dropdown-toggle.btn-cancel {
+  color: #ffffff;
+  background-color: #000000;
+  border-color: #000000;
+}
+.btn-cancel:active,
+.btn-cancel.active,
+.open .dropdown-toggle.btn-cancel {
+  background-image: none;
+}
+.btn-cancel.disabled,
+.btn-cancel[disabled],
+fieldset[disabled] .btn-cancel,
+.btn-cancel.disabled:hover,
+.btn-cancel[disabled]:hover,
+fieldset[disabled] .btn-cancel:hover,
+.btn-cancel.disabled:focus,
+.btn-cancel[disabled]:focus,
+fieldset[disabled] .btn-cancel:focus,
+.btn-cancel.disabled:active,
+.btn-cancel[disabled]:active,
+fieldset[disabled] .btn-cancel:active,
+.btn-cancel.disabled.active,
+.btn-cancel[disabled].active,
+fieldset[disabled] .btn-cancel.active {
+  background-color: #000000;
+  border-color: #000000;
+}
 .btn-warning {
   color: #ffffff;
   background-color: #f0ad4e;
@@ -2552,7 +2626,9 @@ nav ul li a {
 #edit-form .bottom-bar span.save-continue-editing,
 #password-form .bottom-bar span.save-continue-editing,
 #edit-form .bottom-bar span.save-only,
-#password-form .bottom-bar span.save-only {
+#password-form .bottom-bar span.save-only,
+#edit-form .bottom-bar span.unpublish,
+#password-form .bottom-bar span.unpublish {
   margin-left: 15px;
 }
 #edit-form .bottom-bar span.delete i,

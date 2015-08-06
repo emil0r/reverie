@@ -38,6 +38,7 @@
    (dissoc form-params
            "_method"
            "_publish"
+           "_unpublish"
            "_continue"
            "_addanother"
            "_save")))
@@ -188,7 +189,7 @@
       (entity-does-not-exist module))))
 
 (defn single-entity [request module {:keys [entity id] :as params}
-                     & [{:keys [errors]}]]
+                     & [{:keys [errors published?]}]]
   (with-access
     (get-in request [:reverie :user]) (:required-roles (m/options module))
     (if-let [entity (m/get-entity module entity)]
@@ -201,6 +202,7 @@
                     entity
                     (merge {:entity-id id
                             :errors errors
+                            :published? published?
                             :error-field-names (when-not (empty? errors)
                                                  (e/error-field-names entity))}
                            (select-keys request [:uri])
@@ -234,12 +236,20 @@
                                         (m/slug module)
                                         (e/slug entity)))
 
+           (contains? params :_publish)
+           (do (m/publish-data module entity id)
+               (single-entity request module params {:published? true}))
+
+           (contains? params :_unpublish)
+           (do (m/unpublish-data module entity id)
+               (single-entity request module params {:unpublished? true}))
+
            :else
            (single-entity request module params)))
         (single-entity request module params {:errors errors})))))
 
 (defn add-entity [request module {:keys [entity] :as params}
-                  & [{:keys [errors]}]]
+                  & [{:keys [errors published?]}]]
   (with-access
     (get-in request [:reverie :user]) (:required-roles (m/options module))
     (if-let [entity (m/get-entity module entity)]
@@ -251,6 +261,7 @@
                     entity
                     (merge
                      {:errors errors
+                      :published? published?
                       :error-field-names (when-not (empty? errors)
                                            (e/error-field-names entity))}
                      (select-keys request [:uri])
@@ -281,6 +292,14 @@
            (response/redirect (join-uri base-link
                                         (m/slug module)
                                         (e/slug entity)))
+
+           (contains? params :_publish)
+           (do (m/publish-data module entity entity-id)
+               (add-entity request module params {:published? true}))
+
+           (contains? params :_unpublish)
+           (do (m/unpublish-data module entity entity-id)
+               (add-entity request module params {:unpublished? true}))
 
            :else
            (response/redirect (join-uri base-link

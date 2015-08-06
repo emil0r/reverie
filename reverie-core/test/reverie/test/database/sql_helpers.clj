@@ -46,6 +46,7 @@
                     "migrations_auth" "src/reverie/modules/migrations/auth/"
                     "migrations_reverie_text" "src/reverie/sql/objects/migrations/text/"
                     "migrations_reverie_image" "src/reverie/sql/objects/migrations/image/"
+                    "migrations_blog_module" "resources/migrations/modules/blog"
                     "migrations" "resources/migrations/postgresql"
                     ))]
     (doseq [mmap mmaps]

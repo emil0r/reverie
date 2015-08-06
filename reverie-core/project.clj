@@ -29,8 +29,8 @@
   :omit-source true
   :profiles {:dev {:dependencies [[midje "1.6.3"]
                                   [ring-mock "0.1.5"]
-                                  ;;[reverie-sql "0.1.0-SNAPSHOT"]
-                                  ;;[reverie-batteries "0.1.0-SNAPSHOT"]
+                                  [reverie-sql "0.1.0-SNAPSHOT"]
+                                  [reverie-batteries "0.1.0-SNAPSHOT"]
                                   [spyscope "0.1.5"]
                                   [http-kit "2.1.19"]
                                   [org.clojure/tools.namespace "0.2.9"]

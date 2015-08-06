@@ -252,10 +252,14 @@
     [:span.save-add-new.pull-right
      [:input {:type :submit :class "btn btn-primary"
               :id :_addanother :name :_addanother :value "Save and add another"}]]
-    (if (e/versioned? entity)
-      [:span.publish.pull-right
-       [:input {:type :submit :class "btn btn-secondary"
-                :id :_publish :name :_publish :value "Publish"}]])]))
+    (if (e/publishing? entity)
+      (list
+       [:span.unpublish.pull-right
+        [:input {:type :submit :class "btn btn-cancel"
+                 :id :_unpublish :name :_unpublish :value "Unpublish"}]]
+       [:span.publish.pull-right
+        [:input {:type :submit :class "btn btn-secondary"
+                 :id :_publish :name :_publish :value "Publish"}]]))]))
 
 
 (defn delete-entity-form [module entity {:keys [display-name]}]

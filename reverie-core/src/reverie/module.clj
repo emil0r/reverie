@@ -18,7 +18,9 @@
     [module entity params id])
   (save-data [module entity id data])
   (add-data [module entity data])
-  (delete-data [module entity id] [module entity id cascade?]))
+  (delete-data [module entity id] [module entity id cascade?])
+  (publish-data [module entity id])
+  (unpublish-data [module entity id]))
 
 (defprotocol IModule
   (interface? [entity]

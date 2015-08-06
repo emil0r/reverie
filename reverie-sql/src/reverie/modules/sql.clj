@@ -208,4 +208,10 @@
                      (db/query! db {:delete-from table
                                     :where [:= this id]})))))
              (db/query! db {:delete-from table
-                            :where [:= pk id]})))))))
+                            :where [:= pk id]}))))))
+  (publish-data [this entity id]
+    (if-let [publish-fn (->> entity :publishing :publish-fn)]
+      (publish-fn this entity id)))
+  (unpublish-data [this entity id]
+    (if-let [publish-fn (->> entity :publishing :unpublish-fn)]
+      (publish-fn this entity id))))
