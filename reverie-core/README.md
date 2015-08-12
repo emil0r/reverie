@@ -1,14 +1,13 @@
 # reverie-core
 
-A Clojure library designed to ... well, that part is up to you.
+The core for reverie/CMS. Mostly protocols and other non-specific implementation details.
 
 ## Usage
 
-FIXME
+Use together with reverie-sql and optionally reverie-batteries.
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2014-2015 Emil Bengtsson
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.

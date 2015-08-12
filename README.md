@@ -1,16 +1,18 @@
 # reverie
 
-A CMS written in Clojure
+![](https://raw.githubusercontent.com/emil0r/reverie/master/reverie-core/resources/public/static/admin/img/reveriecms.png)
 
-## CMS?
-Content Management System. Useful if you don't want to fill in the same pieces of information again, and again, and again, and ...
+A CMS written in Clojure. Because I can.
 
 ## Usage
 
-Coming soon.
+Coming soon, also known as "Working On It" ™. The CMS is working fully and with a bit of work you can get it up and running if you install reverie-template and follow the instructions (ish). reverie/CMS works only with PostgreSQL at the moment.
 
 ## License
 
 Copyright © 2012-2015 Emil Bengtsson
 
-Distributed under the Eclipse Public License, the same as Clojure.
+Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
+
+
+Coram Deo
