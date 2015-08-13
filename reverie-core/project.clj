@@ -25,8 +25,6 @@
                  [im.chit/cronj "1.4.3"]
                  [digest "1.4.4"]
                  [org.clojure/core.memoize "0.5.6"]]
-  :aot :all
-  :omit-source true
   :profiles {:dev {:dependencies [[midje "1.6.3"]
                                   [ring-mock "0.1.5"]
                                   [reverie-sql "0.1.0-SNAPSHOT"]
