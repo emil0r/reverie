@@ -2569,6 +2569,10 @@ nav ul li a {
   padding-bottom: 10px;
   border-bottom: 1px solid #eeeeee;
 }
+#edit-form fieldset .form-row .inline-richtext,
+#password-form fieldset .form-row .inline-richtext {
+  min-height: 450px;
+}
 #edit-form fieldset .form-row:last-child,
 #password-form fieldset .form-row:last-child {
   border-bottom: 0;
@@ -2681,7 +2685,7 @@ nav ul li a {
   background-color: #8300c2;
   border: 1px solid #6100a0;
 }
-.row-form .hover:hover {
+.form-row .hover:hover {
   cursor: pointer;
 }
 #auth {

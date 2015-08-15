@@ -49,8 +49,8 @@
 
 (defmethod row :html [entity field data]
   (if-let [f (:html (e/field-options entity field))]
-    [:div.row-form (f entity field data)]
-    [:div.row-form]))
+    [:div.form-row (f entity field data)]
+    [:div.form-row]))
 
 (defmethod row :m2m [entity field {:keys [form-params m2m-data errors
                                           error-field-names]
@@ -104,7 +104,7 @@
          (downstream/assoc! :inline-admin-filter-js (set/union filter-js #{:richtext}))
          ;; add the inline script to be rendered in common/footer
          (downstream/assoc! :inline-admin-js (conj down script))
-         (form/text-area {:class :form-control} field (form-params field)))
+         (form/text-area {:class "form-control inline-richtext"} field (form-params field)))
 
        ;; not inline. run the richtext editor in a popup
        (list
@@ -131,7 +131,8 @@
 
 
 (defmethod row :dropdown [entity field {:keys [form-params errors
-                                               error-field-names]
+                                               error-field-names
+                                               module]
                                         :or {form-params {}}}]
   (let [options (:options (e/field entity field))]
     [:div.form-row
@@ -142,7 +143,7 @@
                       (e/field-attribs entity field))
                      field
                      (if (fn? options)
-                       (options)
+                       (options {:database (:database module)})
                        options)
                      (form-params field))
      (help-text (e/field-options entity field))]))
