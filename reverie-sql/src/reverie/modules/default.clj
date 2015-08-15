@@ -189,7 +189,7 @@
       (entity-does-not-exist module))))
 
 (defn single-entity [request module {:keys [entity id] :as params}
-                     & [{:keys [errors published?]}]]
+                     & [{:keys [errors published? unpublished?]}]]
   (with-access
     (get-in request [:reverie :user]) (:required-roles (m/options module))
     (if-let [entity (m/get-entity module entity)]
@@ -202,7 +202,9 @@
                     entity
                     (merge {:entity-id id
                             :errors errors
+                            :display-name (get-display-name entity entity-data)
                             :published? published?
+                            :unpublished? unpublished?
                             :error-field-names (when-not (empty? errors)
                                                  (e/error-field-names entity))}
                            (select-keys request [:uri])
@@ -262,6 +264,7 @@
                     (merge
                      {:errors errors
                       :published? published?
+                      :display-name (get-display-name entity entity-data)
                       :error-field-names (when-not (empty? errors)
                                            (e/error-field-names entity))}
                      (select-keys request [:uri])
@@ -296,10 +299,6 @@
            (contains? params :_publish)
            (do (m/publish-data module entity entity-id)
                (add-entity request module params {:published? true}))
-
-           (contains? params :_unpublish)
-           (do (m/unpublish-data module entity entity-id)
-               (add-entity request module params {:unpublished? true}))
 
            :else
            (response/redirect (join-uri base-link

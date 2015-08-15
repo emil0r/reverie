@@ -220,10 +220,21 @@
 
 
 
-(defn get-entity-form [module entity {:keys [entity-id] :as data}]
+ (defn get-entity-form [module entity {:keys [entity-id
+                                             published?
+                                             unpublished?
+                                             display-name] :as data}]
   (form/form-to
    {:id :edit-form}
    ["POST" ""]
+   (when published?
+     [:h2 (format "Published %s: %s"
+                  (str/lower-case (e/name entity))
+                  display-name) ])
+   (when unpublished?
+     [:h2 (format "Unpublished %s: %s"
+                  (str/lower-case (e/name entity))
+                  display-name)])
    (anti-forgery-field)
    (map (fn [{:keys [name fields]}]
           [:fieldset
@@ -255,9 +266,13 @@
               :id :_addanother :name :_addanother :value "Save and add another"}]]
     (if (e/publishing? entity)
       (list
-       [:span.unpublish.pull-right
-        [:input {:type :submit :class "btn btn-cancel"
-                 :id :_unpublish :name :_unpublish :value "Unpublish"}]]
+       (let [published?-fn (-> entity :options :publishing :published?-fn)]
+         (when (and entity-id
+                    published?-fn
+                    (published?-fn module entity entity-id))
+           [:span.unpublish.pull-right
+            [:input {:type :submit :class "btn btn-cancel"
+                     :id :_unpublish :name :_unpublish :value "Unpublish"}]]))
        [:span.publish.pull-right
         [:input {:type :submit :class "btn btn-secondary"
                  :id :_publish :name :_publish :value "Publish"}]]))]))
