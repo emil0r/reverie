@@ -1,0 +1,3 @@
+#!/bin/sh
+
+lessc less/editing/admin.editing.less reverie-core/resources/public/static/admin/css/editing.css
