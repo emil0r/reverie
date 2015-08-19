@@ -91,6 +91,9 @@ nav {
             margin: 10px 0;
             padding-bottom: 10px;
             border-bottom: 1px solid @gray-lighter;
+            .inline-richtext {
+                min-height: 450px;
+            }
             &:last-child {
                 border-bottom: 0;
                 padding-bottom: 0;
@@ -132,7 +135,8 @@ nav {
     .bottom-bar {
         span.save-add-new,
         span.save-continue-editing,
-        span.save-only {
+        span.save-only,
+        span.unpublish {
             margin-left: 15px;
         }
         margin-bottom: 20px;
@@ -181,7 +185,7 @@ nav {
 }
 
 
-.row-form {
+.form-row {
     .hover {
         &:hover {
             cursor: pointer;

@@ -49,8 +49,8 @@
 
 (defmethod row :html [entity field data]
   (if-let [f (:html (e/field-options entity field))]
-    [:div.row-form (f entity field data)]
-    [:div.row-form]))
+    [:div.form-row (f entity field data)]
+    [:div.form-row]))
 
 (defmethod row :m2m [entity field {:keys [form-params m2m-data errors
                                           error-field-names]
@@ -104,7 +104,7 @@
          (downstream/assoc! :inline-admin-filter-js (set/union filter-js #{:richtext}))
          ;; add the inline script to be rendered in common/footer
          (downstream/assoc! :inline-admin-js (conj down script))
-         (form/text-area {:class :form-control} field (form-params field)))
+         (form/text-area {:class "form-control inline-richtext"} field (form-params field)))
 
        ;; not inline. run the richtext editor in a popup
        (list
@@ -131,7 +131,8 @@
 
 
 (defmethod row :dropdown [entity field {:keys [form-params errors
-                                               error-field-names]
+                                               error-field-names
+                                               module]
                                         :or {form-params {}}}]
   (let [options (:options (e/field entity field))]
     [:div.form-row
@@ -142,7 +143,7 @@
                       (e/field-attribs entity field))
                      field
                      (if (fn? options)
-                       (options)
+                       (options {:database (:database module)})
                        options)
                      (form-params field))
      (help-text (e/field-options entity field))]))
@@ -219,10 +220,21 @@
 
 
 
-(defn get-entity-form [module entity {:keys [entity-id] :as data}]
+ (defn get-entity-form [module entity {:keys [entity-id
+                                             published?
+                                             unpublished?
+                                             display-name] :as data}]
   (form/form-to
    {:id :edit-form}
    ["POST" ""]
+   (when published?
+     [:h2 (format "Published %s: %s"
+                  (str/lower-case (e/name entity))
+                  display-name) ])
+   (when unpublished?
+     [:h2 (format "Unpublished %s: %s"
+                  (str/lower-case (e/name entity))
+                  display-name)])
    (anti-forgery-field)
    (map (fn [{:keys [name fields]}]
           [:fieldset
@@ -252,10 +264,18 @@
     [:span.save-add-new.pull-right
      [:input {:type :submit :class "btn btn-primary"
               :id :_addanother :name :_addanother :value "Save and add another"}]]
-    (if (e/versioned? entity)
-      [:span.publish.pull-right
-       [:input {:type :submit :class "btn btn-secondary"
-                :id :_publish :name :_publish :value "Publish"}]])]))
+    (if (e/publishing? entity)
+      (list
+       (let [published?-fn (-> entity :options :publishing :published?-fn)]
+         (when (and entity-id
+                    published?-fn
+                    (published?-fn module entity entity-id))
+           [:span.unpublish.pull-right
+            [:input {:type :submit :class "btn btn-cancel"
+                     :id :_unpublish :name :_unpublish :value "Unpublish"}]]))
+       [:span.publish.pull-right
+        [:input {:type :submit :class "btn btn-secondary"
+                 :id :_publish :name :_publish :value "Publish"}]]))]))
 
 
 (defn delete-entity-form [module entity {:keys [display-name]}]

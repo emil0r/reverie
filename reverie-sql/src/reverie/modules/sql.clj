@@ -189,7 +189,10 @@
     ([this entity id cascade?]
        (let [db (:database this)
              table (get-entity-table entity)
-             pk (get-pk entity)]
+             pk (get-pk entity)
+             delete-fn (->> entity :options :publishing :delete-fn)]
+         (when delete-fn
+           (delete-fn this entity id))
          (try
            ;; first try a sql based cascade if cascade? is true
            (db/query! db {:delete-from (if cascade?
@@ -208,4 +211,10 @@
                      (db/query! db {:delete-from table
                                     :where [:= this id]})))))
              (db/query! db {:delete-from table
-                            :where [:= pk id]})))))))
+                            :where [:= pk id]}))))))
+  (publish-data [this entity id]
+    (if-let [publish-fn (->> entity :options :publishing :publish-fn)]
+      (publish-fn this entity id)))
+  (unpublish-data [this entity id]
+    (if-let [publish-fn (->> entity :options :publishing :unpublish-fn)]
+      (publish-fn this entity id))))
