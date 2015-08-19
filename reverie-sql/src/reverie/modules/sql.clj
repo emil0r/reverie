@@ -190,7 +190,7 @@
        (let [db (:database this)
              table (get-entity-table entity)
              pk (get-pk entity)
-             delete-fn (->> entity :publishing :delete-fn)]
+             delete-fn (->> entity :options :publishing :delete-fn)]
          (when delete-fn
            (delete-fn this entity id))
          (try
