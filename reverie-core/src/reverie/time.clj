@@ -2,7 +2,8 @@
   (:refer-clojure :exclude [format])
   (:require [clj-time.core :as t]
             [clj-time.coerce :as c]
-            [clj-time.format :as f]))
+            [clj-time.format :as f]
+            clj-time.jdbc))
 
 (defmulti coerce (fn [value & args] (class value)))
 

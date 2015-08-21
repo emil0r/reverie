@@ -7,6 +7,7 @@
                  [ring/ring-anti-forgery "1.0.0"]
                  [ring/ring-core "1.3.1"]
                  [clout "2.1.0"]
+                 [clj-time "0.11.0"]
                  [bultitude "0.2.6"]
                  [slingshot "0.12.2"]
                  [buddy/buddy-core "0.6.0"]
@@ -26,13 +27,16 @@
                  [digest "1.4.4"]
                  [org.clojure/core.memoize "0.5.6"]]
   :plugins [[lein-shell "0.4.1"]]
-  :prep-tasks [["shell" "tools/editing.compile"]
-               ["shell" "tools/admin.compile"]
+  :prep-tasks [["shell" "compile-editing"]
+               ["shell" "compile-admin"]
                "javac" "compile"]
+  :shell {:dir ".."
+          :commands {"compile-editing" {:default-command "tools/editing.compile"}
+                     "compile-admin" {:default-command "tools/admin.compile"}}}
   :profiles {:dev {:dependencies [[midje "1.6.3"]
                                   [ring-mock "0.1.5"]
-                                  ;; [reverie-sql "0.1.0-SNAPSHOT"]
-                                  ;; [reverie-batteries "0.1.0-SNAPSHOT"]
+                                  [reverie-sql "0.1.0-SNAPSHOT"]
+                                  [reverie-batteries "0.1.0-SNAPSHOT"]
                                   [spyscope "0.1.5"]
                                   [http-kit "2.1.19"]
                                   [org.clojure/tools.namespace "0.2.9"]
