@@ -4,7 +4,7 @@
 
 
 
-(defn get-template-names []
+(defn get-template-names [_]
   (->> @sys/storage
        :templates
        (map (fn [[k _]]
@@ -15,7 +15,7 @@
 
 
 
-(defn get-app-names []
+(defn get-app-names [_]
   (concat
    [""]
    (->> @sys/storage
