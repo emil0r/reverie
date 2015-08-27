@@ -26,6 +26,12 @@
                  [im.chit/cronj "1.4.3"]
                  [digest "1.4.4"]
                  [org.clojure/core.memoize "0.5.6"]]
+  :aot [reverie.AreaException
+        reverie.CacheException
+        reverie.DatabaseException
+        reverie.ModuleException
+        reverie.ObjectException
+        reverie.RenderException]
   :plugins [[lein-shell "0.4.1"]]
   :prep-tasks [["shell" "compile-editing"]
                ["shell" "compile-admin"]
@@ -45,5 +51,4 @@
                                 (require 'spyscope.repl)
                                 (require '[clojure.tools.namespace.repl :refer [refresh]])]
                    :resource-paths ["../reverie-sql/resources"]
-                   :plugins [[lein-midje "3.1.3"]
-                             [lein-cljsbuild "1.0.5"]]}})
+                   :plugins [[lein-midje "3.1.3"]]}})
