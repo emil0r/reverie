@@ -79,12 +79,14 @@
   (fn [{:keys [uri] :as request}]
     (let [db (sys/get-db)
           user (auth/get-user db)
-          filemanager (sys/get-filemanager)]
+          filemanager (sys/get-filemanager)
+          settings (sys/get-settings)]
       (handler (assoc request
                  :reverie {:user user
                            :database db
                            :filemanager filemanager
-                           :dev? dev?})))))
+                           :dev? dev?
+                           :settings settings})))))
 
 (defn- session-token [request]
   (get-in request [:session :ring.middleware.anti-forgery/anti-forgery-token]))
