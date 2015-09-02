@@ -18,7 +18,6 @@
                                         wrap-error-log
                                         wrap-forker
                                         wrap-reverie-data]]
-            [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file :refer [wrap-file]] ;; research for later
             [ring.middleware.file-info :refer [wrap-file-info]]
@@ -67,7 +66,8 @@
                                  [wrap-authorized]
                                  [wrap-reverie-data {:dev? dev?}]
                                  [wrap-csrf-token]
-                                 [wrap-anti-forgery]
+                                 ;; we are not wrapping wrap-anti-forgery here
+                                 ;; because it's taken care of in reverie.site/render
                                  [wrap-content-type (:content-type middleware-options)]
                                  [wrap-content-type]
                                  [wrap-keyword-params]
