@@ -44,5 +44,8 @@
     ([this _] nil)
     ([this _ _] nil)))
 
-(defn response [status & args]
+(defn raise [status & args]
   (throw+ {:type :response :status status :args args}))
+
+(defn raise-response [response]
+  (throw+ {:type :ring-response :response response}))

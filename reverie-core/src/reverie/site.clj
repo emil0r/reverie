@@ -179,7 +179,6 @@
          ;; didn't find page -> 404
          (or (get system-pages 404)
              (response/get 404))))
-     ;; TODO: fix the response types from reverie.core/raise-response
      (catch [:type :ring-response] {:keys [response]}
        response)
      (catch [:type :response] {:keys [status args]}

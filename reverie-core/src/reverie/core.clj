@@ -9,12 +9,8 @@
             [reverie.system :as sys]
             [reverie.template :as template]
             [reverie.util :as util]
-            [slingshot.slingshot :refer [throw+]]
             reverie.AreaException)
   (:import [reverie AreaException]))
-
-(defn raise-response [response]
-  (throw+ {:type :ring-response :response response}))
 
 (defmacro area
   ([name]
