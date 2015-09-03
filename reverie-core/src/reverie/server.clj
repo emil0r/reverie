@@ -12,7 +12,6 @@
             [noir.util.middleware :refer [wrap-strip-trailing-slash]]
             [reverie.middleware :refer [wrap-admin
                                         wrap-authorized
-                                        wrap-csrf-token
                                         wrap-downstream
                                         wrap-editor
                                         wrap-error-log
@@ -65,9 +64,9 @@
                                  [wrap-admin]
                                  [wrap-authorized]
                                  [wrap-reverie-data {:dev? dev?}]
-                                 [wrap-csrf-token]
-                                 ;; we are not wrapping wrap-anti-forgery here
-                                 ;; because it's taken care of in reverie.site/render
+                                 ;; we are not wrapping wrap-anti-forgery or
+                                 ;; wrap-csrf-token here because it's taken care of
+                                 ;; in reverie.site/render
                                  [wrap-content-type (:content-type middleware-options)]
                                  [wrap-content-type]
                                  [wrap-keyword-params]

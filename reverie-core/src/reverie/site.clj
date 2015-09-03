@@ -4,6 +4,7 @@
             [reverie.admin.api.editors :as editors]
             [reverie.cache :as cache]
             [reverie.database :as db]
+            [reverie.middleware :refer [wrap-csrf-token]]
             [reverie.object :as object]
             [reverie.page :as page]
             [reverie.render :as render]
@@ -23,10 +24,6 @@
   (get-page [site request])
   (host-match? [site request])
   (set-system-page! [site status rendered-page]))
-
-(defn- render-page [p]
-  (fn [request]
-    (render/render p request)))
 
 (defn handler-render [hit p render-fn cachemanager really-cache? system-pages]
   (fn [request]
@@ -174,7 +171,7 @@
              ;; dynamically set *caching*? for the skip macro to work
              (binding [cache/*caching?* really-cache?]
                (if forgery?
-                 ((wrap-anti-forgery handler) request)
+                 ((wrap-anti-forgery (wrap-csrf-token handler)) request)
                  (handler request)))))
          ;; didn't find page -> 404
          (or (get system-pages 404)
