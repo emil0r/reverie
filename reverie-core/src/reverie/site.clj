@@ -176,12 +176,13 @@
          ;; didn't find page -> 404
          (or (get system-pages 404)
              (response/get 404))))
-     (catch [:type :ring-response] {:keys [response]}
-       response)
+     (catch [:type :ring-response] out
+       out)
      (catch [:type :response] {:keys [status args]}
-       (or
-        (response/get (get system-pages status))
-        (apply response/get status args)))))
+       {:type :response
+        :response (or
+                   (response/get (get system-pages status))
+                   (apply response/get status args))})))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.site/Site"))))
 

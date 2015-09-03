@@ -107,6 +107,14 @@
     (loop [resp (handler request)
            [handler & handlers] handlers]
       (cond
+       ;; was the response raised with response/raise-response?
+       (= (:type resp) :ring-response)
+       (:response resp)
+
+       ;; was the response raised with response/raise?
+       (= (:type resp) :response)
+       (:response resp)
+
        ;; was the response nil and do we still have more handlers to try?
        (and (nil? resp) (not (nil? handler)))
        (recur (handler request) handlers)
