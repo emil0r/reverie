@@ -181,7 +181,7 @@
      (catch [:type :response] {:keys [status args]}
        {:type :response
         :response (or
-                   (response/get (get system-pages status))
+                   (get system-pages status)
                    (apply response/get status args))})))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.site/Site"))))

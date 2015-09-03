@@ -77,16 +77,9 @@
   "Add commonly used data from reverie into the request"
   [handler {:keys [dev?]}]
   (fn [{:keys [uri] :as request}]
-    (let [db (sys/get-db)
-          user (auth/get-user db)
-          filemanager (sys/get-filemanager)
-          settings (sys/get-settings)]
-      (handler (assoc request
-                 :reverie {:user user
-                           :database db
-                           :filemanager filemanager
-                           :dev? dev?
-                           :settings settings})))))
+    (let [data (sys/get-reveriedata)
+          user (auth/get-user (:database data))]
+      (handler (assoc request :reverie (assoc data :user user))))))
 
 (defn- session-token [request]
   (get-in request [:session :ring.middleware.anti-forgery/anti-forgery-token]))

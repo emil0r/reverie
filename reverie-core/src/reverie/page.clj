@@ -139,8 +139,8 @@
                           (not (contains? resp :body))
                           (not (contains? resp :headers)))
                    (render/render t request (assoc this :rendered resp))
-                   resp)))
-             (response/raise 404)))))))
+                   resp))))
+           (response/raise 404))))))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/RawPage"))))
 
