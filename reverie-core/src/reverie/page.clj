@@ -129,17 +129,18 @@
         (handle-response
          options
          (if-let [page-route (first (filter #(route/match? % request) routes))]
-           (let [{:keys [request method]} (route/match? page-route request)
-                 resp (method request this (:params request))]
-             (let [t (sys/template (:template options))]
-               (if (and t
-                        (map? resp)
-                        (not (contains? resp :status))
-                        (not (contains? resp :body))
-                        (not (contains? resp :headers)))
+           (let [{:keys [request method]} (route/match? page-route request)]
+             (if (and request method)
+               (let [resp (method request this (:params request))
+                     t (sys/template (:template options))]
+                 (if (and t
+                          (map? resp)
+                          (not (contains? resp :status))
+                          (not (contains? resp :body))
+                          (not (contains? resp :headers)))
                    (render/render t request (assoc this :rendered resp))
                    resp)))
-           (response/get 404))))))
+             (response/raise 404)))))))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/RawPage"))))
 

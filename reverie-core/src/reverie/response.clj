@@ -23,9 +23,9 @@
               [302 true _] {:status this :headers {"Location" headers} :body ""}
               [307 true _] {:status this :headers {"Location" headers} :body ""}
               [308 true _] {:status this :headers {"Location" headers} :body ""}
-              [_ true true] {:status this :headers {} :body headers}
+              [_ true true] {:status this :headers {"Content-Type" "text/plain"} :body headers}
               [_ _ _] {:status this
-                       :headers (or headers {})
+                       :headers (or headers {"Content-Type" "text/plain"})
                        :body (or body
                                  (case this
                                    400 "400, Bad Request"
