@@ -1,12 +1,12 @@
-(defproject reverie-sql "0.1.0-SNAPSHOT"
+(defproject reverie-sql "0.7.0-SNAPSHOT"
   :description "The SQL backbone of reverie, a CMS written in Clojure"
-  :url "https://github.com/emil0r/reverie"
+  :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [reverie-core "0.1.0-SNAPSHOT"]
-                 [honeysql "0.4.3"]
-                 [yesql "0.5.0-rc1"]
+                 [honeysql "0.6.1"]
+                 [yesql "0.5.0"]
                  [org.clojure/java.jdbc "0.3.6"]
                  [joplin.jdbc "0.2.9"]
                  [com.jolbox/bonecp "0.8.0.RELEASE"]]

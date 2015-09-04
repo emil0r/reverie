@@ -1,0 +1,17 @@
+{
+ ;; reverie
+ :server-mode :dev
+ :server {:options {:port 9090}
+          :middleware {}}
+ :db {:specs {:default {:classname "org.postgresql.Driver"
+                        :subprotocol "postgresql"
+                        :subname "//localhost:5432/dev_reverie"
+                        :user "devuser"
+                        :password "devuser"}}}
+
+ :admin {:tasks {:edits {:minutes 30}}}
+ :log {:rotor {:path "logs/reverie.log"}}
+ :site {:host-names []}
+ :filemanager {:base-dir "media"
+               :media-dirs ["media/images"
+                            "media/files"]}}
