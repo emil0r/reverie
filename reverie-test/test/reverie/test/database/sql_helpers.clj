@@ -43,10 +43,10 @@
                                      "&password=" "devuser")}
                       :migrator path})
                    (array-map
-                    "migrations_auth" "src/reverie/modules/migrations/auth/"
+                    "migrations_auth" "resources/migrations/modules/auth/"
                     "migrations_reverie_text" "src/reverie/sql/objects/migrations/text/"
+                    "migrations_reverie_raw" "src/reverie/sql/objects/migrations/raw/"
                     "migrations_reverie_image" "src/reverie/sql/objects/migrations/image/"
-                    "migrations_blog_module" "resources/migrations/modules/blog"
                     "migrations" "resources/migrations/postgresql"
                     ))]
     (doseq [mmap mmaps]
@@ -62,5 +62,3 @@
       (catch Exception e
         (println e)))
     (component/stop db)))
-
-(seed!)

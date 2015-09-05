@@ -1,5 +1,6 @@
 (ns reverie.test.modules.auth
-  (:require [com.stuartsierra.component :as component]
+  (:require [clojure.set :as set]
+            [com.stuartsierra.component :as component]
             [reverie.core :refer [defmodule]]
             [reverie.database :as db]
             [reverie.module :as module]
@@ -23,8 +24,10 @@
          (component/start))
      (->> (db/query db "SELECT name FROM auth_role;")
           (map #(-> % :name keyword))
-          sort)
-     => [:admin :staff :user]
+          sort
+          set
+          (set/intersection #{:admin :staff :user}))
+     => #{:admin :staff :user}
      (catch Exception e
        (println e)))
    (component/stop db)))

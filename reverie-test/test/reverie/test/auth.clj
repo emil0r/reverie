@@ -13,6 +13,7 @@
 
 (fact
  (let [db (component/start (get-db))]
+   (seed!)
    (with-noir
      (try
        (fact "login"
