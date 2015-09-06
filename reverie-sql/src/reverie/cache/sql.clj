@@ -1,8 +1,8 @@
 (ns reverie.cache.sql
   (:require [clj-time.core :as t]
+            [ez-database.core :as db]
             [reverie.cache :as cache]
             [reverie.core :refer [defmodule]]
-            [reverie.database :as db]
             [reverie.page :as page]
             [reverie.system :as sys]
             [reverie.time :as time]

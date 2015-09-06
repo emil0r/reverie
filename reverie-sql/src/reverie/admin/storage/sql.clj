@@ -1,25 +1,25 @@
 (ns reverie.admin.storage.sql
   (:require [clojure.edn :as edn]
+            [ez-database.core :as db]
             [reverie.admin.storage :as admin.storage]
-            [reverie.database :as db]
             [reverie.database.sql :as db.sql]
             [reverie.util :as util]
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log])
-  (:import [reverie.database.sql DatabaseSQL]))
+  (:import [ez_database.core EzDatabase]))
 
-(extend-type DatabaseSQL
+(extend-type EzDatabase
   admin.storage/IAdminStorage
   (assoc! [db k v]
     (try+
      (db/query! db {:insert-into :admin_storage
                     :values [{:k (util/kw->str k) :v (pr-str v)}]})
-     (catch [:type :reverie.database.sql/try-query] _
+     (catch [:type :ez-database.core/try-query] _
        (try+
         (db/query! db {:update :admin_storage
                        :set {:v (pr-str v)}
                        :where [:= :k (util/kw->str k)]})
-        (catch [:type :reverie.database.sql/try-query] _
+        (catch [:type :ez-database.core/try-query] _
           ;; do nothing
           )))
      (catch Object _

@@ -1,7 +1,7 @@
 (ns reverie.modules.role
   (:require [clojure.set :as set]
             [com.stuartsierra.component :as component]
-            [reverie.database :as db]
+            [ez-database.core :as db]
             [reverie.system :as sys]
             [reverie.util :as util]
             [taoensso.timbre :as log]))

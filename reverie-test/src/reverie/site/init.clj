@@ -96,7 +96,10 @@
 
     ;; load namespaces after the system starts up
     ;; this step will set up any necessary migrations
-    (load-views-ns 'reverie.sql.objects)
+    (load-views-ns 'reverie.sql.objects
+                   'reverie.site.templates
+                   'reverie.site.apps
+                   'reverie.site.endpoints)
 
     ;; run the migrations that now have been defined by the loaded modules, objects, etc
     (->> @system

@@ -1,6 +1,7 @@
 (ns reverie.modules.default
   (:require [clojure.string :as str]
             [clojure.walk :as walk]
+            [ez-database.core :as db]
             [ez-web.paginator :as paginator]
             [ez-web.uri :refer [join-uri]]
             [ez-web.breadcrumbs :refer [crumb]]
@@ -13,7 +14,6 @@
                                                   delete-entity-form]]
             [reverie.admin.validation :as validation]
             [reverie.auth :refer [with-access]]
-            [reverie.database :as db]
             [reverie.module :as m]
             [reverie.module.entity :as e]
             [reverie.system :as sys]

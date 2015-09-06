@@ -2,12 +2,12 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [com.stuartsierra.component :as component]
+            [ez-database.core :as db]
             [joplin.core :as joplin]
             joplin.jdbc.database
             reverie.modules.auth
             reverie.sql.objects.text
             reverie.sql.objects.image
-            [reverie.database :as db]
             [reverie.database.sql :as sql]
             [reverie.system :as sys]))
 
@@ -62,3 +62,8 @@
       (catch Exception e
         (println e)))
     (component/stop db)))
+
+
+(comment
+  ;; re-seed!
+  (seed!))

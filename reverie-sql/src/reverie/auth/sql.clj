@@ -1,7 +1,7 @@
 (ns reverie.auth.sql
   (:require [buddy.hashers :as hashers]
+            [ez-database.core :as db]
             [reverie.auth :as auth]
-            [reverie.database :as db]
             [reverie.module :as m]
             [reverie.page :as page]
             [reverie.auth :refer [IAuthorize IUserAdd]]

@@ -1,6 +1,7 @@
 (ns reverie.modules.auth
   (:require [buddy.hashers :as hashers]
             [clojure.string :as str]
+            [ez-database.core :as db]
             [ez-web.breadcrumbs :refer [crumb]]
             [ez-web.uri :refer [join-uri]]
             [hiccup.form :as form]
@@ -8,7 +9,6 @@
             [reverie.admin.looknfeel.form :as looknfeel]
             [reverie.auth :refer [IUserLogin] :as auth]
             [reverie.core :refer [defmodule]]
-            [reverie.database :as db]
             [reverie.module :as m]
             [reverie.module.entity :as e]
             [reverie.modules.default :refer [base-link pk-cast

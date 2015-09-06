@@ -1,6 +1,7 @@
 (ns reverie.test.dummy
   (:require [com.stuartsierra.component :as component]
-            [reverie.database :as db]
+            [ez-database.core :as db]
+            [reverie.database :as rev.db]
             [reverie.object :as object]
             [reverie.page :as page]
             [reverie.system :as sys]
@@ -20,12 +21,13 @@
     nil))
 
 (defrecord DummyDatabase [pages objects users]
-  db/IDatabase
+  db/IEzDatabase
   (query [db query] nil)
   (query [db query args] nil)
   (query! [db query] nil)
   (query! [db query args])
 
+  rev.db/IDatabase
   (get-pages [db] pages)
   (get-pages-by-route [db]
     (map (fn [{:keys [route id template type app name]}]
@@ -77,7 +79,7 @@
  "test database"
  (let [db (get-db)]
   (fact "page"
-        (:name (db/get-page db 1)) => "Test page")
+        (:name (rev.db/get-page db 1)) => "Test page")
   (fact "objects"
-        (map :name (db/get-objects db (db/get-page db 1)))
+        (map :name (rev.db/get-objects db (rev.db/get-page db 1)))
         => [:text :image])))

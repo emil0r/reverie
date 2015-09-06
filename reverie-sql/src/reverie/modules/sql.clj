@@ -1,7 +1,7 @@
 (ns reverie.modules.sql
   (:require [clojure.string :as str]
+            [ez-database.core :as db]
             [honeysql.core :as sql]
-            [reverie.database :as db]
             [reverie.module :as m]
             [reverie.module.entity :as e]
             [reverie.time :as time])

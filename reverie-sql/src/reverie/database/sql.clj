@@ -3,12 +3,13 @@
             [clojure.string :as str]
             [clojure.java.jdbc :as jdbc]
             [com.stuartsierra.component :as component]
+            [ez-database.core :as db]
             [joplin.core :as joplin]
             joplin.jdbc.database
             [honeysql.core :as sql]
             [noir.session :as session]
             [reverie.auth :as auth :refer [IUserDatabase]]
-            [reverie.database :as db :refer [IDatabase]]
+            [reverie.database :as rev.db :refer [IDatabase]]
             [reverie.movement :as movement]
             [reverie.object :as object]
             [reverie.page :as page]
@@ -20,8 +21,10 @@
             [slingshot.slingshot :refer [try+ throw+]]
             [taoensso.timbre :as log]
             [yesql.core :refer [defqueries]])
-  (:import [reverie DatabaseException]
-           [com.jolbox.bonecp BoneCPDataSource]))
+  (:import [com.jolbox.bonecp BoneCPDataSource]
+           [ez_database.core EzDatabase]
+           [reverie DatabaseException]))
+
 
 (extend-protocol jdbc/IResultSetReadColumn
   org.postgresql.jdbc4.Jdbc4Array
@@ -85,7 +88,7 @@
                                            [:templates template])
                          :database database
                          :raw-data (:raw-data data)))
-                    objects (map #(assoc % :page p) (db/get-objects database p))]
+                    objects (map #(assoc % :page p) (rev.db/get-objects database p))]
                 (assoc p :objects objects))
         :app (let [page-data (get-in @sys/storage
                                      [:apps app])
@@ -97,7 +100,7 @@
                         :app-routes (:app-routes page-data)
                         :database database
                         :raw-data (:raw-data data)))
-                   objects (map #(assoc % :page p) (db/get-objects database p))]
+                   objects (map #(assoc % :page p) (rev.db/get-objects database p))]
                (assoc p :objects objects))))))
 
 (defn- recalculate-routes-db [db page-ids]
@@ -142,194 +145,42 @@
                      :set {:version (inc (:version pp))}
                      :where [:= :id (:id pp)]}))))
 
-(def ^:dynamic *connection* nil)
 
-(defn- get-connection [db-specs key]
-  (if-not (nil? *connection*)
-    (assoc (get db-specs key) :connection *connection*)
-    (get db-specs key)))
 
-(defmacro try-query [& body]
-  `(try+
-    ~@body
-    (catch Object ~'e
-      (throw+ {:type ::try-query
-               :exception ~'e
-               :query ~'query}))))
-
-(defmacro try-query-args [& body]
-  `(try+
-    ~@body
-    (catch Object ~'e
-      (throw+ {:type ::try-query-args
-               :exception ~'e
-               :query ~'query
-               :args ~'args}))))
-
-(defrecord DatabaseSQL [db-specs ds-specs]
+(extend-type EzDatabase
   component/Lifecycle
   (start [this]
-    (if (get-in db-specs [:default :datasource])
-      this
-      (do
-        (log/info "Starting database")
-        (let [db-specs (into
-                        {}
-                        (map
-                         (fn [key]
-                           (let [db-spec (get db-specs key)
-                                 ds-spec (get ds-specs key)]
-                             [key (bonecp-datasource db-spec ds-spec)]))
-                         (keys db-specs)))]
-          (assoc this
-            :db-specs db-specs)))))
+    (let [{:keys [db-specs ds-specs]} this]
+      (if (get-in db-specs [:default :datasource])
+        this
+        (do
+          (log/info "Starting database")
+          (let [db-specs (into
+                          {}
+                          (map
+                           (fn [key]
+                             (let [db-spec (get db-specs key)
+                                   ds-spec (get ds-specs key)]
+                               [key (bonecp-datasource db-spec ds-spec)]))
+                           (keys db-specs)))]
+            (assoc this
+              :db-specs db-specs))))))
   (stop [this]
-    (if-not (get-in db-specs [:default :datasource])
-      this
-      (do
-        (log/info "Stopping database")
-        (doseq [[key db-spec] db-specs]
-          (.close (:datasource db-spec))
-          (log/info "Closed datasource for" key))
-        (assoc this
-          :db-specs (into
-                     {} (map (fn [[key db-spec]]
-                               [key (dissoc db-spec :datasource)])
-                             db-specs))))))
+    (let [db-specs (:db-specs this)]
+      (if-not (get-in db-specs [:default :datasource])
+        this
+        (do
+          (log/info "Stopping database")
+          (doseq [[key db-spec] db-specs]
+            (.close (:datasource db-spec))
+            (log/info "Closed datasource for" key))
+          (assoc this
+            :db-specs (into
+                       {} (map (fn [[key db-spec]]
+                                 [key (dissoc db-spec :datasource)])
+                               db-specs)))))))
 
   IDatabase
-  (query [db query]
-    (try-query
-     (cond
-      (string? query) (jdbc/query (get-connection db-specs :default) [query])
-      (fn? query) (query {} {:connection (get-connection db-specs :default)})
-      :else (jdbc/query (get-connection db-specs :default) (sql/format query)))))
-  (query [db key? query]
-    (let [[key query args] (if (get db-specs key?)
-                             [key? query nil]
-                             [:default key? query])]
-      (try-query-args
-       (cond
-        (and (nil? args) (fn? query))
-        (query {} {:connection (get-connection db-specs key)})
-
-        (fn? query)
-        (query args {:connection (get-connection db-specs key)})
-
-        (and (string? query)
-             (nil? args))
-        (jdbc/query (get-connection db-specs key) [query])
-
-        (string? query)
-        (jdbc/query (get-connection db-specs key) (concat [query] args))
-
-        (nil? args)
-        (jdbc/query (get-connection db-specs key) (sql/format query))
-
-        :else
-        (jdbc/query (get-connection db-specs key) (sql/format query args))))))
-  (query [db key query args]
-    (try-query-args
-     (cond
-      (fn? query) (query args {:connection (get-connection db-specs key)})
-
-      (string? query)
-      (jdbc/query (get-connection db-specs key) (concat [query] args))
-
-      :else (jdbc/query (get-connection db-specs key) (sql/format query args)))))
-  (query! [db query]
-    (try-query
-     (cond
-      (string? query)
-      (jdbc/execute! (get-connection db-specs :default) [query])
-
-      (fn? query)
-      (query {} (get-connection db-specs :default))
-
-      :else
-      (jdbc/execute! (get-connection db-specs :default) (sql/format query)))))
-  (query! [db key? query]
-    (let [[key query args] (if (get db-specs key?)
-                             [key? query nil]
-                             [:default key? query])]
-      (try-query
-       (cond
-        (and (fn? query) (nil? args))
-        (query {} {:connection (get-connection db-specs key)})
-
-        (fn? query)
-        (query args {:connection (get-connection db-specs key)})
-
-        (and (string? query)
-             (nil? args))
-        (jdbc/execute! (get-connection db-specs key) [query])
-
-        (string? query)
-        (jdbc/execute! (get-connection db-specs key) (concat [query] args))
-
-        (nil? args)
-        (jdbc/execute! (get-connection db-specs key) (sql/format query))
-
-        :else
-        (jdbc/execute! (get-connection db-specs key) (sql/format query args))))))
-  (query! [db key query args]
-    (try-query-args
-     (cond
-      (fn? query) (query args {:connection (get-connection db-specs key)})
-      (string? query) (jdbc/execute! (get-connection db-specs key) (concat [query] args))
-      :else (jdbc/execute! (get-connection db-specs key) (sql/format query args)))))
-
-  (query<! [db query]
-    (try-query
-     (cond
-      (string? query)
-      (throw (DatabaseException. "String is not allowed for query<!"))
-
-      (fn? query)
-      (query {} (get-connection db-specs :default))
-
-      :else
-      (let [table (:insert-into query)
-            values (:values query)]
-        (apply jdbc/insert! (get-connection db-specs :default) table values)))))
-  (query<! [db key? query]
-    (let [[key query args] (if (get db-specs key?)
-                             [key? query nil]
-                             [:default key? query])]
-      (try-query-args
-       (cond
-        (string? query)
-        (throw (DatabaseException. "String is not allowed for query<!"))
-
-        (and (fn? query) (nil? args))
-        (query {} {:connection (get-connection db-specs key)})
-
-        (fn? query)
-        (query args {:connection (get-connection db-specs key)})
-
-        (nil? args)
-        (let [table (:insert-into query)
-              values (:values query)]
-          (apply jdbc/insert! (get-connection db-specs key) table values))
-
-        :else
-        (let [table (:insert-into query)
-              values (:values query)]
-          (apply jdbc/insert! (get-connection db-specs :default) table values))))))
-  (query<! [db key query args]
-    (try-query-args
-     (cond
-      (string? query)
-      (throw (DatabaseException. "String is not allowed for query<!"))
-
-      (fn? query) (query args {:connection (get-connection db-specs key)})
-      :else (let [table (:insert-into query)
-                  values (:values query)]
-              (apply jdbc/insert! (get-connection db-specs key) table values)))))
-
-  (databases [db]
-    (keys db-specs))
-
   (add-page! [db data]
     (assert (contains? data :parent) ":parent key is missing")
     (assert (contains? data :template) ":template key is missing")
@@ -362,19 +213,19 @@
                    :version 0)
             {:keys [id] :as page-data} (db/query! db sql-add-page<! data)]
         (recalculate-routes db id)
-        (auth/add-authorization! (db/get-page db id)
+        (auth/add-authorization! (rev.db/get-page db id)
                                  db
                                  :all
                                  :view)
-        (auth/add-authorization! (db/get-page db id)
+        (auth/add-authorization! (rev.db/get-page db id)
                                  db
                                  :edit
                                  :staff)
-        (auth/add-authorization! (db/get-page db id)
+        (auth/add-authorization! (rev.db/get-page db id)
                                  db
                                  :add
                                  :staff)
-        (db/get-page db (:id page-data)))))
+        (rev.db/get-page db (:id page-data)))))
 
   (update-page! [db id data]
     (let [data (select-keys data [:template :name :title
@@ -384,7 +235,7 @@
                      :set (assoc data :updated (sql/raw "now()"))
                      :where [:= :id id]})
       (recalculate-routes db id)
-      (db/get-page db id)))
+      (rev.db/get-page db id)))
 
   (save-page-properties! [db serial data]
     (db/query! db {:delete-from :reverie_page_properties
@@ -520,49 +371,49 @@
                      :set fields
                      :where [:= fk id]})))
 
-  (move-object! [db id direction]
-    (assert (some #(= % (keyword direction)) [:up :down :bottom :top])
-            "direction has to be :up, :down, :bottom or :top")
-    (let [type (-> (db/query db {:select [:p.type]
-                                 :from [[:reverie_page :p]]
-                                 :join [[:reverie_object :o]
-                                        [:= :o.page_id :p.id]]
-                                 :where [:= :o.id id]})
-                   first :type)
-          origo? (= type "app")
-          objs (->
-                (map
-                 (fn [{:keys [order id]}]
-                   [order id])
-                 (db/query db {:select [:o.order :o.id]
-                               :from [[:reverie_object :f]]
-                               :join [[:reverie_object :o]
-                                      [:= :f.page_id :o.page_id]]
-                               :where [:and
-                                       [:= :f.id id]
-                                       [:= :f.area :o.area]]
-                               :order-by [:o.order]}))
-                (movement/move id direction origo?))]
-      (doseq [[order id] objs]
-        (if-not (nil? id)
-          (db/query! db {:update :reverie_object
-                         :set {(sql/raw "\"order\"") order}
-                         :where [:= :id id]})))))
-
-  (move-object! [db id page-id area]
-    (let [area (kw->str area)
-          order (inc (or (-> (db/query db {:select [:%max.o.order]
-                                           :from [[:reverie_object :o]]
-                                           :where [:and
-                                                   [:= :o.page_id page-id]
-                                                   [:= :o.area area]]})
-                             first :max)
-                         0))]
-      (db/query! db {:update :reverie_object
-                     :set {(sql/raw "\"order\"") order
-                           :area area
-                           :page_id page-id}
-                     :where [:= :id id]})))
+  (move-object!
+    ([db id direction]
+       (assert (some #(= % (keyword direction)) [:up :down :bottom :top])
+               "direction has to be :up, :down, :bottom or :top")
+       (let [type (-> (db/query db {:select [:p.type]
+                                    :from [[:reverie_page :p]]
+                                    :join [[:reverie_object :o]
+                                           [:= :o.page_id :p.id]]
+                                    :where [:= :o.id id]})
+                      first :type)
+             origo? (= type "app")
+             objs (->
+                   (map
+                    (fn [{:keys [order id]}]
+                      [order id])
+                    (db/query db {:select [:o.order :o.id]
+                                  :from [[:reverie_object :f]]
+                                  :join [[:reverie_object :o]
+                                         [:= :f.page_id :o.page_id]]
+                                  :where [:and
+                                          [:= :f.id id]
+                                          [:= :f.area :o.area]]
+                                  :order-by [:o.order]}))
+                   (movement/move id direction origo?))]
+         (doseq [[order id] objs]
+           (if-not (nil? id)
+             (db/query! db {:update :reverie_object
+                            :set {(sql/raw "\"order\"") order}
+                            :where [:= :id id]})))))
+    ([db id page-id area]
+       (let [area (kw->str area)
+             order (inc (or (-> (db/query db {:select [:%max.o.order]
+                                              :from [[:reverie_object :o]]
+                                              :where [:and
+                                                      [:= :o.page_id page-id]
+                                                      [:= :o.area area]]})
+                                first :max)
+                            0))]
+         (db/query! db {:update :reverie_object
+                        :set {(sql/raw "\"order\"") order
+                              :area area
+                              :page_id page-id}
+                        :where [:= :id id]}))))
 
   (move-object-to-object! [db id other-id direction]
     (assert (some #(= % (keyword direction)) [:after :before])
@@ -589,13 +440,13 @@
                              :page_id page_id}
                        :where [:= :id id]}))))
 
-  (get-pages [db]
-    (map (partial get-page db)
-         (db/query db sql-get-pages-1)))
-
-  (get-pages [db published?]
-    (map (partial get-page db)
-         (db/query db sql-get-pages-2 {:version (if published? 1 0)})))
+  (get-pages
+    ([db]
+       (map (partial get-page db)
+            (db/query db sql-get-pages-1)))
+    ([db published?]
+       (map (partial get-page db)
+            (db/query db sql-get-pages-2 {:version (if published? 1 0)}))))
 
   (get-page-with-route [db serial]
     (map (fn [page-data]
@@ -619,20 +470,21 @@
                                     [:= :version 0]
                                     [:= :version 1]]
                             :order-by [(sql/raw "\"order\"")]}))))
-  (get-page [db id]
-    (get-page db (first (db/query db sql-get-page-1 {:id id}))))
-  (get-page [db serial published?]
-    (get-page db (first (db/query db sql-get-page-2 {:serial serial
-                                                     :version (if published? 1 0)}))))
-  (get-children [db page]
-    (map (partial get-page db)
-         (db/query db sql-get-page-children {:version (page/version page)
-                                             :parent (page/serial page)})))
-  (get-children [db serial published?]
-    (map (partial get-page db)
-         (db/query db sql-get-page-children {:version (if published? 1 0)
-                                             :parent serial})))
-
+  (get-page
+    ([db id]
+       (get-page db (first (db/query db sql-get-page-1 {:id id}))))
+    ([db serial published?]
+       (get-page db (first (db/query db sql-get-page-2 {:serial serial
+                                                        :version (if published? 1 0)})))))
+  (get-children
+    ([db page]
+       (map (partial get-page db)
+            (db/query db sql-get-page-children {:version (page/version page)
+                                                :parent (page/serial page)})))
+    ([db serial published?]
+       (map (partial get-page db)
+            (db/query db sql-get-page-children {:version (if published? 1 0)
+                                                :parent serial}))))
   (get-children-count [db page]
     (let [serial (if (number? page)
                    page
@@ -654,7 +506,7 @@
                                      :from [:reverie_object]
                                      :where [:= :id id]})
                        first :page_id)
-          page (db/get-page db page-id)
+          page (rev.db/get-page db page-id)
           object (->> (page/objects page)
                       (filter #(= id (object/id %)))
                       first)]
@@ -723,10 +575,10 @@
     ;; TODO: wrap in a transaction
     ;; TODO: rewrite so it doesn't use so many db calls :(
     (let [;; page-unpublished
-          pu (db/get-page db page-id)
+          pu (rev.db/get-page db page-id)
           pages (if recur?
                   (map (fn [{:keys [serial]}]
-                         (db/get-page db serial false))
+                         (rev.db/get-page db serial false))
                        (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))
                   [pu])]
       (doseq [pu pages]
@@ -750,18 +602,18 @@
 
   (unpublish-page! [db page-id]
     (let [;; page-unpublished
-          pu (db/get-page db page-id)
+          pu (rev.db/get-page db page-id)
           pages (map (fn [{:keys [serial]}]
-                       (db/get-page db serial false))
+                       (rev.db/get-page db serial false))
                      (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))]
       (doseq [pu pages]
         (shift-versions! db (page/serial pu)))))
 
   (trash-page! [db page-id]
     (let [;; page-unpublished
-          pu (db/get-page db page-id)
+          pu (rev.db/get-page db page-id)
           pages (map (fn [{:keys [serial]}]
-                       (db/get-page db serial false))
+                       (rev.db/get-page db serial false))
                      (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))]
       (doseq [pu pages]
         (shift-versions! db (page/serial pu))
@@ -825,66 +677,67 @@
                                        (get groups id))))})))
               [] users)))
 
-  (get-user [db]
-    (when-let [user-id (session/get :user-id)]
-      (auth/get-user db user-id)))
-  (get-user [db id]
-    (let [users
-          (db/query db (merge
-                        {:select [:id :created :username :email :active_p
-                                  :spoken_name :full_name :last_login]
-                         :from [:auth_user]}
-                        (cond
-                         (and (string? id)
-                              (re-find #"@" id)) {:where [:= :email id]}
-                              (string? id) {:where [:= :username id]}
-                              :else {:where [:= :id id]})))
-          id (-> users first :id)
-          roles (group-by
-                 :user_id
-                 (db/query db {:select [:ur.user_id :r.name]
-                               :from [[:auth_user_role :ur]]
-                               :join [[:auth_role :r]
-                                      [:= :r.id :ur.role_id]]
-                               :where [:= :ur.user_id id]}))
-          groups (group-by
-                  :user_id
-                  (db/query db {:select [:ug.user_id
-                                         [:g.name :group_name]
-                                         [:r.name :role_name]]
-                                :from [[:auth_user_group :ug]]
-                                :join [[:auth_group :g]
-                                       [:= :ug.group_id :g.id]]
-                                :left-join [[:auth_group_role :gr]
-                                            [:= :gr.group_id :ug.group_id]
-                                            [:auth_role :r]
-                                            [:= :gr.role_id :r.id]]
-                                :where [:= :ug.user_id id]}))]
-      (if (first users)
-        (let [{:keys [id created username active_p
-                      email spoken_name full_name last_login]} (first users)]
-          (auth/map->User
-           {:id id :created created
-            :username username :email email
-            :spoken-name spoken_name :full-name full_name
-            :last-login last_login
-            :active? active_p
-            :roles (into #{}
-                         (remove
-                          nil?
-                          (flatten
-                           [(map #(-> % :name keyword)
-                                 (get roles id))
-                            (map #(-> % :role_name keyword)
-                                 (get groups id))])))
-            :groups (into #{}
-                          (remove
-                           nil?
-                           (map #(-> % :group_name keyword)
-                                (get groups id))))}))))))
+  (get-user
+    ([db]
+       (when-let [user-id (session/get :user-id)]
+         (auth/get-user db user-id)))
+    ([db id]
+       (let [users
+             (db/query db (merge
+                           {:select [:id :created :username :email :active_p
+                                     :spoken_name :full_name :last_login]
+                            :from [:auth_user]}
+                           (cond
+                            (and (string? id)
+                                 (re-find #"@" id)) {:where [:= :email id]}
+                                 (string? id) {:where [:= :username id]}
+                                 :else {:where [:= :id id]})))
+             id (-> users first :id)
+             roles (group-by
+                    :user_id
+                    (db/query db {:select [:ur.user_id :r.name]
+                                  :from [[:auth_user_role :ur]]
+                                  :join [[:auth_role :r]
+                                         [:= :r.id :ur.role_id]]
+                                  :where [:= :ur.user_id id]}))
+             groups (group-by
+                     :user_id
+                     (db/query db {:select [:ug.user_id
+                                            [:g.name :group_name]
+                                            [:r.name :role_name]]
+                                   :from [[:auth_user_group :ug]]
+                                   :join [[:auth_group :g]
+                                          [:= :ug.group_id :g.id]]
+                                   :left-join [[:auth_group_role :gr]
+                                               [:= :gr.group_id :ug.group_id]
+                                               [:auth_role :r]
+                                               [:= :gr.role_id :r.id]]
+                                   :where [:= :ug.user_id id]}))]
+         (if (first users)
+           (let [{:keys [id created username active_p
+                         email spoken_name full_name last_login]} (first users)]
+             (auth/map->User
+              {:id id :created created
+               :username username :email email
+               :spoken-name spoken_name :full-name full_name
+               :last-login last_login
+               :active? active_p
+               :roles (into #{}
+                            (remove
+                             nil?
+                             (flatten
+                              [(map #(-> % :name keyword)
+                                    (get roles id))
+                               (map #(-> % :role_name keyword)
+                                    (get groups id))])))
+               :groups (into #{}
+                             (remove
+                              nil?
+                              (map #(-> % :group_name keyword)
+                                   (get groups id))))})))))))
 
 (defn database
   ([db-specs]
-     (map->DatabaseSQL {:db-specs db-specs :ds-specs {}}))
+     (db/map->EzDatabase {:db-specs db-specs :ds-specs {}}))
   ([db-specs ds-specs]
-     (map->DatabaseSQL {:db-specs db-specs :ds-specs ds-specs})))
+     (db/map->EzDatabase {:db-specs db-specs :ds-specs ds-specs})))
