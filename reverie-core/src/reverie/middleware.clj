@@ -88,11 +88,16 @@
 (defn wrap-csrf-token [handler]
   (fn [request]
     (let [old-token (session-token request)
+          x-csrf-token (cookies/get "x-csrf-token" nil)
           response (handler request)]
       (if (= old-token *anti-forgery-token*)
-        response
+        (if (and (nil? x-csrf-token)
+                 (bound? #'*anti-forgery-token*))
+          (do (cookies/put! "x-csrf-token" *anti-forgery-token*)
+              response)
+          response)
         (do
-          (cookies/put! "csrftoken" *anti-forgery-token*)
+          (cookies/put! "x-csrf-token" *anti-forgery-token*)
           response)))))
 
 (defn wrap-forker [handler & handlers]
