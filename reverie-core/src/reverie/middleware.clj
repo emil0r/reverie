@@ -91,10 +91,20 @@
           x-csrf-token (cookies/get "x-csrf-token" nil)
           response (handler request)]
       (if (= old-token *anti-forgery-token*)
-        (if (and (nil? x-csrf-token)
-                 (bound? #'*anti-forgery-token*))
-          (do (cookies/put! "x-csrf-token" *anti-forgery-token*)
-              response)
+        (cond
+         ;; no x-csrf-token found in the inbound cookie
+         (nil? x-csrf-token)
+         (do (cookies/put! "x-csrf-token" *anti-forgery-token*)
+             response)
+         ;; x-csrf-token from the cookie does not equal the
+         ;; one we got from the wrap-anti-forgery middleware
+         ;; NOTE: we should only hit this during GET, HEAD and OPTIONS
+         ;; the rest will be blocked by the wrap-anti-forgery middleware
+         (not= x-csrf-token old-token)
+         (do (cookies/put! "x-csrf-token" *anti-forgery-token*)
+             response)
+         ;; all is good
+         :else
           response)
         (do
           (cookies/put! "x-csrf-token" *anti-forgery-token*)
