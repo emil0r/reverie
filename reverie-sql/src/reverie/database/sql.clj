@@ -568,37 +568,37 @@
 
   IPublish
 
-  (publish-page! [db page-id]
-    (publish/publish-page! db page-id false))
-
-  (publish-page! [db page-id recur?]
-    ;; TODO: wrap in a transaction
-    ;; TODO: rewrite so it doesn't use so many db calls :(
-    (let [;; page-unpublished
-          pu (rev.db/get-page db page-id)
-          pages (if recur?
-                  (map (fn [{:keys [serial]}]
-                         (rev.db/get-page db serial false))
-                       (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))
-                  [pu])]
-      (doseq [pu pages]
-        (shift-versions! db (page/serial pu))
-        (let [{:keys [id] :as copied} (db/query! db sql-copy-page<! {:id (page/id pu)})]
-          (doseq [obj (page/objects pu)]
-            (let [;; copy meta object
-                  new-meta-obj (db/query! db sql-copy-object-meta<!
-                                          {:pageid id
-                                           :id (object/id obj)})
-                  ;; get meta data for meta object
-                  obj-meta (sys/object (-> new-meta-obj :name keyword))
-                  ;; foreign key
-                  fk (or (->> obj-meta :options :foreign-key)
-                         :object_id)]
-              (db/query! db {:insert-into (:table obj-meta)
-                             :values [(assoc (object/properties obj)
-                                        fk (:id new-meta-obj))]}))))
-        (recalculate-routes db (page/id pu))
-        (db/query! db sql-update-published-pages-order! {:parent (page/parent pu)}))))
+  (publish-page!
+    ([db page-id]
+       (publish/publish-page! db page-id false))
+    ([db page-id recur?]
+       ;; TODO: wrap in a transaction
+       ;; TODO: rewrite so it doesn't use so many db calls :(
+       (let [;; page-unpublished
+             pu (rev.db/get-page db page-id)
+             pages (if recur?
+                     (map (fn [{:keys [serial]}]
+                            (rev.db/get-page db serial false))
+                          (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))
+                     [pu])]
+         (doseq [pu pages]
+           (shift-versions! db (page/serial pu))
+           (let [{:keys [id] :as copied} (db/query! db sql-copy-page<! {:id (page/id pu)})]
+             (doseq [obj (page/objects pu)]
+               (let [;; copy meta object
+                     new-meta-obj (db/query! db sql-copy-object-meta<!
+                                             {:pageid id
+                                              :id (object/id obj)})
+                     ;; get meta data for meta object
+                     obj-meta (sys/object (-> new-meta-obj :name keyword))
+                     ;; foreign key
+                     fk (or (->> obj-meta :options :foreign-key)
+                            :object_id)]
+                 (db/query! db {:insert-into (:table obj-meta)
+                                :values [(assoc (object/properties obj)
+                                           fk (:id new-meta-obj))]}))))
+           (recalculate-routes db (page/id pu))
+           (db/query! db sql-update-published-pages-order! {:parent (page/parent pu)})))))
 
   (unpublish-page! [db page-id]
     (let [;; page-unpublished
