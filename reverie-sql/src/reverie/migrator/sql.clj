@@ -11,7 +11,7 @@
 (defn- get-migrator-map [{:keys [subprotocol subname user password] :as x}
                          table path]
   {:db {:type :sql
-        :migration-table table
+        :migrations-table table
         :url (str "jdbc:" subprotocol ":"
                   subname
                   "?user=" user
