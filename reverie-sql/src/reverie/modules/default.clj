@@ -60,7 +60,7 @@
               (if (some #(= stage %) skip-stages)
                 (assoc out k ::skip)
                 (assoc out k (get form-params k)))))
-          {} (keys (e/fields entity))))
+          {} (keys form-params)))
 
 (defn process-request [request module edit? stage]
   (let [{:keys [entity id]} (:params request)
