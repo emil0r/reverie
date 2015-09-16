@@ -56,3 +56,12 @@
 
 (defn qsize [qs]
   (str/join "&" (map (fn [[k v]] (str (name k) "=" v)) qs)))
+
+
+;; shamelessly borrowed from pedestal's source code
+(defn deep-merge
+  "Recursively merges maps. If keys are not maps, the last value wins."
+  [& vals]
+  (if (every? map? vals)
+    (apply merge-with deep-merge vals)
+        (last vals)))

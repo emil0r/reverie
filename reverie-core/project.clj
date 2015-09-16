@@ -16,6 +16,7 @@
                  [org.clojure/core.match "0.2.2"]
                  [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
                  [com.taoensso/timbre "3.4.0"]
+                 [com.taoensso/tower "3.0.2"]
                  [com.stuartsierra/component "0.2.3"]
                  [hiccup "1.0.5"]
                  [vlad "1.1.0"]
