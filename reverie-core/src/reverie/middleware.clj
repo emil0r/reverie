@@ -1,13 +1,17 @@
 (ns reverie.middleware
-  (:require [noir.cookies :as cookies]
+  (:require [clojure.string :as str]
+            [noir.cookies :as cookies]
+            [noir.session :as session]
             [reverie.admin.api.editors :as editors]
             [reverie.auth :as auth]
             [reverie.downstream :refer [*downstream*]]
+            [reverie.i18n :as i18n]
             [reverie.system :as sys]
             [reverie.response :as response]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [slingshot.slingshot :refer [try+]]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log]
+            [taoensso.tower.utils :as tower.utils]))
 
 (defn wrap-downstream
   "Wrap downstream. Used for sending data downstream for later use during a request response cycle."
@@ -109,6 +113,23 @@
         (do
           (cookies/put! "x-csrf-token" *anti-forgery-token*)
           response)))))
+
+(defn wrap-i18n
+  "Borrows bits and pieces from tower's wrap-tower"
+  [handler {:keys [enforce-locale] :as opts}]
+  (fn [{:keys [headers] :as request}]
+    (let [accept-lang-locales ; ["en-GB" "en" "en-US"], etc.
+          (->> (get headers "accept-language")
+               (tower.utils/parse-http-accept-header)
+               (mapv (fn [[l q]] l)))
+          session-locale (session/get :locale nil)]
+      (binding [i18n/*locale* (->> [enforce-locale
+                                    session-locale
+                                    accept-lang-locales]
+                                   flatten
+                                   (remove nil?)
+                                   (into []))]
+        (handler request)))))
 
 (defn wrap-forker [handler & handlers]
   (fn [request]

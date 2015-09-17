@@ -1,6 +1,7 @@
 (ns reverie.core
   (:require [clojure.string :as str]
             [reverie.area :as a]
+            [reverie.i18n :as i18n]
             [reverie.module :as module]
             [reverie.module.entity :as entity]
             [reverie.render :as render]
@@ -51,6 +52,7 @@
   (let [name (keyword name)
         migration (:migration options)]
     `(do
+       (i18n/load-from-options! ~options)
        (when ~migration
          (swap! sys/storage assoc-in [:migrations ~name] ~migration))
        (swap! sys/storage assoc-in [:apps ~name]
@@ -61,6 +63,7 @@
   (let [properties {:name path :type :raw}
         migration (:migration options)]
     `(do
+       (i18n/load-from-options! ~options)
        (when ~migration
          (swap! sys/storage assoc-in [:migrations ~name] ~migration))
        (swap! site/routes assoc ~path [(route/route [~path]) ~properties])
@@ -74,6 +77,7 @@
         migration (:migration options)
         path (str "/admin/frame/module/" (clojure.core/name name))]
     `(do
+       (i18n/load-from-options! ~options)
        (when ~migration
          (swap! sys/storage assoc-in [:migrations ~name] ~migration))
        (swap! site/routes assoc ~path
@@ -98,6 +102,7 @@
   (let [name (keyword name)
         migration (:migration options)]
     `(do
+       (i18n/load-from-options! ~options)
        (when ~migration
          (swap! sys/storage assoc-in [:migrations ~name] ~migration))
        (swap! sys/storage assoc-in [:objects ~name]

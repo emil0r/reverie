@@ -13,11 +13,13 @@
                            (component/start))]
    (fact
     "get translation"
-    (i18n/t :en [:foo]) => "bar")
+    (i18n/with-locale :en
+      (i18n/t [:foo])) => "bar")
 
    (fact
     "add translation"
     (i18n/add-i18n! {:dictionary {:en {:baz "my baz"}}})
-    (i18n/t :en [:baz]))
+    (i18n/with-locale :en
+      (i18n/t [:baz])))
 
    (component/stop i18n-component)))

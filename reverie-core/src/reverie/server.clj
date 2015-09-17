@@ -16,6 +16,7 @@
                                         wrap-editor
                                         wrap-error-log
                                         wrap-forker
+                                        wrap-i18n
                                         wrap-reverie-data]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file :refer [wrap-file]] ;; research for later
@@ -59,7 +60,8 @@
                               (vec
                                (concat
                                 extra-handlers
-                                [[wrap-downstream]
+                                [[wrap-i18n (:i18n middleware-options)]
+                                 [wrap-downstream]
                                  [wrap-editor]
                                  [wrap-admin]
                                  [wrap-authorized]

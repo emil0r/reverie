@@ -86,7 +86,8 @@
                      :cachemanager (get-cachemanager)}))
 
 (defrecord ReverieSystem [database site filemanager scheduler
-                          settings server logger cachemanager]
+                          settings server logger cachemanager
+                          i18n]
   component/Lifecycle
   (start [this]
     (reset! sys this)
