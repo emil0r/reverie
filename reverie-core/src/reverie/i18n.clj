@@ -59,8 +59,10 @@
   (if-let [dictionary (->> options
                            :i18n
                            get-i18n-dictionary)]
-    (if (settings/dev? (sys/get-settings))
-      (add-i18n! dictionary))))
+    ;; ideally this should only be loaded when we're in dev mode
+    ;; however... during compilation this causes a fault in the compilation
+    ;; so we'll leave it for now
+    (add-i18n! dictionary)))
 
 (defn get-i18n-path [[_ x]]
   (get-in x [:options :i18n]))
