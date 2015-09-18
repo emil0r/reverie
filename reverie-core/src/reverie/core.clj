@@ -37,11 +37,11 @@
         :else (throw (AreaException. "area assumes variables 'request' and 'page' to be present. If you wish to use other named variables send them after the name of the area like this -> (area :a req p)")))))
   ([name request page]
      (let [name (if (symbol? name) (keyword name) name)]
-      `(render/render (a/area (keyword ~name)) ~request ~page)))
+       `(render/render (a/area (keyword ~name)) ~request ~page)))
   ([name display request page]
      (let [name (if (symbol? name) (keyword name) name)
            display (if (symbol? display) (keyword display) display)]
-      `(render/render (a/area (keyword ~name) (keyword ~display)) ~request ~page))))
+       `(render/render (a/area (keyword ~name) (keyword ~display)) ~request ~page))))
 
 (defmacro deftemplate [name function]
   (let [name (keyword name)]
@@ -106,8 +106,8 @@
        (when ~migration
          (swap! sys/storage assoc-in [:migrations ~name] ~migration))
        (swap! sys/storage assoc-in [:objects ~name]
-             {:options ~options
-              :methods ~methods
-              :table (keyword
-                      (or (get ~options :table)
-                          (str/replace ~name #"/|\." "_")))}))))
+              {:options ~options
+               :methods ~methods
+               :table (keyword
+                       (or (get ~options :table)
+                           (str/replace ~name #"/|\." "_")))}))))

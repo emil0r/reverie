@@ -79,6 +79,8 @@
         (log/info "Starting i18n")
         (reset! i18n-dictionary config)
         (redef-t (not prod?))
+        ;; for development when you're running things in the REPL
+        (alter-var-root #'*locale* (fn [_] (:fallback-locale config)))
         (assoc this :started? true))))
   (stop [this]
     (if-not started?
