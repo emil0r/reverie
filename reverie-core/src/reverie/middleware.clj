@@ -123,8 +123,8 @@
                (tower.utils/parse-http-accept-header)
                (mapv (fn [[l q]] l)))
           session-locale (session/get :locale nil)]
-      (binding [i18n/*locale* (->> [enforce-locale
-                                    session-locale
+      (binding [i18n/*locale* (->> [session-locale
+                                    enforce-locale
                                     accept-lang-locales]
                                    flatten
                                    (remove nil?)
