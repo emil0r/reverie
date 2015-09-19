@@ -39,7 +39,7 @@
     (when-let [default-spec (get-in database [:db-specs :default])]
       (if (get-in default-spec [:datasource])
         (let [migrators (concat
-                         [["migrations" (str "resources/migrations/"
+                         [["migrations" (str "resources/migrations/reverie/"
                                              (:subprotocol default-spec))]]
                          (get-migrators))
               mmaps (map (fn [[table path]]
