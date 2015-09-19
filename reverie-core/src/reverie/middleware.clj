@@ -116,15 +116,16 @@
 
 (defn wrap-i18n
   "Borrows bits and pieces from tower's wrap-tower"
-  [handler {:keys [enforce-locale] :as opts}]
+  [handler {:keys [enforce-locale preferred-locale] :as opts}]
   (fn [{:keys [headers] :as request}]
     (let [accept-lang-locales ; ["en-GB" "en" "en-US"], etc.
           (->> (get headers "accept-language")
                (tower.utils/parse-http-accept-header)
                (mapv (fn [[l q]] l)))
           session-locale (session/get :locale nil)]
-      (binding [i18n/*locale* (->> [session-locale
-                                    enforce-locale
+      (binding [i18n/*locale* (->> [enforce-locale
+                                    session-locale
+                                    preferred-locale
                                     accept-lang-locales]
                                    flatten
                                    (remove nil?)
