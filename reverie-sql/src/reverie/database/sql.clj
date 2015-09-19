@@ -298,17 +298,6 @@
                           [order id])))
               objs
               (cond
-               ;; movement after and before adds a new page
-               ;; so if they have the same parent we do a :up/:down
-               ;; move instead
-               (and (= parent-origo parent)
-                    (= movement :after))
-               (movement/move objs id :down)
-
-               (and (= parent-origo parent)
-                    (= movement :before))
-               (movement/move objs id :up)
-
                (= movement :after)
                (movement/after objs origo-id id)
 
