@@ -154,26 +154,37 @@
       (try
         (ez/cache (str "media" uri) [:constrain 200])
         (catch Exception e
-          (log/error {:what ::cache-jpeg
-                      :exception e
-                      :exception-msg (str e)})
+          (log/warn {:what ::cache-jpeg
+                     :exception e
+                     :msg (str e)})
           (str "media" uri))))))
 
 (defn- get-path-info [file]
-  (let [path (.getPath file)]
-    {:type (cond
-            (fs/directory? file) :directory
-            (fs/file? file) :file
-            :else :other)
-     :mod (fs/mod-time file)
-     :file-type (get-file-type path)
-     :uri (-> path
-              (str/replace (re-pattern
-                            (-> path (str/split #"media") first)) "")
-              (str/replace-first #"media" "")
-              join-uri)
-     :name (get-name path)
-     :size (fs/size file)}))
+  (try
+    (let [path (.getPath file)]
+      {:type (cond
+              (fs/directory? file) :directory
+              (fs/file? file) :file
+              :else :other)
+       :mod (fs/mod-time file)
+       :file-type (get-file-type path)
+       :uri (-> path
+                (str/replace (re-pattern
+                              (-> path (str/split #"media") first)) "")
+                (str/replace-first #"media" "")
+                join-uri)
+       :name (get-name path)
+       :size (fs/size file)})
+    (catch Exception e
+      (log/error {:what ::get-path-info
+                  :exception e
+                  :msg (str e)})
+      {:type :other
+       :mod 0
+       :file-type nil
+       :uri ""
+       :name "Faulty file/directory"
+       :size 0})))
 
 (defn- list-dir [base path]
   (let [base? (str/blank? base)
