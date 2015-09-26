@@ -25,6 +25,10 @@
   (if (str/blank? value)
     nil
     (time/coerce value "YYYY-MM-DD HH:mm" :java.sql.Timestamp)))
+(defmethod cast-field :boolean [_ value]
+  (if (str/blank? value)
+    false
+    true))
 (defmethod cast-field :default [_ value]
   value)
 

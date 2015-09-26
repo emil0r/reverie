@@ -54,13 +54,19 @@
             [] errors)))
 
 (defn skip-stages [entity stage form-params]
-  (reduce (fn [out k]
-            (let [field (get (e/fields entity) k)
-                  skip-stages (:validation-skip-stages field)]
-              (if (some #(= stage %) skip-stages)
-                (assoc out k ::skip)
-                (assoc out k (get form-params k)))))
-          {} (keys form-params)))
+  ;; get keys from both form-params and fields in the entity
+  ;; from form-params we can get keys not listed in e/field.
+  ;; especially :type :html can give rise to this
+  ;; from e/fields we get keys which won't be in form-params
+  ;; for some types of POST data (ie, checkboxes don't send unchecked boxes)
+  (let [ks (set (into (keys form-params) (keys (e/fields entity))))]
+    (reduce (fn [out k]
+              (let [field (get (e/fields entity) k)
+                    skip-stages (:validation-skip-stages field)]
+                (if (some #(= stage %) skip-stages)
+                  (assoc out k ::skip)
+                  (assoc out k (get form-params k)))))
+            {} ks)))
 
 (defn process-request [request module edit? stage]
   (let [{:keys [entity id]} (:params request)
