@@ -19,25 +19,35 @@
   (prune! [this cachemanager]
     (let [{db :database} cachemanager
           minute (Integer/parseInt (time/format (t/now) "mm"))
+
+          ;; both public and private views will
+          ;; be purged from the cache if they're
+          ;; set to a blank string (i.e., don't cache)
+          ;; the reason for this being that a change
+          ;; in caching from caching to no caching
+          ;; is not picked up for a purge
+          ;; TODO: refactor this so that it's purged directly
+          ;; when the meta data for the page is saved
+
           ;; for public view
           public-pages
           (->> (db/query db {:select [:page_serial :value]
                              :from [:reverie_page_properties]
-                             :where [:and
-                                     [:not= :value ""]
-                                     [:= :key "cache_clear_time"]]})
+                             :where [:= :key "cache_clear_time"]})
                (map (fn [{:keys [page_serial value]}]
-                      [page_serial (Integer/parseInt value)])))
+                      [page_serial (if (not= value "")
+                                     (Integer/parseInt value)
+                                     1)])))
 
           ;; for private view (i.e., logged in users)
           private-pages
           (->> (db/query db {:select [:page_serial :value]
                              :from [:reverie_page_properties]
-                             :where [:and
-                                     [:not= :value ""]
-                                     [:= :key "cache_clear_user_time"]]})
+                             :where [:= :key "cache_clear_user_time"]})
                (map (fn [{:keys [page_serial value]}]
-                      [page_serial (Integer/parseInt value)])))]
+                      [page_serial (if (not= value "")
+                                     (Integer/parseInt value)
+                                     1)])))]
       (doseq [[serial value] public-pages]
         (when (zero? (mod minute value))
           (cache/evict! cachemanager (page/page {:serial serial}) evict-public?)))
