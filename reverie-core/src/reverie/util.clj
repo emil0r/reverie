@@ -37,6 +37,7 @@
       (str/replace #"\&" "-")
       (str/replace #"\." "-")
       (str/replace #":" "-")
+      (str/replace #"/" "-")
       (str/replace #"[^a-zA-Z0-9\-\_\.]" "")
       (str/replace #"^-" "")
       (str/replace #"-$" "")

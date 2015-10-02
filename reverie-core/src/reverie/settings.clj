@@ -48,7 +48,8 @@
                 :message "Settings have not been initialized!"})
 
        (let [value (get-in (:settings settings) path default)]
-         (if (nil? value)
+         (if (and (nil? value)
+                  (not= default nil))
            (throw+ :type ::path-not-found
                    :message (str "Nothing found for: " path))
            value)))))
