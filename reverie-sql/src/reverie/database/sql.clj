@@ -317,12 +317,14 @@
     (assert (contains? data :name) ":name key is missing")
     (assert (contains? data :properties) ":properties key is missing")
 
-    (let [order (or (-> (db/query db {:select [(sql/raw "max(\"order\")")]
-                                      :from [:reverie_object]
-                                      :where [:= :page_id (:page_id data)]})
-                        first
-                        :max)
-                    1)
+    (let [order (inc (or (-> (db/query db {:select [(sql/raw "max(\"order\")")]
+                                           :from [:reverie_object]
+                                           :where [:and
+                                                   [:= :page_id (:page_id data)]
+                                                   [:= :area (:area data)]]})
+                             first
+                             :max)
+                         0))
           obj (db/query! db sql-add-object<! (-> data
                                                  (assoc :order order)
                                                  (dissoc :fields)))
