@@ -143,7 +143,8 @@
                       (e/field-attribs entity field))
                      field
                      (if (fn? options)
-                       (options {:database (:database module)})
+                       (options {:database (or (:database module)
+                                               (-> entity :page :database))})
                        options)
                      (form-params field))
      (help-text (e/field-options entity field))]))
