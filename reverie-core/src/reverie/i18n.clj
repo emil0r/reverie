@@ -20,15 +20,15 @@
 
 (defn redef-t
   ([]
-     (redef-t true))
+   (redef-t true))
   ([dev?]
-     (alter-var-root
-      #'t
-      (fn [_]
-        (let [tower-t (tower/make-t (assoc @i18n-dictionary :dev-mode? dev?))]
-          (fn
-            ([k-or-ks & fmt-args]
-               (apply tower-t *locale* k-or-ks fmt-args))))))))
+   (alter-var-root
+    #'t
+    (fn [_]
+      (let [tower-t (tower/make-t (assoc @i18n-dictionary :dev-mode? dev?))]
+        (fn
+          ([k-or-ks & fmt-args]
+           (apply tower-t *locale* k-or-ks fmt-args))))))))
 
 (defmulti get-i18n-dictionary class)
 (defmethod get-i18n-dictionary java.lang.String [path]
@@ -90,8 +90,8 @@
         (reset! i18n-dictionary {})
         (alter-var-root #'t (fn [_] identity))
         (assoc this
-          :config nil
-          :started? false))))
+               :config nil
+               :started? false))))
   Ii18n
   (load-i18n! [this]
     (let [dictionary (->> [(map get-i18n-path (sys/modules))
@@ -107,8 +107,8 @@
 
 (defn get-i18n
   ([prod?]
-     (map->I18N {:prod? prod? :config {:dictionary {}
-                                       :dev-mode? true
-                                       :fallback-locale :en}}))
+   (map->I18N {:prod? prod? :config {:dictionary {}
+                                     :dev-mode? true
+                                     :fallback-locale :en}}))
   ([prod? config]
-     (map->I18N {:config config :prod? prod?})))
+   (map->I18N {:config config :prod? prod?})))

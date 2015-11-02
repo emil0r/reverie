@@ -116,7 +116,7 @@
 
 (defn wrap-i18n
   "Borrows bits and pieces from tower's wrap-tower"
-  [handler {:keys [enforce-locale preferred-locale] :as opts}]
+  [handler {:keys [enforce-locale preferred-locale fallback-locale] :as opts}]
   (fn [{:keys [headers] :as request}]
     (let [accept-lang-locales ; ["en-GB" "en" "en-US"], etc.
           (->> (get headers "accept-language")
@@ -126,7 +126,8 @@
       (binding [i18n/*locale* (->> [enforce-locale
                                     session-locale
                                     preferred-locale
-                                    accept-lang-locales]
+                                    accept-lang-locales
+                                    (or fallback-locale :en)]
                                    flatten
                                    (remove nil?)
                                    (into []))]
