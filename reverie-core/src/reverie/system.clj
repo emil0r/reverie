@@ -77,7 +77,7 @@
   (:settings @sys))
 
 (defrecord ReverieData [settings database filemanager cachemanager user
-                        edit? editor?])
+                        dev? edit? editor?])
 
 (defn get-reveriedata []
   (map->ReverieData {:settings (get-settings)
