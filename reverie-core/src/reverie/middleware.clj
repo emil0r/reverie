@@ -83,7 +83,7 @@
   (fn [{:keys [uri] :as request}]
     (let [data (sys/get-reveriedata)
           user (auth/get-user (:database data))]
-      (handler (assoc request :reverie (assoc data :user user))))))
+      (handler (assoc request :reverie (assoc data :user user :dev? dev?))))))
 
 (defn- session-token [request]
   (get-in request [:session :ring.middleware.anti-forgery/anti-forgery-token]))
