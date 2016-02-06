@@ -1,4 +1,4 @@
-(defproject reverie-sql "0.7.0-SNAPSHOT"
+(defproject reverie-sql "0.7.0-alpha1"
   :description "The SQL backbone of reverie; a CMS for power users, by power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
