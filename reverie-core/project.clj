@@ -3,10 +3,10 @@
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [ring/ring-anti-forgery "1.0.0"]
                  [ring/ring-core "1.3.1"]
-                 [clout "2.1.0"]
+                 [clout "2.1.2"]
                  [clj-time "0.11.0"]
                  [bultitude "0.2.6"]
                  [slingshot "0.12.2"]
@@ -44,7 +44,7 @@
                                   [ring-mock "0.1.5"]
                                   [spyscope "0.1.5"]
                                   [http-kit "2.1.19"]
-                                  [org.clojure/tools.namespace "0.2.9"]
+                                  [org.clojure/tools.namespace "0.2.11"]
                                   [org.postgresql/postgresql "9.3-1102-jdbc41"]]
                    :injections [(require 'spyscope.core)
                                 (require 'spyscope.repl)
