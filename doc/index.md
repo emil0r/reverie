@@ -6,7 +6,7 @@ A CMS written for power users, by power users.
 
 - Introduction
   - [What is a CMS?](intro/what-is-a-cms.md)
-  - [Why a CMS? Why can't I use <name here>?](why-a-cms.md)
+  - [Why a CMS? Why can't I use <name here>?](intro/why-a-cms.md)
 - Installation
   - [Getting started](installation/getting-started.md)
 - Tutorial
@@ -44,7 +44,7 @@ A CMS written for power users, by power users.
   - reverie.module
   - [reverie.object](reverie/object.md)
   - reverie.page
-  - reverie.server
+  - [reverie.server](reverie/server.md)
   - reverie.system
 - Status
   - 0.7
