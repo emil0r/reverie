@@ -47,11 +47,11 @@ Implementation details for objects are spread out over a number of files. Primar
 
 ## Migrations
 
-See [concepts/migrations](https://github.com/emil0r/reverie/doc/concepts/migrations.md).
+See [concepts/migrations](../concepts/migrations.md).
 
 ## fields
 
-See [reverie/fields](https://github.com/emil0r/reverie/doc/reverie/fields.md).
+See [reverie/fields](fields.md).
 
 
 ## sections

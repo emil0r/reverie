@@ -21,4 +21,4 @@ An object is a representation of something you wish to have rendered as HTML and
 The common theme among all the examples is that you have something you wish to represent, you want to be able to manipulate that something to various degrees and you want to have a say in which page uses the object and where on the page the object goes.
 
 
-For more info see [reverie.object](https://github.com/emil0r/reverie/doc/reverie/object.md)
+For more info see [reverie.object](../reverie/object.md)

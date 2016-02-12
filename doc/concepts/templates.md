@@ -2,7 +2,7 @@
 
 A template defines the HTML for a page and defines the areas within the template. Templates are always used by the reverie.page/Page implementation and can be used by both the reverie.page/AppPage and reverie.page/RawPage implementations.
 
-reverie/CMS endorses [hiccup](https://github.com/weavejester/hiccup) for HTML rendering, but it is quite possible to use another library in addittion to hiccup. [enlive](https://github.com/cgrand/enlive) has successfully been used in the past. See render-fn in [init.clj](https://github.com/emil0r/reverie/doc/reverie/init.clj.md).
+reverie/CMS endorses [hiccup](https://github.com/weavejester/hiccup) for HTML rendering, but it is quite possible to use another library in addittion to hiccup. [enlive](https://github.com/cgrand/enlive) has successfully been used in the past. See render-fn in [init.clj](../reverie/init.clj.md).
 
 
 ```clojure

@@ -1,6 +1,6 @@
 # fields 
 
-Both [reverie.object](https://github.com/emil0r/reverie/docs/reverie/object.md) and [reverie.module](https://github.com/emil0r/reverie/docs/reverie/module.md) take fields as arguments. A field always corresponds to a column in a database.
+Both [reverie.object](object.md) and [reverie.module](module.md) take fields as arguments. A field always corresponds to a column in a database.
 
 
 ## Implementation
