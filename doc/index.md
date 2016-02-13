@@ -40,7 +40,7 @@ A CMS written for power users, by power users.
   - [reverie.cache](reverie/cache.md)
   - [reverie.downstream](reverie/downstream.md)
   - [reverie.fields](reverie/fields.md)
-  - reverie.i18n
+  - [reverie.i18n](reverie/i18n.md)
   - reverie.module
   - [reverie.object](reverie/object.md)
   - reverie.page
