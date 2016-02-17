@@ -1,6 +1,6 @@
 (ns reverie.admin.validation
   (:require [reverie.module.entity :as entity]
-            vlad))
+            [vlad.core :as vlad]))
 
 (defn validate [entity params]
   (let [validations (->> entity

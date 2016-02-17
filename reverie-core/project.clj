@@ -19,7 +19,7 @@
                  [com.taoensso/tower "3.0.2"]
                  [com.stuartsierra/component "0.2.3"]
                  [hiccup "1.0.5"]
-                 [vlad "1.1.0"]
+                 [vlad "3.3.0"]
                  [lib-noir "0.9.9"]
                  [ez-web "0.3.0"]
                  [ez-image "1.0.3"]

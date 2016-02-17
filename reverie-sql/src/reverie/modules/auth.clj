@@ -18,7 +18,7 @@
             [reverie.modules.sql :as msql]
             [ring.util.anti-forgery :refer :all]
             [ring.util.response :as response]
-            vlad))
+            [vlad.core :as vlad]))
 
 
 (defn- repeat-password-field [form-params errors]
@@ -116,19 +116,19 @@
            :fields {:spoken_name {:name "Spoken name"
                                   :type :text
                                   :max 255
-                                  :validation (vlad/present [:spoken_name])}
+                                  :validation (vlad/attr [:spoken_name] (vlad/present))}
                     :full_name {:name "Full name"
                                 :type :text
                                 :max 255
-                                :validation (vlad/present [:full_name])}
+                                :validation (vlad/attr [:full_name] (vlad/present))}
                     :username {:name "Username"
                                :type :text
-                               :validation (vlad/present [:username])
+                               :validation (vlad/attr [:username] (vlad/present))
                                :max 255
                                :help "A maximum of 255 characters may be used"}
                     :email {:name "Email"
                             :type :email
-                            :validation (vlad/present [:email])
+                            :validation (vlad/attr [:email] (vlad/present))
                             :max 255}
                     :password {:name "Password"
                                :type :html
@@ -136,9 +136,9 @@
                                :validation-skip-stages [:edit]
                                :validation (vlad/chain
                                             (vlad/join
-                                             (vlad/present [:password])
-                                             (vlad/length-in 8 128 [:password])
-                                             (vlad/present [:repeat-password]))
+                                             (vlad/attr [:password] (vlad/present))
+                                             (vlad/attr [:password] (vlad/length-in 8 128 ))
+                                             (vlad/attr [:repeat-password] (vlad/present)))
                                             (vlad/equals-field [:password] [:repeat-password]))}
                     :active_p {:name "Active?"
                                :type :boolean
@@ -176,7 +176,7 @@
             :fields {:name {:name "Name"
                             :type :text
                             :max 255
-                            :validation (vlad/present [:name])}
+                            :validation (vlad/attr [:name] (vlad/present))}
                      :roles {:name "Roles"
                              :type :m2m
                              :cast :int

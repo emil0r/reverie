@@ -20,7 +20,8 @@
             [reverie.publish :as publish]
             [reverie.system :as sys]
             [reverie.time :as time]
-            [ring.util.anti-forgery :refer :all])
+            [ring.util.anti-forgery :refer :all]
+            [vlad.core :as vlad])
   (:import [reverie.admin.looknfeel.form PageForm]))
 
 
@@ -29,11 +30,11 @@
    {:fields
     {:name {:name "Name"
             :type :text
-            :validation (vlad/present [:name])}
+            :validation (vlad/attr [:name] (vlad/present))}
      :slug {:name "Slug"
             :type :slug
             :for :name
-            :validation (vlad/present [:slug])
+            :validation (vlad/attr [:slug] (vlad/present))
             :help "A slug is a part of a URL. Normally it's a normalized string of the name of the page"}
      :title {:name "Title"
              :type :text}
@@ -54,11 +55,11 @@
    {:fields
     {:name {:name "Name"
             :type :text
-            :validation (vlad/present [:name])}
+            :validation (vlad/attr [:name] (vlad/present))}
      :slug {:name "Slug"
             :type :slug
             :for :name
-            :validation (vlad/present [:slug])
+            :validation (vlad/attr [:slug] (vlad/present))
             :help "A slug is a part of a URL. Normally it's a normalized string of the name of the page"}
      :title {:name "Title"
              :type :text}

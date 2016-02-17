@@ -13,7 +13,7 @@
             [reverie.module.entity :as e]
             [reverie.util :as util]
             [ring.util.anti-forgery :refer :all]
-            vlad))
+            [vlad.core :as vlad]))
 
 (defn field-name [field options]
   (or (get-in options [:name])
@@ -34,7 +34,7 @@
                 (flatten
                  (vals
                   (-> [error]
-                      (vlad/assign-name error-field-names)
+                      (vlad/assign-names error-field-names)
                       (vlad/translate-errors vlad/english-translation)))))))
        errors))
 
