@@ -9,10 +9,26 @@
                  spoken-name full-name
                  roles groups])
 
+(def ^:dynamic *extended* "Extended data" {})
+
+(defn extend!
+  "Extend extensions to User record"
+  [k v]
+  (alter-var-root
+   #'*extended*
+   (fn [xt]
+     (assoc xt k v))))
+(defn retract!
+  "Rectract extensions to User record"
+  [k]
+  (alter-var-root
+   #'*extended*
+   (fn [xt]
+     (dissoc xt k))))
 
 (defprotocol IUserDatabase
-  (get-users [db])
-  (get-user [db] [db id-or-email]))
+  (get-users [db] "Get all users")
+  (get-user [db] [db id-or-email] "Get user by session or by id/email"))
 
 (defprotocol IUserLogin
   (login [data db]))
