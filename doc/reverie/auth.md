@@ -64,4 +64,7 @@ Sometimes you wish to extend the User record with your own data that is captured
   ;; data is lazily loaded and won't execute until dereffed
   @(:oauth user))
   
+  
+;; removing extensions are done by retract!
+(auth/retract! :oauth)
 ```
