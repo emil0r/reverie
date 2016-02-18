@@ -38,6 +38,7 @@ A CMS written for power users, by power users.
 - reverie.
   - [reverie.app](reverie/app.md)
   - [reverie.area](reverie/area.md)
+  - [reverie.auth](reverie/auth.md)
   - [reverie.cache](reverie/cache.md)
   - [reverie.downstream](reverie/downstream.md)
   - [reverie.fields](reverie/fields.md)
