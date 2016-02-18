@@ -19,7 +19,15 @@ Technical documentation for App.
   myapp 
 
   ;; options
-  {} 
+  {
+   ;; load i18n dictionary
+   :i18n "path/to/edn-file.edn" ;; can be a hashmap as well
+   
+   ;; run migrations
+   :migrations {:path "path/to/migration.sql"
+                :automatic? true}
+                
+  } 
   
   ;; routes
   [[
@@ -33,3 +41,8 @@ Technical documentation for App.
 
 
 ```
+
+
+## routes
+
+See [reverie.route.md](route.md) for more info on routes.
