@@ -21,7 +21,7 @@ A CMS written for power users, by power users.
   - [Objects](concepts/objects.md)
   - [Apps](concepts/apps.md)
   - Modules
-  - Endpoints
+  - [Endpoints](concepts/endpoints.md)
   - [Migrations](concepts/migrations.md)
 - How do I...
   - [use the database?](how-do-i/database.md)

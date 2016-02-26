@@ -27,6 +27,9 @@ Technical documentation for App.
    :migrations {:path "path/to/migration.sql"
                 :automatic? true}
                 
+   ;; headers map
+   :headers {"Content-Type" application/xhtml+xml; charset=utf-8;"}
+
   } 
   
   ;; routes
