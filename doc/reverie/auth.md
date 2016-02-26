@@ -40,6 +40,55 @@ Under the namespace reverie.auth a record exists called User. This is what you g
                  roles groups])
 ```
 
+## functions / protocols
+
+```clojure
+
+(defprotocol IUserDatabase
+  (get-users [db] "Get all users")
+  (get-user [db] [db id-or-email] "Get user by session or by id/email"))
+
+(defprotocol IUserLogin
+  (login [data db]))
+
+(defprotocol IUserAdd
+  (add-user! [data roles groups db]))
+
+(defn logged-in? []
+  (not (nil? (session/get :user-id))))
+
+(defn logout []
+  (session/clear!)
+  true)
+
+
+```
+
+### logging in
+
+```clojure
+(ns some-namespace
+  (:require [reverie.auth :as auth]
+            some-namespace.user))
+  
+  
+(defn some-response [{{db :database} :reverie :as request} page properties {:keys [username password] :as params}]
+  ;; option 1
+  (auth/login {:username username :password password} db)
+  
+  ;; option 2
+  (let [user (auth/get-user db 1)] ;; get the first user
+    ;; and then login with the user record
+    (auth/login user db))
+    
+  ;; option 3
+  (let [custom-record-user (some-namespace.user/get-custom-record-user username password)]
+    ;; implement the IUserLogin protocol for the custom record and you can do this
+    (auth/login custom-record-user db))
+  )
+```
+
+
 
 ### Extending user
 

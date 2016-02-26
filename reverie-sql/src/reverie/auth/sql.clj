@@ -1,13 +1,16 @@
 (ns reverie.auth.sql
   (:require [buddy.hashers :as hashers]
+            [clojure.string :as str]
             [ez-database.core :as db]
+            [noir.session :as session]
             [reverie.auth :as auth]
             [reverie.module :as m]
             [reverie.page :as page]
-            [reverie.auth :refer [IAuthorize IUserAdd]]
+            [reverie.auth :refer [IAuthorize IUserAdd IUserLogin]]
             [reverie.util :as util]
             [taoensso.timbre :as log])
-  (:import [reverie.page Page AppPage RawPage]
+  (:import [reverie.auth User]
+           [reverie.page Page AppPage RawPage]
            [reverie.module Module]))
 
 (extend-type Page
@@ -168,4 +171,32 @@
         ;; send back new user
         (auth/get-user db user-id))
       ;; user already exists
+      false)))
+
+(extend-type clojure.lang.PersistentArrayMap
+  IUserLogin
+  (login [{:keys [username password]} db]
+    (let [username (str/lower-case username)
+          user (-> (db/query db {:select [:id :password]
+                                 :from [:auth_user]
+                                 :where [:= :username username]})
+                   first)]
+      (if user
+        (if (hashers/check password (:password user))
+          (do
+            (session/swap! merge {:user-id (:id user)})
+            (db/query! db {:update :auth_user
+                           :set {:last_login :%now}
+                           :where [:= :id (:id user)]})
+            true)
+          false)
+        false))))
+
+
+(extend-type User
+  IUserLogin
+  (login [user db]
+    (if user
+      (do (session/swap! merge {:user-id (:id user)})
+          true)
       false)))

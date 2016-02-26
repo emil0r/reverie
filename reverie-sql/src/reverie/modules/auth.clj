@@ -5,9 +5,8 @@
             [ez-web.breadcrumbs :refer [crumb]]
             [ez-web.uri :refer [join-uri]]
             [hiccup.form :as form]
-            [noir.session :as session]
             [reverie.admin.looknfeel.form :as looknfeel]
-            [reverie.auth :refer [IUserLogin] :as auth]
+            [reverie.auth :as auth]
             [reverie.core :refer [defmodule]]
             [reverie.module :as m]
             [reverie.module.entity :as e]
@@ -190,23 +189,3 @@
                         :fields [:roles]}]}}}
   [["/:entity/:id/password" {:get change-password
                              :post handle-change-password}]])
-
-
-(extend-type clojure.lang.PersistentArrayMap
-  IUserLogin
-  (login [{:keys [username password]} db]
-    (let [username (str/lower-case username)
-          user (-> (db/query db {:select [:id :password]
-                                 :from [:auth_user]
-                                 :where [:= :username username]})
-                   first)]
-      (if user
-        (if (hashers/check password (:password user))
-          (do
-            (session/swap! merge {:user-id (:id user)})
-            (db/query! db {:update :auth_user
-                           :set {:last_login :%now}
-                           :where [:= :id (:id user)]})
-            true)
-          false)
-        false))))
