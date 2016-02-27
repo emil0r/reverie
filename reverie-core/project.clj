@@ -1,5 +1,5 @@
 (defproject reverie-core "0.7.0-SNAPSHOT"
-  :description "The core of reverie; a CMS for power users, by power users"
+  :description "The core of reverie; a CMS for power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}

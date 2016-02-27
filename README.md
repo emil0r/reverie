@@ -2,7 +2,7 @@
 
 ![](https://raw.githubusercontent.com/emil0r/reverie/master/reverie-core/resources/public/static/admin/img/reveriecms.png)
 
-For power users, by power users.
+A CMS for power users.
 
 ## Usage
 

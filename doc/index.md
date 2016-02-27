@@ -1,6 +1,6 @@
 # reverie/CMS
 
-A CMS written for power users, by power users.
+A CMS for power users. Written in Clojure.
 
 ## Documentation
 
