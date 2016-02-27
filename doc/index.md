@@ -27,8 +27,8 @@ A CMS for power users. Written in Clojure.
   - [use the database?](how-do-i/database.md)
   - [use the settings?](how-do-i/settings.md)
 - Structure
-  - Typical structure of a project
-  - init.clj
+  - [Typical structure of a project](structure/typical-structure.md)
+  - [init.clj](structure/init.clj.md)
 - reverie.
   - [reverie.app](reverie/app.md)
   - [reverie.area](reverie/area.md)
