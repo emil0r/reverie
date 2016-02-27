@@ -30,6 +30,30 @@ Custom HTML representation of a field.
 Many to many. Bind to another table through a linking table.
 
 ```clojure
+   {;; other stuff
+    :type :m2m
+    
+    ;; optional casting, but is normally done as m2m is usually
+    ;; held together with foreign keys in the database
+    :cast :int
+
+    ;; table we want to have joined
+    :table :auth_group
+    
+    ;; select options for hiccup
+    :options [:id :name]
+
+    ;; order by
+    :order :name
+    
+    ;; the joining
+    :m2m {;; the joining table
+          :table :auth_user_group
+          
+          ;; joining: this that
+          ;; this: this table's foreign key
+          ;; that: the joining table's foreign key
+          :joining [:user_id :group_id]}}
 
 ```
 

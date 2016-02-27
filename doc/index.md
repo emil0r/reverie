@@ -20,7 +20,7 @@ A CMS written for power users, by power users.
   - [Areas](concepts/areas.md)
   - [Objects](concepts/objects.md)
   - [Apps](concepts/apps.md)
-  - Modules
+  - [Modules](concepts/modules.md)
   - [Endpoints](concepts/endpoints.md)
   - [Migrations](concepts/migrations.md)
 - How do I...
@@ -43,7 +43,7 @@ A CMS written for power users, by power users.
   - [reverie.downstream](reverie/downstream.md)
   - [reverie.fields](reverie/fields.md)
   - [reverie.i18n](reverie/i18n.md)
-  - reverie.module
+  - [reverie.module](reverie/module.md)
   - [reverie.object](reverie/object.md)
   - [reverie.server](reverie/server.md)
   - reverie.system
