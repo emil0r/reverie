@@ -2,9 +2,7 @@
   (:refer-clojure :exclude [System])
   (:require [bultitude.core :refer [namespaces-on-classpath]]
             [clojure.java.io :as io]
-            [com.stuartsierra.component :as component]
-            [reverie.database :as db]
-            [reverie.route :as route]))
+            [com.stuartsierra.component :as component]))
 
 (defn load-views [& dirs]
   (doseq [f (namespaces-on-classpath :classpath (map io/file dirs))]
