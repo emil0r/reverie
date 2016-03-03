@@ -44,6 +44,16 @@
   true)
 
 
+;; roles
+
+(defmulti role? (fn [_ role-or-roles] (type role-or-roles)))
+
+(defmethod role? clojure.lang.PersistentHashSet [user roles]
+  (not (empty? (set/intersection (:roles user) roles))))
+
+(defmethod role? :default [user role]
+  (contains? (:roles user) role))
+
 ;; authorization
 
 (defmacro with-access [user required-roles & body]
