@@ -22,7 +22,23 @@ Groups has one function: grouping roles under one banner. Groups are then assign
 
 ## Roles
 
-[stub]
+```clojure
+(ns some-namespace
+  (:require [reverie.auth :as auth]))
+  
+  
+(let [user (fetch-user 1)]
+
+  ;; true if user has the role
+  (auth/role? user :admin)
+  
+  ;; true if the user has an exact match of the roles
+  (auth/role? user {:admin true :user false :staff false})
+
+  ;; true if user has any role
+  ;; vectors and lazy sequences also falls under this
+  (auth/role? user #{:admin :user :staff}))
+```
 
 
 ## User

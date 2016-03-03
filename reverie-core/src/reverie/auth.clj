@@ -48,11 +48,22 @@
 
 (defmulti role? (fn [_ role-or-roles] (type role-or-roles)))
 
-(defmethod role? clojure.lang.PersistentHashSet [user roles]
-  (not (empty? (set/intersection (:roles user) roles))))
+(defmethod role? clojure.lang.PersistentArrayMap [user roles]
+  ;; the keys in roles correspond to roles
+  ;; the values correspond to whether the user should have the role or not
+  (every? true? (reduce (fn [out [k v]]
+                          (if (true? v)
+                            (conj out (contains? (:roles user) k))
+                            (conj out (not (contains? (:roles user) k)))))
+                        [] roles)))
 
-(defmethod role? :default [user role]
+(defmethod role? clojure.lang.Keyword [user role]
+  ;; return true if the user has the role
   (contains? (:roles user) role))
+
+(defmethod role? :default [user roles]
+  ;; return true if the user have any of the roles
+  (not (empty? (set/intersection (:roles user) (set roles)))))
 
 ;; authorization
 
