@@ -70,6 +70,10 @@ Under the namespace reverie.auth a record exists called User. This is what you g
 (defprotocol IUserAdd
   (add-user! [data roles groups db]))
 
+(defprotocol IUserUpdate
+  (update! [user {:keys [username email spoken-name full-name active?] :as data) db])
+  (set-password! [user new-password db]))
+
 (defn logged-in? []
   (not (nil? (session/get :user-id))))
 

@@ -6,7 +6,7 @@
             [reverie.auth :as auth]
             [reverie.module :as m]
             [reverie.page :as page]
-            [reverie.auth :refer [IAuthorize IUserAdd IUserLogin]]
+            [reverie.auth :refer [IAuthorize IUserAdd IUserLogin IUserUpdate]]
             [reverie.util :as util]
             [taoensso.timbre :as log])
   (:import [reverie.auth User]
@@ -199,4 +199,21 @@
     (if user
       (do (session/swap! merge {:user-id (:id user)})
           true)
-      false)))
+      false))
+  IUserUpdate
+  (update! [user data db]
+    (let [data (reduce (fn [out [k v]]
+                         (case k
+                           :username (assoc out k v)
+                           :email (assoc out k v)
+                           :spoken-name (assoc out :spoken_name v)
+                           :full-name (assoc out :full_name v)
+                           :active? (assoc out :active_p v)))
+                       {} data)]
+      (db/query! db {:update :auth_user
+                     :set data
+                     :where [:= :id (:id user)]})))
+  (set-password! [user new-password db]
+    (db/query! db {:update :auth_user
+                   :set {:password (hashers/encrypt new-password)}
+                   :where [:= :id (:id user)]})))

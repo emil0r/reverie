@@ -33,6 +33,10 @@
 (defprotocol IUserLogin
   (login [data db]))
 
+(defprotocol IUserUpdate
+  (update! [user data db])
+  (set-password! [user new-password db]))
+
 (defprotocol IUserAdd
   (add-user! [data roles groups db]))
 
