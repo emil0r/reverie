@@ -42,4 +42,4 @@ A CMS for power users. Written in Clojure.
   - [reverie.server](reverie/server.md)
   - [reverie.system](reverie/system.md)
 - Status
-  - 0.7
+  - [0.7](status/0.7.md)
