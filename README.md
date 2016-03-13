@@ -10,6 +10,10 @@ See [docs](doc/index.md). Work in progress. reverie/CMS works only with PostgreS
 
 Current version is 0.7. See [installation guide](doc/installation/getting-started.md) on how to install.
 
+## What does it look like?
+
+[Take a look here.](../../wiki/Example-UI)
+
 ## License
 
 Copyright © 2012-2016 Emil Bengtsson
