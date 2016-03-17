@@ -74,12 +74,13 @@
 
 
 (defn edit-follow! [page user]
-  (when-let [edit (get-edit-by-user user)]
-    (swap! edits dissoc (:serial edit))
-    (swap! edits assoc (page/serial page)
-           {:user-id (:id user)
-            :serial (page/serial page)
-            :time (t/now)})))
+  (when-not (= :module (page/type page))
+    (when-let [edit (get-edit-by-user user)]
+      (swap! edits dissoc (:serial edit))
+      (swap! edits assoc (page/serial page)
+             {:user-id (:id user)
+              :serial (page/serial page)
+              :time (t/now)}))))
 
 (defn assoc-admin-links [page request response]
   (if (get-in request [:reverie :edit?])
