@@ -207,50 +207,53 @@
                      first
                      :max)
                  0)]
-      (let [data (assoc data
-                        :serial serial
-                        :template (-> data :template kw->str)
-                        :app (-> data :app kw->str)
-                        :type (-> data :type kw->str)
-                        :slug (or (:slug data)
-                                  (slugify (:name data)))
-                        :order (inc order)
-                        :version 0)
-            {:keys [id] :as page-data} (db/query! db sql-add-page<! data)]
-        (recalculate-routes db id)
-        (auth/add-authorization! (rev.db/get-page db id)
-                                 db
-                                 :all
-                                 :view)
-        (auth/add-authorization! (rev.db/get-page db id)
-                                 db
-                                 :edit
-                                 :staff)
-        (auth/add-authorization! (rev.db/get-page db id)
-                                 db
-                                 :add
-                                 :staff)
-        (rev.db/get-page db (:id page-data)))))
+      (db/with-transaction [db :default]
+        (let [data (assoc data
+                          :serial serial
+                          :template (-> data :template kw->str)
+                          :app (-> data :app kw->str)
+                          :type (-> data :type kw->str)
+                          :slug (or (:slug data)
+                                    (slugify (:name data)))
+                          :order (inc order)
+                          :version 0)
+              {:keys [id] :as page-data} (db/query! db sql-add-page<! data)]
+          (recalculate-routes db id)
+          (auth/add-authorization! (rev.db/get-page db id)
+                                   db
+                                   :all
+                                   :view)
+          (auth/add-authorization! (rev.db/get-page db id)
+                                   db
+                                   :edit
+                                   :staff)
+          (auth/add-authorization! (rev.db/get-page db id)
+                                   db
+                                   :add
+                                   :staff)
+          (rev.db/get-page db (:id page-data))))))
 
   (update-page! [db id data]
     (let [data (select-keys data [:template :name :title
                                   :route :type :app :slug])]
       (assert (not (empty? data)) "update-page! does not take an empty data set")
-      (db/query! db {:update :reverie_page
-                     :set (assoc data :updated (sql/raw "now()"))
-                     :where [:= :id id]})
-      (recalculate-routes db id)
-      (rev.db/get-page db id)))
+      (db/with-transaction [db :default]
+        (db/query! db {:update :reverie_page
+                       :set (assoc data :updated (sql/raw "now()"))
+                       :where [:= :id id]})
+        (recalculate-routes db id)
+        (rev.db/get-page db id))))
 
   (save-page-properties! [db serial data]
-    (db/query! db {:delete-from :reverie_page_properties
-                   :where [:and
-                           [:in :key (vec (map name (keys data)))]
-                           [:= :page_serial serial]]})
-    (db/query! db {:insert-into :reverie_page_properties
-                   :values (map (fn [[k v]]
-                                  {:key (name k) :value v :page_serial serial})
-                                data)}))
+    (db/with-transaction [db :default]
+      (db/query! db {:delete-from :reverie_page_properties
+                     :where [:and
+                             [:in :key (vec (map name (keys data)))]
+                             [:= :page_serial serial]]})
+      (db/query! db {:insert-into :reverie_page_properties
+                     :values (map (fn [[k v]]
+                                    {:key (name k) :value v :page_serial serial})
+                                  data)})))
 
   (move-page! [db id origo-id movement]
     (let [movement (keyword movement)]
@@ -275,11 +278,12 @@
                    first
                    :max)
                0)]
-          (db/query! db {:update :reverie_page
-                         :set {(sql/raw "\"order\"") (inc order)
-                               :parent new-parent}
-                         :where [:= :id id]})
-          (recalculate-routes db id))
+          (db/with-transaction [db :default]
+            (db/query! db {:update :reverie_page
+                           :set {(sql/raw "\"order\"") (inc order)
+                                 :parent new-parent}
+                           :where [:= :id id]})
+            (recalculate-routes db id)))
         (let [parent-origo
               (-> (db/query db {:select [:parent]
                                 :from [:reverie_page]
@@ -308,12 +312,13 @@
 
                 :else
                 (movement/before objs origo-id id))]
-          (doseq [[order id] objs]
-            (db/query! db {:update :reverie_page
-                           :set {(sql/raw "\"order\"") order
-                                 :parent parent-origo}
-                           :where [:= :id id]}))
-          (recalculate-routes db id)))))
+          (db/with-transaction [db :default]
+            (doseq [[order id] objs]
+              (db/query! db {:update :reverie_page
+                             :set {(sql/raw "\"order\"") order
+                                   :parent parent-origo}
+                             :where [:= :id id]}))
+            (recalculate-routes db id))))))
 
   (add-object! [db data]
     (assert (contains? data :page_id) ":page_id key is missing")
@@ -322,31 +327,32 @@
     (assert (contains? data :name) ":name key is missing")
     (assert (contains? data :properties) ":properties key is missing")
 
-    (let [order (inc (or (-> (db/query db {:select [(sql/raw "max(\"order\")")]
-                                           :from [:reverie_object]
-                                           :where [:and
-                                                   [:= :page_id (:page_id data)]
-                                                   [:= :area (:area data)]]})
-                             first
-                             :max)
-                         0))
-          obj (db/query! db sql-add-object<! (-> data
-                                                 (assoc :order order)
-                                                 (dissoc :fields)))
-          obj-meta (sys/object (-> data :name keyword))
-          field-ks (->> obj-meta :options :fields keys)
-          fk (or (->> obj-meta :options :foreign-key)
-                 :object_id)
-          table (get-in obj-meta [:options :table])
-          obj-id (:id obj)
-          properties (merge (object/initial-fields
-                             (-> data :name keyword)
-                             {:database db})
-                            (select-keys (:properties data) field-ks)
-                            {fk obj-id})]
-      (db/query! db {:insert-into (sql/raw table)
-                     :values [properties]})
-      obj))
+    (db/with-transaction [db :default]
+      (let [order (inc (or (-> (db/query db {:select [(sql/raw "max(\"order\")")]
+                                             :from [:reverie_object]
+                                             :where [:and
+                                                     [:= :page_id (:page_id data)]
+                                                     [:= :area (:area data)]]})
+                               first
+                               :max)
+                           0))
+            obj (db/query! db sql-add-object<! (-> data
+                                                   (assoc :order order)
+                                                   (dissoc :fields)))
+            obj-meta (sys/object (-> data :name keyword))
+            field-ks (->> obj-meta :options :fields keys)
+            fk (or (->> obj-meta :options :foreign-key)
+                   :object_id)
+            table (get-in obj-meta [:options :table])
+            obj-id (:id obj)
+            properties (merge (object/initial-fields
+                               (-> data :name keyword)
+                               {:database db})
+                              (select-keys (:properties data) field-ks)
+                              {fk obj-id})]
+        (db/query! db {:insert-into (sql/raw table)
+                       :values [properties]})
+        obj)))
 
   (update-object! [db id data]
     (let [obj-name (-> (db/query db {:select [:name]
@@ -568,33 +574,33 @@
     ([db page-id]
      (publish/publish-page! db page-id false))
     ([db page-id recur?]
-     ;; TODO: wrap in a transaction
      ;; TODO: rewrite so it doesn't use so many db calls :(
-     (let [;; page-unpublished
-           pu (rev.db/get-page db page-id)
-           pages (if recur?
-                   (map (fn [{:keys [serial]}]
-                          (rev.db/get-page db serial false))
-                        (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))
-                   [pu])]
-       (doseq [pu pages]
-         (shift-versions! db (page/serial pu))
-         (let [{:keys [id] :as copied} (db/query! db sql-copy-page<! {:id (page/id pu)})]
-           (doseq [obj (page/objects pu)]
-             (let [;; copy meta object
-                   new-meta-obj (db/query! db sql-copy-object-meta<!
-                                           {:pageid id
-                                            :id (object/id obj)})
-                   ;; get meta data for meta object
-                   obj-meta (sys/object (-> new-meta-obj :name keyword))
-                   ;; foreign key
-                   fk (or (->> obj-meta :options :foreign-key)
-                          :object_id)]
-               (db/query! db {:insert-into (:table obj-meta)
-                              :values [(assoc (object/properties obj)
-                                              fk (:id new-meta-obj))]}))))
-         (recalculate-routes db (page/id pu))
-         (db/query! db sql-update-published-pages-order! {:parent (page/parent pu)})))))
+     (db/with-transaction [db :default]
+       (let [ ;; page-unpublished
+             pu (rev.db/get-page db page-id)
+             pages (if recur?
+                     (map (fn [{:keys [serial]}]
+                            (rev.db/get-page db serial false))
+                          (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))
+                     [pu])]
+         (doseq [pu pages]
+           (shift-versions! db (page/serial pu))
+           (let [{:keys [id] :as copied} (db/query! db sql-copy-page<! {:id (page/id pu)})]
+             (doseq [obj (page/objects pu)]
+               (let [ ;; copy meta object
+                     new-meta-obj (db/query! db sql-copy-object-meta<!
+                                             {:pageid id
+                                              :id (object/id obj)})
+                     ;; get meta data for meta object
+                     obj-meta (sys/object (-> new-meta-obj :name keyword))
+                     ;; foreign key
+                     fk (or (->> obj-meta :options :foreign-key)
+                            :object_id)]
+                 (db/query! db {:insert-into (:table obj-meta)
+                                :values [(assoc (object/properties obj)
+                                                fk (:id new-meta-obj))]}))))
+           (recalculate-routes db (page/id pu))
+           (db/query! db sql-update-published-pages-order! {:parent (page/parent pu)}))))))
 
   (unpublish-page! [db page-id]
     (let [;; page-unpublished

@@ -1,4 +1,4 @@
-(defproject reverie-core "0.7.0"
+(defproject reverie-core "0.8.0-SNAPSHOT"
   :description "The core of reverie; a CMS for power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
@@ -22,7 +22,7 @@
                  [vlad "3.3.0"]
                  [lib-noir "0.9.9"]
                  [ez-web "0.3.0"]
-                 [ez-image "1.0.3"]
+                 [ez-image "1.0.4"]
                  [me.raynes/fs "1.4.6"]
                  [im.chit/cronj "1.4.3"]
                  [digest "1.4.4"]

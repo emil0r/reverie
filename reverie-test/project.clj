@@ -4,9 +4,9 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [reverie-core "0.7.0-SNAPSHOT"]
-                 [reverie-sql "0.7.0-SNAPSHOT"]
-                 [reverie-batteries "0.3.0-SNAPSHOT"]
+                 [reverie-core "0.8.0-SNAPSHOT"]
+                 [reverie-sql "0.8.0-SNAPSHOT"]
+                 [reverie-batteries "0.3.0"]
                  [http-kit "2.1.19"]
                  [org.postgresql/postgresql "9.3-1102-jdbc41"]]
     :profiles {:dev {:dependencies [[midje "1.6.3"]
