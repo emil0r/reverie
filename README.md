@@ -14,6 +14,16 @@ Current version is 0.7. See [installation guide](doc/installation/getting-starte
 
 [Take a look here.](../../wiki/Example-UI)
 
+## development branch
+
+Development branch is under dev.
+
+```clojure
+;; from clojars
+ [[reverie-core "0.8.0-SNAPSHOT"]
+  [reverie-sql "0.8.0-SNAPSHOT"]]
+```
+
 ## License
 
 Copyright © 2012-2016 Emil Bengtsson
