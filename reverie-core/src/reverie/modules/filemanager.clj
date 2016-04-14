@@ -342,23 +342,67 @@
 (defmethod form/row :image [entity field {:keys [form-params errors
                                                  error-field-names]
                                           :or {form-params {}}}]
-  [:div.row-form
-   (form/error-items field errors error-field-names)
-   (hf/label field (e/field-name entity field))
-   [:span.hover
-    (merge {:onclick (str "window.open('/admin/frame/filepicker/"
-                          (form-params field)
-                          "?field=" (util/kw->str field)
-                          "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
-           (e/field-attribs entity field))
-    (if (form-params field)
-      (try [:img {:src (ez/cache (form-params field) [:constrain 100])
-                  :style "margin-right: 10px;"}]
-           (catch Exception e
-             (format "Tried to open the image but got an error: %s" (str e)))))
-    "Edit image..."]
-   (hf/hidden-field field (form-params field))
-   (form/help-text (e/field-options entity field))])
+  [:div.row-form {:style "margin-bottom: 10px;"}
+   [:table
+    [:tr
+     [:td (hf/label field (e/field-name entity field))]
+     [:td
+      (form/error-items field errors error-field-names)
+      [:div.hover
+       (merge {:onclick (str "window.open('/admin/frame/filepicker/"
+                             (form-params field)
+                             "?field=" (util/kw->str field)
+                             "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
+              (e/field-attribs entity field))
+       (if (form-params field)
+         (let [src (try (ez/cache (form-params field) [:constrain 100]) (catch Exception _))]
+           [:div [:img {:src src
+                        :style "margin-right: 10px;"
+                        :id (str (util/kw->str field) "-image")}]]))
+       "Edit image..."]
+      (if-not (str/blank? (form-params field))
+        [:div.hover
+         (merge {:onclick (format "document.getElementById('%s').value = ''; document.getElementById('%s').src = '';"
+                                  (util/kw->str field)
+                                  (str (util/kw->str field) "-image"))}
+                (e/field-attribs entity field))
+
+         "Remove image..."])
+
+      (hf/hidden-field field (form-params field))
+      (form/help-text (e/field-options entity field))]]]])
+
+(defmethod form/row :file [entity field {:keys [form-params errors
+                                                error-field-names]
+                                         :or {form-params {}}}]
+  [:div.row-form {:style "margin-bottom: 10px;"}
+   [:table
+    [:tr
+     [:td (hf/label field (e/field-name entity field))]
+     [:td (form/error-items field errors error-field-names)
+      [:div.hover
+       (merge {:onclick (str "window.open('/admin/frame/filepicker/"
+                             (form-params field)
+                             "?field=" (util/kw->str field)
+                             "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
+              (e/field-attribs entity field))
+       [:div.file {:style "margin-right: 15px;"
+                    :id (str (util/kw->str field) "-descriptor")}
+        (-> (form-params field)
+            (str/split #"/")
+            last)]
+       "Edit file..."]
+      (if-not (str/blank? (form-params field))
+        [:div.hover
+         (merge {:onclick (format "document.getElementById('%s').value = ''; document.getElementById('%s').innerHTML = '';"
+                                  (util/kw->str field)
+                                  (str (util/kw->str field) "-descriptor"))}
+                (e/field-attribs entity field))
+
+         "Remove file..."])
+      (hf/hidden-field field (form-params field))
+      (form/help-text (e/field-options entity field))]]]])
+
 
 (defn- filepicker [{:keys [query-params]} page {:keys [path]}]
   (let [up? (not (str/blank? path))
