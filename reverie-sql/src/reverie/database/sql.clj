@@ -22,6 +22,7 @@
             [taoensso.timbre :as log]
             [yesql.core :refer [defqueries]])
   (:import [com.jolbox.bonecp BoneCPDataSource]
+           [com.zaxxer.hikari HikariConfig HikariDataSource]
            [ez_database.core EzDatabase]
            [reverie DatabaseException]))
 
@@ -48,17 +49,27 @@
               maxconns-per-partition 10
               minconns-per-partition 5
               partition-count 1}} datasource
-              ds (doto (BoneCPDataSource.)
-                   (.setJdbcUrl (str "jdbc:" subprotocol ":" subname))
-                   (.setUsername user)
-                   (.setPassword password)
-                   (.setConnectionTestStatement "select 42;")
-                   (.setConnectionTimeoutInMs connection-timeout)
-                   (.setDefaultAutoCommit default-autocommit)
-                   (.setMaxConnectionsPerPartition maxconns-per-partition)
-                   (.setMinConnectionsPerPartition minconns-per-partition)
-                   (.setPartitionCount partition-count))]
-    (assoc db-spec :datasource ds)))
+         ds (doto (BoneCPDataSource.)
+              (.setJdbcUrl (str "jdbc:" subprotocol ":" subname))
+              (.setUsername user)
+              (.setPassword password)
+              (.setConnectionTestStatement "select 42;")
+              (.setConnectionTimeoutInMs connection-timeout)
+              (.setDefaultAutoCommit default-autocommit)
+              (.setMaxConnectionsPerPartition maxconns-per-partition)
+              (.setMinConnectionsPerPartition minconns-per-partition)
+              (.setPartitionCount partition-count))
+         ds2 (HikariDataSource.
+              (doto (HikariConfig.)
+                (.setJdbcUrl (str "jdbc:" subprotocol ":" subname))
+                (.setUsername user)
+                (.setPassword password)
+                (.setConnectionTimeout connection-timeout)
+                ;; (.connectionTestQuery "select 42;")
+                (.setMaximumPoolSize maxconns-per-partition)
+                ))]
+    (println "Hikaru!")
+    (assoc db-spec :datasource ds2)))
 
 (defn- massage-page-data [data]
   (-> data

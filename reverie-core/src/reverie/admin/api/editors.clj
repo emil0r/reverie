@@ -2,6 +2,7 @@
   (:require [clj-time.core :as t]
             [clojure.core.match :refer [match]]
             [clojure.string :as str]
+            [reverie.internal :refer [read-storage write-storage delete-storage]]
             [reverie.page :as page]
             [reverie.scheduler :as scheduler])
   (:import [reverie.page Page AppPage RawPage]))

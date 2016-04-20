@@ -91,6 +91,7 @@
                                                    :dev-mode? (settings/dev? settings)
                                                    :fallback-locale :en})
                       :db-specs (settings/get settings [:db :specs])
+                      :ds-specs (settings/get settings [:db :ds-specs])
                       :server-options (settings/get settings [:server :options])
                       :middleware-options (settings/get settings [:server :middleware])
                       :run-server run-server

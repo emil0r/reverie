@@ -117,8 +117,8 @@
                        :routes (:routes page-data)
                        :database database}))
               :module (assoc (:module (sys/module name))
-                        :route route
-                        :database database)
+                             :route route
+                             :database database)
               :app (let [p (db/get-page database serial public?)]
                      (if (and p
                               (= (:path route) (-> p :route :path)))

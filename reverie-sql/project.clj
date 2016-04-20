@@ -10,6 +10,7 @@
                  [ez-database "0.4.0-SNAPSHOT"]
                  [org.clojure/java.jdbc "0.4.1"]
                  [joplin.jdbc "0.3.4"]
-                 [com.jolbox/bonecp "0.8.0.RELEASE"]]
+                 [com.jolbox/bonecp "0.8.0.RELEASE"]
+                 [com.zaxxer/HikariCP "2.4.5"]]
   :profiles {:dev {:dependencies [[org.postgresql/postgresql "9.3-1102-jdbc41"]
                                   [midje "1.6.3"]]}})
