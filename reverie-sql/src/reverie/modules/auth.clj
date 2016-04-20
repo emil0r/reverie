@@ -109,9 +109,28 @@
    :template :admin/main
    :entities
    {:user {:name "User"
-           :order :id
            :table :auth_user
-           :display [:username :email]
+           :order :id
+           :display [:username :email :active_p]
+           :query (fn [{:keys [params]}]
+                    ;; query to return
+                    )
+           :filter [:username
+                    {:field :role
+                     :type :dropdown
+                     :options (fn [{:keys [database]}]
+                                (db/query database
+                                          {:select [:id :name]
+                                           :from [:auth_roles]
+                                           :order-by [:name]}))}
+                    {:field :group
+                     :type :dropdown
+                     :options (fn [{:keys [database]}]
+                                (db/query database
+                                          {:select [:id :name]
+                                           :from [:auth_group]
+                                           :order-by [:name]}))}
+                    :active_p]
            :fields {:spoken_name {:name "Spoken name"
                                   :type :text
                                   :max 255

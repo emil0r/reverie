@@ -114,13 +114,14 @@
 (defn pagination [{:keys [uri params query-params] :as request} module entity]
   (let [qs query-params
         db (:database module)
+        db-name (get-in module [:options :database] :default)
         page (or (:page params) 1)
 
         {:keys [pages page
                 next-seq
                 prev-seq]
          :as paginated} (paginator/paginate
-                         (-> (db/query db
+                         (-> (db/query db db-name
                                        {:select [:%count.*]
                                         :from [(e/table entity)]})
                              first :count)
@@ -158,6 +159,7 @@
     (get-in request [:reverie :user]) (:required-roles (m/options module))
     (if-let [entity (m/get-entity module entity)]
       (let [db (:database module)
+            db-name (get-in module [:options :database] :default)
             {:keys [order]} (:options entity)
             pk (e/pk entity)
             table (e/table entity)
@@ -165,12 +167,13 @@
                       (catch Exception _
                         1))
             display (e/display entity)
-            data (db/query db {:select (into #{} (concat display [pk]))
-                               :from [table]
-                               :order-by [order]
-                               :limit pagination-limit
-                               :offset (* pagination-limit
-                                          (dec page))})]
+            data (db/query db db-name
+                           {:select (into #{} (concat display [pk]))
+                            :from [table]
+                            :order-by [order]
+                            :limit pagination-limit
+                            :offset (* pagination-limit
+                                       (dec page))})]
         (array-map
          :content
          (html (list
