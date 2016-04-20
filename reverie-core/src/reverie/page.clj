@@ -9,8 +9,11 @@
             [reverie.response :as response]
             [reverie.system :as sys]
             [reverie.util :as util]
+            [schema.core :as s]
             reverie.RenderException)
-  (:import [reverie RenderException]))
+  (:import [reverie RenderException]
+           [reverie.object ReverieObject]
+           [reverie.route Route]))
 
 
 (defprotocol IPage
@@ -51,9 +54,23 @@
                       headers)
       :body response})))
 
-(defrecord Page [route id serial name title properties template
-                 created updated parent database version slug
-                 published-date published? objects raw-data]
+(s/defrecord Page [route :- Route
+                   id :- s/Int
+                   serial :- s/Int
+                   name :- s/Str
+                   title :- s/Str
+                   properties :- {s/Any s/Any}
+                   template :- s/Keyword
+                   created :- s/Inst
+                   updated :- s/Inst
+                   parent :- (s/maybe s/Int)
+                   version :- s/Int
+                   slug :- s/Str
+                   database :- s/Any
+                   published-date :- s/Inst
+                   published? :- s/Bool
+                   objects :- [ReverieObject]
+                   raw-data :- s/Any]
   route/IRouting
   (get-route [this] route)
   (match? [this request] (route/match? route request))
@@ -90,7 +107,10 @@
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/Page"))))
 
 
-(defrecord RawPage [route options routes database]
+(s/defrecord RawPage [route :- Route
+                      options :- {s/Any s/Any}
+                      routes :- [s/Any]
+                      database :- s/Any]
   route/IRouting
   (get-route [this] route)
   (match? [this request] (route/match? route request))
@@ -145,10 +165,27 @@
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/RawPage"))))
 
 
-(defrecord AppPage [route app app-routes app-area-mappings slug
-                    id serial name title properties options template
-                    created updated parent database version
-                    published-date published? objects raw-data]
+(s/defrecord AppPage [route :- Route
+                      app :- s/Str
+                      app-routes :- [s/Any]
+                      app-area-mappings :- s/Any
+                      slug :- s/Str
+                      id :- s/Int
+                      serial :- s/Int
+                      name :- s/Str
+                      title :- s/Str
+                      properties :- {s/Any s/Any}
+                      options :- {s/Any s/Any}
+                      template :- (s/either s/Keyword s/Str)
+                      created :- s/Inst
+                      updated :- s/Int
+                      parent :- (s/maybe s/Int)
+                      database :- s/Any
+                      version :- s/Int
+                      published-date :- s/Inst
+                      published? :- s/Bool
+                      objects :- [ReverieObject]
+                      raw-data :- s/Any]
   route/IRouting
   (get-route [this] route)
   (match? [this request]

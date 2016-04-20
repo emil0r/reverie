@@ -69,6 +69,8 @@
             [before after] (if (and edit? ;; edit the page?
                                     (zero? (page/version page)) ;; page is unpublished?
                                     )
+                             ;; mix in strings here for the possibility of using other
+                             ;; template libraries than strictly hiccup
                              [(list
                                (str "<div class='reverie-area' area='"
                                     (util/kw->str name)
