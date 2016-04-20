@@ -17,6 +17,7 @@
                                         wrap-error-log
                                         wrap-forker
                                         wrap-i18n
+                                        wrap-resources
                                         wrap-reverie-data]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file :refer [wrap-file]] ;; research for later
@@ -55,6 +56,20 @@
     (if server
       this
       (let [resource (or (:resource middleware-options) "public")
+            resource-handler (or
+                              resource-handlers
+                              (create-handler [[wrap-resource resource]
+                                               [wrap-file-info (:mime-types middleware-options)]
+                                               [wrap-content-type (:content-type-resources middleware-options)]
+                                               [wrap-not-modified]]
+                                              {:status 404 :body "404, Page Not Found" :headers {}}))
+            media-handler (or
+                           media-handlers
+                           (create-handler [[wrap-file (fm/base-dir filemanager)]
+                                            [wrap-file-info (:mime-types middleware-options)]
+                                            [wrap-content-type (:content-type-resources middleware-options)]
+                                            [wrap-not-modified]]
+                                           {:status 404 :body "404, Page Not Found" :headers {}}))
             site-handler (create-handler
                           (or site-handlers
                               (vec
@@ -84,26 +99,14 @@
                                    :cookie-attrs {:max-age (get-in middleware-options [:cookie :max-age] 31104000)}}]
                                  [wrap-noir-cookies]
                                  [wrap-strip-trailing-slash]
-                                 [wrap-error-log dev?]]
+                                 [wrap-error-log dev?]
+                                 [wrap-resources [[(get-in middleware-options [:resources :media]) media-handler]
+                                                  [(get-in middleware-options [:resources :resource]) resource-handler]]]]
                                 (if dev?
                                   [[wrap-reload]
-                                   [wrap-stacktrace]]
-                                  []))))
+                                   [wrap-stacktrace]]))))
                           (site-route site))
-            resource-handler (or
-                              resource-handlers
-                              (create-handler [[wrap-resource resource]
-                                               [wrap-file-info (:mime-types middleware-options)]
-                                               [wrap-content-type (:content-type-resources middleware-options)]
-                                               [wrap-not-modified]]
-                                              {:status 404 :body "404, Page Not Found" :headers {}}))
-            media-handler (or
-                           media-handlers
-                           (create-handler [[wrap-file (fm/base-dir filemanager)]
-                                            [wrap-file-info (:mime-types middleware-options)]
-                                            [wrap-content-type (:content-type-resources middleware-options)]
-                                            [wrap-not-modified]]
-                                           {:status 404 :body "404, Page Not Found" :headers {}}))
+
             handler (wrap-forker site-handler resource-handler media-handler)
             server (run-server handler server-options)]
         (log/info (format "Running server on port %s..." (:port server-options)))

@@ -158,3 +158,15 @@
        ;; continue trying
        :else
        (recur (handler request) handlers)))))
+
+(defn wrap-resources
+  "Check for resources being used based on URI"
+  [handler routes]
+  (fn [{:keys [uri] :as request}]
+    (if-let [new-handler (reduce (fn [out [paths handler]]
+                                   (if (some #(str/starts-with? uri %) paths)
+                                     handler
+                                     out))
+                                 nil routes)]
+      (new-handler request)
+      (handler request))))
