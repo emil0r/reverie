@@ -1,22 +1,25 @@
 (ns reverie.database.sql
-  (:require [clojure.edn :as edn]
-            [clojure.string :as str]
+  (:require [clojure.set :as set]
+            [clojure.edn :as edn]
             [clojure.java.jdbc :as jdbc]
+            [clojure.set :as set]
+            [clojure.string :as str]
             [com.stuartsierra.component :as component]
             [ez-database.core :as db]
+            [honeysql.core :as sql]
             [joplin.core :as joplin]
             joplin.jdbc.database
-            [honeysql.core :as sql]
             [noir.session :as session]
             [reverie.auth :as auth :refer [IUserDatabase]]
             [reverie.database :as rev.db :refer [IDatabase]]
+            [reverie.internal :as internal :refer [storage]]
             [reverie.movement :as movement]
             [reverie.object :as object]
             [reverie.page :as page]
             [reverie.publish :as publish :refer [IPublish]]
             [reverie.route :as route]
-            [reverie.system :as sys]
             [reverie.site :as site]
+            [reverie.system :as sys]
             [reverie.util :refer [slugify kw->str str->kw]]
             [slingshot.slingshot :refer [try+ throw+]]
             [taoensso.timbre :as log]
@@ -68,8 +71,59 @@
                 ;; (.connectionTestQuery "select 42;")
                 (.setMaximumPoolSize maxconns-per-partition)
                 ))]
-    (println "Hikaru!")
-    (assoc db-spec :datasource ds2)))
+    ;;(println "Hikaru!")
+    (assoc db-spec :datasource ds)))
+
+
+;; internal storage
+
+(defn- get-stored-page
+  ([database id]
+   (if-let [page (internal/read-storage @storage [:reverie/page id])]
+     (assoc page
+            :database database
+            :template (get-in @sys/storage
+                              [:templates (keyword (get-in page [:raw-data :template]))]))))
+  ([database serial published?]
+   (if-let [page (internal/read-storage @storage [:reverie/page serial published?])]
+     (assoc page
+            :database database
+            :template (get-in @sys/storage
+                              [:templates (keyword (get-in page [:raw-data :template]))])))))
+
+(defn- get-stored-pages [database ids]
+  (reduce (fn [out id]
+            (if-let [page (internal/read-storage @storage [:reverie/page id])]
+              (conj out (assoc page
+                               :database database
+                               :template (get-in @sys/storage
+                                                 [:templates (keyword (get-in page [:raw-data :template]))])))
+              out))
+          [] ids))
+
+(defn- store-page [page]
+  (when-not (nil? page)
+    ;; remove template (a function) and the database
+    (let [p (assoc page
+                   :template nil
+                   :database nil)]
+      (internal/write-storage @storage [:reverie/page (page/id page)] p)
+      (internal/write-storage @storage [:reverie/page (page/serial page) (if (zero? (page/version p)) false true)] p)
+      (let [pages (or (internal/read-storage @storage :reverie/pages) #{})]
+        (internal/write-storage @storage :reverie/pages (set/union pages #{(page/serial page)})))))
+  page)
+
+(defn- delete-stored-page
+  ([id]
+   (when-let [page (internal/read-storage @storage [:reverie/page id])]
+     (internal/delete-storage @storage [:reverie/page id])
+     (internal/delete-storage @storage [:reverie/page (page/serial page) (page/published? page)])))
+  ([serial published?]
+   (when-let [page (internal/read-storage @storage [:reverie/page serial published?])]
+     (internal/delete-storage @storage [:reverie/page (page/id page)])
+     (internal/delete-storage @storage [:reverie/page serial published?]))))
+
+;; end of internal storage
 
 (defn- massage-page-data [data]
   (-> data
@@ -88,31 +142,31 @@
                     (keyword (:app data))))
       (dissoc :published_p)))
 
-
 (defn- get-page [database data]
-  (if data
-    (let [{:keys [template app] :as data} (massage-page-data data)]
-      (case (:type data)
-        :page (let [p (page/page
+  (store-page
+   (if data
+     (let [{:keys [template app] :as data} (massage-page-data data)]
+       (case (:type data)
+         :page (let [p (page/page
+                        (assoc data
+                               :template (get-in @sys/storage
+                                                 [:templates template])
+                               :database database
+                               :raw-data (:raw-data data)))
+                     objects (map #(assoc % :page p) (rev.db/get-objects database p))]
+                 (assoc p :objects objects))
+         :app (let [page-data (get-in @sys/storage
+                                      [:apps app])
+                    p (page/app-page
                        (assoc data
                               :template (get-in @sys/storage
                                                 [:templates template])
+                              :options (:options page-data)
+                              :app-routes (:app-routes page-data)
                               :database database
                               :raw-data (:raw-data data)))
                     objects (map #(assoc % :page p) (rev.db/get-objects database p))]
-                (assoc p :objects objects))
-        :app (let [page-data (get-in @sys/storage
-                                     [:apps app])
-                   p (page/app-page
-                      (assoc data
-                             :template (get-in @sys/storage
-                                               [:templates template])
-                             :options (:options page-data)
-                             :app-routes (:app-routes page-data)
-                             :database database
-                             :raw-data (:raw-data data)))
-                   objects (map #(assoc % :page p) (rev.db/get-objects database p))]
-               (assoc p :objects objects))))))
+                (assoc p :objects objects)))))))
 
 (defn- recalculate-routes-db [db page-ids]
   (let [page-ids (if (sequential? page-ids)
@@ -151,10 +205,11 @@
                                   [:> :version 0]
                                   [:= :serial serial]]
                           :order-by [[:version :desc]]})]
-    (doseq [pp pps]
-      (db/query! db {:update :reverie_page
-                     :set {:version (inc (:version pp))}
-                     :where [:= :id (:id pp)]}))))
+    (db/with-transaction [db :default]
+      (doseq [pp pps]
+        (db/query! db {:update :reverie_page
+                       :set {:version (inc (:version pp))}
+                       :where [:= :id (:id pp)]})))))
 
 
 (defn- extend-user [user db]
@@ -179,8 +234,7 @@
                                    ds-spec (get ds-specs key)]
                                [key (bonecp-datasource db-spec ds-spec)]))
                            (keys db-specs)))]
-            (assoc this
-                   :db-specs db-specs))))))
+            (assoc this :db-specs db-specs))))))
   (stop [this]
     (let [db-specs (:db-specs this)]
       (if-not (get-in db-specs [:default :datasource])
@@ -197,6 +251,19 @@
                                     db-specs)))))))
 
   IDatabase
+  (cache-pages [db]
+    ;; clear internal storage
+    (let [stored-pages (internal/read-storage @storage :reverie/pages)]
+      (doseq [serial stored-pages]
+        (delete-stored-page serial false)
+        (delete-stored-page serial true))
+      (internal/delete-storage @storage :reverie/pages)
+
+      ;; fill internal storage with the pages
+      (doall
+       ;; force evalutation so that the cache is filled
+       (rev.db/get-pages db))
+      nil))
   (add-page! [db data]
     (assert (contains? data :parent) ":parent key is missing")
     (assert (contains? data :template) ":template key is missing")
@@ -264,7 +331,11 @@
       (db/query! db {:insert-into :reverie_page_properties
                      :values (map (fn [[k v]]
                                     {:key (name k) :value v :page_serial serial})
-                                  data)})))
+                                  data)}))
+    (do (delete-stored-page serial false)
+        (delete-stored-page serial true)
+        (rev.db/get-page db serial false)
+        (rev.db/get-page db serial true)))
 
   (move-page! [db id origo-id movement]
     (let [movement (keyword movement)]
@@ -329,7 +400,9 @@
                              :set {(sql/raw "\"order\"") order
                                    :parent parent-origo}
                              :where [:= :id id]}))
-            (recalculate-routes db id))))))
+            (recalculate-routes db id))))
+      (do (delete-stored-page id)
+          (rev.db/get-page db id))))
 
   (add-object! [db data]
     (assert (contains? data :page_id) ":page_id key is missing")
@@ -363,13 +436,17 @@
                               {fk obj-id})]
         (db/query! db {:insert-into (sql/raw table)
                        :values [properties]})
+        (do (delete-stored-page (:page_id data))
+            (rev.db/get-page db (:page_id data)))
+
         obj)))
 
   (update-object! [db id data]
-    (let [obj-name (-> (db/query db {:select [:name]
-                                     :from [:reverie_object]
-                                     :where [:= :id id]})
-                       first :name keyword)
+    (let [{obj-name :name page-id :page_id} (-> (db/query db {:select [:name :page_id]
+                                                              :from [:reverie_object]
+                                                              :where [:= :id id]})
+                                                first)
+          obj-name (keyword obj-name)
           obj-meta (sys/object obj-name)
           fk (or (->> obj-meta :options :foreign-key)
                  :object_id)
@@ -382,18 +459,21 @@
               "update-object! does not take an empty data set")
       (db/query! db {:update (sql/raw table)
                      :set fields
-                     :where [:= fk id]})))
+                     :where [:= fk id]})
+      (do (delete-stored-page page-id)
+          (rev.db/get-page db page-id))
+      nil))
 
   (move-object!
     ([db id direction]
      (assert (some #(= % (keyword direction)) [:up :down :bottom :top])
              "direction has to be :up, :down, :bottom or :top")
-     (let [type (-> (db/query db {:select [:p.type]
-                                  :from [[:reverie_page :p]]
-                                  :join [[:reverie_object :o]
-                                         [:= :o.page_id :p.id]]
-                                  :where [:= :o.id id]})
-                    first :type)
+     (let [{type :type page-id :id} (-> (db/query db {:select [:p.type :p.id]
+                                                      :from [[:reverie_page :p]]
+                                                      :join [[:reverie_object :o]
+                                                             [:= :o.page_id :p.id]]
+                                                      :where [:= :o.id id]})
+                                        first)
            origo? (= type "app")
            objs (->
                  (map
@@ -408,11 +488,14 @@
                                         [:= :f.area :o.area]]
                                 :order-by [:o.order]}))
                  (movement/move id direction origo?))]
-       (doseq [[order id] objs]
-         (if-not (nil? id)
-           (db/query! db {:update :reverie_object
-                          :set {(sql/raw "\"order\"") order}
-                          :where [:= :id id]})))))
+       (db/with-transaction [db :default]
+         (doseq [[order id] objs]
+           (if-not (nil? id)
+             (db/query! db {:update :reverie_object
+                            :set {(sql/raw "\"order\"") order}
+                            :where [:= :id id]}))))
+       (do (delete-stored-page page-id)
+           (rev.db/get-page db page-id))))
     ([db id page-id area]
      (let [area (kw->str area)
            order (inc (or (-> (db/query db {:select [:%max.o.order]
@@ -426,7 +509,9 @@
                       :set {(sql/raw "\"order\"") order
                             :area area
                             :page_id page-id}
-                      :where [:= :id id]}))))
+                      :where [:= :id id]})
+       (do (delete-stored-page page-id)
+           (rev.db/get-page db page-id)))))
 
   (move-object-to-object! [db id other-id direction]
     (assert (some #(= % (keyword direction)) [:after :before])
@@ -447,19 +532,35 @@
           objs (if (= direction :after)
                  (movement/after objs other-id id :origo)
                  (movement/before objs other-id id :origo))]
-      (doseq [[order id] objs]
-        (db/query! db {:update :reverie_object
-                       :set {(sql/raw "\"order\"") order
-                             :page_id page_id}
-                       :where [:= :id id]}))))
+      (db/with-transaction [db :default]
+        (doseq [[order id] objs]
+          (db/query! db {:update :reverie_object
+                         :set {(sql/raw "\"order\"") order
+                               :page_id page_id}
+                         :where [:= :id id]})))
+      (do (delete-stored-page page_id)
+          (rev.db/get-page db id))))
 
   (get-pages
     ([db]
-     (map (partial get-page db)
-          (db/query db sql-get-pages-1)))
+     (let [ids (mapv :id (db/query db {:select [:id]
+                                       :from [:reverie_page]
+                                       :where [:in :version [0 1]]}))
+           pages (get-stored-pages db ids)]
+       (if-not (empty? pages)
+         pages
+         (map (partial get-page db)
+              (db/query db sql-get-pages-1)))))
     ([db published?]
-     (map (partial get-page db)
-          (db/query db sql-get-pages-2 {:version (if published? 1 0)}))))
+     (let [version (if published? 1 0)
+           ids (mapv :id (db/query db {:select [:id]
+                                       :from [:reverie_page]
+                                       :where [:= :version version]}))
+           pages (get-stored-pages db ids)]
+       (if-not (empty? pages)
+         pages
+         (map (partial get-page db)
+              (db/query db sql-get-pages-2 {:version (if published? 1 0)}))))))
 
   (get-page-with-route [db serial]
     (map (fn [page-data]
@@ -485,19 +586,40 @@
                             :order-by [(sql/raw "\"order\"")]}))))
   (get-page
     ([db id]
-     (get-page db (first (db/query db sql-get-page-1 {:id id}))))
+     (if-let [page (get-stored-page db id)]
+       page
+       (get-page db (first (db/query db sql-get-page-1 {:id id})))))
     ([db serial published?]
-     (get-page db (first (db/query db sql-get-page-2 {:serial serial
-                                                      :version (if published? 1 0)})))))
+     (if-let [page (get-stored-page db serial published?)]
+       page
+       (get-page db (first (db/query db sql-get-page-2 {:serial serial
+                                                        :version (if published? 1 0)}))))))
   (get-children
     ([db page]
-     (map (partial get-page db)
-          (db/query db sql-get-page-children {:version (page/version page)
-                                              :parent (page/serial page)})))
+     (let [ids (mapv :id (db/query db {:select [:id]
+                                       :from [:reverie_page]
+                                       :where [:and
+                                               [:= :version (page/version page)]
+                                               [:= :parent (page/serial page)]]}))
+           children (get-stored-pages db ids)]
+       (if-not (empty? children)
+         children
+         (map (partial get-page db)
+              (db/query db sql-get-page-children {:version (page/version page)
+                                                  :parent (page/serial page)})))))
     ([db serial published?]
-     (map (partial get-page db)
-          (db/query db sql-get-page-children {:version (if published? 1 0)
-                                              :parent serial}))))
+     (let [version (if published? 1 0)
+           ids (mapv :id (db/query db {:select [:id]
+                                       :from [:reverie_page]
+                                       :where [:and
+                                               [:= :version version]
+                                               [:= :parent serial]]}))
+           children (get-stored-pages db ids)]
+       (if-not (empty? children)
+         children
+         (map (partial get-page db)
+              (db/query db sql-get-page-children {:version (if published? 1 0)
+                                                  :parent serial}))))))
   (get-children-count [db page]
     (let [serial (if (number? page)
                    page
@@ -570,7 +692,6 @@
                (object/object
                 (assoc obj-meta
                        :properties (get objs-properties id)
-                       :database db
                        :page page
                        :route (route/route [(:route obj-meta)])
                        :area (keyword (:area obj-meta))
@@ -585,15 +706,15 @@
     ([db page-id]
      (publish/publish-page! db page-id false))
     ([db page-id recur?]
-     ;; TODO: rewrite so it doesn't use so many db calls :(
-     (db/with-transaction [db :default]
-       (let [ ;; page-unpublished
-             pu (rev.db/get-page db page-id)
-             pages (if recur?
-                     (map (fn [{:keys [serial]}]
-                            (rev.db/get-page db serial false))
-                          (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))
-                     [pu])]
+     (let [ ;; page-unpublished
+           pu (rev.db/get-page db page-id)
+           pages (if recur?
+                   (mapv (fn [{:keys [serial]}]
+                           (rev.db/get-page db serial false))
+                         ;; get_serials_recursively includes the first serial
+                         (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))
+                   [pu])]
+       (db/with-transaction [db :default]
          (doseq [pu pages]
            (shift-versions! db (page/serial pu))
            (let [{:keys [id] :as copied} (db/query! db sql-copy-page<! {:id (page/id pu)})]
@@ -611,33 +732,63 @@
                                 :values [(assoc (object/properties obj)
                                                 fk (:id new-meta-obj))]}))))
            (recalculate-routes db (page/id pu))
-           (db/query! db sql-update-published-pages-order! {:parent (page/parent pu)}))))))
+           (db/query! db sql-update-published-pages-order! {:parent (page/parent pu)})))
+       (doseq [p pages]
+         ;; first remove unpublished from cache and the refetch it
+         ;; this is so that the unpublished page can properly see published? status
+         (delete-stored-page (page/id p))
+         (rev.db/get-page db (page/id p))
+         ;; then remove and add published page so that it's updated
+         (delete-stored-page (page/serial p) true)
+         (rev.db/get-page db (page/serial p) true)))))
 
   (unpublish-page! [db page-id]
     (let [;; page-unpublished
           pu (rev.db/get-page db page-id)
-          pages (map (fn [{:keys [serial]}]
-                       (rev.db/get-page db serial false))
-                     (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))]
+          pages (mapv (fn [{:keys [serial]}]
+                        (rev.db/get-page db serial false))
+                      ;; get_serials_recursively includes the first serial
+                      (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))]
+      ;; we shift all pages that are above unpublished up one step,
+      ;; thus causing the published page to become unpublished as its
+      ;; version number now becomes 2 (ie, it's in history)
       (doseq [pu pages]
-        (shift-versions! db (page/serial pu)))))
+        (shift-versions! db (page/serial pu))
+        ;; remove published page from internal cache
+        (delete-stored-page (page/serial pu) true)
+        ;; remove unpublished page from cache
+        (delete-stored-page (page/id pu))
+        (rev.db/get-page db (page/id pu)))
+      nil))
 
   (trash-page! [db page-id]
     (let [;; page-unpublished
           pu (rev.db/get-page db page-id)
-          pages (map (fn [{:keys [serial]}]
-                       (rev.db/get-page db serial false))
-                     (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))]
-      (doseq [pu pages]
-        (shift-versions! db (page/serial pu))
-        (db/query! db {:update :reverie_page
-                       :set {:version -1}
-                       :where [:= :id (page/id pu)]}))))
+          pages (mapv (fn [{:keys [serial]}]
+                        (rev.db/get-page db serial false))
+                      ;; get_serials_recursively includes the first serial
+                      (db/query db (str "SELECT * FROM get_serials_recursively(" (page/serial pu) ");")))]
+      ;; recursively trash all pages underneath
+      (db/with-transaction [db :default]
+        (doseq [pu pages]
+          (shift-versions! db (page/serial pu))
+          (db/query! db {:update :reverie_page
+                         :set {:version -1}
+                         :where [:= :id (page/id pu)]})
+          (delete-stored-page (page/id pu))
+          (delete-stored-page (page/serial pu) true)))))
 
   (trash-object! [db obj-id]
-    (db/query! db {:update :reverie_object
-                   :set {:version -1}
-                   :where [:= :id obj-id]}))
+    (let [page-id (->> (db/query db {:select [:page_id]
+                                     :from [:reverie_object]
+                                     :where [:= :id obj-id]})
+                       first :page_id)]
+      (db/query! db {:update :reverie_object
+                     :set {:version -1}
+                     :where [:= :id obj-id]})
+      (delete-stored-page page-id)
+      (rev.db/get-page db page-id)
+      nil))
 
   IUserDatabase
   (get-users [db]

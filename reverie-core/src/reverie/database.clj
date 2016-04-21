@@ -2,17 +2,21 @@
 
 
 (defprotocol IDatabase
-  (add-page! [database data])
-  (update-page! [database id data])
-  (save-page-properties! [database serial data])
-  (move-page! [database id origo-id movement]) ;; movement = :before/after
+  ;; public functions
   (get-pages [database] [database published?])
-  (get-page-with-route [database serial])
-  (get-pages-by-route [database])
   (get-page [database id] [database serial published?])
   (get-children [database page] [database serial published?])
   (get-children-count [database page])
 
+
+  ;; internal functions
+  (add-page! [database data])
+  (update-page! [database id data])
+  (save-page-properties! [database serial data])
+  (move-page! [database id origo-id movement]) ;; movement = :before/after
+  (get-page-with-route [database serial])
+  (get-pages-by-route [database])
+  (cache-pages [database])
   (get-object [database id])
   (get-objects [database page])
   (add-object! [database data])

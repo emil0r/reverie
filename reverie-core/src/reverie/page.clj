@@ -60,14 +60,14 @@
                    name :- s/Str
                    title :- s/Str
                    properties :- {s/Any s/Any}
-                   template :- s/Keyword
-                   created :- s/Inst
-                   updated :- s/Inst
+                   template :- (s/either s/Keyword s/Str {s/Keyword s/Any})
+                   created :- org.joda.time.DateTime
+                   updated :- org.joda.time.DateTime
                    parent :- (s/maybe s/Int)
                    version :- s/Int
                    slug :- s/Str
                    database :- s/Any
-                   published-date :- s/Inst
+                   published-date :- org.joda.time.DateTime
                    published? :- s/Bool
                    objects :- [ReverieObject]
                    raw-data :- s/Any]
@@ -176,13 +176,13 @@
                       title :- s/Str
                       properties :- {s/Any s/Any}
                       options :- {s/Any s/Any}
-                      template :- (s/either s/Keyword s/Str)
-                      created :- s/Inst
-                      updated :- s/Int
+                      template :- (s/either s/Keyword s/Str {s/Keyword s/Any})
+                      created :- org.joda.time.DateTime
+                      updated :- org.joda.time.DateTime
                       parent :- (s/maybe s/Int)
                       database :- s/Any
                       version :- s/Int
-                      published-date :- s/Inst
+                      published-date :- org.joda.time.DateTime
                       published? :- s/Bool
                       objects :- [ReverieObject]
                       raw-data :- s/Any]

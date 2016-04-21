@@ -2,6 +2,7 @@
   (:require [com.stuartsierra.component :as component]
             [reverie.admin.api.editors :refer [edits editors]]
             [reverie.admin.storage :as admin.storage]
+            [reverie.database :as db]
             [reverie.internal :as internal]
             [reverie.internal.memory :as internal.memory]
             [reverie.time :as time]
@@ -41,6 +42,7 @@
         (reset! edits (reverse-edits saved-edits))
         (reset! editors (reverse-editors saved-editors)))
       (reset! internal/storage storage)
+      (db/cache-pages database)
       (assoc this :storage storage)))
   (stop [this]
     (log/info "Stopping AdminInitializer")
