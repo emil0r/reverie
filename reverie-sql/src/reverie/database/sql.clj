@@ -6,6 +6,7 @@
             [clojure.string :as str]
             [com.stuartsierra.component :as component]
             [ez-database.core :as db]
+            [hikari-cp.core :as hikari-cp]
             [honeysql.core :as sql]
             [joplin.core :as joplin]
             joplin.jdbc.database
@@ -24,9 +25,7 @@
             [slingshot.slingshot :refer [try+ throw+]]
             [taoensso.timbre :as log]
             [yesql.core :refer [defqueries]])
-  (:import [com.jolbox.bonecp BoneCPDataSource]
-           [com.zaxxer.hikari HikariConfig HikariDataSource]
-           [ez_database.core EzDatabase]
+  (:import [ez_database.core EzDatabase]
            [reverie DatabaseException]))
 
 
@@ -38,41 +37,14 @@
 (defqueries "queries/database.sql")
 
 
-(defn- bonecp-datasource
-  "BoneCP based connection pool"
+(defn- get-datasource
+  "HikaruCP based connection pool"
   [db-spec datasource]
   (let [{:keys [subprotocol subname user password]} db-spec
-        {:keys [connection-timeout
-                default-autocommit
-                maxconns-per-partition
-                minconns-per-partition
-                partition-count]
-         :or {connection-timeout 2000
-              default-autocommit false
-              maxconns-per-partition 10
-              minconns-per-partition 5
-              partition-count 1}} datasource
-         ds (doto (BoneCPDataSource.)
-              (.setJdbcUrl (str "jdbc:" subprotocol ":" subname))
-              (.setUsername user)
-              (.setPassword password)
-              (.setConnectionTestStatement "select 42;")
-              (.setConnectionTimeoutInMs connection-timeout)
-              (.setDefaultAutoCommit default-autocommit)
-              (.setMaxConnectionsPerPartition maxconns-per-partition)
-              (.setMinConnectionsPerPartition minconns-per-partition)
-              (.setPartitionCount partition-count))
-         ds2 (HikariDataSource.
-              (doto (HikariConfig.)
-                (.setJdbcUrl (str "jdbc:" subprotocol ":" subname))
-                (.setUsername user)
-                (.setPassword password)
-                (.setConnectionTimeout connection-timeout)
-                ;; (.connectionTestQuery "select 42;")
-                (.setMaximumPoolSize maxconns-per-partition)
-                ))]
-    ;;(println "Hikaru!")
+        ds (hikari-cp/make-datasource (merge {:adapter subprotocol}
+                                             datasource))]
     (assoc db-spec :datasource ds)))
+
 
 
 ;; internal storage
@@ -232,9 +204,9 @@
                            (fn [key]
                              (let [db-spec (get db-specs key)
                                    ds-spec (get ds-specs key)]
-                               [key (bonecp-datasource db-spec ds-spec)]))
+                               [key (get-datasource db-spec ds-spec)]))
                            (keys db-specs)))]
-            (assoc this :db-specs db-specs))))))
+            (assoc this :db-specs db-specs :ds-specs ds-specs))))))
   (stop [this]
     (let [db-specs (:db-specs this)]
       (if-not (get-in db-specs [:default :datasource])
@@ -242,7 +214,7 @@
         (do
           (log/info "Stopping database")
           (doseq [[key db-spec] db-specs]
-            (.close (:datasource db-spec))
+            (hikari-cp/close-datasource (:datasource db-spec))
             (log/info "Closed datasource for" key))
           (assoc this
                  :db-specs (into
