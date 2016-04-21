@@ -36,10 +36,3 @@
       (joplin/migrate-db mmap)))
 
   )
-;; (-> reverie.system/storage
-;;     deref
-;;     :modules
-;;     :auth
-;;     :module
-;;     :options
-;;     keys)

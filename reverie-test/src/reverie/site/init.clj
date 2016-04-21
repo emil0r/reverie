@@ -32,7 +32,7 @@
                            i18n-tconfig
                            run-server stop-server]}]
   (let [db (component/start (db.sql/database db-specs))]
-    ;; run the migrations for reverie/CMS
+    ;; run the migrations
     (->> db
          (migrator.sql/get-migrator)
          (migrator/migrate))
@@ -80,6 +80,13 @@
   ;; read in the settings first
   (let [settings (component/start (settings/settings settings-path))]
 
+    ;; load namespaces after the system starts up
+    ;; this step will set up any necessary migrations
+    (load-views-ns 'reverie.sql.objects
+                   'reverie.site.templates
+                   'reverie.site.apps
+                   'reverie.site.endpoints)
+
     ;; start the system
     (reset! system (component/start
                     (system-map
@@ -102,18 +109,13 @@
                       :media-dirs (settings/get settings [:filemanager :media-dirs])
                       :cache-store (cache.memory/mem-store)})))
 
-    ;; load namespaces after the system starts up
-    ;; this step will set up any necessary migrations
-    (load-views-ns 'reverie.sql.objects
-                   'reverie.site.templates
-                   'reverie.site.apps
-                   'reverie.site.endpoints)
 
-    ;; run the migrations that now have been defined by the loaded modules, objects, etc
-    (->> @system
-         :database
-         (migrator.sql/get-migrator)
-         (migrator/migrate))
+
+    ;; ;; run the migrations that now have been defined by the loaded modules, objects, etc
+    ;; (->> @system
+    ;;      :database
+    ;;      (migrator.sql/get-migrator)
+    ;;      (migrator/migrate))
 
     ;; start up the scheduler with tasks
     (let [scheduler (-> @system :scheduler)

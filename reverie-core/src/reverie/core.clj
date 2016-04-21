@@ -50,7 +50,7 @@
 
 (defmacro defapp [name options routes]
   (let [name (keyword name)
-        migration (:migration options)]
+        migration (assoc (:migration options) :type :app)]
     `(do
        (i18n/load-from-options! ~options)
        (when ~migration
@@ -61,7 +61,7 @@
 
 (defmacro defpage [path options routes]
   (let [properties {:name path :type :raw}
-        migration (:migration options)]
+        migration (assoc (:migration options) :type :raw-page)]
     `(do
        (i18n/load-from-options! ~options)
        (when ~migration
@@ -74,7 +74,7 @@
 (defmacro defmodule [name options & [routes]]
   (let [name (keyword name)
         interface? (:interface? options)
-        migration (:migration options)
+        migration (assoc (:migration options) :type :module)
         path (str "/admin/frame/module/" (clojure.core/name name))]
     `(do
        (i18n/load-from-options! ~options)
@@ -100,7 +100,7 @@
 
 (defmacro defobject [name options methods]
   (let [name (keyword name)
-        migration (:migration options)]
+        migration (assoc (:migration options) :type :object)]
     `(do
        (i18n/load-from-options! ~options)
        (when ~migration
