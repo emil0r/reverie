@@ -7,7 +7,12 @@
                         :subprotocol "postgresql"
                         :subname "//localhost:5432/dev_reverie"
                         :user "devuser"
-                        :password "devuser"}}}
+                        :password "devuser"}}
+      :ds-specs {:default {:maximum-pool-size 3
+                           :adapter "postgresql"
+                           :username "devuser"
+                           :password "devuser"
+                           :database-name "dev_reverie"}}}
 
  :admin {:tasks {:edits {:minutes 30}}}
  :log {:rotor {:path "logs/reverie.log"}}

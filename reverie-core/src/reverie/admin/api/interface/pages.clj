@@ -12,10 +12,10 @@
             [taoensso.timbre :as log]))
 
 
-(defn- get-node-data [page]
+(defn- get-node-data [db page]
   {:title (page/name page)
    :key (page/serial page)
-   :lazy (page/children? page)
+   :lazy (page/children? page db)
    :extraClasses (str/join " "
                            (when (page/published? page)
                              ["published"]))
@@ -27,25 +27,23 @@
    :created (time/format (page/created page) :mysql)
    :updated (time/format (page/updated page) :mysql)})
 
-(defn get-pages [request page {:keys [id]}]
+(defn get-pages [{{db :database} :reverie :as request} page {:keys [id]}]
   (->>
-   (let [db (:database page)]
-     (let [root (db/get-page db (or id 1) false)]
-       (if (nil? id)
-         [(assoc (get-node-data root)
-            :children (map get-node-data (page/children root))
-            :lazy false
-            :expanded true
-            :selected true)]
-         (map get-node-data (page/children root)))))
+   (let [root (db/get-page db (or id 1) false)]
+     (if (nil? id)
+       [(assoc (get-node-data db root)
+               :children (map (partial get-node-data db) (page/children root db))
+               :lazy false
+               :expanded true
+               :selected true)]
+       (map (partial get-node-data db) (page/children root db))))
    json-response))
 
-(defn edit-page! [request module {:keys [serial edit_p]}]
+(defn edit-page! [{{db :database} :reverie :as request} module {:keys [serial edit_p]}]
   (json-response
    (let [serial (edn/read-string serial)
          edit? (edn/read-string edit_p)
          user (get-in request [:reverie :user])
-         db (:database module)
          page (db/get-page db serial false)]
      (match [(auth/authorize? page user db "edit") ;; are we authorized to edit the page?
              edit? ;; do we want to edit the page?
@@ -55,13 +53,11 @@
             [_ false] (editors/stop-edit! user)))))
 
 
-(defn move-page! [request module {:keys [serial origo_serial movement]
-                                  :as params}]
+(defn move-page! [{{db :database} :reverie :as request} module {:keys [serial origo_serial movement] :as params}]
   (json-response
    (let [serial (edn/read-string serial)
          origo-serial (edn/read-string origo_serial)
          user (get-in request [:reverie :user])
-         db (:database module)
          page (db/get-page db serial false)
          origo (db/get-page db origo-serial false)]
      (if (and (auth/authorize? page user db "edit")

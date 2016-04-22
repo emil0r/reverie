@@ -13,8 +13,7 @@
                  ;; database migrations
                  [joplin.jdbc "0.3.4"]
                  ;; connection pool
-                 [com.zaxxer/HikariCP "2.4.5"]
-                 [hikari-cp "1.6.1" :exclusions [com.zaxxer/HikariCP]]]
+                 [hikari-cp "1.6.1"]]
 
   :profiles {:dev {:dependencies [[org.postgresql/postgresql "9.3-1102-jdbc41"]
                                   [midje "1.6.3"]]}})

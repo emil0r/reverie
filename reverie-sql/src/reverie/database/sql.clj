@@ -36,38 +36,24 @@
 
 (defqueries "queries/database.sql")
 
-
-(defn- get-datasource
-  "HikaruCP based connection pool"
-  [db-spec datasource]
-  (let [{:keys [subprotocol subname user password]} db-spec
-        ds (hikari-cp/make-datasource (merge {:adapter subprotocol}
-                                             datasource))]
-    (assoc db-spec :datasource ds)))
-
-
-
 ;; internal storage
 
 (defn- get-stored-page
-  ([database id]
+  ([id]
    (if-let [page (internal/read-storage @storage [:reverie/page id])]
      (assoc page
-            :database database
             :template (get-in @sys/storage
                               [:templates (keyword (get-in page [:raw-data :template]))]))))
-  ([database serial published?]
+  ([serial published?]
    (if-let [page (internal/read-storage @storage [:reverie/page serial published?])]
      (assoc page
-            :database database
             :template (get-in @sys/storage
                               [:templates (keyword (get-in page [:raw-data :template]))])))))
 
-(defn- get-stored-pages [database ids]
+(defn- get-stored-pages [ids]
   (reduce (fn [out id]
             (if-let [page (internal/read-storage @storage [:reverie/page id])]
               (conj out (assoc page
-                               :database database
                                :template (get-in @sys/storage
                                                  [:templates (keyword (get-in page [:raw-data :template]))])))
               out))
@@ -75,10 +61,8 @@
 
 (defn- store-page [page]
   (when-not (nil? page)
-    ;; remove template (a function) and the database
-    (let [p (assoc page
-                   :template nil
-                   :database nil)]
+    ;; remove template (a function)
+    (let [p (assoc page :template nil)]
       (internal/write-storage @storage [:reverie/page (page/id page)] p)
       (internal/write-storage @storage [:reverie/page (page/serial page) (if (zero? (page/version p)) false true)] p)
       (let [pages (or (internal/read-storage @storage :reverie/pages) #{})]
@@ -123,7 +107,6 @@
                         (assoc data
                                :template (get-in @sys/storage
                                                  [:templates template])
-                               :database database
                                :raw-data (:raw-data data)))
                      objects (map #(assoc % :page p) (rev.db/get-objects database p))]
                  (assoc p :objects objects))
@@ -135,7 +118,6 @@
                                                 [:templates template])
                               :options (:options page-data)
                               :app-routes (:app-routes page-data)
-                              :database database
                               :raw-data (:raw-data data)))
                     objects (map #(assoc % :page p) (rev.db/get-objects database p))]
                 (assoc p :objects objects)))))))
@@ -189,6 +171,15 @@
             (cond (fn? v) (assoc user k (delay (v {:database db :user user})))
                   :else (assoc k (delay v))))
           user auth/*extended*))
+
+(defn- get-datasource
+  "HikaruCP based connection pool"
+  [db-spec datasource]
+  (let [{:keys [subprotocol subname user password]} db-spec
+        ds (hikari-cp/make-datasource (merge {:adapter subprotocol}
+                                             datasource))]
+    (assoc db-spec :datasource ds)))
+
 
 (extend-type EzDatabase
   component/Lifecycle
@@ -518,7 +509,7 @@
      (let [ids (mapv :id (db/query db {:select [:id]
                                        :from [:reverie_page]
                                        :where [:in :version [0 1]]}))
-           pages (get-stored-pages db ids)]
+           pages (get-stored-pages ids)]
        (if-not (empty? pages)
          pages
          (map (partial get-page db)
@@ -528,7 +519,7 @@
            ids (mapv :id (db/query db {:select [:id]
                                        :from [:reverie_page]
                                        :where [:= :version version]}))
-           pages (get-stored-pages db ids)]
+           pages (get-stored-pages ids)]
        (if-not (empty? pages)
          pages
          (map (partial get-page db)
@@ -558,11 +549,11 @@
                             :order-by [(sql/raw "\"order\"")]}))))
   (get-page
     ([db id]
-     (if-let [page (get-stored-page db id)]
+     (if-let [page (get-stored-page id)]
        page
        (get-page db (first (db/query db sql-get-page-1 {:id id})))))
     ([db serial published?]
-     (if-let [page (get-stored-page db serial published?)]
+     (if-let [page (get-stored-page serial published?)]
        page
        (get-page db (first (db/query db sql-get-page-2 {:serial serial
                                                         :version (if published? 1 0)}))))))
@@ -573,7 +564,7 @@
                                        :where [:and
                                                [:= :version (page/version page)]
                                                [:= :parent (page/serial page)]]}))
-           children (get-stored-pages db ids)]
+           children (get-stored-pages ids)]
        (if-not (empty? children)
          children
          (map (partial get-page db)
@@ -586,7 +577,7 @@
                                        :where [:and
                                                [:= :version version]
                                                [:= :parent serial]]}))
-           children (get-stored-pages db ids)]
+           children (get-stored-pages ids)]
        (if-not (empty? children)
          children
          (map (partial get-page db)
