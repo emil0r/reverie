@@ -32,7 +32,7 @@
        (handler request)
        (catch [:type :reverie.auth/not-allowed] {}
          (log/info "Unauthorized request for admin area"
-                   {:user (get-in request [:reverie :user])
+                   {:user-id (auth/get-id)
                     :request (select-keys request [:headers
                                                    :remote-address
                                                    :uri])})

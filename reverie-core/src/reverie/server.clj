@@ -107,8 +107,7 @@
                                    [wrap-stacktrace]]))))
                           (site-route site))
 
-            handler (wrap-forker site-handler resource-handler media-handler)
-            server (run-server handler server-options)]
+            server (run-server site-handler server-options)]
         (log/info (format "Running server on port %s..." (:port server-options)))
         (assoc this :server server))))
   (stop [this]

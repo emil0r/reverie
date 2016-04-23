@@ -43,6 +43,9 @@
 (defn logged-in? []
   (not (nil? (session/get :user-id))))
 
+(defn get-id []
+  (session/get :user-id))
+
 (defn logout []
   (session/clear!)
   true)

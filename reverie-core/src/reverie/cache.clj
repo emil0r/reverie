@@ -149,6 +149,7 @@
   render/IRender
   (render [this _]
     (throw (RenderException. "[component request] not implemented for reverie.cache/CacheManager")))
+  ;; TODO: add with-access here
   (render [this request hit]
     (if (string? hit)
       hit
