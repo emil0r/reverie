@@ -107,7 +107,11 @@
                                    [wrap-stacktrace]]))))
                           (site-route site))
 
-            server (run-server site-handler server-options)]
+            ;; wrap site-handler, resource-handler and media-handler in a handler
+            ;; that cycles through all of them in the event that :resources
+            ;; are not specified in the settings
+            handler (wrap-forker site-handler resource-handler media-handler)
+            server (run-server handler server-options)]
         (log/info (format "Running server on port %s..." (:port server-options)))
         (assoc this :server server))))
   (stop [this]
