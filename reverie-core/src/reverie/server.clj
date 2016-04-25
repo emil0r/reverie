@@ -50,7 +50,7 @@
 (defrecord Server [dev? server store run-server stop-server
                    site middleware-options server-options settings
                    site-handlers resource-handlers media-handlers
-                   extra-handlers filemanager]
+                   post-handlers pre-handlers filemanager]
   component/Lifecycle
   (start [this]
     (if server
@@ -74,7 +74,7 @@
                           (or site-handlers
                               (vec
                                (concat
-                                extra-handlers
+                                post-handlers
                                 [[wrap-i18n (:i18n middleware-options)]
                                  [wrap-downstream]
                                  [wrap-editor]
@@ -102,6 +102,7 @@
                                  [wrap-error-log dev?]
                                  [wrap-resources [[(get-in middleware-options [:resources :media]) media-handler]
                                                   [(get-in middleware-options [:resources :resource]) resource-handler]]]]
+                                pre-handlers
                                 (if dev?
                                   [[wrap-reload]
                                    [wrap-stacktrace]]))))
