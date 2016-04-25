@@ -144,7 +144,7 @@
                      field
                      (if (fn? options)
                        (options {:database (or (:database module)
-                                               (-> entity :page :database))})
+                                               (-> entity :database))})
                        options)
                      (form-params field))
      (help-text (e/field-options entity field))]))
@@ -292,7 +292,7 @@
                              :type :submit :value "Delete!"}]]))
 
 
-(defn get-object-form [object data]
+(defn get-object-form [database object data]
   (form/form-to
    {:id :edit-form}
    ["POST" ""]
@@ -301,7 +301,7 @@
           [:fieldset
            (if name [:legend name])
            (map (fn [field]
-                  (row object field data))
+                  (row (assoc object :database database) field data))
                 fields)])
         (e/sections object))
    [:div.bottom-bar
