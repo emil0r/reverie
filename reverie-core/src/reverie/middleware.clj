@@ -1,5 +1,6 @@
 (ns reverie.middleware
-  (:require [clojure.string :as str]
+  (:require [clojure.core.memoize :as memo]
+            [clojure.string :as str]
             [noir.cookies :as cookies]
             [noir.session :as session]
             [reverie.admin.api.editors :as editors]
@@ -23,11 +24,10 @@
 (defn wrap-admin
   "Wrap admin access"
   [handler]
-  (fn [{:keys [uri] :as request}]
+  (fn [{:keys [^String uri] :as request}]
     (if (and
-         (re-find #"^/admin" uri)
-         (not (re-find #"^/admin/login" uri))
-         (not (re-find #"^/admin/logout" uri)))
+         (.startsWith uri "/admin")
+         (not (.startsWith uri "/admin/log")))
       (try+
        (handler request)
        (catch [:type :reverie.auth/not-allowed] {}
@@ -114,24 +114,31 @@
           (cookies/put! "x-csrf-token" *anti-forgery-token*)
           response)))))
 
+(defn- get-locales* [headers-accept-language
+                     {:keys [enforce-locale preferred-locale fallback-locale] :as opts}
+                     session-locale]
+  (let [;; ["en-GB" "en" "en-US"], etc.
+        accept-lang-locales (->> headers-accept-language
+                                 (tower.utils/parse-http-accept-header)
+                                 (mapv (fn [[l q]] l)))]
+    (->> [enforce-locale
+          session-locale
+          preferred-locale
+          accept-lang-locales
+          (or fallback-locale :en)]
+         flatten
+         (remove nil?)
+         (into []))))
+
+;; minor speed boost
+(def get-locales (memo/lru get-locales* :lru/threshold 50))
+
 (defn wrap-i18n
   "Borrows bits and pieces from tower's wrap-tower"
   [handler {:keys [enforce-locale preferred-locale fallback-locale] :as opts}]
   (fn [{:keys [headers] :as request}]
-    (let [accept-lang-locales ; ["en-GB" "en" "en-US"], etc.
-          (->> (get headers "accept-language")
-               (tower.utils/parse-http-accept-header)
-               (mapv (fn [[l q]] l)))
-          session-locale (session/get :locale nil)]
-      (binding [i18n/*locale* (->> [enforce-locale
-                                    session-locale
-                                    preferred-locale
-                                    accept-lang-locales
-                                    (or fallback-locale :en)]
-                                   flatten
-                                   (remove nil?)
-                                   (into []))]
-        (handler request)))))
+    (binding [i18n/*locale* (get-locales (get headers "accept-language") opts (session/get :locale nil))]
+      (handler request))))
 
 (defn wrap-forker [handler & handlers]
   (fn [request]
