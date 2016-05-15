@@ -105,28 +105,30 @@
       (dissoc :published_p)))
 
 (defn- get-page [database data]
-  (store-page
-   (if data
-     (let [{:keys [template app] :as data} (massage-page-data data)]
-       (case (:type data)
-         :page (let [p (page/page
-                        (assoc data
-                               :template (get-in @sys/storage
-                                                 [:templates template])
-                               :raw-data (:raw-data data)))
-                     objects (map #(assoc % :page p) (rev.db/get-objects database p))]
-                 (assoc p :objects objects))
-         :app (let [page-data (get-in @sys/storage
-                                      [:apps app])
-                    p (page/app-page
-                       (assoc data
-                              :template (get-in @sys/storage
-                                                [:templates template])
-                              :options (:options page-data)
-                              :app-routes (:app-routes page-data)
-                              :raw-data (:raw-data data)))
-                    objects (map #(assoc % :page p) (rev.db/get-objects database p))]
-                (assoc p :objects objects)))))))
+  (let [page (if data
+              (let [{:keys [template app] :as data} (massage-page-data data)]
+                (case (:type data)
+                  :page (let [p (page/page
+                                 (assoc data
+                                        :template (get-in @sys/storage
+                                                          [:templates template])
+                                        :raw-data (:raw-data data)))
+                              objects (map #(assoc % :page p) (rev.db/get-objects database p))]
+                          (assoc p :objects objects))
+                  :app (let [page-data (get-in @sys/storage
+                                               [:apps app])
+                             p (page/app-page
+                                (assoc data
+                                       :template (get-in @sys/storage
+                                                         [:templates template])
+                                       :options (:options page-data)
+                                       :app-routes (:app-routes page-data)
+                                       :raw-data (:raw-data data)))
+                             objects (map #(assoc % :page p) (rev.db/get-objects database p))]
+                         (assoc p :objects objects)))))]
+    (if (:dev? database)
+      page
+      (store-page page))))
 
 (defn- recalculate-routes-db [db page-ids]
   (let [page-ids (if (sequential? page-ids)
@@ -538,10 +540,9 @@
          (map (partial get-page db)
               (db/query db sql-get-pages-1)))))
     ([db published?]
-     (let [version (if published? 1 0)
-           ids (mapv :id (db/query db {:select [:id]
+     (let [ids (mapv :id (db/query db {:select [:id]
                                        :from [:reverie_page]
-                                       :where [:= :version version]}))
+                                       :where [:= :version (if published? 1 0)]}))
            pages (get-stored-pages ids)]
        (if-not (empty? pages)
          pages
@@ -594,11 +595,10 @@
               (db/query db sql-get-page-children {:version (page/version page)
                                                   :parent (page/serial page)})))))
     ([db serial published?]
-     (let [version (if published? 1 0)
-           ids (mapv :id (db/query db {:select [:id]
+     (let [ids (mapv :id (db/query db {:select [:id]
                                        :from [:reverie_page]
                                        :where [:and
-                                               [:= :version version]
+                                               [:= :version (if published? 1 0)]
                                                [:= :parent serial]]}))
            children (get-stored-pages ids)]
        (if-not (empty? children)
@@ -816,7 +816,9 @@
           db))))))
 
 (defn database
-  ([db-specs]
-   (db/map->EzDatabase {:db-specs db-specs :ds-specs {}}))
-  ([db-specs ds-specs]
-   (db/map->EzDatabase {:db-specs db-specs :ds-specs ds-specs})))
+  ([settings]
+   (db/map->EzDatabase settings))
+  ([dev? db-specs]
+   (db/map->EzDatabase {:dev? dev? :db-specs db-specs :ds-specs {}}))
+  ([dev? db-specs ds-specs]
+   (db/map->EzDatabase {:dev? dev? :db-specs db-specs :ds-specs ds-specs})))
