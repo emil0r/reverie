@@ -21,6 +21,7 @@
             [reverie.site :as site]
             [reverie.system :as sys]
             [reverie.util :refer [slugify kw->str str->kw]]
+            [schema.core :as s]
             [slingshot.slingshot :refer [try+ throw+]]
             [taoensso.timbre :as log]
             [yesql.core :refer [defqueries]])
@@ -201,8 +202,7 @@
   "HikaruCP based connection pool"
   [db-spec datasource]
   (let [{:keys [subprotocol subname user password]} db-spec
-        ds (hikari-cp/make-datasource (merge {:adapter subprotocol}
-                                             datasource))]
+        ds (hikari-cp/make-datasource datasource)]
     (assoc db-spec :datasource ds)))
 
 
@@ -815,10 +815,10 @@
             :groups (get-user-groups groups)})
           db))))))
 
-(defn database
-  ([settings]
+(s/defn ^:always-validate database
+  ([settings :- {s/Any s/Any}]
    (db/map->EzDatabase settings))
-  ([dev? db-specs]
+  ([dev? :- s/Bool db-specs :- {s/Any s/Any}]
    (db/map->EzDatabase {:dev? dev? :db-specs db-specs :ds-specs {}}))
-  ([dev? db-specs ds-specs]
+  ([dev? :- s/Bool db-specs :- {s/Any s/Any} ds-specs :- {s/Any s/Any}]
    (db/map->EzDatabase {:dev? dev? :db-specs db-specs :ds-specs ds-specs})))

@@ -31,7 +31,7 @@
                            server-options middleware-options
                            i18n-tconfig
                            run-server stop-server]}]
-  (let [db (component/start (db.sql/database db-specs ds-specs))]
+  (let [db (component/start (db.sql/database (not prod?) db-specs ds-specs))]
     ;; run the migrations
     (->> db
          (migrator.sql/get-migrator)
