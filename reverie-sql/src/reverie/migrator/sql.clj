@@ -24,11 +24,13 @@
                              automatic?))
                    (reduce (fn [out [kw {:keys [type] :or {type :unknown} :as migration}]]
                              (assoc out type (conj (get out type) [kw migration])))
-                           (array-map :module []
+                           (array-map :pre []
+                                      :module []
                                       :raw-page []
                                       :app []
                                       :object []
-                                      :unknown []))
+                                      :unknown []
+                                      :post []))
                    (vals)
                    (flatten)
                    (partition 2)
