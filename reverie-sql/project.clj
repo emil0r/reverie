@@ -9,7 +9,7 @@
                  [org.clojure/java.jdbc "0.4.1"]
                  [honeysql "0.6.3"]
                  [yesql "0.5.2"]
-                 [ez-database "0.5.0-SNAPSHOT"]
+                 [ez-database "0.5.0"]
                  ;; database migrations
                  [joplin.jdbc "0.3.4"]
                  ;; connection pool
