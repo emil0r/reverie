@@ -63,7 +63,9 @@
   (render [this _]
     (throw (RenderException. "[component request] not implemented for reverie.area/Area")))
   (render [this request page]
-    (if (contains? page :rendered)
+    (if (and (contains? page :rendered)
+             (not (page/type? page :app)))
+      ;; for RawPage
       (get-in page [:rendered name])
       (let [edit? (get-in request [:reverie :edit?])
             [before after] (if (and edit? ;; edit the page?
