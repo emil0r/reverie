@@ -1,5 +1,6 @@
 (ns reverie.admin.api.interface.frames
-  (:require [clojure.java.io :as io]
+  (:require [clojure.core.match :refer [match]]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.walk :as walk]
             [cheshire.core :refer [encode]]
@@ -16,7 +17,10 @@
             [reverie.time :as time]))
 
 
-(defmulti cast-field (fn [options & _] (:type options)))
+(def cast-field nil)
+(defmulti cast-field (fn [options & _] (match [(:type options) (:cast options)]
+                                             [_ :number] :number
+                                             [_ _] (:type options))))
 (defmethod cast-field :number [_ value]
   (if (str/blank? value)
     nil
