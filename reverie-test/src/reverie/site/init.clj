@@ -1,7 +1,6 @@
 (ns reverie.site.init
   (:require [clojure.edn :as edn]
             [com.stuartsierra.component :as component]
-            [digest :refer [md5]]
             [org.httpkit.server :as http-server :refer [run-server]]
             reverie.nsloader
             [reverie.admin :as admin]
@@ -109,13 +108,6 @@
                       :media-dirs (settings/get settings [:filemanager :media-dirs])
                       :cache-store (cache.memory/mem-store)})))
 
-
-
-    ;; ;; run the migrations that now have been defined by the loaded modules, objects, etc
-    ;; (->> @system
-    ;;      :database
-    ;;      (migrator.sql/get-migrator)
-    ;;      (migrator/migrate))
 
     ;; start up the scheduler with tasks
     (let [scheduler (-> @system :scheduler)

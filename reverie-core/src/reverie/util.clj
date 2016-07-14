@@ -56,7 +56,14 @@
     x))
 
 (defn qsize [qs]
-  (str/join "&" (map (fn [[k v]] (str (name k) "=" v)) qs)))
+  (->> qs
+       (map (fn [[k v]]
+              (if (sequential? v)
+                (map (fn [x]
+                       (str (name k) "=" x)) v)
+                (str (name k) "=" v))))
+       (flatten)
+       (str/join "&")))
 
 
 ;; shamelessly borrowed from pedestal's source code
