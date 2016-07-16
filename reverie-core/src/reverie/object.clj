@@ -5,9 +5,12 @@
             [reverie.module.entity :as entity]
             [reverie.route :as route]
             [reverie.system :as sys]
+            [schema.core :as s]
+
             reverie.RenderException
             reverie.ObjectException)
-  (:import [reverie RenderException ObjectException]))
+  (:import [reverie RenderException ObjectException]
+           [reverie.route Route]))
 
 
 (defn initial-fields [object-name data]
@@ -27,9 +30,16 @@
   (options [object])
   (properties [object]))
 
-(defrecord ReverieObject [id name area order page route
-                          database options methods
-                          properties]
+(s/defrecord ReverieObject [id :- s/Int
+                            name :- s/Keyword
+                            area :- s/Keyword
+                            order :- s/Int
+                            page :- s/Any
+                            route :- Route
+                            database :- s/Any
+                            options :- {s/Any s/Any}
+                            methods :- {s/Any s/Any}
+                            properties :- {s/Any s/Any}]
   IObject
   (id [this] id)
   (area [this] area)
@@ -47,28 +57,28 @@
   (field [this field] (get-in options [:fields field]))
   (field-options [this field] (get-in options [:fields field]))
   (field-attribs [this field]
-    (let [options (get-in options [:fields field])]
-      (reduce (fn [out k]
-                (if (nil? out)
-                  out
-                  (if (k options)
-                    (assoc out k (k options))
-                    out)))
-              {}
-              [:max :min :placeholder])))
+                 (let [options (get-in options [:fields field])]
+                   (reduce (fn [out k]
+                             (if (nil? out)
+                               out
+                               (if (k options)
+                                 (assoc out k (k options))
+                                 out)))
+                           {}
+                           [:max :min :placeholder])))
   (field-attrib [this field attribute]
-    (get-in options [:fields field attribute]))
+                (get-in options [:fields field attribute]))
   (field-attrib [this field attribute default]
-    (get-in options [:fields field attribute] default))
+                (get-in options [:fields field attribute] default))
   (field-name [this field]
-    (or (get-in options [:fields field :name])
-        (-> field clojure.core/name str/capitalize)))
+              (or (get-in options [:fields field :name])
+                  (-> field clojure.core/name str/capitalize)))
   (error-field-names [this]
-    (into {}
-          (map (fn [[k opt]]
-                 [[k] (or (:name opt)
-                          (-> k clojure.core/name str/capitalize))])
-               (get-in options [:fields]))))
+                     (into {}
+                           (map (fn [[k opt]]
+                                  [[k] (or (:name opt)
+                                           (-> k clojure.core/name str/capitalize))])
+                                (get-in options [:fields]))))
   (sections [this] (:sections options))
   (slug [this] (throw (ObjectException. "IModuleEntity/slug is not implemented for reverie.object/ReverieObject")))
   (table [this] (throw (ObjectException. "IModuleEntity/table is not implemented for reverie.object/ReverieObject")))
@@ -76,14 +86,14 @@
 
   render/IRender
   (render [this {:keys [request-method] :as request}]
-    (let [method (or (get methods request-method)
-                     (:any methods))]
-      (if (= :app (:type page))
-        (if (or (route/match? route request))
-          (method request this properties (:params request)))
-        (method request this properties (:params request)))))
+          (let [method (or (get methods request-method)
+                           (:any methods))]
+            (if (= :app (:type page))
+              (if (or (route/match? route request))
+                (method request this properties (:params request)))
+              (method request this properties (:params request)))))
   (render [this _ _]
-    (throw (RenderException. "[component request sub-component] not implemented for reverie.object/ReverieObject"))))
+          (throw (RenderException. "[component request sub-component] not implemented for reverie.object/ReverieObject"))))
 
 
 (defn object [data]

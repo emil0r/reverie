@@ -1,14 +1,17 @@
-(function(window){
+ (function(window){
+    var FRAME_CONTROLPANEL = 0;
+    var FRAME_MAIN = 1;
+    var FRAME_OPTIONS = 2;
     var $m_ready_functions = [];
 
     var $m = function(selector) {
-        return $(window.parent.document.framemain.document).find(selector);
+        return $(window.parent.frames[FRAME_MAIN].document).find(selector);
     };
     var $m_ready = function(fn) {
         $m_ready_functions.push(fn);
     };
     var $o = function(selector) {
-        return $(window.parent.document.frameoptions.document).find(selector);
+        return $(window.parent.frames[FRAME_OPTIONS].document).find(selector);
     };
 
     var $m_on_loaded = function() {
@@ -18,16 +21,16 @@
     };
 
     var __hide_options = function() {
-        window.parent.frameoptions.frameElement.style.display = "none";
+        window.parent.frames[FRAME_OPTIONS].frameElement.style.display = "none";
     };
     var __show_options = function() {
-        window.parent.frameoptions.frameElement.style.display = "block";
+        window.parent.frames[FRAME_OPTIONS].frameElement.style.display = "block";
     };
     var __hide_main = function() {
-        window.parent.framemain.frameElement.style.display = "none";
+        window.parent.frames[FRAME_MAIN].frameElement.style.display = "none";
     };
     var __show_main = function() {
-        window.parent.framemain.frameElement.style.display = "block";
+        window.parent.frames[FRAME_MAIN].frameElement.style.display = "block";
     };
 
     var hide_main = function() {
@@ -48,15 +51,15 @@
     };
 
     options_uri = function(uri) {
-        window.parent.frameoptions.location = uri;
+        window.parent.frames[FRAME_OPTIONS].location = uri;
     };
     main_uri = function(uri) {
-        window.parent.framemain.location = uri;
+        window.parent.frames[FRAME_MAIN].location = uri;
     };
 
     reload_main = function() {
-        var href = window.parent.framemain.location.pathname;
-        var search = window.parent.framemain.location.search;
+        var href = window.parent.frames[FRAME_MAIN].location.pathname;
+        var search = window.parent.frames[FRAME_MAIN].location.search;
         main_uri(href + search);
     };
 

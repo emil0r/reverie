@@ -2,6 +2,9 @@
   (:require [com.stuartsierra.component :as component]
             [reverie.admin.api.editors :refer [edits editors]]
             [reverie.admin.storage :as admin.storage]
+            [reverie.database :as db]
+            [reverie.internal :as internal]
+            [reverie.internal.memory :as internal.memory]
             [reverie.time :as time]
             [taoensso.timbre :as log]))
 
@@ -29,16 +32,18 @@
               [k (time/coerce v :joda)]))
        (into {})))
 
-(defrecord AdminInitializer [database]
+(defrecord AdminInitializer [database storage]
   component/Lifecycle
   (start [this]
     (log/info "Starting AdminInitializer")
-    (do
+    (let [storage (or storage (internal.memory/mem-store))]
       (let [saved-edits (admin.storage/get database :admin.storage/edits)
             saved-editors (admin.storage/get database :admin.storage/editors)]
         (reset! edits (reverse-edits saved-edits))
-        (reset! editors (reverse-editors saved-editors))))
-    this)
+        (reset! editors (reverse-editors saved-editors)))
+      (reset! internal/storage storage)
+      (db/cache-pages database)
+      (assoc this :storage storage)))
   (stop [this]
     (log/info "Stopping AdminInitializer")
     (let [edits (get-edits)
@@ -47,5 +52,8 @@
       (admin.storage/assoc! database :admin.storage/editors editors))
     this))
 
-(defn get-admin-initializer []
-  (map->AdminInitializer {}))
+(defn get-admin-initializer
+  ([]
+   (map->AdminInitializer {}))
+  ([settings]
+   (map->AdminInitializer settings)))

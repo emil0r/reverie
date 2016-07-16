@@ -19,19 +19,30 @@
    :migrator path})
 
 (defn- get-migrators []
-  (let [paths (map (fn [[kw {:keys [table path]}]]
-                     (let [table (or table
-                                     (str
-                                      "migrations"
-                                      (str/replace (str kw)
-                                                   #":|/|\."
-                                                   "_")))]
-                       [table path]))
+  (let [paths (->> (sys/migrations)
                    (filter (fn [[_ {:keys [automatic?]}]]
-                             automatic?)
-                           (sys/migrations)))]
+                             automatic?))
+                   (reduce (fn [out [kw {:keys [type] :or {type :unknown} :as migration}]]
+                             (assoc out type (conj (get out type) [kw migration])))
+                           (array-map :pre []
+                                      :module []
+                                      :raw-page []
+                                      :app []
+                                      :object []
+                                      :unknown []
+                                      :post []))
+                   (vals)
+                   (flatten)
+                   (partition 2)
+                   (mapv (fn [[kw {:keys [table path]}]]
+                           (let [table (or table
+                                           (str
+                                            "migrations"
+                                            (str/replace (str kw)
+                                                         #":|/|\."
+                                                         "_")))]
+                             [table path]))))]
     paths))
-
 
 (defrecord Migrator [database]
   IMigrator

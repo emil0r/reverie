@@ -66,11 +66,11 @@
  "objects"
  (seed!)
  (let [db (component/start (get-db))]
-  (fact "objects (text)"
-        (let [p (rev.db/get-page db 3)]
-          (map :name (page/objects p)))
-        => [:reverie/image :reverie/text :reverie/text])
-  (component/stop db)))
+   (fact "objects (text)"
+         (let [p (rev.db/get-page db 3)]
+           (map :name (page/objects p)))
+         => [:reverie/image :reverie/text :reverie/text])
+   (component/stop db)))
 
 
 (fact
@@ -79,19 +79,19 @@
  (let [db (component/start (get-db))]
    (fact "add page"
          (rev.db/add-page! db {:parent 1 :title "" :name "Test page 1"
-                           :route "/test-page-1" :template :foobaz
-                           :type :page :app ""})
+                               :route "/test-page-1" :template :foobaz
+                               :type :page :app ""})
          (page/name (rev.db/get-page db 4 false)) => "Test page 1")
    (fact "update page"
          (rev.db/update-page! db
-                          (-> (rev.db/get-page db 1 false)
-                              :id)
-                          {:name "Test update-page!"})
+                              (-> (rev.db/get-page db 1 false)
+                                  :id)
+                              {:name "Test update-page!"})
          (page/name (rev.db/get-page db 1 false)) => "Test update-page!")
    (fact "add object"
          (rev.db/add-object! db {:page_id 1 :name "reverie/text"
-                             :area "a" :route ""
-                             :properties {:text "foobar"}})
+                                 :area "a" :route ""
+                                 :properties {:text "foobar"}})
          (-> (rev.db/get-page db 1)
              page/objects
              last
@@ -113,10 +113,10 @@
  (seed!)
  (let [db (component/start (get-db))
        serial (:serial (rev.db/add-page! db {:parent 1 :title ""
-                                         :name "Test page 1"
-                                         :route "/test-page-1"
-                                         :template :foobaz
-                                         :type :page :app ""}))]
+                                             :name "Test page 1"
+                                             :route "/test-page-1"
+                                             :template :foobaz
+                                             :type :page :app ""}))]
 
    (-> (db/query db
                  {:select [:*]
@@ -125,7 +125,7 @@
                           [:= :what "reverie.page/Page"]
                           [:= :id_int serial]]})
        first :id_int) => serial
-   (component/stop db)))
+       (component/stop db)))
 
 (fact
  "movement page!"
@@ -247,14 +247,14 @@
               => [[1 0] [1 1] [1 2]])
         (fact "add pages and publish (single)"
               (rev.db/add-page! db {:parent 1 :title "" :name "Test page 1"
-                                :template :foobaz
-                                :type :page :app ""})
+                                    :template :foobaz
+                                    :type :page :app ""})
               (rev.db/add-page! db {:parent 4 :title "" :name "Test page 2"
-                                :template :foobaz
-                                :type :page :app ""})
+                                    :template :foobaz
+                                    :type :page :app ""})
               (rev.db/add-page! db {:parent 5 :title "" :name "Test page 3"
-                                :template :foobaz
-                                :type :page :app ""})
+                                    :template :foobaz
+                                    :type :page :app ""})
               (publish/publish-page! db 8)
               (->>
                (db/query db {:select [:serial :version]
@@ -310,7 +310,7 @@
       (let [db (component/start (get-db))]
         (try
           (db/query<! db {:insert-into :auth_group
-                                 :values [{:name "asdf"}]})
+                          :values [{:name "asdf"}]})
           (catch Exception e
             (println e)))
         => [{:id 2 :name "asdf"}]

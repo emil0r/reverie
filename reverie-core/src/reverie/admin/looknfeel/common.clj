@@ -58,7 +58,10 @@
                      [#{:editing} "jquery.simple-dtpicker.js"]
                      [#{:editing} "dtpicker.js"]
                      [#{:richtext} "tinymce/tinymce.min.js"]
-                     [#{:all :dev} "eyespy.js"]
-                     [#{:all :dev} "init.js"]])
+
+                     ;; run these when developing the admin interface
+                     ;; [#{:dev} "eyespy.js"]
+                     ;; [#{:dev} "init.js"]
+                     ])
                    extra-js))
      (map inline-js (downstream/get :inline-admin-js [])))))

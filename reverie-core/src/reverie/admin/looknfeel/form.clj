@@ -56,27 +56,29 @@
                                           error-field-names]
                                    :or {form-params {}}}]
   (let [values (cond
-                (sequential? (get field form-params)) (get field form-params)
-                (not (nil? (get field form-params))) [(get field form-params)]
-                :else nil)
+                 (sequential? (get field form-params)) (get field form-params)
+                 (not (nil? (get field form-params))) [(get field form-params)]
+                 :else nil)
         m2m-data (get m2m-data field)
-        [option-value option-name] (get-m2m-options entity field)]
-   [:div.form-row
-    (error-items field errors error-field-names)
-    (form/label field (e/field-name entity field))
-    [:select (merge {:class :form-control}
-                    {:name field :id field :multiple true}
-                    (e/field-attribs entity field))
-     (map (fn [data]
-            [:option (merge
-                      {:value (get data option-value)}
-                      (if (some #(= (get data option-value) %)
-                                (get form-params field))
-                        {:selected true}
-                        nil))
-             (get data option-name)])
-          m2m-data)]
-    (help-text (e/field-options entity field))]))
+        [option-value option-name] (get-m2m-options entity field)
+        options (:options (e/field entity field))]
+    [:div.form-row
+     (error-items field errors error-field-names)
+     (form/label field (e/field-name entity field))
+     [:select (merge {:class :form-control}
+                     {:name field :id field :multiple true}
+                     (e/field-attribs entity field)
+                     options)
+      (map (fn [data]
+             [:option (merge
+                       {:value (get data option-value)}
+                       (if (some #(= (get data option-value) %)
+                                 (get form-params field))
+                         {:selected true}
+                         nil))
+              (get data option-name)])
+           m2m-data)]
+     (help-text (e/field-options entity field))]))
 
 (defmethod row :richtext [entity field {:keys [form-params errors
                                                error-field-names
@@ -119,14 +121,16 @@
 (defmethod row :boolean [entity field {:keys [form-params errors
                                               error-field-names]
                                        :or {form-params {}}}]
-  [:div.form-row
-   (error-items field errors error-field-names)
-   (form/label field (e/field-name entity field))
-   (form/check-box (merge {:class :form-control}
-                          (if (:initial (e/field-options entity field))
-                            {:checked true})
-                          (e/field-attribs entity field)) field (form-params field))
-   (help-text (e/field-options entity field))])
+  (let [options (:options (e/field entity field))]
+    [:div.form-row
+     (error-items field errors error-field-names)
+     (form/label field (e/field-name entity field))
+     (form/check-box (merge {:class :form-control}
+                            (if (:initial (e/field-options entity field))
+                              {:checked true})
+                            (e/field-attribs entity field)
+                            options) field (form-params field))
+     (help-text (e/field-options entity field))]))
 
 
 
@@ -144,7 +148,7 @@
                      field
                      (if (fn? options)
                        (options {:database (or (:database module)
-                                               (-> entity :page :database))})
+                                               (-> entity :database))})
                        options)
                      (form-params field))
      (help-text (e/field-options entity field))]))
@@ -152,72 +156,84 @@
 (defmethod row :email [entity field {:keys [form-params errors
                                             error-field-names]
                                      :or {form-params {}}}]
-  [:div.form-row
-   (error-items field errors error-field-names)
-   (form/label field (e/field-name entity field))
-   (form/email-field (merge {:class :form-control}
-                            (e/field-attribs entity field)) field (form-params field))
-   (help-text (e/field-options entity field))])
+  (let [options (:options (e/field entity field))]
+    [:div.form-row
+     (error-items field errors error-field-names)
+     (form/label field (e/field-name entity field))
+     (form/email-field (merge {:class :form-control}
+                              (e/field-attribs entity field)
+                              options) field (form-params field))
+     (help-text (e/field-options entity field))]))
 
 (defmethod row :number [entity field {:keys [form-params errors
                                              error-field-names]
                                       :or {form-params {}}}]
-  [:div.form-row
-   (error-items field errors error-field-names)
-   (form/label field (e/field-name entity field))
-   [:input (merge {:class :form-control}
-                  (e/field-attribs entity field)
-                  {:name field :id field :type :number
-                   :value (form-params field)})]
-   (help-text (e/field-options entity field))])
+  (let [options (:options (e/field entity field))]
+    [:div.form-row
+     (error-items field errors error-field-names)
+     (form/label field (e/field-name entity field))
+     [:input (merge {:class :form-control}
+                    (e/field-attribs entity field)
+                    {:name field :id field :type :number
+                     :value (form-params field)}
+                    options)]
+     (help-text (e/field-options entity field))]))
 
 (defmethod row :slug [entity field {:keys [form-params errors
                                            error-field-names]
                                     :or {form-params {}}}]
-  [:div.form-row
-   (error-items field errors error-field-names)
-   (form/label field (e/field-name entity field))
-   (form/text-field (merge
-                     {:class :form-control
-                      :_type :slug}
-                     (e/field-attribs entity field)) field (form-params field))
-   (help-text (e/field-options entity field))])
+  (let [options (:options (e/field entity field))]
+    [:div.form-row
+     (error-items field errors error-field-names)
+     (form/label field (e/field-name entity field))
+     (form/text-field (merge
+                       {:class :form-control
+                        :_type :slug}
+                       (e/field-attribs entity field)
+                       options) field (form-params field))
+     (help-text (e/field-options entity field))]))
 
 (defmethod row :textarea [entity field {:keys [form-params errors
-                                              error-field-names]
-                                       :or {form-params {}}}]
-  [:div.form-row
-   (error-items field errors error-field-names)
-   (form/label field (e/field-name entity field))
-   (form/text-area (merge
-                    {:class :form-control}
-                    (e/field-attribs entity field)) field (form-params field))
-   (help-text (e/field-options entity field))])
+                                               error-field-names]
+                                        :or {form-params {}}}]
+  (let [options (:options (e/field entity field))]
+    [:div.form-row
+     (error-items field errors error-field-names)
+     (form/label field (e/field-name entity field))
+     (form/text-area (merge
+                      {:class :form-control}
+                      (e/field-attribs entity field)
+                      options) field (form-params field))
+     (help-text (e/field-options entity field))]))
 
 (defmethod row :datetime [entity field {:keys [form-params errors
                                                error-field-names]
                                         :or {form-params {}}}]
-  [:div.form-row
-   (error-items field errors error-field-names)
-   (form/label field (e/field-name entity field))
-   [:input (merge {:type :_datetime
-                   :class :form-control
-                   :id field
-                   :name field
-                   :value (form-params field)}
-                  (e/field-attribs entity field))]
-   (help-text (e/field-options entity field))])
+  (let [options (:options (e/field entity field))]
+    [:div.form-row
+     (error-items field errors error-field-names)
+     (form/label field (e/field-name entity field))
+     [:input (merge {:type :_datetime
+                     :class :form-control
+                     :id field
+                     :name field
+                     :value (form-params field)}
+                    (e/field-attribs entity field)
+                    options)]
+     (help-text (e/field-options entity field))]))
 
 (defmethod row :default [entity field {:keys [form-params errors
                                               error-field-names]
                                        :or {form-params {}}}]
-  [:div.form-row
-   (error-items field errors error-field-names)
-   (form/label field (e/field-name entity field))
-   (form/text-field (merge
-                     {:class :form-control}
-                     (e/field-attribs entity field)) field (form-params field))
-   (help-text (e/field-options entity field))])
+  (let [options (:options (e/field entity field))]
+    [:div.form-row
+     (error-items field errors error-field-names)
+     (form/label field (e/field-name entity field))
+     (form/text-field (merge
+                       {:class :form-control}
+                       (e/field-attribs entity field)
+                       options) field (form-params field))
+     (help-text (e/field-options entity field))]))
 
 
 
@@ -292,7 +308,7 @@
                              :type :submit :value "Delete!"}]]))
 
 
-(defn get-object-form [object data]
+(defn get-object-form [database object data]
   (form/form-to
    {:id :edit-form}
    ["POST" ""]
@@ -301,7 +317,7 @@
           [:fieldset
            (if name [:legend name])
            (map (fn [field]
-                  (row object field data))
+                  (row (assoc object :database database) field data))
                 fields)])
         (e/sections object))
    [:div.bottom-bar

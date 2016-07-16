@@ -1,7 +1,6 @@
 (ns reverie.site.init
   (:require [clojure.edn :as edn]
             [com.stuartsierra.component :as component]
-            [digest :refer [md5]]
             [org.httpkit.server :as http-server :refer [run-server]]
             reverie.nsloader
             [reverie.admin :as admin]
@@ -24,15 +23,15 @@
             [reverie.system :refer [load-views-ns] :as sys]))
 
 
-(defn- system-map [{:keys [prod? log db-specs settings
+(defn- system-map [{:keys [prod? log db-specs ds-specs settings
                            host-names render-fn
                            base-dir media-dirs
                            cache-store site-hash-key-strategy
                            server-options middleware-options
                            i18n-tconfig
                            run-server stop-server]}]
-  (let [db (component/start (db.sql/database db-specs))]
-    ;; run the migrations for reverie/CMS
+  (let [db (component/start (db.sql/database (not prod?) db-specs ds-specs))]
+    ;; run the migrations
     (->> db
          (migrator.sql/get-migrator)
          (migrator/migrate))
@@ -80,6 +79,13 @@
   ;; read in the settings first
   (let [settings (component/start (settings/settings settings-path))]
 
+    ;; load namespaces after the system starts up
+    ;; this step will set up any necessary migrations
+    (load-views-ns 'reverie.sql.objects
+                   'reverie.site.templates
+                   'reverie.site.apps
+                   'reverie.site.endpoints)
+
     ;; start the system
     (reset! system (component/start
                     (system-map
@@ -91,6 +97,7 @@
                                                    :dev-mode? (settings/dev? settings)
                                                    :fallback-locale :en})
                       :db-specs (settings/get settings [:db :specs])
+                      :ds-specs (settings/get settings [:db :ds-specs])
                       :server-options (settings/get settings [:server :options])
                       :middleware-options (settings/get settings [:server :middleware])
                       :run-server run-server
@@ -101,18 +108,6 @@
                       :media-dirs (settings/get settings [:filemanager :media-dirs])
                       :cache-store (cache.memory/mem-store)})))
 
-    ;; load namespaces after the system starts up
-    ;; this step will set up any necessary migrations
-    (load-views-ns 'reverie.sql.objects
-                   'reverie.site.templates
-                   'reverie.site.apps
-                   'reverie.site.endpoints)
-
-    ;; run the migrations that now have been defined by the loaded modules, objects, etc
-    (->> @system
-         :database
-         (migrator.sql/get-migrator)
-         (migrator/migrate))
 
     ;; start up the scheduler with tasks
     (let [scheduler (-> @system :scheduler)

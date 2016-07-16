@@ -26,7 +26,8 @@
                  [me.raynes/fs "1.4.6"]
                  [im.chit/cronj "1.4.3"]
                  [digest "1.4.4"]
-                 [org.clojure/core.memoize "0.5.8"]]
+                 [org.clojure/core.memoize "0.5.8"]
+                 [prismatic/schema "1.1.0"]]
   :aot [reverie.AreaException
         reverie.CacheException
         reverie.DatabaseException

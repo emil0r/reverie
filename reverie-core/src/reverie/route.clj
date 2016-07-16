@@ -1,14 +1,15 @@
 (ns reverie.route
   (:require [clojure.string :as str]
             [clout.core :as clout]
-            [reverie.cast :as cast]))
+            [reverie.cast :as cast]
+            [schema.core :as s]))
 
 (defprotocol IRouting
   (match? [component request])
   (get-route [component]))
 
 
-(defrecord Route [path compiled roles matching casting methods]
+(s/defrecord Route [path compiled roles matching casting methods]
   IRouting
   (match? [this request]
     (let [temp-request (if (:shortened-uri request)

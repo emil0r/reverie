@@ -77,11 +77,7 @@
 (defrecord ReverieData [settings database filemanager cachemanager user
                         dev? edit? editor?])
 
-(defn get-reveriedata []
-  (map->ReverieData {:settings (get-settings)
-                     :database (get-db)
-                     :filemanager (get-filemanager)
-                     :cachemanager (get-cachemanager)}))
+(defonce reverie-data (map->ReverieData {}))
 
 (defrecord ReverieSystem [database site filemanager scheduler
                           settings server logger cachemanager
@@ -89,9 +85,14 @@
   component/Lifecycle
   (start [this]
     (reset! sys this)
+    (alter-var-root #'reverie-data (fn [_] (map->ReverieData {:settings settings
+                                                             :filemanager filemanager
+                                                             :database database
+                                                             :cachemanager cachemanager})))
     this)
   (stop [this]
     (reset! sys nil)
+    (alter-var-root #'reverie-data (fn [_] (map->ReverieData {})))
     this))
 
 
