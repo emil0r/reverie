@@ -21,7 +21,7 @@
 
 (defn help-text [options]
   (if (:help options)
-    [:div.help [:i.icon-question-sign] (:help options)]))
+    [:div.help [:i.fa.fa-question-sign] (:help options)]))
 
 (defn error-item [error]
   [:div.error error])
@@ -238,9 +238,9 @@
 
 
  (defn get-entity-form [module entity {:keys [entity-id
-                                             published?
-                                             unpublished?
-                                             display-name] :as data}]
+                                              published?
+                                              unpublished?
+                                              display-name] :as data}]
   (form/form-to
    {:id :edit-form}
    ["POST" ""]
@@ -270,7 +270,7 @@
                             (e/slug entity)
                             (str entity-id)
                             "delete")}
-        [:i.icon-remove] "Delete"]])
+        [:i.fa.fa-remove] "Delete"]])
 
     [:span.save-only.pull-right
      [:input {:type :submit :class "btn btn-primary"

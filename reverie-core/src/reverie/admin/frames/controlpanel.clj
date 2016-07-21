@@ -8,7 +8,7 @@
   (let [{:keys [user dev?]} (:reverie request)]
     {:panel (list
              [:div.user-info "Logged in as " [:span (:full-name user)]
-              [:div.logout [:a {:href "#"} "Logout" [:i.icon-off]]]]
+              [:div.logout [:a {:href "#"} "Logout" [:i.fa.fa-off]]]]
 
              [:div#tabbar
               [:div.goog-tab.goog-tab-selected
@@ -28,14 +28,14 @@
               [:div.tree
                [:form#tree-search-form
                 (form/text-field :tree-search 1)
-                [:i#tree-search-icon.icon-search]]
+                [:i#tree-search-icon.fa.fa-search]]
                [:div#tree]
                [:div.icons
-                [:i.icon-refresh {:title "Refresh"}]
-                [:i.icon-plus-sign {:title "Add page"}]
-                [:i.icon-edit-sign {:title "Edit mode"}]
-                [:i.icon-eye-open.hidden {:title "View mode"}]
-                [:i.icon-trash {:title "Trash it"}]]]
+                [:i.fa.fa-refresh {:title "Refresh"}]
+                [:i.fa.fa-plus-sign {:title "Add page"}]
+                [:i.fa.fa-edit-sign {:title "Edit mode"}]
+                [:i.fa.fa-eye-open.hidden {:title "View mode"}]
+                [:i.fa.fa-trash {:title "Trash it"}]]]
               [:div.meta
                [:table.meta
                 [:tr [:th "Name"] [:td.name ""]]

@@ -132,21 +132,21 @@
 
 (defmulti get-icon :file-type)
 (defmethod get-icon :document [file]
-  [:i.icon-file-text])
+  [:i.fa.fa-file-text])
 (defmethod get-icon :image [file]
-  [:i.icon-picture])
+  [:i.fa.fa-picture])
 (defmethod get-icon :binary [file]
-  [:i.icon-sign-blank])
+  [:i.fa.fa-sign-blank])
 (defmethod get-icon :compressed [file]
-  [:i.icon-archive])
+  [:i.fa.fa-archive])
 (defmethod get-icon :audio [file]
-  [:i.icon-music])
+  [:i.fa.fa-music])
 (defmethod get-icon :movie [file]
-  [:i.icon-film])
+  [:i.fa.fa-film])
 (defmethod get-icon :font [file]
-  [:i.icon-font])
+  [:i.fa.fa-font])
 (defmethod get-icon :default [file]
-  [:i.icon-file])
+  [:i.fa.fa-file])
 
 (defn- get-image-src [{:keys [uri] :as file}]
   (let [file-type (str/lower-case (-> uri (str/split #"\.") last))]
@@ -210,7 +210,7 @@
      [:a {:href (str (join-uri uri-base (:uri dir))
                      (if filepicker?
                        (str "?" (util/qsize qs))))}
-      [:i.icon-folder-close]
+      [:i.fa.fa-folder-close]
       (:name dir)]]
     [:td]
     [:td (get-mod-time dir)]]))
@@ -223,7 +223,7 @@
            (get-icon file)
            (:name file)
            (if filepicker?
-             [:i.icon-download])
+             [:i.fa.fa-download])
            (if src
              [:img {:src src}])]]
      [:td (get-size file)]
