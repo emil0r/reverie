@@ -45,8 +45,9 @@
 
 (defmacro deftemplate [name function]
   (let [name (keyword name)]
-    `(swap! sys/storage assoc-in [:templates ~name]
-            (template/template ~function))))
+    `(do (swap! sys/storage assoc-in [:templates ~name]
+                (template/template ~function))
+         nil)))
 
 (defmacro defapp [name options routes]
   (let [name (keyword name)
@@ -57,7 +58,8 @@
          (swap! sys/storage assoc-in [:migrations ~name] ~migration))
        (swap! sys/storage assoc-in [:apps ~name]
               {:app-routes (map route/route ~routes)
-               :options ~options}))))
+               :options ~options})
+       nil)))
 
 (defmacro defpage [path options routes]
   (let [properties {:name path :type :raw}
@@ -69,7 +71,8 @@
        (swap! site/routes assoc ~path [(route/route [~path]) ~properties])
        (swap! sys/storage assoc-in [:raw-pages ~path]
               {:routes (map route/route ~routes)
-               :options ~options}))))
+               :options ~options})
+       nil)))
 
 (defmacro defmodule [name options & [routes]]
   (let [name (keyword name)
@@ -96,7 +99,8 @@
                                             (concat
                                              ~routes
                                              (:module-default-routes @sys/storage)))
-                                           ~routes)))}))))
+                                           ~routes)))})
+       nil)))
 
 (defmacro defobject [name options methods]
   (let [name (keyword name)
@@ -110,4 +114,5 @@
                :methods ~methods
                :table (keyword
                        (or (get ~options :table)
-                           (str/replace ~name #"/|\." "_")))}))))
+                           (str/replace ~name #"/|\." "_")))})
+       nil)))
