@@ -38,7 +38,9 @@
   (table [entity]
     "Get table of entity")
   (publishing? [entity]
-    "Does the entity support publishing?"))
+    "Does the entity support publishing?")
+  (interface [entity]
+    "Get the interface of the entity"))
 
 
 (defrecord ModuleEntity [key options]
@@ -46,8 +48,9 @@
   (pk [this] (or (:primary-key options) :id))
   (fields [this] (:fields options))
   (field [this field] (get-in options [:fields field]))
-  (display [this] (or (:display options)
-                      [(pk this)]))
+  (display [this] (or (get-in options [:interface :display])
+                      {(pk this) {:name "Id"
+                                  :sort :id}}))
   (post-fn [this] (get-in options [:post]))
   (pre-save-fn [this] (get-in options [:pre-save]))
   (field-options [this field]
@@ -83,7 +86,8 @@
   (table [this]
     (or (:table options) key))
   (publishing? [this]
-    (->> options :publishing :publish? true?)))
+    (->> options :publishing :publish? true?))
+  (interface [this] (:interface options)))
 
 
 (defn module-entity [[key options]]

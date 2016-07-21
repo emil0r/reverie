@@ -1,10 +1,13 @@
 (ns reverie.modules.auth
   (:require [buddy.hashers :as hashers]
+            [clojure.edn :as edn]
             [clojure.string :as str]
             [ez-database.core :as db]
+            [ez-database.query :refer [optional clean swap]]
             [ez-web.breadcrumbs :refer [crumb]]
             [ez-web.uri :refer [join-uri]]
             [hiccup.form :as form]
+            [honeysql.helpers :as sql.helpers]
             [reverie.admin.looknfeel.form :as looknfeel]
             [reverie.auth :as auth]
             [reverie.core :refer [defmodule]]
@@ -12,6 +15,7 @@
             [reverie.module.entity :as e]
             [reverie.modules.default :refer [base-link pk-cast
                                              get-display-name
+                                             get-order-query
                                              process-request
                                              select-errors]]
             [reverie.modules.sql :as msql]
@@ -90,6 +94,85 @@
     data
     (assoc data :password (hashers/encrypt (:password data)))))
 
+(defn search-query-user [{:keys [database database-name limit offset interface active_p] :as params}]
+  (let [[role group] (->> [:role :group]
+                          (map params)
+                          (map edn/read-string))
+        order (get-order-query interface params)]
+    (->> (-> {:select [:u.id :u.username :u.email :u.active_p]
+              :modifers [:distinct]
+              :from [[:auth_user :u]]
+              :order-by [order]
+              :limit limit
+              :offset offset}
+             (swap (or role group)
+                   (sql.helpers/join (optional role [:auth_user_role :ur] [:= :ur.user_id :u.id])
+                                     (optional role [:auth_role :r] [:= :ur.role_id :r.id])
+                                     (optional group [:auth_user_group :ug] [:= :ug.user_id :u.id])
+                                     (optional group [:auth_group :g] [:= :ug.group_id :g.id])))
+             (swap (or role group (not (str/blank? active_p)))
+                   (sql.helpers/where [:and
+                                       (optional role [:= :r.id role])
+                                       (optional group [:= :g.id group])
+                                       (optional (= "True" active_p) [:= :u.active_p true])
+                                       (optional (= "False" active_p) [:= :u.active_p false])]))
+             (clean))
+         (db/query database database-name))))
+
+(def filter-user [{:name :role
+                   :type :dropdown
+                   :options (fn [{:keys [database database-name]}]
+                              (->> {:select [:id :name]
+                                    :from [:auth_role]
+                                    :order-by [:name]}
+                                   (db/query database database-name)
+                                   (map (juxt #(-> % :id str) :name))
+                                   (into [["" ""]])))}
+                  {:name :group
+                   :type :dropdown
+                   :options (fn [{:keys [database database-name]}]
+                              (->> {:select [:id :name]
+                                    :from [:auth_group]
+                                    :order-by [:name]}
+                                   (db/query database database-name)
+                                   (map (juxt #(-> % :id str) :name))
+                                   (into [["" ""]])))}
+                  {:name :active_p
+                   :label "Active?"
+                   :type :dropdown
+                   :options ["" "True" "False"]}])
+
+
+(defn search-query-group [{:keys [database database-name limit offset interface active_p] :as params}]
+  (let [[role] (->> [:role]
+                    (map params)
+                    (map edn/read-string))
+        order (get-order-query interface params)]
+    (->> (-> {:select [:g.id :g.name]
+              :modifers [:distinct]
+              :from [[:auth_group :g]]
+              :order-by [order]
+              :limit limit
+              :offset offset}
+             (swap role
+                   (sql.helpers/join (optional role [:auth_group_role :gr] [:= :gr.group_id :g.id])
+                                     (optional role [:auth_role :r] [:= :gr.role_id :r.id])))
+             (swap role
+                   (sql.helpers/where [:and
+                                       (optional role [:= :r.id role])]))
+             (clean))
+         (db/query database database-name))))
+
+(def filter-group [{:name :role
+                    :type :dropdown
+                    :options (fn [{:keys [database database-name]}]
+                               (->> {:select [:id :name]
+                                     :from [:auth_role]
+                                     :order-by [:name]}
+                                    (db/query database database-name)
+                                    (map (juxt #(-> % :id str) :name))
+                                    (into [["" ""]])))}])
+
 (defmodule auth
   {:name "Authentication"
    :interface? true
@@ -101,7 +184,7 @@
    ;; is on an individual basis
    ;; the high level view can be controlled by the module/page/whatever
    ;; by itself, but the low level view will require an interface
-  ;; that should be under the auth module
+   ;; that should be under the auth module
    :roles #{:admin :staff :user :all}
    :actions #{:view :edit}
    :required-roles {:view #{:admin :staff}
@@ -110,27 +193,17 @@
    :entities
    {:user {:name "User"
            :table :auth_user
-           :order :id
-           :display [:username :email :active_p]
-           :query (fn [{:keys [params]}]
-                    ;; query to return
-                    )
-           :filter [:username
-                    {:field :role
-                     :type :dropdown
-                     :options (fn [{:keys [database]}]
-                                (db/query database
-                                          {:select [:id :name]
-                                           :from [:auth_roles]
-                                           :order-by [:name]}))}
-                    {:field :group
-                     :type :dropdown
-                     :options (fn [{:keys [database]}]
-                                (db/query database
-                                          {:select [:id :name]
-                                           :from [:auth_group]
-                                           :order-by [:name]}))}
-                    :active_p]
+           :interface {:display {:username {:name "Username"
+                                            :link? true
+                                            :sort :u
+                                            :sort-name :id}
+                                 :email {:name "Email"
+                                         :sort :e}
+                                 :active_p {:name "Active?"
+                                            :sort :a}}
+                       :default-order :id
+                       :query search-query-user
+                       :filter filter-user}
            :fields {:spoken_name {:name "Spoken name"
                                   :type :text
                                   :max 255
@@ -188,9 +261,13 @@
            :post user-post-fn
            :pre-save user-pre-save-fn}
     :group {:name "Group"
-            :order :name
             :table :auth_group
-            :display [:name]
+            :interface {:display {:name {:name "Name"
+                                         :link? true
+                                         :sort :n}}
+                        :default-order :name
+                        :query search-query-group
+                        :filter filter-group}
             :fields {:name {:name "Name"
                             :type :text
                             :max 255
