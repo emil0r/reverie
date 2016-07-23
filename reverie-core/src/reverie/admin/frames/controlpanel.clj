@@ -32,9 +32,9 @@
                [:div#tree]
                [:div.icons
                 [:i.fa.fa-refresh {:title "Refresh"}]
-                [:i.fa.fa-plus-sign {:title "Add page"}]
-                [:i.fa.fa-edit-sign {:title "Edit mode"}]
-                [:i.fa.fa-eye-open.hidden {:title "View mode"}]
+                [:i.fa.fa-plus-circle {:title "Add page"}]
+                [:i.fa.fa-pencil {:title "Edit mode"}]
+                [:i.fa.fa-eye.hidden {:title "View mode"}]
                 [:i.fa.fa-trash {:title "Trash it"}]]]
               [:div.meta
                [:table.meta
