@@ -94,7 +94,7 @@
     data
     (assoc data :password (hashers/encrypt (:password data)))))
 
-(defn search-query-user [{:keys [database database-name limit offset interface active_p] :as params}]
+(defn search-query-user [{:keys [database database-name limit offset interface active_p username email] :as params}]
   (let [[role group] (->> [:role :group]
                           (map params)
                           (map edn/read-string))
@@ -110,16 +110,26 @@
                                      (optional role [:auth_role :r] [:= :ur.role_id :r.id])
                                      (optional group [:auth_user_group :ug] [:= :ug.user_id :u.id])
                                      (optional group [:auth_group :g] [:= :ug.group_id :g.id])))
-             (swap (or role group (not (str/blank? active_p)))
+             (swap (or role
+                       group
+                       (not (str/blank? active_p))
+                       (not (str/blank? username))
+                       (not (str/blank? email)))
                    (sql.helpers/where [:and
                                        (optional role [:= :r.id role])
                                        (optional group [:= :g.id group])
+                                       (optional (not (str/blank? username)) [:ilike :u.username username])
+                                       (optional (not (str/blank? email)) [:ilike :u.email email])
                                        (optional (= "True" active_p) [:= :u.active_p true])
                                        (optional (= "False" active_p) [:= :u.active_p false])]))
              (clean))
          (db/query database database-name))))
 
-(def filter-user [{:name :role
+(def filter-user [{:name :username
+                   :type :text}
+                  {:name :email
+                   :type :text}
+                  {:name :role
                    :type :dropdown
                    :options (fn [{:keys [database database-name]}]
                               (->> {:select [:id :name]

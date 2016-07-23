@@ -2,11 +2,19 @@
   (:require [clojure.string :as str]
             [ez-database.core :as db]
             [honeysql.core :as sql]
+            [honeysql.format :as sql.format]
             [reverie.module :as m]
             [reverie.module.entity :as e]
             [reverie.time :as time])
   (:import [reverie.module Module]))
 
+
+;; add :ilike and :not-ilike to HoneySQL maps
+(defmethod sql.format/fn-handler "ilike" [_ col qstr]
+  (str (sql.format/to-sql col) " ilike " (sql.format/to-sql (str "%%" qstr "%%"))))
+
+(defmethod sql.format/fn-handler "not-ilike" [_ col qstr]
+    (str (sql.format/to-sql col) " not ilike " (sql.format/to-sql (str "%%" qstr "%%"))))
 
 (defn get-entity-table [entity]
   (get-in entity [:options :table]))
