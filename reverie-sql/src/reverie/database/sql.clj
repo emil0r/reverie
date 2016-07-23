@@ -370,6 +370,7 @@
                                  :join [[:reverie_page :o]
                                         [:= :p.parent :o.parent]]
                                  :where [:and
+                                         [:<> :p.id id]
                                          [:= :p.version 0]
                                          [:= :o.id origo-id]]
                                  :order-by [(sql/raw "\"order\"")]})
