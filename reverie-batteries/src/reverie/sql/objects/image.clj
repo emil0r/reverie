@@ -8,16 +8,19 @@
 (defn- image [request object {:keys [title alt src width height]} params]
   (let [fm (get-in request [:reverie :filemanager])
         constrain (cond
-                   (and width height) [:constrain width height]
-                   width [:constrain width]
-                   height [:constrain height]
-                   :else nil)]
-    (if (fs/exists? (fm/get-abs-path fm src))
-      (if constrain
-        [:img {:src (ez/cache src constrain) :title title :alt alt
-               :class (downstream/get :reverie.image/class)}]
-        [:img {:class (downstream/get :reverie.image/class)
-               :src src :title title :alt alt}]))))
+                    (and width height) [:constrain width height]
+                    width [:constrain width]
+                    height [:constrain height]
+                    :else nil)]
+    (try
+      (if (fs/exists? (fm/get-abs-path fm src))
+        (if constrain
+          [:img {:src (ez/cache src constrain) :title title :alt alt
+                 :class (downstream/get :reverie.image/class)}]
+          [:img {:class (downstream/get :reverie.image/class)
+                 :src src :title title :alt alt}]))
+      (catch Exception _
+        nil))))
 
 
 
