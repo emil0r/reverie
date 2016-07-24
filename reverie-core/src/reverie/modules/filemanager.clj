@@ -95,16 +95,16 @@
   "Compare fn for sort"
   [x y]
   (cond
-   (and
-    (= (:type x) :directory)
-    (= (:type y) :directory)) (compare (:name x) (:name y))
-   (and
-    (= (:type x) :directory)
-    (= (:type y) :file)) -1
-   (and
-    (= (:type x) :file)
-    (= (:type y) :directory)) 1
-   :else (compare (:name x) (:name y))))
+    (and
+     (= (:type x) :directory)
+     (= (:type y) :directory)) (compare (:name x) (:name y))
+     (and
+      (= (:type x) :directory)
+      (= (:type y) :file)) -1
+      (and
+       (= (:type x) :file)
+       (= (:type y) :directory)) 1
+       :else (compare (:name x) (:name y))))
 
 
 (defn- get-mod-time [{:keys [mod]}]
@@ -113,22 +113,22 @@
 
 (defn- get-size [{:keys [size]}]
   (cond
-   (< 1 (/ size 1073741824)) (str (format "%.2f" (float (/ size 1073741824))) " GiB")
-   (< 1 (/ size 1048576)) (str (format "%.2f" (float (/ size 1048576))) " MiB")
-   (< 1 (/ size 1024)) (str (format "%.2f" (float (/ size 1024))) " KiB")
-   :else (str size " bytes")))
+    (< 1 (/ size 1073741824)) (str (format "%.2f" (float (/ size 1073741824))) " GiB")
+    (< 1 (/ size 1048576)) (str (format "%.2f" (float (/ size 1048576))) " MiB")
+    (< 1 (/ size 1024)) (str (format "%.2f" (float (/ size 1024))) " KiB")
+    :else (str size " bytes")))
 
 (defn- get-file-type [path]
   (let [ending (-> path (str/split #"\.") last)]
     (cond
-     (some #(= ending %) file-type-document) :document
-     (some #(= ending %) file-type-image) :image
-     (some #(= ending %) file-type-binary) :binary
-     (some #(= ending %) file-type-compressed) :compressed
-     (some #(= ending %) file-type-audio) :audio
-     (some #(= ending %) file-type-movie) :movie
-     (some #(= ending %) file-type-font) :font
-     :else nil)))
+      (some #(= ending %) file-type-document) :document
+      (some #(= ending %) file-type-image) :image
+      (some #(= ending %) file-type-binary) :binary
+      (some #(= ending %) file-type-compressed) :compressed
+      (some #(= ending %) file-type-audio) :audio
+      (some #(= ending %) file-type-movie) :movie
+      (some #(= ending %) file-type-font) :font
+      :else nil)))
 
 (defmulti get-icon :file-type)
 (defmethod get-icon :document [file]
@@ -163,9 +163,9 @@
   (try
     (let [path (.getPath file)]
       {:type (cond
-              (fs/directory? file) :directory
-              (fs/file? file) :file
-              :else :other)
+               (fs/directory? file) :directory
+               (fs/file? file) :file
+               :else :other)
        :mod (fs/mod-time file)
        :file-type (get-file-type path)
        :uri (-> path
@@ -205,21 +205,24 @@
   (let [uri-base (if filepicker?
                    "/admin/frame/filepicker"
                    "/admin/frame/module/filemanager")]
-   [:tr
-    [:td
-     [:a {:href (str (join-uri uri-base (:uri dir))
-                     (if filepicker?
-                       (str "?" (util/qsize qs))))}
-      [:i.fa.fa-folder-close]
-      (:name dir)]]
-    [:td]
-    [:td (get-mod-time dir)]]))
+    [:tr
+     [:td
+      [:a {:href (str (join-uri uri-base (:uri dir))
+                      (if filepicker?
+                        (str "?" (util/qsize qs))))}
+       [:i.fa.fa-folder-close]
+       (:name dir)]]
+     [:td]
+     [:td (get-mod-time dir)]]))
 
-(defmethod row :file [{:keys [filepicker?] :as file}]
+(defmethod row :file [{:keys [filepicker? file-name] :as file}]
   (let [src (get-image-src file)]
     [:tr
-     [:td [:span.file.download {:uri (:uri file)
-                                :path (:path file)}
+     [:td [:span {:class (if (= (:name file) file-name)
+                           "file download selected"
+                           "file download")
+                  :uri (:uri file)
+                  :path (:path file)}
            (get-icon file)
            (:name file)
            (if filepicker?
@@ -250,9 +253,10 @@
                :uri (uri-but-last-part path)
                :filepicker? filepicker?
                :qs qs}))
-       (map row (map #(assoc %
-                        :filepicker? filepicker?
-                        :qs qs) files))]]
+       (map #(row (assoc %
+                         :file-name (get qs "file-name")
+                         :filepicker? filepicker?
+                         :qs qs)) files)]]
      (if-not filepicker?
        [:div#info.col-md-4
         [:div#directory-commands
@@ -293,35 +297,35 @@
 
 (defn- handle-filemanager [{:keys [uri]} module {:keys [path] :as params}]
   (cond
-   (contains? params :__delete) (let [path (join-paths (get-base-path "") (:delete params))]
-                                  (if (fs/exists? path)
-                                    (fs/delete path))
-                                  (response/redirect uri))
-   (and
-    (-> params :upload :filename str/blank? not)
-    (contains? params :__upload)) (let [file (:upload params)]
-                                    (fs/copy (:tempfile file)
-                                             (join-paths (get-base-path "")
-                                                         path
-                                                         (:filename file)))
-                                    (response/redirect uri))
-   (and
-    (-> params :dir str/blank? not)
-    (contains? params :__create-dir)) (let [dir (:dir params)
-                                            path (join-paths (get-base-path "")
-                                                             path
-                                                             dir)]
-                                        (fs/mkdir path)
-                                        (response/redirect uri))
-   (contains? params :__delete-dir) (let [dir-path (join-paths (get-base-path "") path)
-                                          empty-dir? (empty? (fs/list-dir dir-path))]
-                                      (if empty-dir?
-                                        (do (fs/delete-dir dir-path)
-                                            (response/redirect (join-uri
-                                                                "/admin/frame/module/filemanager"
-                                                                (uri-but-last-part path))))
-                                        (response/redirect uri)))
-   :else (response/redirect uri)))
+    (contains? params :__delete) (let [path (join-paths (get-base-path "") (:delete params))]
+                                   (if (fs/exists? path)
+                                     (fs/delete path))
+                                   (response/redirect uri))
+    (and
+     (-> params :upload :filename str/blank? not)
+     (contains? params :__upload)) (let [file (:upload params)]
+                                     (fs/copy (:tempfile file)
+                                              (join-paths (get-base-path "")
+                                                          path
+                                                          (:filename file)))
+                                     (response/redirect uri))
+     (and
+      (-> params :dir str/blank? not)
+      (contains? params :__create-dir)) (let [dir (:dir params)
+                                              path (join-paths (get-base-path "")
+                                                               path
+                                                               dir)]
+                                          (fs/mkdir path)
+                                          (response/redirect uri))
+      (contains? params :__delete-dir) (let [dir-path (join-paths (get-base-path "") path)
+                                             empty-dir? (empty? (fs/list-dir dir-path))]
+                                         (if empty-dir?
+                                           (do (fs/delete-dir dir-path)
+                                               (response/redirect (join-uri
+                                                                   "/admin/frame/module/filemanager"
+                                                                   (uri-but-last-part path))))
+                                           (response/redirect uri)))
+      :else (response/redirect uri)))
 
 
 ;; define module
@@ -342,66 +346,72 @@
 (defmethod form/row :image [entity field {:keys [form-params errors
                                                  error-field-names]
                                           :or {form-params {}}}]
-  [:div.row-form {:style "margin-bottom: 10px;"}
-   [:table
-    [:tr
-     [:td (hf/label field (e/field-name entity field))]
-     [:td
-      (form/error-items field errors error-field-names)
-      [:div.hover
-       (merge {:onclick (str "window.open('/admin/frame/filepicker/"
-                             (form-params field)
-                             "?field=" (util/kw->str field)
-                             "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
-              (e/field-attribs entity field))
-       (if (form-params field)
-         (let [src (try (ez/cache (form-params field) [:constrain 100]) (catch Exception _))]
-           [:div [:img {:src src
-                        :style "margin-right: 10px;"
-                        :id (str (util/kw->str field) "-image")}]]))
-       "Edit image..."]
-      (if-not (str/blank? (form-params field))
-        [:div.hover
-         (merge {:onclick (format "document.getElementById('%s').value = ''; document.getElementById('%s').src = '';"
-                                  (util/kw->str field)
-                                  (str (util/kw->str field) "-image"))}
-                (e/field-attribs entity field))
+  (let [path (str/join "/" (butlast (str/split (form-params field) #"/")))
+        file-name (last (str/split (form-params field) #"/"))]
+   [:div.row-form {:style "margin-bottom: 10px;"}
+    [:table
+     [:tr
+      [:td (hf/label field (e/field-name entity field))]
+      [:td
+       (form/error-items field errors error-field-names)
+       [:div.hover
+        (merge {:onclick (str "window.open('/admin/frame/filepicker/"
+                              path
+                              "?field=" (util/kw->str field)
+                              "&file-name=" file-name
+                              "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
+               (e/field-attribs entity field))
+        (if (form-params field)
+          (let [src (try (ez/cache (form-params field) [:constrain 100]) (catch Exception _))]
+            [:div [:img {:src src
+                         :style "margin-right: 10px;"
+                         :id (str (util/kw->str field) "-image")}]]))
+        "Edit image..."]
+       (if-not (str/blank? (form-params field))
+         [:div.hover
+          (merge {:onclick (format "document.getElementById('%s').value = ''; document.getElementById('%s').src = '';"
+                                   (util/kw->str field)
+                                   (str (util/kw->str field) "-image"))}
+                 (e/field-attribs entity field))
 
-         "Remove image..."])
+          "Remove image..."])
 
-      (hf/hidden-field field (form-params field))
-      (form/help-text (e/field-options entity field))]]]])
+       (hf/hidden-field field (form-params field))
+       (form/help-text (e/field-options entity field))]]]]))
 
 (defmethod form/row :file [entity field {:keys [form-params errors
                                                 error-field-names]
                                          :or {form-params {}}}]
-  [:div.row-form {:style "margin-bottom: 10px;"}
-   [:table
-    [:tr
-     [:td (hf/label field (e/field-name entity field))]
-     [:td (form/error-items field errors error-field-names)
-      [:div.hover
-       (merge {:onclick (str "window.open('/admin/frame/filepicker/"
-                             (form-params field)
-                             "?field=" (util/kw->str field)
-                             "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
-              (e/field-attribs entity field))
-       [:div.file {:style "margin-right: 15px;"
-                    :id (str (util/kw->str field) "-descriptor")}
-        (-> (form-params field)
-            (str/split #"/")
-            last)]
-       "Edit file..."]
-      (if-not (str/blank? (form-params field))
+  (let [path (str/join "/" (butlast (str/split (form-params field) #"/")))
+        file-name (last (str/split (form-params field) #"/"))]
+    [:div.row-form {:style "margin-bottom: 10px;"}
+     [:table
+      [:tr
+       [:td (hf/label field (e/field-name entity field))]
+       [:td (form/error-items field errors error-field-names)
         [:div.hover
-         (merge {:onclick (format "document.getElementById('%s').value = ''; document.getElementById('%s').innerHTML = '';"
-                                  (util/kw->str field)
-                                  (str (util/kw->str field) "-descriptor"))}
+         (merge {:onclick (str "window.open('/admin/frame/filepicker/"
+                               path
+                               "?field=" (util/kw->str field)
+                               "&file-name" file-name
+                               "', '_blank', 'fullscreen=no, width=800, height=640, location=no, menubar=no'); return false;")}
                 (e/field-attribs entity field))
+         [:div.file {:style "margin-right: 15px;"
+                     :id (str (util/kw->str field) "-descriptor")}
+          (-> (form-params field)
+              (str/split #"/")
+              last)]
+         "Edit file..."]
+        (if-not (str/blank? (form-params field))
+          [:div.hover
+           (merge {:onclick (format "document.getElementById('%s').value = ''; document.getElementById('%s').innerHTML = '';"
+                                    (util/kw->str field)
+                                    (str (util/kw->str field) "-descriptor"))}
+                  (e/field-attribs entity field))
 
-         "Remove file..."])
-      (hf/hidden-field field (form-params field))
-      (form/help-text (e/field-options entity field))]]]])
+           "Remove file..."])
+        (hf/hidden-field field (form-params field))
+        (form/help-text (e/field-options entity field))]]]]))
 
 
 (defn- filepicker [{:keys [query-params]} page {:keys [path]}]
