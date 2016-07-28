@@ -32,18 +32,18 @@
               [k (time/coerce v :joda)]))
        (into {})))
 
-(defrecord AdminInitializer [database storage]
+(defrecord AdminInitializer [database store]
   component/Lifecycle
   (start [this]
     (log/info "Starting AdminInitializer")
-    (let [storage (or storage (internal.memory/mem-store))]
+    (let [store (or store (internal.memory/mem-store))]
       (let [saved-edits (admin.storage/get database :admin.storage/edits)
             saved-editors (admin.storage/get database :admin.storage/editors)]
         (reset! edits (reverse-edits saved-edits))
         (reset! editors (reverse-editors saved-editors)))
-      (reset! internal/storage storage)
+      (reset! internal/storage store)
       (db/cache-pages database)
-      (assoc this :storage storage)))
+      (assoc this :store store)))
   (stop [this]
     (log/info "Stopping AdminInitializer")
     (let [edits (get-edits)

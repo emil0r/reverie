@@ -1,5 +1,8 @@
 {
  ;; reverie
+
+ ;; set to true for starting a scheduled services meant to take care of the server
+ :primary? true
  :server-mode :dev
  :server {:options {:port 9090}
           :middleware {}}
@@ -19,4 +22,8 @@
  :site {:host-names []}
  :filemanager {:base-dir "media"
                :media-dirs ["media/images"
-                            "media/files"]}}
+                            "media/files"]}
+ :storage {:redis {;;:admin {}
+                   :session {}
+                   :internal {}
+                   :cache {}}}}

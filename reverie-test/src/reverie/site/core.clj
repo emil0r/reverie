@@ -1,9 +1,18 @@
 (ns reverie.site.core
-  (:require [reverie.site.init :as init]))
+  (:gen-class)
+  (:require [clojure.edn :as edn]
+            [reverie.site.init :as init]))
 
+
+(defn read-args [args]
+  (reduce (fn [out [arg value]]
+            (assoc out (edn/read-string arg) (edn/read-string value)))
+          {} (partition 2 args)))
+
+(defn -main [& args]
+  (init/init "settings.edn" (read-args args)))
 
 (comment
-
 
   ;; run this for running the server in dev mode through the REPL
   (do
