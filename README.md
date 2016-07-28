@@ -14,6 +14,20 @@ Current version is 0.7. See [installation guide](doc/installation/getting-starte
 
 [Take a look here.](../../wiki/Example-UI)
 
+## Supporting libraries for reverie specifically
+
+- [reverie-batteries](https://github.com/emil0r/reverie/tree/master/reverie-batteries)
+- [reverie-redis](https://github.com/emil0r/reverie-redis)
+- [reverie-blog](https://github.com/emil0r/reverie-blog)
+- [reverie-blockade](https://github.com/emil0r/reverie-blockade)
+
+## Supporting libraries that reverie uses, but can be used elsewhere as well
+
+- [ez-database](https://github.com/emil0r/ez-database)
+- [ez-form](https://github.com/emil0r/ez-form)
+- [ez-image](https://github.com/emil0r/ez-image)
+- [ez-web](https://github.com/emil0r/ez-web)
+
 ## License
 
 Copyright © 2012-2016 Emil Bengtsson
