@@ -1,4 +1,5 @@
 (ns reverie.modules.default
+  "Modules with interface? set to true will use this code for generating the HTML"
   (:require [clojure.string :as str]
             [clojure.walk :as walk]
             [ez-database.core :as db]
@@ -37,7 +38,19 @@
                         k)))
                (remove nil?)
                first)]
-   (get (:form-params entity-data) k)))
+    (get (:form-params entity-data) k)))
+
+(def get-display-row nil)
+(defmulti get-display-row (fn [db k value options field-attribs] (:type field-attribs)))
+(defmethod get-display-row :boolean [db k value options field-attribs]
+  (if (:fn options)
+    ((:fn options) {:database db :value value})
+    (if (true? (get value k))
+      [:i.fa.fa-check-circle])))
+(defmethod get-display-row :default [db k value options field-attribs]
+  (if (:fn options)
+    ((:fn options) {:database db :value value})
+    (get value k)))
 
 (defn clean-form-params [form-params]
   (walk/keywordize-keys
@@ -266,8 +279,7 @@
                                   :limit pagination-limit
                                   :offset (* pagination-limit
                                              (dec page))
-                                  :page page))
-            ]
+                                  :page page))]
 
         (let [options
               [:div.options
@@ -281,25 +293,26 @@
                (map (fn [data]
                       [:tr (map
                             (fn [[k v]]
-                              [:td (if (:link? (get display k))
-                                     [:a {:href (join-uri base-link (m/slug module) (e/slug entity) (str (get data pk)))} (get data k)]
-                                     (get data k))])
+                              (let [display-row (get-display-row db k data v (e/field-options entity k))]
+                                [:td (if (:link? (get display k))
+                                       [:a {:href (join-uri base-link (m/slug module) (e/slug entity) (str (get data pk)))} display-row]
+                                       display-row)]))
                             display)])
                     data)]]
-         (array-map
-          :content
-          (html (list
-                 options
-                 (if (:filter interface)
-                   (list
-                    [:div.row [:div.col-md-4.col-md-offset-8 [:h2 "Filter"]]]
-                    [:div.row
-                     [:div.col-md-8 table]
-                     [:div.col-md-4 (get-filter db-name db interface params)]])
-                   table)))
-          :nav (html (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
-                                      [(join-uri base-link (m/slug module) (e/slug entity))  (e/name entity)]])))
-          :pagination (html (pagination request module entity)))))
+          (array-map
+           :content
+           (html (list
+                  options
+                  (if (:filter interface)
+                    (list
+                     [:div.row [:div.col-md-4.col-md-offset-8 [:h2 "Filter"]]]
+                     [:div.row
+                      [:div.col-md-8 table]
+                      [:div.col-md-4 (get-filter db-name db interface params)]])
+                    table)))
+           :nav (html (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
+                                       [(join-uri base-link (m/slug module) (e/slug entity))  (e/name entity)]])))
+           :pagination (html (pagination request module entity)))))
       (entity-does-not-exist module))))
 
 (defn single-entity [request module {:keys [entity id] :as params}

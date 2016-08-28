@@ -78,7 +78,7 @@
   (let [name (keyword name)
         interface? (:interface? options)
         migration (assoc (:migration options) :type :module)
-        path (str "/admin/frame/module/" (clojure.core/name name))]
+        path (str "/admin/frame/module/" (or (:slug options) (util/slugify name)))]
     `(do
        (i18n/load-from-options! ~options)
        (when ~migration

@@ -7,7 +7,9 @@
                  [reverie-core "0.8.0-SNAPSHOT"]
                  [reverie-sql "0.8.0-SNAPSHOT"]
                  [reverie-batteries "0.3.1"]
-                 [reverie-redis "0.1.0-SNAPSHOT"]
+                 [reverie-redis "0.1.0"]
+                 [reverie-blog "0.2.2"]
+                 [reverie-blockade "0.11.0"]
                  [http-kit "2.1.19"]
                  [org.postgresql/postgresql "9.3-1102-jdbc41"]]
 

@@ -58,7 +58,9 @@
 (defmethod cast-to [:int clojure.lang.PersistentList] [_ v]
   (cast-to :int (vec v)))
 (defmethod cast-to [:int java.lang.String] [_ v]
-  (Integer/parseInt v))
+  (if (str/blank? v)
+    nil
+    (Integer/parseInt v)))
 (defmethod cast-to :default [_ v]
   v)
 

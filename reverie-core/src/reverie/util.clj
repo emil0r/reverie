@@ -42,7 +42,8 @@
       (str/replace #"^-" "")
       (str/replace #"-$" "")
       (str/replace #"-{2,}" "-")
-      str/lower-case))
+      str/lower-case
+      str/trim))
 
 
 (defn kw->str [x]
