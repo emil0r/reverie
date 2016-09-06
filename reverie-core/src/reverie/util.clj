@@ -16,6 +16,7 @@
 (defn slugify [name]
   (-> name
       str
+      str/trim
       (str/replace #"[åÅäÄĀāĀāÀÁÂÃÆàáâãæ]" "a")
       (str/replace #"[ČčÇç]" "c")
       (str/replace #"[Ðð]" "d")
@@ -42,8 +43,7 @@
       (str/replace #"^-" "")
       (str/replace #"-$" "")
       (str/replace #"-{2,}" "-")
-      str/lower-case
-      str/trim))
+      str/lower-case))
 
 
 (defn kw->str [x]

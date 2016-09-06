@@ -5,6 +5,7 @@
             joplin.jdbc.database
             [reverie.migrator :refer [IMigrator]]
             [reverie.system :as sys]
+            [reverie.util :refer [slugify]]
             [taoensso.timbre :as log]))
 
 
@@ -37,10 +38,8 @@
                    (mapv (fn [[kw {:keys [table path]}]]
                            (let [table (or table
                                            (str
-                                            "migrations"
-                                            (str/replace (str kw)
-                                                         #":|/|\."
-                                                         "_")))]
+                                            "migrations_"
+                                            (str/replace (slugify kw)  #"-" "_")))]
                              [table path]))))]
     paths))
 
