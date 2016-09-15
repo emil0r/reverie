@@ -60,6 +60,9 @@
   (and (keyword? x)
        (.contains (str x) "/")))
 
+(defn regex? [x]
+  (= (type x) java.util.regex.Pattern))
+
 (defn qsize [qs]
   (->> qs
        (map (fn [[k v]]

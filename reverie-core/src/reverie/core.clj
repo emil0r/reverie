@@ -51,7 +51,11 @@
 
 (defmacro defapp [name options routes]
   (let [name (keyword name)
-        migration (assoc (:migration options) :type :app)]
+        migration (assoc (:migration options) :type :app)
+        renderer (:renderer options)]
+    (if-not (nil? renderer)
+      (do (assert (util/namespaced-kw? renderer) ":renderer must be a namespaced keyword")
+          (assert (not (nil? (sys/renderer renderer))) (format "Renderer %s has not yet been defined." (util/kw->str renderer)))))
     `(do
        (i18n/load-from-options! ~options)
        (when ~migration
@@ -63,7 +67,11 @@
 
 (defmacro defpage [path options routes]
   (let [properties {:name path :type :raw}
-        migration (assoc (:migration options) :type :raw-page)]
+        migration (assoc (:migration options) :type :raw-page)
+        renderer (:renderer options)]
+    (if-not (nil? renderer)
+      (do (assert (util/namespaced-kw? renderer) ":renderer must be a namespaced keyword")
+          (assert (not (nil? (sys/renderer renderer))) (format "Renderer %s has not yet been defined." (util/kw->str renderer)))))
     `(do
        (i18n/load-from-options! ~options)
        (when ~migration
@@ -78,7 +86,11 @@
   (let [name (keyword name)
         interface? (:interface? options)
         migration (assoc (:migration options) :type :module)
-        path (str "/admin/frame/module/" (or (:slug options) (util/slugify name)))]
+        path (str "/admin/frame/module/" (or (:slug options) (util/slugify name)))
+        renderer (:renderer options)]
+    (if-not (nil? renderer)
+      (do (assert (util/namespaced-kw? renderer) ":renderer must be a namespaced keyword")
+          (assert (not (nil? (sys/renderer renderer))) (format "Renderer %s has not yet been defined." (util/kw->str renderer)))))
     `(do
        (i18n/load-from-options! ~options)
        (when ~migration

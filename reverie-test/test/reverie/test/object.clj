@@ -1,7 +1,6 @@
 (ns reverie.test.object
   (:require
    [reverie.object :as object]
-   [reverie.page :as page]
    [reverie.route :as route]
    [reverie.render :as render]
    [reverie.system :as sys]
@@ -12,7 +11,7 @@
   ([]
    (get-renderer nil))
   ([methods]
-   (render/map->Renderer {:name ::renderer :options {:render-fn :hiccup} :methods methods})))
+   (render/map->Renderer {:name ::renderer :options {:render-fn :hiccup} :methods-or-routes methods})))
 
 (defn get-object [methods]
   (object/map->ReverieObject {:id 1 :name :test :area :a :order 1 :page nil :route (route/map->Route {})

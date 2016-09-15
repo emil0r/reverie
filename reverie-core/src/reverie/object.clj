@@ -95,11 +95,16 @@
                       (method request this properties (:params request)))]
             (cond
               ;; we have provided methods to the renderer
-              (and renderer (:methods renderer)) (render/render renderer request-method out)
+              (and renderer (:methods-or-routes renderer))
+              (render/render renderer request-method out)
+
               ;; we just want to utilize the render-method
-              renderer (render/render renderer out)
+              renderer
+              (render/render renderer out)
+
               ;; we don't want to do anything, just return what we got
-              :else out)))
+              :else
+              out)))
   (render [this _ _]
           (throw (RenderException. "[component request sub-component] not implemented for reverie.object/ReverieObject"))))
 

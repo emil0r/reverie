@@ -62,14 +62,29 @@
           (let [{:keys [request method]} (route/match? page-route request)
                 resp (method request this (:params request))]
             (let [t (if (:template options)
-                      (get (:templates @sys/storage) (:template options)))]
-              (if (and t
-                       (map? resp)
-                       (not (contains? resp :status))
-                       (not (contains? resp :body))
-                       (not (contains? resp :headers)))
-                (render/render t request (assoc this :rendered resp))
-                resp)))
+                      (get (:templates @sys/storage) (:template options)))
+                  renderer (sys/renderer (:renderer options))
+                  out (if (and t
+                               (map? resp)
+                               (not (contains? resp :status))
+                               (not (contains? resp :body))
+                               (not (contains? resp :headers)))
+                        (render/render t request (assoc this :rendered resp))
+                        resp)]
+              (cond
+                ;; we have provided methods to the renderer
+                (and renderer (:methods-or-routes renderer))
+                (render/render renderer (:request-method request)
+                               {:data out
+                                :route-name (get-in route [:options :name])})
+
+                ;; we just want to utilize the render-method
+                renderer
+                (render/render renderer out)
+
+                ;; we don't want to do anything, just return what we got
+                :else
+                out)))
           (response/get 404)))))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.module/Module")))
