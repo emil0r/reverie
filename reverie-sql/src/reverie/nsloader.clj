@@ -5,6 +5,7 @@
             ;; define protocols
             reverie.database
             reverie.migrator
+            reverie.render
             reverie.page
             reverie.object
             reverie.module
@@ -12,6 +13,7 @@
             reverie.admin.storage
 
             ;; implement protocols
+            reverie.template
             reverie.database.sql
             reverie.admin.storage.sql
             reverie.migrator.sql

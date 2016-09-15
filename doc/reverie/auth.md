@@ -1,6 +1,6 @@
 # Auth
 
-Module shipped as default by reverie. Handles auth, users, roles and groups. Still not fully done with especially authorization somewhat lacking.
+Module shipped as default by reverie. Handles auth, users, roles and groups. Still not fully done, with especially authorization somewhat lacking.
 
 
 ## authorization

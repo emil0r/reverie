@@ -86,12 +86,20 @@
 
   render/IRender
   (render [this {:keys [request-method] :as request}]
-          (let [method (or (get methods request-method)
-                           (:any methods))]
-            (if (= :app (:type page))
-              (if (or (route/match? route request))
-                (method request this properties (:params request)))
-              (method request this properties (:params request)))))
+          (let [renderer (sys/renderer (:renderer options))
+                method (or (get methods request-method)
+                           (:any methods))
+                out (if (= :app (:type page))
+                      (if (or (route/match? route request))
+                        (method request this properties (:params request)))
+                      (method request this properties (:params request)))]
+            (cond
+              ;; we have provided methods to the renderer
+              (and renderer (:methods renderer)) (render/render renderer request-method out)
+              ;; we just want to utilize the render-method
+              renderer (render/render renderer out)
+              ;; we don't want to do anything, just return what we got
+              :else out)))
   (render [this _ _]
           (throw (RenderException. "[component request sub-component] not implemented for reverie.object/ReverieObject"))))
 

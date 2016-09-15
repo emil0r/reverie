@@ -104,7 +104,11 @@
 
 (defmacro defobject [name options methods]
   (let [name (keyword name)
-        migration (assoc (:migration options) :type :object)]
+        migration (assoc (:migration options) :type :object)
+        renderer (:renderer options)]
+    (if-not (nil? renderer)
+      (do (assert (util/namespaced-kw? renderer) ":renderer must be a namespaced keyword")
+          (assert (not (nil? (sys/renderer renderer))) (format "Renderer %s has not yet been defined." (util/kw->str renderer)))))
     `(do
        (i18n/load-from-options! ~options)
        (when ~migration
@@ -116,3 +120,13 @@
                        (or (get ~options :table)
                            (str/replace ~name #"/|\." "_")))})
        nil)))
+
+(defmacro defrenderer [name options & [methods]]
+  (assert (util/namespaced-kw? name) "Name must be a namespaced keyword")
+  (if-not (nil? methods)
+    (assert (map? methods) "methods, if supplied, must be a hash-map"))
+  `(do
+     (i18n/load-from-options! ~options)
+     (swap! sys/storage assoc-in [:renderers ~name]
+            (render/map->Renderer {:name ~name :options ~options :methods ~methods}))
+     nil))

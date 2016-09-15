@@ -56,6 +56,10 @@
     (keyword x)
     x))
 
+(defn namespaced-kw? [x]
+  (and (keyword? x)
+       (.contains (str x) "/")))
+
 (defn qsize [qs]
   (->> qs
        (map (fn [[k v]]

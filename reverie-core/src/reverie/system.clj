@@ -20,7 +20,8 @@
                         :roles {}
                         :modules {}
                         :module-default-routes []
-                        :migrations {}}))
+                        :migrations {}
+                        :renderers {}}))
 
 (defn apps []
   (:apps @storage))
@@ -36,6 +37,11 @@
   (:raw-pages @storage))
 (defn raw-page [key]
   (get-in @storage [:raw-pages key]))
+
+(defn renderers []
+  (:renderers @storage))
+(defn renderer [key]
+  (get-in @storage [:renderers key]))
 
 (defn roles []
   (:roles @storage))

@@ -93,8 +93,8 @@
     (reset! system (component/start
                     (system-map
                      (merge
-                      ;;{:cache-store (cache.memory/mem-store)}
-                      (redis/get-stores settings)
+                      {:cache-store (cache.memory/mem-store)}
+                      ;;(redis/get-stores settings)
                       {:prod? (settings/prod? settings)
                        :log (settings/get settings [:log])
                        :settings settings
