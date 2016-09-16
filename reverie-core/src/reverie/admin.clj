@@ -37,12 +37,17 @@
   (start [this]
     (log/info "Starting AdminInitializer")
     (let [store (or store (internal.memory/mem-store))]
-      (let [saved-edits (admin.storage/get database :admin.storage/edits)
-            saved-editors (admin.storage/get database :admin.storage/editors)]
-        (reset! edits (reverse-edits saved-edits))
-        (reset! editors (reverse-editors saved-editors)))
-      (reset! internal/storage store)
-      (db/cache-pages database)
+      (try
+        (let [saved-edits (admin.storage/get database :admin.storage/edits)
+              saved-editors (admin.storage/get database :admin.storage/editors)]
+          (reset! edits (reverse-edits saved-edits))
+          (reset! editors (reverse-editors saved-editors)))
+        (reset! internal/storage store)
+        (db/cache-pages database)
+        (catch Exception e
+          (log/error {:what ::AdminInitializer
+                      :message (.getMessage e)
+                      :exception e})))
       (assoc this :store store)))
   (stop [this]
     (log/info "Stopping AdminInitializer")

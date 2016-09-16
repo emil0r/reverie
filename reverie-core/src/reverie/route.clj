@@ -65,7 +65,9 @@
   (let [raw-data (reduce (fn [out arg]
                            (cond
                              (string? arg)
-                             (assoc out :path arg)
+                             (assoc out :path (if (str/blank? arg)
+                                                "/"
+                                                arg))
 
                              (set? arg)
                              (assoc out :roles arg)
