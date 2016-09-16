@@ -65,5 +65,5 @@ If you want to use renderers for apps, pages or modules you use the following re
 
 (defapp app-test
   {:renderer ::renderer-targeted}
-  [["/" {:any ^:meta {:name ::index} index}]])
+  [["/" ^:meta {:name ::index} {:any index}]])
 ```

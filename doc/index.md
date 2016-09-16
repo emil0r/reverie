@@ -39,7 +39,7 @@ A CMS for power users. Written in Clojure.
   - [reverie.i18n](reverie/i18n.md)
   - [reverie.module](reverie/module.md)
   - [reverie.object](reverie/object.md)
-  - [reverie.render](reverie/render.md)
+  - [reverie.render](reverie/renderer.md)
   - [reverie.server](reverie/server.md)
   - [reverie.system](reverie/system.md)
 - Status
