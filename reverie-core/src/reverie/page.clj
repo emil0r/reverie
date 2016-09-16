@@ -1,6 +1,7 @@
 (ns reverie.page
   (:refer-clojure :exclude [type name])
-  (:require [clojure.string :as str]
+  (:require [clojure.core.match :refer [match]]
+            [clojure.string :as str]
             [reverie.auth :refer [with-access]]
             [reverie.database :as db]
             [reverie.object :as object]
@@ -10,6 +11,7 @@
             [reverie.system :as sys]
             [reverie.util :as util]
             [schema.core :as s]
+            [taoensso.timbre :as log]
             reverie.RenderException)
   (:import [reverie RenderException]
            [reverie.object ReverieObject]
@@ -153,27 +155,53 @@
              (if (and request method)
                (let [renderer (sys/renderer (:renderer options))
                      resp (method request this (:params request))
-                     t (sys/template (:template options))
-                     out (if (and t
-                                  (map? resp)
-                                  (not (contains? resp :status))
-                                  (not (contains? resp :body))
-                                  (not (contains? resp :headers)))
-                           (render/render t request (assoc this :rendered resp))
-                           resp)]
-                 (cond
-                   ;; we have provided methods to the renderer
-                   (and renderer (:methods-or-routes renderer))
-                   (render/render renderer request-method {:data out
-                                                           :route-name (get-in page-route [:options :name])})
+                     t (sys/template (:template options))]
+                 (match [;; raw response
+                         (and (map? resp)
+                              (contains? resp :status)
+                              (contains? resp :body)
+                              (contains? resp :headers))
 
-                   ;; we just want to utilize the render-method
-                   renderer
-                   (render/render renderer out)
+                         ;; renderer
+                         (not (nil? renderer))
 
-                   ;; we don't want to do anything, just return what we got
-                   :else
-                   out))))
+                         ;; routes
+                         (not (nil? (:methods-or-routes renderer)))
+
+                         ;; map
+                         (map? resp)
+
+                         ;; template
+                         (not (nil? t))]
+
+                        ;; raw response
+                        [true _ _ _ _] resp
+
+                        ;; ~renderer, _ , map, template
+                        [_ false _ true true] (render/render t request (assoc this :rendered resp))
+
+                        ;; renderer, routes, map, template
+                        [_ true true true true] (let [out (render/render renderer (:request-method request)
+                                                                       {:data resp
+                                                                        ::render/type :page
+                                                                        :meta {:route-name (get-in page-route [:options :name])}})]
+                                                (render/render t request (assoc this :rendered out)))
+
+                        ;; renderer, ~routes, map, template
+                        [_ true false true true] (let [out (render/render renderer (:request-method request)
+                                                                        {:data resp
+                                                                         ::render/type :page/simple
+                                                                         :meta {:route-name (get-in page-route [:options :name])}})]
+                                                 (render/render t request (assoc this :rendered out)))
+
+                        ;; renderer, ~routes, ~map, ~template
+                        [_ true false false false] (render/render renderer (:request-method request)
+                                                                {:data resp
+                                                                 ::render/type :page/simple
+                                                                 :meta {:route-name (get-in page-route [:options :name])}})
+
+                        ;; default
+                        [_ _ _ _ _] resp))))
            (response/raise 404))))))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/RawPage"))))
@@ -254,24 +282,37 @@
          (let [{:keys [request method]} (route/match? app-route request)
                renderer (sys/renderer (:renderer options))
                resp (method request this properties (:params request))
-               out (if (map? resp)
-                     (let [t (or (:template properties) template)]
-                       (render/render t request (assoc this :rendered resp)))
-                     resp)]
-           (cond
-             ;; we have provided methods to the renderer
-             (and renderer (:methods-or-routes renderer))
-             (render/render renderer (:request-method request)
-                            {:data out
-                             :route-name (get-in app-route [:options :name])})
+               t (or (:template properties) template)]
+           (match [(not (nil? renderer)) (not (nil? (:methods-or-routes renderer))) (map? resp) (not (nil? t))]
+                  ;; ~renderer, _ , map, template
+                  [false _ true true] (render/render t request (assoc this :rendered resp))
 
-             ;; we just want to utilize the render-method
-             renderer
-             (render/render renderer out)
+                  ;; renderer, routes, map, template
+                  [true true true true] (let [out (render/render renderer (:request-method request)
+                                                                 {:data resp
+                                                                  ::render/type :page
+                                                                  :meta {:route-name (get-in app-route [:options :name])}})]
+                                          (render/render t request (assoc this :rendered out)))
 
-             ;; we don't want to do anything, just return what we got
-             :else
-             out))))))
+                  ;; renderer, ~routes, map, template
+                  [true false true true] (let [out (render/render renderer (:request-method request)
+                                                                  {:data resp
+                                                                   ::render/type :page/simple
+                                                                   :meta {:route-name (get-in app-route [:options :name])}})]
+                                           (render/render t request (assoc this :rendered out)))
+
+                  ;; _, _, ~map, template
+                  ;; invalid combiation
+                  ;; when a template is being used there has to be a map of some sort
+                  [_ _ false true] (do (log/error {:what ::AppPage
+                                                   :message "Invalid combitation rendering AppPage. Tried to render a template without a corresponding map"
+                                                   :template t
+                                                   :route route
+                                                   :app-route app-route
+                                                   :response resp})
+                                       (response/raise 500))
+                  ;; default
+                  [_ _ _ _] resp))))))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/Page"))))
 

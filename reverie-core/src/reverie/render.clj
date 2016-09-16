@@ -1,6 +1,7 @@
 (ns reverie.render
   "Render protocol and Renderer implementation"
-  (:require [hiccup.compiler]
+  (:require [clojure.core.match :refer [match]]
+            [hiccup.compiler]
             [reverie.system :as sys]
             [reverie.util :as util]
             [taoensso.timbre :as log]))
@@ -19,20 +20,24 @@
 
 (def get-data nil)
 (defmulti get-data (fn [data] (::type data)))
-(defmethod get-data ::type-app [data] [(:meta data) (:data data)])
+(defmethod get-data :page [data] [(assoc (:meta data) ::type :page) (:data data)])
+(defmethod get-data :page/simple [data] [(assoc (:meta data) ::type :page/simple) (:data data)])
 (defmethod get-data :default [data] [nil data])
 
 
 (def get-method-fn nil)
-(defmulti ^:private get-method-fn (fn [methods-or-routes method meta] (nil? meta)))
-(defmethod get-method-fn false [routes method {:keys [route-name]}]
+(defmulti ^:private get-method-fn (fn [methods-or-routes method meta] (::type meta)))
+(defmethod get-method-fn :page [routes method {:keys [route-name]}]
   (assert (util/namespaced-kw? route-name) "Route was not found for renderer when rendering app/raw-page/module")
   (let [methods (get routes route-name)]
     (assert (not (nil? methods)) (str "No methods found for route " (util/kw->str route-name)))
     (or (get methods method)
         (:any methods))))
-(defmethod get-method-fn :default [methods method _] (or (get methods method)
-                                                         (:any methods)))
+(defmethod get-method-fn :page/simple [_ _ _]
+  identity)
+(defmethod get-method-fn :default [methods method _]
+  (or (get methods method)
+      (:any methods)))
 
 ;; Renderer takes data that has already been computed
 ;; and runs it through one of it's
@@ -44,11 +49,33 @@
   (render [this method data]
     ;; pick out the method to render with
     (let [[meta data] (get-data data)
-          method-fn (get-method-fn methods-or-routes method meta)]
+          method-fn (get-method-fn methods-or-routes method meta)
+          resp (if method-fn (method-fn data))
+          render-fn (get-render-fn (:render-fn options))]
       ;; if a method does exist, fetch the render-fn and then render against
       ;; what we get back from running the method fn with the data
-      (if method-fn
-        ((get-render-fn (:render-fn options)) (method-fn data))))))
+
+      (match [(::type meta) (not (nil? method-fn)) (map? resp)]
+             ;; RawPage/AppPage with a mapped method to one of the routes
+             [:page true true]
+             (reduce (fn [out [k v]]
+                       (assoc out k (render-fn v))) {} resp)
+
+             ;; RawPage/AppPage with no mapped method to one of the routes, but with a template
+             [:page/simple _ true]
+             (reduce (fn [out [k v]]
+                       (assoc out k (render-fn v))) {} data)
+
+             ;; RawPage/AppPage with no mapped method to one of the routes, with no template
+             [:page/simple _ _]
+             (render-fn resp)
+
+             ;; ReverieObject
+             [nil true _]
+             (render-fn resp)
+
+             ;; nothing
+             [_ _ _] nil))))
 
 
 ;; fetch the renderer to be rendered by virtue
