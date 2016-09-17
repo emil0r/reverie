@@ -20,6 +20,7 @@ Current version is 0.7. See [installation guide](doc/installation/getting-starte
 - [reverie-redis](https://github.com/emil0r/reverie-redis)
 - [reverie-blog](https://github.com/emil0r/reverie-blog)
 - [reverie-blockade](https://github.com/emil0r/reverie-blockade)
+- [reverie-enlive](https://github.com/emil0r/reverie-enlive)
 
 ## Supporting libraries that reverie uses, but can be used elsewhere as well
 
@@ -34,5 +35,6 @@ Copyright © 2012-2016 Emil Bengtsson
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
 
+---
 
 Coram Deo
