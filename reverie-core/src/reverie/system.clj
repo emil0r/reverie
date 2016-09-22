@@ -83,6 +83,9 @@
 (defrecord ReverieData [settings database filemanager cachemanager user
                         dev? edit? editor?])
 
+(defmethod clojure.core/print-method ReverieData [data ^java.io.Writer writer]
+  (.write writer "#<ReverieData>"))
+
 (defonce reverie-data (map->ReverieData {}))
 
 (defrecord ReverieSystem [database site filemanager scheduler
