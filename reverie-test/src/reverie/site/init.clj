@@ -9,6 +9,7 @@
             [reverie.cache.memory :as cache.memory]
             [reverie.cache.sql :as cache.sql]
             [reverie.database.sql :as db.sql]
+            [reverie.email :as email]
             [reverie.i18n :as i18n]
             [reverie.logger :as logger]
             [reverie.migrator :as migrator]
@@ -24,9 +25,10 @@
             [reverie.system :refer [load-views-ns] :as sys]))
 
 
-(defn system-map [{:keys [prod? log db-specs ds-specs settings
+(defn system-map [{:keys [prod? log-settings db-specs ds-specs settings
                           host-names render-fn
                           base-dir media-dirs
+                          email-settings
                           cache-store session-store internal-store
                           site-hash-key-strategy
                           server-options middleware-options
@@ -53,17 +55,18 @@
      :cachemanager (component/using
                     (cache/cachemananger {:store cache-store})
                     [:database])
+     :emailmanager (email/email-manager email-settings)
      :filemanager (fm/get-filemanager base-dir media-dirs)
      :site (component/using (site/site {:host-names host-names
                                         :render-fn render-fn})
                             [:database :cachemanager])
-     :logger (logger/logger prod? (:rotor log))
+     :logger (logger/logger prod? log-settings)
      :scheduler (scheduler/get-scheduler)
      :admin (component/using (admin/get-admin-initializer {:store internal-store})
                              [:database])
      :system (component/using (sys/get-system)
                               [:database :filemanager :site :scheduler
-                               :settings :server :logger
+                               :settings :server :logger :emailmanager
                                :admin :cachemanager :i18n]))))
 
 
@@ -96,7 +99,8 @@
                       {:cache-store (cache.memory/mem-store)}
                       ;;(redis/get-stores settings)
                       {:prod? (settings/prod? settings)
-                       :log (settings/get settings [:log])
+                       :log-settings (settings/get settings [:log])
+                       :email-settings (settings/get settings [:email])
                        :settings settings
                        :i18n-tconfig (settings/get settings [:i18n :tconfig]
                                                    {:dictionary {}

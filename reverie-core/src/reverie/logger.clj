@@ -1,34 +1,46 @@
 (ns reverie.logger
   (:require [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
-            [taoensso.timbre.appenders.rotor :refer [rotor-appender]]))
+            [taoensso.timbre.appenders.postal :refer [postal-appender]]
+            [taoensso.timbre.appenders.3rd-party.rotor :refer [rotor-appender]]))
 
 
-(defrecord Logger [prod? rotor initialized?]
+(def get-appender nil)
+(defmulti get-appender (fn [[k v]] k))
+(defmethod get-appender :rotor [[k v]]
+  [k (rotor-appender v)])
+(defmethod get-appender :postal [[k {:keys [from to settings]}]]
+  [k (postal-appender
+      (with-meta
+        {:from from :to to}
+        settings))])
+(defmethod get-appender :default [_])
+
+(defn get-appenders [appenders]
+  (->> appenders
+       (map get-appender)
+       (remove nil?)
+       (into {})))
+
+(defrecord Logger [prod? started? appenders]
   component/Lifecycle
   (start [this]
-    (if initialized?
+    (if started?
       this
       (do
-        (when prod?
-          (when rotor
-            (log/set-config! [:appenders :rotor]
-                             (merge rotor-appender rotor))
-            (log/set-config! [:shared-appender-config :rotor]
-                             (merge rotor-appender rotor))))
+        (when (and prod? appenders)
+          (log/merge-config! (get-appenders appenders)))
         (log/info "Starting logging")
-        (if (and prod? rotor)
-          (log/info "Starting log at:" (:path rotor)))
         (assoc this
-          :initialized? true))))
+          :started? true))))
   (stop [this]
-    (if-not initialized?
+    (if-not started?
       this
       (do
         (log/info "Stopping logging")
         (assoc this
-          :initialized? nil)))))
+          :started? false)))))
 
 
-(defn logger [prod? rotor]
-  (map->Logger {:prod? prod? :rotor rotor}))
+(defn logger [prod? appenders]
+  (map->Logger {:prod? prod? :appenders appenders}))

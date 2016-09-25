@@ -25,6 +25,7 @@ Current version is 0.7. See [installation guide](doc/installation/getting-starte
 ## Supporting libraries that reverie uses, but can be used elsewhere as well
 
 - [ez-database](https://github.com/emil0r/ez-database)
+- [ez-email](https://github.com/emil0r/ez-email)
 - [ez-form](https://github.com/emil0r/ez-form)
 - [ez-image](https://github.com/emil0r/ez-image)
 - [ez-web](https://github.com/emil0r/ez-web)

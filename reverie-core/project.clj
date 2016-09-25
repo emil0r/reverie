@@ -1,4 +1,4 @@
-(defproject reverie-core "0.8.0-alpha5"
+(defproject reverie-core "0.8.0-SNAPSHOT"
   :description "The core of reverie; a CMS for power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
@@ -25,6 +25,9 @@
                  ;; time
                  [clj-time "0.11.0"]
 
+                 ;; email
+                 [ez-email "0.1.0-SNAPSHOT"]
+
                  ;; reverie specific
                  [bultitude "0.2.8"]
 
@@ -38,7 +41,7 @@
                  [digest "1.4.4"]
 
                  ;; logging
-                 [com.taoensso/timbre "3.4.0"]
+                 [com.taoensso/timbre "4.7.4"]
 
                  ;; i18n
                  [com.taoensso/tower "3.0.2"]
