@@ -1,4 +1,4 @@
-(defproject reverie-core "0.8.0-SNAPSHOT"
+(defproject reverie-core "0.8.0-alpha6"
   :description "The core of reverie; a CMS for power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
@@ -26,7 +26,7 @@
                  [clj-time "0.11.0"]
 
                  ;; email
-                 [ez-email "0.1.0-SNAPSHOT"]
+                 [ez-email "0.1.0"]
 
                  ;; reverie specific
                  [bultitude "0.2.8"]
