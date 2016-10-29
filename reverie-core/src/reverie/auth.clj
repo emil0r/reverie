@@ -37,6 +37,11 @@
   (update! [user data db])
   (set-password! [user new-password db]))
 
+(defprotocol IUserToken
+  (enable-token [id db] [id hours db])
+  (retire-token [id db])
+  (expired-token? [id db]))
+
 (defprotocol IUserAdd
   (add-user! [data roles groups db]))
 

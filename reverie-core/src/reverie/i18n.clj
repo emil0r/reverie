@@ -12,7 +12,7 @@
 
 (def ^:dynamic *locale* nil)
 (def t identity)
-(def ^:private i18n-dictionary (atom {}))
+(def i18n-dictionary (atom {}))
 
 (defmacro with-locale [locale & body]
   `(binding [*locale* (tower/jvm-locale ~locale)]
@@ -66,6 +66,12 @@
 
 (defn get-i18n-path [[_ x]]
   (get-in x [:options :i18n]))
+
+(defn write-cljs-i18n!
+  ([] (write-cljs-i18n! "resources/i18n/" "cljs-dictionary.edn"))
+  ([path name]
+   (with-open [w (io/writer (str path name))]
+     (.write w (pr-str (:dictionary @i18n-dictionary))))))
 
 (defprotocol Ii18n
   (load-i18n! [component]))
