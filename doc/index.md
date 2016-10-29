@@ -41,6 +41,7 @@ A CMS for power users. Written in Clojure.
   - [reverie.logger](reverie/logger.md)
   - [reverie.module](reverie/module.md)
   - [reverie.object](reverie/object.md)
+  - [reverie.page](reverie/page.md)
   - [reverie.render](reverie/renderer.md)
   - [reverie.server](reverie/server.md)
   - [reverie.system](reverie/system.md)

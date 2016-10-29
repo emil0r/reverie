@@ -66,6 +66,12 @@ Under the namespace reverie.auth a record exists called User. This is what you g
 
 (defprotocol IUserLogin
   (login [data db]))
+  
+(defprotocol IUserToken
+  (enable-token [id db] [id hours db])
+  (retire-token [id db])
+  (expired-token? [id db]))
+
 
 (defprotocol IUserAdd
   (add-user! [data roles groups db]))
@@ -108,6 +114,20 @@ Under the namespace reverie.auth a record exists called User. This is what you g
   )
 ```
 
+
+### Resetting password with tokens
+
+The protocol IUserToken gives support for password resetting functionality with tokens. reverie.auth.User, java.lang.Long, java.lang.Integer, java.util.UUID and java.lang.String (in the form of a UUID string) are all supported.
+
+
+```clojure
+(require '[reverie.auth :as auth])
+
+;; by user id 1
+(auth/enable-token 1 db)
+(auth/expired-token? 1 db)
+(auth/retire-token 1 db)
+```
 
 
 ### Extending user
