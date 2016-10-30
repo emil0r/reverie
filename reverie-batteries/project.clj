@@ -1,4 +1,4 @@
-(defproject reverie-batteries "0.3.1"
+(defproject reverie-batteries "0.3.2"
   :description "Batteries for reverie/CMS"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
