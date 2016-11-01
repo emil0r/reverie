@@ -183,21 +183,21 @@
                         ;; renderer, routes, map, template
                         [_ true true true true] (let [out (render/render renderer (:request-method request)
                                                                        {:data resp
-                                                                        ::render/type :page
+                                                                        ::render/type :page/routes
                                                                         :meta {:route-name (get-in page-route [:options :name])}})]
                                                 (render/render t request (assoc this :rendered out)))
 
                         ;; renderer, ~routes, map, template
                         [_ true false true true] (let [out (render/render renderer (:request-method request)
                                                                         {:data resp
-                                                                         ::render/type :page/simple
+                                                                         ::render/type :page/no-routes
                                                                          :meta {:route-name (get-in page-route [:options :name])}})]
                                                  (render/render t request (assoc this :rendered out)))
 
                         ;; renderer, ~routes, ~map, ~template
                         [_ true false false false] (render/render renderer (:request-method request)
                                                                 {:data resp
-                                                                 ::render/type :page/simple
+                                                                 ::render/type :page/no-routes
                                                                  :meta {:route-name (get-in page-route [:options :name])}})
 
                         ;; default
@@ -290,14 +290,14 @@
                   ;; renderer, routes, map, template
                   [true true true true] (let [out (render/render renderer (:request-method request)
                                                                  {:data resp
-                                                                  ::render/type :page
+                                                                  ::render/type :page/routes
                                                                   :meta {:route-name (get-in app-route [:options :name])}})]
                                           (render/render t request (assoc this :rendered out)))
 
                   ;; renderer, ~routes, map, template
                   [true false true true] (let [out (render/render renderer (:request-method request)
                                                                   {:data resp
-                                                                   ::render/type :page/simple
+                                                                   ::render/type :page/no-routes
                                                                    :meta {:route-name (get-in app-route [:options :name])}})]
                                            (render/render t request (assoc this :rendered out)))
 
