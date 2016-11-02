@@ -41,15 +41,11 @@
 (defn renderers []
   (:renderers @storage))
 (defn renderer [key]
-  (assoc-in
-   ;; get the renderer based on the key
-   (get-in @storage [:renderers key])
-   ;; assoc in [:options :override] overriding renderer if it exists
-   [:options :override]
-   ;; fetch the actual overriding renderer
-   (get-in @storage [:renderers
-                     ;; fetch the key to the overriding renderer
-                     (get-in @storage [:renderers ::override key])])))
+  (let [overrider (get-in @storage [:renderers (get-in @storage [:renderers ::override key])])
+        renderer (get-in @storage [:renderers key])]
+    (if overrider
+      (assoc-in renderer [:options :override] overrider)
+      renderer)))
 
 (defn roles []
   (:roles @storage))
