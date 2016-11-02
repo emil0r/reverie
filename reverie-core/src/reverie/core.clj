@@ -65,7 +65,9 @@
                :options ~options})
        nil)))
 
-(defmacro defpage [path options routes]
+(defmacro defpage
+  "Define a page directly into the tree structure of the site"
+  [path options routes]
   (let [properties {:name path :type :raw}
         migration (assoc (:migration options) :type :raw-page)
         renderer (:renderer options)]
@@ -75,12 +77,19 @@
     `(do
        (i18n/load-from-options! ~options)
        (when ~migration
-         (swap! sys/storage assoc-in [:migrations ~name] ~migration))
+         (swap! sys/storage assoc-in [:migrations ~path] ~migration))
        (swap! site/routes assoc ~path [(route/route [~path]) ~properties])
        (swap! sys/storage assoc-in [:raw-pages ~path]
               {:routes (map route/route ~routes)
                :options ~options})
        nil)))
+(defn undefpage
+  "Undefine a page"
+  [path]
+  (swap! sys/storage assoc-in [:migrations path] nil)
+  (swap! sys/storage assoc-in [:raw-pages path] nil)
+  (swap! site/routes dissoc path)
+  nil)
 
 (defmacro defmodule [name options & [routes]]
   (let [name (keyword name)
@@ -133,12 +142,31 @@
                            (str/replace ~name #"/|\." "_")))})
        nil)))
 
-(defmacro defrenderer [name options & [methods]]
+(defmacro defrenderer
+  "Define a renderer which separates the rendering from the computation of an object/page"
+  [name options & [methods]]
   (assert (util/namespaced-kw? name) "Name must be a namespaced keyword")
   (if-not (nil? methods)
     (assert (map? methods) "methods, if supplied, must be a hash-map"))
-  `(do
-     (i18n/load-from-options! ~options)
-     (swap! sys/storage assoc-in [:renderers ~name]
-            (render/map->Renderer {:name ~name :options ~options :methods ~methods}))
-     nil))
+  (let [override (:override options)]
+    ;; check for an override and the validity of the name
+    (if-not (nil? override)
+      (assert (util/namespaced-kw? override) "Override must be a namespaced keyword"))
+    `(do
+       (i18n/load-from-options! ~options)
+       (swap! sys/storage assoc-in [:renderers ~name]
+              (render/map->Renderer {:name ~name :options ~options :methods ~methods}))
+       ;; have we designed the renderer to be overriding another renderer?
+       (if-not (nil? ~override)
+         (swap! sys/storage assoc-in [:renderers :reverie.system/override ~override] ~name))
+       nil)))
+
+(defn undefrenderer
+  "Undefine a renderer"
+  [name]
+  (assert (util/namespaced-kw? name) "Name must be a namespaced keyword")
+  (let [renderer (get-in @sys/storage [:renderers name])
+        override (get-in renderer [:options :override])]
+    (do (swap! sys/storage assoc-in [:renderers name] nil)
+        (swap! sys/storage assoc-in [:renderers :reverie.system/override override] nil))
+    nil))

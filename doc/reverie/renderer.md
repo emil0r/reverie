@@ -67,3 +67,24 @@ If you want to use renderers for apps, pages or modules you use the following re
   {:renderer ::renderer-targeted}
   [["/" ^:meta {:name ::index} {:any index}]])
 ```
+
+
+## override
+
+It's possible to override already existing renderers with new renderers that either replace all functions, or just some parts.
+
+```clojure
+;; we define a renderer to be used in an app. it holds methods for the routes ::index and ::list
+(defrenderer ::renderer 
+             {:render-fn :hiccup} 
+             {::index present-index ::list present-list})
+
+;; we define a new renderer that is set to override ::renderer
+;; we only provide an override for the route ::index
+;; this means that ::list will still be using the methods from ::renderer
+(defrenderer ::renderer-override 
+             {:render-fn :hiccup
+              :override ::renderer}
+             {::index override-present-index})
+
+```

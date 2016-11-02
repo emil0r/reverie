@@ -26,18 +26,25 @@
 
 
 (def get-method-fn nil)
-(defmulti ^:private get-method-fn (fn [methods-or-routes method meta] (::type meta)))
-(defmethod get-method-fn :page/routes [routes method {:keys [route-name]}]
+(defmulti ^:private get-method-fn (fn [renderer method meta] (::type meta)))
+(defmethod get-method-fn :page/routes [renderer method {:keys [route-name]}]
   (assert (util/namespaced-kw? route-name) "Route was not found for renderer when rendering app/raw-page/module")
-  (let [methods (get routes route-name)]
+  (let [override-methods (get-in renderer [:options :override :methods-or-routes route-name])
+        methods (get-in renderer [:methods-or-routes route-name])]
     (assert (not (nil? methods)) (str "No methods found for route " (util/kw->str route-name)))
-    (or (get methods method)
+    (or (get override-methods method)
+        (:any override-methods)
+        (get methods method)
         (:any methods))))
 (defmethod get-method-fn :page/no-routes [_ _ _]
   identity)
-(defmethod get-method-fn :default [methods method _]
-  (or (get methods method)
-      (:any methods)))
+(defmethod get-method-fn :default [renderer method _]
+  (let [override-methods (get-in renderer [:options :override :methods-or-routes])
+        methods (get-in renderer [:methods-or-routes])]
+    (or (get override-methods method)
+        (:any override-methods)
+        (get methods method)
+        (:any methods))))
 
 ;; Renderer takes data that has already been computed
 ;; and runs it through one of it's
@@ -49,7 +56,7 @@
   (render [this method data]
     ;; pick out the method to render with
     (let [[meta data] (get-data data)
-          method-fn (get-method-fn methods-or-routes method meta)
+          method-fn (get-method-fn this method meta)
           resp (if method-fn (method-fn data) data)
           render-fn (get-render-fn (:render-fn options))]
       ;; if a method does exist, fetch the render-fn and then render against

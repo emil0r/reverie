@@ -38,8 +38,10 @@
   {:method :post})
 (defn renderer-get [data]
   [:div "Method used was: " (:method data)])
+(defn override-renderer-get [data]
+  [:div "[Override] Method used was: " (:method data)])
 (defn renderer-post [data]
-  (render/render ::renderer :get data))
+  [:div "Method used was: " (:method data)])
 
 
 
@@ -47,8 +49,24 @@
  "Advanced renderer with methods"
  (let [renderer (get-renderer {:get renderer-get :post renderer-post})
        object (get-object {:get http-get :post http-post})]
+   (swap! sys/storage assoc-in [:renderers :reverie.system/override] {})
    (swap! sys/storage assoc-in [:renderers ::renderer] renderer)
    [(render/render object {:request-method :get})
     (render/render object {:request-method :post})])
  => ["<div>Method used was: get</div>"
+     "<div>Method used was: post</div>"])
+
+
+(fact
+ "Advanced renderer with methods and an override"
+ (let [renderer (get-renderer {:get renderer-get :post renderer-post})
+       override-renderer (get-renderer {:get override-renderer-get})
+       object (get-object {:get http-get :post http-post})]
+   (swap! sys/storage assoc-in [:renderers :reverie.system/override] {})
+   (swap! sys/storage assoc-in [:renderers ::renderer] renderer)
+   (swap! sys/storage assoc-in [:renderers ::override-renderer] override-renderer)
+   (swap! sys/storage assoc-in [:renderers :reverie.system/override ::renderer] ::override-renderer)
+   [(render/render object {:request-method :get})
+    (render/render object {:request-method :post})])
+ => ["<div>[Override] Method used was: get</div>"
      "<div>Method used was: post</div>"])

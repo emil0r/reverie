@@ -21,7 +21,7 @@
                         :modules {}
                         :module-default-routes []
                         :migrations {}
-                        :renderers {}}))
+                        :renderers {::override {}}}))
 
 (defn apps []
   (:apps @storage))
@@ -41,7 +41,15 @@
 (defn renderers []
   (:renderers @storage))
 (defn renderer [key]
-  (get-in @storage [:renderers key]))
+  (assoc-in
+   ;; get the renderer based on the key
+   (get-in @storage [:renderers key])
+   ;; assoc in [:options :override] overriding renderer if it exists
+   [:options :override]
+   ;; fetch the actual overriding renderer
+   (get-in @storage [:renderers
+                     ;; fetch the key to the overriding renderer
+                     (get-in @storage [:renderers ::override key])])))
 
 (defn roles []
   (:roles @storage))

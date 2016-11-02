@@ -67,6 +67,7 @@
  (let [template (get-template)
        routes [(route/route ["/" ^:meta {:name ::index} {:any http-any}])]
        renderer (get-renderer)]
+   (swap! sys/storage assoc-in [:renderers :reverie.system/override] {})
    (swap! sys/storage assoc-in [:renderers ::renderer] renderer)
    (render/render (get-app-page template ::renderer routes) {:uri "/foo"}))
  => {:body "<!DOCTYPE html>\n<html><head><title>Hi!</title></head><body><div>Hi there!</div></body></html>"
@@ -80,16 +81,36 @@
 (defn present-advanced-any [data]
   {:a [:div "What: " (:what data)]})
 
-
 (fact
  "Advanced renderer with routes"
  (let [template (get-template)
        routes [(route/route ["/" ^:meta {:name ::index} {:any advanced-any}])]
        renderer-routes {::index {:any present-advanced-any}}
        renderer (get-renderer renderer-routes)]
+   (swap! sys/storage assoc-in [:renderers :reverie.system/override] {})
    (swap! sys/storage assoc-in [:renderers ::renderer] renderer)
    (render/render (get-app-page template ::renderer routes) {:uri "/foo"}))
  => {:body "<!DOCTYPE html>\n<html><head><title>Hi!</title></head><body><div>What: Advanced</div></body></html>"
+     :headers {"Content-Type" "text/html; charset=utf-8;"}
+     :status 200})
+
+(defn override-present-advanced-any [data]
+  {:a [:div "[Override] What: " (:what data)]})
+
+(fact
+ "Advanced renderer with routes and an override"
+ (let [template (get-template)
+       routes [(route/route ["/" ^:meta {:name ::index} {:any advanced-any}])]
+       renderer-routes {::index {:any present-advanced-any}}
+       renderer (get-renderer renderer-routes)
+       override-renderer-routes {::index {:any override-present-advanced-any}}
+       override-renderer (get-renderer override-renderer-routes)]
+   (swap! sys/storage assoc-in [:renderers :reverie.system/override] {})
+   (swap! sys/storage assoc-in [:renderers ::renderer] renderer)
+   (swap! sys/storage assoc-in [:renderers ::override-renderer] override-renderer)
+   (swap! sys/storage assoc-in [:renderers :reverie.system/override ::renderer] ::override-renderer)
+   (render/render (get-app-page template ::renderer routes) {:uri "/foo"}))
+ => {:body "<!DOCTYPE html>\n<html><head><title>Hi!</title></head><body><div>[Override] What: Advanced</div></body></html>"
      :headers {"Content-Type" "text/html; charset=utf-8;"}
      :status 200})
 
@@ -99,6 +120,7 @@
  (let [template (get-template)
        routes [(route/route ["/" ^:meta {:name ::index} {:any http-any}])]
        renderer (get-renderer)]
+   (swap! sys/storage assoc-in [:renderers :reverie.system/override] {})
    (swap! sys/storage assoc-in [:renderers ::renderer] renderer)
    (swap! sys/storage assoc-in [:templates ::template] template)
    (render/render (get-raw-page ::template ::renderer routes) {:uri "/foo"}))
@@ -114,6 +136,7 @@
  "Simple renderer with just a :render-fn defined and no template"
  (let [routes [(route/route ["/" ^:meta {:name ::index} {:any raw-http-any}])]
        renderer (get-renderer)]
+   (swap! sys/storage assoc-in [:renderers :reverie.system/override] {})
    (swap! sys/storage assoc-in [:renderers ::renderer] renderer)
    (render/render (get-raw-page nil ::renderer routes) {:uri "/foo"}))
  => {:body "<div>Hi there!</div>"
@@ -130,6 +153,7 @@
  "Simple renderer with just a :render-fn defined and a method that returns exactly what it wants"
  (let [routes [(route/route ["/" ^:meta {:name ::index} {:any raw-http-any-exact}])]
        renderer (get-renderer)]
+   (swap! sys/storage assoc-in [:renderers :reverie.system/override] {})
    (swap! sys/storage assoc-in [:renderers ::renderer] renderer)
    (render/render (get-raw-page nil ::renderer routes) {:uri "/foo"}))
  => {:body "raw text"
