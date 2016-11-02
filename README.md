@@ -21,6 +21,7 @@ Current version is 0.7. See [installation guide](doc/installation/getting-starte
 - [reverie-blog](https://github.com/emil0r/reverie-blog)
 - [reverie-blockade](https://github.com/emil0r/reverie-blockade)
 - [reverie-enlive](https://github.com/emil0r/reverie-enlive)
+- [reverie-meta](https://github.com/emil0r/reverie-meta)
 
 ## Supporting libraries that reverie uses, but can be used elsewhere as well
 
