@@ -155,7 +155,7 @@
     `(do
        (i18n/load-from-options! ~options)
        (swap! sys/storage assoc-in [:renderers ~name]
-              (render/map->Renderer {:name ~name :options ~options :methods ~methods}))
+              (render/map->Renderer {:name ~name :options ~options :methods-or-routes ~methods}))
        ;; have we designed the renderer to be overriding another renderer?
        (if-not (nil? ~override)
          (swap! sys/storage assoc-in [:renderers :reverie.system/override ~override] ~name))

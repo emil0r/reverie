@@ -107,8 +107,10 @@
                           flatten
                           (remove nil?)
                           (map get-i18n-dictionary)
+                          (remove nil?)
                           (apply deep-merge @i18n-dictionary))]
-      (reset! i18n-dictionary dictionary)
+      (when (contains? dictionary :dictionary)
+        (reset! i18n-dictionary dictionary))
       (redef-t (not prod?)))))
 
 (defn get-i18n
