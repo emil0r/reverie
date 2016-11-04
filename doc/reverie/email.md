@@ -30,8 +30,8 @@ When wanting to send emails.
 
 ```clojure
 {:email {:provider-settings {:from "Default From <from@server-for-example.com>"
-                             :user "admin@server-for-example.com"
-                             :password "password"
-                             :ssl? true
-                             :host "smtp.server-for-example.com"}}}
+                             :postal {:user "admin@server-for-example.com"
+                                      :pass "password"
+                                      :ssl true
+                                      :host "smtp.server-for-example.com"}}}}
 ```
