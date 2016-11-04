@@ -1,5 +1,8 @@
 (ns reverie.util
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [hiccup.form :refer [hidden-field]]
+            [reverie.response :refer [raise-response]]
+            [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]))
 
 (defn shorten-uri
   "shortens the uri by removing the unwanted part. Used for defpage and defapp"
@@ -81,3 +84,11 @@
   (if (every? map? vals)
     (apply merge-with deep-merge vals)
         (last vals)))
+
+(defn anti-forgery-field
+  "Get the CSRF token as hiccup"
+  []
+  ;; primary reason for doing it this way and not use the provided
+  ;; function from ring.util.anti-forgery is that enlive
+  ;; can become problematic to use when you get back a HTML string
+  (hidden-field "__anti-forgery-token" *anti-forgery-token*))
