@@ -1,6 +1,8 @@
 (ns reverie.site.core
   (:gen-class)
   (:require [clojure.edn :as edn]
+            [joplin.core :as joplin]
+            [joplin.jdbc.database]
             [reverie.site.init :as init]))
 
 
@@ -32,6 +34,7 @@
                       :migrator path})
                    (array-map
                     ;;"migrations_module_reverie_blog" "resources/migrations/modules/blog/"
+                    ;;"migrations_reverie_reset_password" "src/reverie/batteries/objects/migrations/reset-password"
                     ))]
     ;; IMPORTANT NOTE: this has destructive side effects in the sense
     ;; of wiping out previously applied migrations.
@@ -42,6 +45,7 @@
     ;; table
     (doseq [mmap mmaps]
       (joplin/rollback-db mmap 1)
-      (joplin/migrate-db mmap)))
+      (joplin/migrate-db mmap)
+      ))
 
   )

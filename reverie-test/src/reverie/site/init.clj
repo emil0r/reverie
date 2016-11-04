@@ -34,18 +34,23 @@
                           server-options middleware-options
                           i18n-tconfig
                           run-server stop-server]}]
-  (let [db (component/start (db.sql/database (not prod?) db-specs ds-specs))]
+  (let [db (component/start (db.sql/database (not prod?) db-specs ds-specs))
+        -i18n (component/start (i18n/get-i18n prod? i18n-tconfig))]
     ;; run the migrations
     (->> db
          (migrator.sql/get-migrator)
          (migrator/migrate))
+
+    ;; load the translations for i18n
+    (->> -i18n
+         (i18n/load-i18n!))
 
     (component/system-map
      :database db
      :settings settings
      :rolemanager (component/using (rm/get-rolemanager)
                                    [:database])
-     :i18n (component/using (i18n/get-i18n prod? i18n-tconfig) [])
+     :i18n -i18n
      :server (component/using (server/get-server {:server-options server-options
                                                   :run-server run-server
                                                   :stop-server stop-server
@@ -87,7 +92,7 @@
 
     ;; load namespaces after the system starts up
     ;; this step will set up any necessary migrations
-    (load-views-ns 'reverie.sql.objects
+    (load-views-ns 'reverie.batteries.objects
                    'reverie.site.templates
                    'reverie.site.apps
                    'reverie.site.endpoints)

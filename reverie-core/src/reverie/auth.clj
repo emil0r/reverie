@@ -38,7 +38,7 @@
   (set-password! [user new-password db]))
 
 (defprotocol IUserToken
-  (enable-token [id db] [id hours db])
+  (enable-token [id db] [id minutes db])
   (retire-token [id db])
   (expired-token? [id db]))
 
