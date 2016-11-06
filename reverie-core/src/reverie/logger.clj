@@ -29,7 +29,7 @@
       this
       (do
         (when (and prod? appenders)
-          (log/merge-config! (get-appenders appenders)))
+          (log/merge-config! {:appenders (get-appenders appenders)}))
         (log/info "Starting logging")
         (assoc this
           :started? true))))
