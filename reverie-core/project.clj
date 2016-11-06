@@ -1,4 +1,4 @@
-(defproject reverie-core "0.8.0-alpha7.2"
+(defproject reverie-core "0.8.0-alpha7.3"
   :description "The core of reverie; a CMS for power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
