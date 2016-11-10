@@ -23,12 +23,22 @@ Development branch is under dev.
  [[reverie-core "0.8.0-SNAPSHOT"]
   [reverie-sql "0.8.0-SNAPSHOT"]]
 ```
-
 ## License
 
 Copyright © 2012-2016 Emil Bengtsson
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
 
+
+<img src="https://www.yourkit.com/images/yklogo.png" alt="YourKit profiler" title="YourKit profiler" />
+
+YourKit supports open source projects with its full-featured Java Profiler.
+YourKit, LLC is the creator of <a href="https://www.yourkit.com/java/profiler/index.jsp">YourKit Java
+Profiler</a> and <a href="https://www.yourkit.com/.net/profiler/index.jsp">YourKit
+.NET Profiler</a>, innovative and intelligent tools for profiling Java and .NET
+applications.
+
+
+---
 
 Coram Deo
