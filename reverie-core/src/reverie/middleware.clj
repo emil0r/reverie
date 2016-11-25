@@ -158,7 +158,7 @@
 
        ;; end of the line. no more handlers to try
        ;; or it was something other than a 404
-       (or (not= 404 (:status resp)) (nil? handler))
+       (or (not= 404 (get-in resp [:response :status])) (nil? handler))
        resp
 
        ;; continue trying
