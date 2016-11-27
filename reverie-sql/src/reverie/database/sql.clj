@@ -645,17 +645,20 @@
 
           objs-properties-to-fetch
           (reduce (fn [out {:keys [name] :as obj-meta}]
-                    (let [obj-data (get-in @sys/storage
-                                           [:objects (keyword name)])
-                          table (:table obj-data)
-                          foreign-key (or (get-in obj-data [:options :foreign-key])
-                                          :object_id)
-                          object-ids (get (get out name)
-                                          :object-ids [])]
-                      (assoc out name
-                             {:table table
-                              :foreign-key foreign-key
-                              :object-ids (conj object-ids (:id obj-meta))})))
+                    ;; only fetch obj-data that belongs
+                    ;; to objects that are actually initialized
+                    (if-let [obj-data (get-in @sys/storage
+                                              [:objects (keyword name)])]
+                      (let [table (:table obj-data)
+                            foreign-key (or (get-in obj-data [:options :foreign-key])
+                                            :object_id)
+                            object-ids (get (get out name)
+                                            :object-ids [])]
+                        (assoc out name
+                               {:table table
+                                :foreign-key foreign-key
+                                :object-ids (conj object-ids (:id obj-meta))}))
+                      out))
                   {} objs-meta)
 
           objs-properties
