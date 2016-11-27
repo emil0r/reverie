@@ -53,6 +53,7 @@
        (apply str (->>
                    @sys/storage
                    :objects
+                   (filter (fn [[k v]] (not (true? (get-in v [:options :disabled?])))))
                    (sort-by #(-> % first str))
                    (map (fn [[k _]]
                           (str "<li>" (util/kw->str k)  "</li>")))))
