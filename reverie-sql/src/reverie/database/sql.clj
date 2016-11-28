@@ -718,9 +718,12 @@
                      ;; foreign key
                      fk (or (->> obj-meta :options :foreign-key)
                             :object_id)]
-                 (db/query! db {:insert-into (:table obj-meta)
-                                :values [(assoc (object/properties obj)
-                                                fk (:id new-meta-obj))]}))))
+                 ;; check that the object has been loaded, or has not
+                 ;; been disabled in defobject
+                 (when obj-meta
+                   (db/query! db {:insert-into (:table obj-meta)
+                                  :values [(assoc (object/properties obj)
+                                                  fk (:id new-meta-obj))]})))))
            (recalculate-routes db (page/id pu))
            (db/query! db sql-update-published-pages-order! {:parent (page/parent pu)})))
        (doseq [p pages]
