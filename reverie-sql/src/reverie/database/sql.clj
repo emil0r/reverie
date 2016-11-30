@@ -640,25 +640,25 @@
                         :from [:reverie_object]
                         :where [:and
                                 [:= :page_id (page/id page)]
-                                [:not= :version -1]]
+                                [:not= :version -1]
+                                ;; only fetch obj-data that belongs
+                                ;; to objects that are actually initialized
+                                [:in :name (map kw->str (keys (:objects @sys/storage)))]]
                         :order-by [(sql/raw "\"order\"")]})
 
           objs-properties-to-fetch
           (reduce (fn [out {:keys [name] :as obj-meta}]
-                    ;; only fetch obj-data that belongs
-                    ;; to objects that are actually initialized
-                    (if-let [obj-data (get-in @sys/storage
-                                              [:objects (keyword name)])]
-                      (let [table (:table obj-data)
-                            foreign-key (or (get-in obj-data [:options :foreign-key])
-                                            :object_id)
-                            object-ids (get (get out name)
-                                            :object-ids [])]
-                        (assoc out name
-                               {:table table
-                                :foreign-key foreign-key
-                                :object-ids (conj object-ids (:id obj-meta))}))
-                      out))
+                    (let [obj-data (get-in @sys/storage
+                                           [:objects (keyword name)])
+                          table (:table obj-data)
+                          foreign-key (or (get-in obj-data [:options :foreign-key])
+                                          :object_id)
+                          object-ids (get (get out name)
+                                          :object-ids [])]
+                      (assoc out name
+                             {:table table
+                              :foreign-key foreign-key
+                              :object-ids (conj object-ids (:id obj-meta))})))
                   {} objs-meta)
 
           objs-properties
