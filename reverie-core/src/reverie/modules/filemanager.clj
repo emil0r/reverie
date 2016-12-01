@@ -41,13 +41,15 @@
 (defrecord FileManager [base media-dirs]
   component/Lifecycle
   (start [this]
+    (log/info "Starting FileManager" {:base-dir (base-dir this)
+                                      :media-dirs media-dirs})
     (doseq [dir media-dirs]
       (fs/mkdirs dir))
     (fs/mkdirs (str (base-dir this) "/cache/images"))
     (ez/setup! {:save-path (str (base-dir this) "/cache/images/")
                 :web-path "/cache/images/"
                 :base-dir (base-dir this)})
-    (log/info "Starting FileManager")
+
     this)
   (stop [this]
     (log/info "Stopping FileManager")
