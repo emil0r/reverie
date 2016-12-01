@@ -24,11 +24,49 @@
   ([dev?]
    (alter-var-root
     #'t
-    (fn [_]
-      (let [tower-t (tower/make-t (assoc @i18n-dictionary :dev-mode? dev?))]
-        (fn
-          ([k-or-ks & fmt-args]
-           (apply tower-t *locale* k-or-ks fmt-args))))))))
+    (if dev?
+      ;; if we are in dev mode we will print out any missing translations
+      (fn [_]
+        (let [tower-t (tower/make-t (assoc @i18n-dictionary :dev-mode? dev?))]
+          (fn
+            ([k-or-ks & fmt-args]
+             (let [;; the translation we get from tower
+                   ;; any missing translations will also be logged to timbre
+                   ;; by default
+                   translation (apply tower-t *locale* k-or-ks fmt-args)
+                   ;; the keys we want in the map based on
+                   ;; 1) scope
+                   ;; 2) k-or-ks
+                   ks (->> (into [tower/*tscope*] (if (vector? k-or-ks) k-or-ks [k-or-ks]))
+                           (flatten)
+                           (remove nil?)
+                           (map (comp #(str/split % #":|\.|/") str))
+                           (flatten)
+                           (remove str/blank?)
+                           (map keyword)
+                           (into []))
+                   ;; is the translation missing. we will go through all the possible
+                   ;; translations offered by the locales
+                   missing? (reduce (fn [missing? locale]
+                                      (let [path (into [:dictionary (tower/kw-locale locale)] ks)
+                                            path-0 (butlast path)
+                                            path-a (last path)
+                                            path-b (keyword (str (-> path last name) "!"))]
+                                        (if (false? missing?)
+                                          missing?
+                                          (and (not (contains? (get-in @i18n-dictionary path-0) path-a))
+                                              (not (contains? (get-in @i18n-dictionary path-0) path-b))))))
+                                    true
+                                    (if (vector? *locale*) *locale* [*locale*])) ]
+               (if missing?
+                 (format "Missing translation: k=>%s, scope=>%s, locales=>%s" k-or-ks tower/*tscope* *locale*)
+                 translation))))))
+      ;; don't print out missing translation
+      (fn [_]
+        (let [tower-t (tower/make-t (assoc @i18n-dictionary :dev-mode? dev?))]
+          (fn
+            ([k-or-ks & fmt-args]
+             (apply tower-t *locale* k-or-ks fmt-args)))))))))
 
 (defmulti get-i18n-dictionary class)
 (defmethod get-i18n-dictionary java.lang.String [path]
@@ -48,12 +86,14 @@
   (throw+ {:what ::get-i18n-dictionary
            :path path}))
 
-(defn add-i18n! [path-or-data]
-  (->> path-or-data
-       get-i18n-dictionary
-       (deep-merge @i18n-dictionary)
-       (reset! i18n-dictionary))
-  (redef-t))
+(defn add-i18n!
+  ([path-or-data] (add-i18n! path-or-data true))
+  ([path-or-data dev?]
+   (->> path-or-data
+        get-i18n-dictionary
+        (deep-merge @i18n-dictionary)
+        (reset! i18n-dictionary))
+   (redef-t dev?)))
 
 (defn load-from-options! [options]
   (if-let [dictionary (->> options
