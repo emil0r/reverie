@@ -139,31 +139,41 @@
     (binding [i18n/*locale* (get-locales (get headers "accept-language") opts (session/get :locale nil))]
       (handler request))))
 
+;; TODO: look at this again. potentially the server does a lot of
+;; unnecessary work
 (defn wrap-forker [handler & handlers]
   (fn [request]
     (loop [resp (handler request)
+           saved-resp resp
            [handler & handlers] handlers]
       (cond
-       ;; was the response raised with response/raise-response?
-       (= (:type resp) :ring-response)
-       (:response resp)
+        ;; was the response raised with response/raise-response?
+        (= (:type resp) :ring-response)
+        (:response resp)
 
-       ;; was the response raised with response/raise?
-       (= (:type resp) :response)
-       (:response resp)
+        ;; was the response raised with response/raise and it's not a 404?
+        (and (= (:type resp) :response)
+             (not= 404 (get-in resp [:response :status])))
+        (:response resp)
 
-       ;; was the response nil and do we still have more handlers to try?
-       (and (nil? resp) (not (nil? handler)))
-       (recur (handler request) handlers)
+        ;; was the response nil and do we still have more handlers to try?
+        (and (nil? resp) (not (nil? handler)))
+        (recur (handler request) saved-resp handlers)
 
-       ;; end of the line. no more handlers to try
-       ;; or it was something other than a 404
-       (or (not= 404 (get-in resp [:response :status])) (nil? handler))
-       resp
+        ;; end of the line. no more handlers to try
+        ;; or it was something other than a 404
+        (or (not= 404 (get-in resp [:response :status]))
+            (not= 404 (get-in resp [:status]))
+            (nil? handler))
+        ;; resp can be from reverie.site or from ring middleware.
+        ;; reverie.site always gives back map with keys :type and :response
+        ;; whereas ring middleware just gives back the map that reverie.site
+        ;; places in :response
+        (or (:response resp) resp (:response saved-resp) saved-resp)
 
-       ;; continue trying
-       :else
-       (recur (handler request) handlers)))))
+        ;; continue trying
+        :else
+        (recur (handler request) saved-resp handlers)))))
 
 (defn wrap-resources
   "Check for resources being used based on URI"
