@@ -114,20 +114,22 @@
           response)))))
 
 (defn- get-locales* [headers-accept-language
-                     {:keys [enforce-locale preferred-locale fallback-locale] :as opts}
+                     {:keys [only-locale enforce-locale preferred-locale fallback-locale] :as opts}
                      session-locale]
-  (let [;; ["en-GB" "en" "en-US"], etc.
-        accept-lang-locales (->> headers-accept-language
-                                 (tower.utils/parse-http-accept-header)
-                                 (mapv (fn [[l q]] l)))]
-    (->> [enforce-locale
-          session-locale
-          preferred-locale
-          accept-lang-locales
-          (or fallback-locale :en)]
-         flatten
-         (remove nil?)
-         (into []))))
+  (if only-locale
+    only-locale
+    (let [ ;; ["en-GB" "en" "en-US"], etc.
+          accept-lang-locales (->> headers-accept-language
+                                   (tower.utils/parse-http-accept-header)
+                                   (mapv (fn [[l q]] l)))]
+      (->> [enforce-locale
+            session-locale
+            preferred-locale
+            accept-lang-locales
+            (or fallback-locale :en)]
+           flatten
+           (remove nil?)
+           (into [])))))
 
 ;; minor speed boost
 (def get-locales (memo/lru get-locales* :lru/threshold 50))
