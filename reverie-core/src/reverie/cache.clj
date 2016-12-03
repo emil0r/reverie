@@ -21,17 +21,18 @@
 (def ^:dynamic *caching?* false)
 
 (defn get-fn [fragment]
-  (get @saved-fns fragment))
+  (if-let [f (get @saved-fns fragment)]
+    f
+    (let [f (resolve (symbol (.replace (str fragment) ":" "")))]
+      (swap! saved-fns assoc fragment f)
+      f)))
 
 (defmacro skip
   "Pass in a function to be skipped by the caching system. The function will be called every time for every request hitting the server. The functions must always take a request parameter"
   [function]
   (let [params (keys &env)
         ns (str *ns*)
-        fragment (str ns "/" function)]
-    ;; save the function to the fragment we've created as a marker
-    ;; for when caching is in full swing
-    (swap! saved-fns assoc (keyword fragment) (resolve function))
+        fragment (str/replace (str (resolve function)) #"#'" "")]
     (cond
 
      (not (some #(= 'request %) params))
