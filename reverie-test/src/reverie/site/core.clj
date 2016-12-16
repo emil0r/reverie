@@ -32,10 +32,10 @@
                                      "?user=" "devuser"
                                      "&password=" "devuser")}
                       :migrator path})
-                   (array-map
+                   (array-map))]
                     ;;"migrations_module_reverie_blog" "resources/migrations/modules/blog/"
                     ;;"migrations_reverie_reset_password" "src/reverie/batteries/objects/migrations/reset-password"
-                    ))]
+
     ;; IMPORTANT NOTE: this has destructive side effects in the sense
     ;; of wiping out previously applied migrations.
     ;; due to the nature of the weak binding between objects and the table
@@ -45,7 +45,7 @@
     ;; table
     (doseq [mmap mmaps]
       (joplin/rollback-db mmap 1)
-      (joplin/migrate-db mmap)
-      ))
+      (joplin/migrate-db mmap))))
 
-  )
+
+

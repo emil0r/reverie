@@ -164,8 +164,12 @@
 
         ;; end of the line. no more handlers to try
         ;; or it was something other than a 404
-        (or (not= 404 (get-in resp [:response :status]))
-            (not= 404 (get-in resp [:status]))
+        (or (and
+              (not (nil? (get-in resp [:response :status])))
+              (not= 404 (get-in resp [:response :status])))
+            (and
+              (not (nil? (get-in resp [:status])))
+              (not= 404 (get-in resp [:status])))
             (nil? handler))
         ;; resp can be from reverie.site or from ring middleware.
         ;; reverie.site always gives back map with keys :type and :response

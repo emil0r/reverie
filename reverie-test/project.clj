@@ -17,6 +17,8 @@
 
   :uberjar-name "reverie-test.jar"
 
+  :repl-options {:timeout 120000}
+
   :profiles {:uberjar {:aot [reverie.site.core]}
              :dev {:dependencies [[midje "1.6.3"]
                                   [ring-mock "0.1.5"]
