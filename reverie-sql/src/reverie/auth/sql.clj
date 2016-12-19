@@ -359,9 +359,12 @@
                                        :set {:token nil}
                                        :where [:= :token (java.util.UUID/fromString id)]}))
   (expired-token? [id db]
-    (->> (db/query db {:select [:token]
-                       :from [:auth_user]
-                       :where [:and
-                               [:= :token (java.util.UUID/fromString id)]
-                               [:> :token_expire #sql/raw "now()"]]})
-         (empty?))))
+    (try
+      (->> (db/query db {:select [:token]
+                         :from [:auth_user]
+                         :where [:and
+                                 [:= :token (java.util.UUID/fromString id)]
+                                 [:> :token_expire #sql/raw "now()"]]})
+           (empty?))
+      (catch Exception _
+        true))))

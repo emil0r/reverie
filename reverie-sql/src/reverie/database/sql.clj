@@ -20,7 +20,7 @@
             [reverie.route :as route]
             [reverie.site :as site]
             [reverie.system :as sys]
-            [reverie.util :refer [slugify kw->str str->kw]]
+            [reverie.util :refer [slugify kw->str str->kw uuid?]]
             [schema.core :as s]
             [slingshot.slingshot :refer [try+ throw+]]
             [taoensso.timbre :as log]
@@ -807,6 +807,7 @@
                         (db/query db (cond
                                        (and (string? id) (re-find #"@" id)) sql-get-user-by-email
                                        (string? id) sql-get-user-by-username
+                                       (uuid? id) sql-get-user-by-token
                                        :else sql-get-user-by-id))
                         first)]
        (let [{:keys [id created username active_p email

@@ -92,3 +92,6 @@
   ;; function from ring.util.anti-forgery is that enlive
   ;; can become problematic to use when you get back a HTML string
   (hidden-field "__anti-forgery-token" *anti-forgery-token*))
+
+(defn uuid? [x]
+  (= java.util.UUID (class x)))
