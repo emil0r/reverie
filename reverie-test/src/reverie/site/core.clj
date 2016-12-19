@@ -26,15 +26,17 @@
   ;; run in the REPL as necessary during development
   (let [mmaps (map (fn [[table path]]
                      {:db {:type :sql
-                           :migration-table table
+                           :migrations-table table
                            :url (str "jdbc:postgresql:"
                                      "//localhost:5432/dev_reverie"
                                      "?user=" "devuser"
                                      "&password=" "devuser")}
                       :migrator path})
-                   (array-map))]
+                   (array-map
                     ;;"migrations_module_reverie_blog" "resources/migrations/modules/blog/"
                     ;;"migrations_reverie_reset_password" "src/reverie/batteries/objects/migrations/reset-password"
+                    ))]
+
 
     ;; IMPORTANT NOTE: this has destructive side effects in the sense
     ;; of wiping out previously applied migrations.
@@ -45,7 +47,5 @@
     ;; table
     (doseq [mmap mmaps]
       (joplin/rollback-db mmap 1)
-      (joplin/migrate-db mmap))))
-
-
-
+      (joplin/migrate-db mmap)))
+  )
