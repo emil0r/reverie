@@ -57,6 +57,7 @@
   :aot [reverie.AreaException
         reverie.CacheException
         reverie.DatabaseException
+        reverie.MigrationException
         reverie.ModuleException
         reverie.ObjectException
         reverie.RenderException]

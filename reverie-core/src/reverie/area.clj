@@ -4,7 +4,7 @@
             [reverie.object :as object]
             [reverie.system :as sys]
             [reverie.util :as util]
-            reverie.RenderException)
+            [reverie.RenderException])
   (:import [reverie RenderException]))
 
 (defn- get-object-menu []

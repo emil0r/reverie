@@ -60,7 +60,7 @@
       `(do
          (i18n/load-from-options! ~options)
          (when ~migration
-           (swap! sys/storage assoc-in [:migrations ~name] ~migration))
+           (swap! sys/storage assoc-in [:migrations :app ~name] ~migration))
          (swap! sys/storage assoc-in [:apps ~name]
                 {:app-routes (map route/route ~routes)
                  :options ~options})
@@ -79,7 +79,7 @@
       `(do
          (i18n/load-from-options! ~options)
          (when ~migration
-           (swap! sys/storage assoc-in [:migrations ~path] ~migration))
+           (swap! sys/storage assoc-in [:migrations :raw-page ~path] ~migration))
          (swap! site/routes assoc ~path [(route/route [~path]) ~properties])
          (swap! sys/storage assoc-in [:raw-pages ~path]
                 {:routes (map route/route ~routes)
@@ -88,7 +88,7 @@
 (defn undefpage
   "Undefine a page"
   [path]
-  (swap! sys/storage assoc-in [:migrations path] nil)
+  (swap! sys/storage assoc-in [:migrations :raw-page path] nil)
   (swap! sys/storage assoc-in [:raw-pages path] nil)
   (swap! site/routes dissoc path)
   nil)
@@ -106,7 +106,7 @@
       `(do
          (i18n/load-from-options! ~options)
          (when ~migration
-           (swap! sys/storage assoc-in [:migrations ~name] ~migration))
+           (swap! sys/storage assoc-in [:migrations :module ~name] ~migration))
          (swap! site/routes assoc ~path
                 [(route/route [~path]) {:name ~name
                                         :path ~path
@@ -137,7 +137,7 @@
       `(do
          (i18n/load-from-options! ~options)
          (when ~migration
-           (swap! sys/storage assoc-in [:migrations ~name] ~migration))
+           (swap! sys/storage assoc-in [:migrations :object ~name] ~migration))
          (swap! sys/storage assoc-in [:objects ~name]
                 {:options ~options
                  :methods ~methods

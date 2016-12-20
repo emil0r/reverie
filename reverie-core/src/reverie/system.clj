@@ -63,9 +63,11 @@
   (get-in @storage [:modules key]))
 
 (defn migrations []
-  (:migrations @storage))
-(defn migration [key]
-  (get-in @storage [:migrations key]))
+  (->> [:pre :module :raw-page :app :object :unknown :post]
+       (map (fn [type] (map (fn [[k v]] [k v]) (get-in @storage [:migrations type]))))
+       (remove nil?)
+       (flatten)
+       (partition 2)))
 
 (defonce ^:private sys (atom nil))
 
