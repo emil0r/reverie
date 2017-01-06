@@ -1,7 +1,7 @@
 # Getting started
 
 
-Install [reverie/lein-template "1.1"] as a plugin in your profiles.clj under .lein. 
+Install [reverie/lein-template "1.2.0"] as a plugin in your profiles.clj under .lein. 
 
 1. Run lein new reverie <name-of-project> in the directory where you want the project installed.
 2. Answer the questions that pops up.
