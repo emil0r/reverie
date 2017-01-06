@@ -28,7 +28,10 @@
     (db/query! db {:delete-from :admin_storage
                    :where [:= :k (util/kw->str k)]}))
   (get [db k]
-    (->> (db/query db {:select [:v]
-                       :from [:admin_storage]
-                       :where [:= :k (util/kw->str k)]})
-         first :v edn/read-string)))
+    (try
+      (->> (db/query db {:select [:v]
+                         :from [:admin_storage]
+                         :where [:= :k (util/kw->str k)]})
+           first :v edn/read-string)
+      (catch Exception _
+        {}))))

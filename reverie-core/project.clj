@@ -1,35 +1,63 @@
-(defproject reverie-core "0.7.0"
+(defproject reverie-core "0.8.0"
   :description "The core of reverie; a CMS for power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [;; core
+                 [org.clojure/clojure "1.8.0"]
+                 [org.clojure/core.match "0.2.2"]
+                 [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
+                 [org.clojure/core.memoize "0.5.8"]
+
+                 ;; structure
+                 [com.stuartsierra/component "0.2.3"]
+
+                 ;; web
                  [ring/ring-anti-forgery "1.0.0"]
                  [ring/ring-core "1.4.0"]
                  [clout "2.1.2"]
-                 [clj-time "0.11.0"]
-                 [bultitude "0.2.8"]
-                 [slingshot "0.12.2"]
-                 [buddy/buddy-core "0.9.0"]
-                 [buddy/buddy-hashers "0.11.0"]
-                 [buddy/buddy-auth "0.9.0"]
-                 [org.clojure/core.match "0.2.2"]
-                 [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
-                 [com.taoensso/timbre "3.4.0"]
-                 [com.taoensso/tower "3.0.2"]
-                 [com.stuartsierra/component "0.2.3"]
                  [hiccup "1.0.5"]
                  [vlad "3.3.0"]
                  [lib-noir "0.9.9"]
                  [ez-web "0.3.0"]
-                 [ez-image "1.0.3"]
-                 [me.raynes/fs "1.4.6"]
-                 [im.chit/cronj "1.4.3"]
+                 [ez-image "1.0.4"]
+
+                 ;; time
+                 [clj-time "0.11.0"]
+
+                 ;; email
+                 [ez-email "0.1.0"]
+
+                 ;; reverie specific
+                 [bultitude "0.2.8"]
+
+                 ;;
+                 [slingshot "0.12.2"]
+
+                 ;; hashing, digests, crypto, etc
+                 [buddy/buddy-core "0.9.0"]
+                 [buddy/buddy-hashers "0.11.0"]
+                 [buddy/buddy-auth "0.9.0"]
                  [digest "1.4.4"]
-                 [org.clojure/core.memoize "0.5.8"]]
+
+                 ;; logging
+                 [com.taoensso/timbre "4.7.4"]
+
+                 ;; i18n
+                 [com.taoensso/tower "3.0.2"]
+
+                 ;; filesystem
+                 [me.raynes/fs "1.4.6"]
+
+                 ;; scheduling
+                 [im.chit/cronj "1.4.3"]
+
+                 ;; schema
+                 [prismatic/schema "1.1.0"]]
   :aot [reverie.AreaException
         reverie.CacheException
         reverie.DatabaseException
+        reverie.MigrationException
         reverie.ModuleException
         reverie.ObjectException
         reverie.RenderException]

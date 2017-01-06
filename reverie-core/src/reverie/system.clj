@@ -20,7 +20,8 @@
                         :roles {}
                         :modules {}
                         :module-default-routes []
-                        :migrations {}}))
+                        :migrations {}
+                        :renderers {::override {}}}))
 
 (defn apps []
   (:apps @storage))
@@ -36,6 +37,15 @@
   (:raw-pages @storage))
 (defn raw-page [key]
   (get-in @storage [:raw-pages key]))
+
+(defn renderers []
+  (:renderers @storage))
+(defn renderer [key]
+  (let [overrider (get-in @storage [:renderers (get-in @storage [:renderers ::override key])])
+        renderer (get-in @storage [:renderers key])]
+    (if overrider
+      (assoc-in renderer [:options :override] overrider)
+      renderer)))
 
 (defn roles []
   (:roles @storage))
@@ -53,9 +63,11 @@
   (get-in @storage [:modules key]))
 
 (defn migrations []
-  (:migrations @storage))
-(defn migration [key]
-  (get-in @storage [:migrations key]))
+  (->> [:pre :module :raw-page :app :object :unknown :post]
+       (map (fn [type] (map (fn [[k v]] [k v]) (get-in @storage [:migrations type]))))
+       (remove nil?)
+       (flatten)
+       (partition 2)))
 
 (defonce ^:private sys (atom nil))
 
@@ -77,11 +89,10 @@
 (defrecord ReverieData [settings database filemanager cachemanager user
                         dev? edit? editor?])
 
-(defn get-reveriedata []
-  (map->ReverieData {:settings (get-settings)
-                     :database (get-db)
-                     :filemanager (get-filemanager)
-                     :cachemanager (get-cachemanager)}))
+(defmethod clojure.core/print-method ReverieData [data ^java.io.Writer writer]
+  (.write writer "#<ReverieData>"))
+
+(defonce reverie-data (map->ReverieData {}))
 
 (defrecord ReverieSystem [database site filemanager scheduler
                           settings server logger cachemanager
@@ -89,9 +100,14 @@
   component/Lifecycle
   (start [this]
     (reset! sys this)
+    (alter-var-root #'reverie-data (fn [_] (map->ReverieData {:settings settings
+                                                             :filemanager filemanager
+                                                             :database database
+                                                             :cachemanager cachemanager})))
     this)
   (stop [this]
     (reset! sys nil)
+    (alter-var-root #'reverie-data (fn [_] (map->ReverieData {})))
     this))
 
 

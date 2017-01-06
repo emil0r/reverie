@@ -170,3 +170,156 @@ WHERE
         AND p.version = :version
 ORDER BY
       p.order;
+
+
+--name: sql-get-user-by-token
+WITH roles AS (
+	SELECT
+		ur.user_id, ARRAY_AGG(r.name) AS roles
+	FROM
+		auth_role r
+		INNER JOIN auth_user_role ur ON r.id = ur.role_id
+	GROUP BY
+		ur.user_id
+),
+groups AS (
+	SELECT
+		ug.user_id, ARRAY[ARRAY_agg(g.name), ARRAY_AGG(r.name)] AS groups
+	FROM
+		auth_user_group ug
+		INNER JOIN auth_group g ON ug.group_id = g.id
+		LEFT JOIN auth_group_role gr ON gr.group_id = g.id
+		INNER JOIN auth_role r ON gr.role_id = r.id
+	GROUP BY
+		ug.user_id
+)
+SELECT
+	u.*, r.roles, g.groups AS groups
+FROM
+	auth_user u
+	LEFT JOIN roles r ON u.id = r.user_id
+	LEFT JOIN groups g ON u.id = g.user_id
+WHERE
+        u.token = :id;
+
+
+--name: sql-get-user-by-id
+WITH roles AS (
+	SELECT
+		ur.user_id, ARRAY_AGG(r.name) AS roles
+	FROM
+		auth_role r
+		INNER JOIN auth_user_role ur ON r.id = ur.role_id
+	GROUP BY
+		ur.user_id
+),
+groups AS (
+	SELECT
+		ug.user_id, ARRAY[ARRAY_agg(g.name), ARRAY_AGG(r.name)] AS groups
+	FROM
+		auth_user_group ug
+		INNER JOIN auth_group g ON ug.group_id = g.id
+		LEFT JOIN auth_group_role gr ON gr.group_id = g.id
+		INNER JOIN auth_role r ON gr.role_id = r.id
+	GROUP BY
+		ug.user_id
+)
+SELECT
+	u.*, r.roles, g.groups AS groups
+FROM
+	auth_user u
+	LEFT JOIN roles r ON u.id = r.user_id
+	LEFT JOIN groups g ON u.id = g.user_id
+WHERE
+        u.id = :id;
+
+
+--name: sql-get-user-by-email
+WITH roles AS (
+	SELECT
+		ur.user_id, ARRAY_AGG(r.name) AS roles
+	FROM
+		auth_role r
+		INNER JOIN auth_user_role ur ON r.id = ur.role_id
+	GROUP BY
+		ur.user_id
+),
+groups AS (
+	SELECT
+		ug.user_id, ARRAY[ARRAY_agg(g.name), ARRAY_AGG(r.name)] AS groups
+	FROM
+		auth_user_group ug
+		INNER JOIN auth_group g ON ug.group_id = g.id
+		LEFT JOIN auth_group_role gr ON gr.group_id = g.id
+		INNER JOIN auth_role r ON gr.role_id = r.id
+	GROUP BY
+		ug.user_id
+)
+SELECT
+	u.*, r.roles, g.groups AS groups
+FROM
+	auth_user u
+	LEFT JOIN roles r ON u.id = r.user_id
+	LEFT JOIN groups g ON u.id = g.user_id
+WHERE
+        u.email = :id;
+
+
+--name: sql-get-user-by-username
+WITH roles AS (
+	SELECT
+		ur.user_id, ARRAY_AGG(r.name) AS roles
+	FROM
+		auth_role r
+		INNER JOIN auth_user_role ur ON r.id = ur.role_id
+	GROUP BY
+		ur.user_id
+),
+groups AS (
+	SELECT
+		ug.user_id, ARRAY[ARRAY_agg(g.name), ARRAY_AGG(r.name)] AS groups
+	FROM
+		auth_user_group ug
+		INNER JOIN auth_group g ON ug.group_id = g.id
+		LEFT JOIN auth_group_role gr ON gr.group_id = g.id
+		INNER JOIN auth_role r ON gr.role_id = r.id
+	GROUP BY
+		ug.user_id
+)
+SELECT
+	u.*, r.roles, g.groups AS groups
+FROM
+	auth_user u
+	LEFT JOIN roles r ON u.id = r.user_id
+	LEFT JOIN groups g ON u.id = g.user_id
+WHERE
+        u.username = :id;
+
+
+--name: sql-get-users
+WITH roles AS (
+	SELECT
+		ur.user_id, ARRAY_AGG(r.name) AS roles
+	FROM
+		auth_role r
+		INNER JOIN auth_user_role ur ON r.id = ur.role_id
+	GROUP BY
+		ur.user_id
+),
+groups AS (
+	SELECT
+		ug.user_id, ARRAY[ARRAY_agg(g.name), ARRAY_AGG(r.name)] AS groups
+	FROM
+		auth_user_group ug
+		INNER JOIN auth_group g ON ug.group_id = g.id
+		LEFT JOIN auth_group_role gr ON gr.group_id = g.id
+		INNER JOIN auth_role r ON gr.role_id = r.id
+	GROUP BY
+		ug.user_id
+)
+SELECT
+	u.*, r.roles, g.groups AS groups
+FROM
+	auth_user u
+	LEFT JOIN roles r ON u.id = r.user_id
+	LEFT JOIN groups g ON u.id = g.user_id;

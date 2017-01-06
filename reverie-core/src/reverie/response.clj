@@ -49,3 +49,8 @@
 
 (defn raise-response [response]
   (throw+ {:type :ring-response :response response}))
+
+(defn redirect!
+  "Helper function for forcing a redirect"
+  [url]
+  (raise-response (get 302 url)))

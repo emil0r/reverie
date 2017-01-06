@@ -1,5 +1,6 @@
 (ns reverie.admin.api.interface.frames
-  (:require [clojure.java.io :as io]
+  (:require [clojure.core.match :refer [match]]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.walk :as walk]
             [cheshire.core :refer [encode]]
@@ -16,7 +17,10 @@
             [reverie.time :as time]))
 
 
-(defmulti cast-field (fn [options & _] (:type options)))
+(def cast-field nil)
+(defmulti cast-field (fn [options & _] (match [(:type options) (:cast options)]
+                                             [_ :number] :number
+                                             [_ _] (:type options))))
 (defmethod cast-field :number [_ value]
   (if (str/blank? value)
     nil
@@ -38,10 +42,8 @@
               (assoc out k (cast-field options (params k))))
             params fields)))
 
-(defn edit-object [request page {:keys [object-id]}]
-  (let [db (get-in request [:reverie :database])
-        user (get-in request [:reverie :user])
-        object (db/get-object db object-id)
+(defn edit-object [{{db :database user :user} :reverie :as request} page {:keys [object-id]}]
+  (let [object (db/get-object db object-id)
         data {:id object-id
               :form-params
               (merge (object/initial-fields (object/name object) {:database db})
@@ -52,7 +54,7 @@
       (html5
        (common/head "Object editing")
        [:body
-        (form/get-object-form object data)
+        (form/get-object-form db object data)
         (when (= (:request-method request) :post)
           [:script {:type "text/javascript"}
            "opener.dom.reload_main();"
@@ -63,10 +65,8 @@
         [:title "Object editing"]]
        [:body "You are not allowed to edit this object"]))))
 
-(defn handle-object [request page {:keys [object-id] :as params}]
-  (let [db (get-in request [:reverie :database])
-        user (get-in request [:reverie :user])
-        object (db/get-object db object-id)]
+(defn handle-object [{{db :database user :user} :reverie :as request} page {:keys [object-id] :as params}]
+  (let [object (db/get-object db object-id)]
     (if (and (auth/authorize? (object/page object) user db "edit")
              (zero? (page/version (object/page object))))
       (do (db/update-object! db object-id (clean-params object params))
@@ -76,12 +76,10 @@
         [:title "Object editing"]]
        [:body "You are not allowed to edit this object"]))))
 
-(defn richtext [request page {:keys [field object-id module-p]}]
+(defn richtext [{{db :database user :user} :reverie :as request} page {:keys [field object-id module-p]}]
   (if (str/blank? module-p)
     ;; opened by an object
-    (let [db (get-in request [:reverie :database])
-          user (get-in request [:reverie :user])
-          object (db/get-object db object-id)
+    (let [object (db/get-object db object-id)
           format (:format (e/field object (keyword field)))
           init-tinymce-js (slurp (io/resource "public/static/admin/js/init-tinymce.js"))]
       (if (auth/authorize? (object/page object) user db "edit")
@@ -142,8 +140,7 @@
          [:body "You are not allowed to edit this module"])))))
 
 (defn url-picker [request page params]
-  (let [db (get-in request [:reverie :database])]
-    (html5
-     (common/head "URL:s")
-     [:body
-      "url picker"])))
+  (html5
+   (common/head "URL:s")
+   [:body
+    "url picker"]))

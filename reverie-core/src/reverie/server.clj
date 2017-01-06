@@ -17,6 +17,7 @@
                                         wrap-error-log
                                         wrap-forker
                                         wrap-i18n
+                                        wrap-resources
                                         wrap-reverie-data]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file :refer [wrap-file]] ;; research for later
@@ -49,17 +50,31 @@
 (defrecord Server [dev? server store run-server stop-server
                    site middleware-options server-options settings
                    site-handlers resource-handlers media-handlers
-                   extra-handlers filemanager]
+                   post-handlers pre-handlers filemanager]
   component/Lifecycle
   (start [this]
     (if server
       this
       (let [resource (or (:resource middleware-options) "public")
+            resource-handler (or
+                              resource-handlers
+                              (create-handler [[wrap-resource resource]
+                                               [wrap-file-info (:mime-types middleware-options)]
+                                               [wrap-content-type (:content-type-resources middleware-options)]
+                                               [wrap-not-modified]]
+                                              {:status 404 :body "404, Page Not Found" :headers {}}))
+            media-handler (or
+                           media-handlers
+                           (create-handler [[wrap-file (fm/base-dir filemanager)]
+                                            [wrap-file-info (:mime-types middleware-options)]
+                                            [wrap-content-type (:content-type-resources middleware-options)]
+                                            [wrap-not-modified]]
+                                           {:status 404 :body "404, Page Not Found" :headers {}}))
             site-handler (create-handler
                           (or site-handlers
                               (vec
                                (concat
-                                extra-handlers
+                                post-handlers
                                 [[wrap-i18n (:i18n middleware-options)]
                                  [wrap-downstream]
                                  [wrap-editor]
@@ -84,26 +99,18 @@
                                    :cookie-attrs {:max-age (get-in middleware-options [:cookie :max-age] 31104000)}}]
                                  [wrap-noir-cookies]
                                  [wrap-strip-trailing-slash]
-                                 [wrap-error-log dev?]]
+                                 [wrap-error-log dev?]
+                                 [wrap-resources [[(get-in middleware-options [:resources :media]) media-handler]
+                                                  [(get-in middleware-options [:resources :resource]) resource-handler]]]]
+                                pre-handlers
                                 (if dev?
                                   [[wrap-reload]
-                                   [wrap-stacktrace]]
-                                  []))))
+                                   [wrap-stacktrace]]))))
                           (site-route site))
-            resource-handler (or
-                              resource-handlers
-                              (create-handler [[wrap-resource resource]
-                                               [wrap-file-info (:mime-types middleware-options)]
-                                               [wrap-content-type (:content-type-resources middleware-options)]
-                                               [wrap-not-modified]]
-                                              {:status 404 :body "404, Page Not Found" :headers {}}))
-            media-handler (or
-                           media-handlers
-                           (create-handler [[wrap-file (fm/base-dir filemanager)]
-                                            [wrap-file-info (:mime-types middleware-options)]
-                                            [wrap-content-type (:content-type-resources middleware-options)]
-                                            [wrap-not-modified]]
-                                           {:status 404 :body "404, Page Not Found" :headers {}}))
+
+            ;; wrap site-handler, resource-handler and media-handler in a handler
+            ;; that cycles through all of them in the event that :resources
+            ;; are not specified in the settings
             handler (wrap-forker site-handler resource-handler media-handler)
             server (run-server handler server-options)]
         (log/info (format "Running server on port %s..." (:port server-options)))

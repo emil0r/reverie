@@ -1,5 +1,8 @@
 {
  ;; reverie
+
+ ;; set to true for starting a scheduled services meant to take care of the server
+ :primary? true
  :server-mode :dev
  :server {:options {:port 9090}
           :middleware {}}
@@ -7,11 +10,20 @@
                         :subprotocol "postgresql"
                         :subname "//localhost:5432/dev_reverie"
                         :user "devuser"
-                        :password "devuser"}}}
+                        :password "devuser"}}
+      :ds-specs {:default {:maximum-pool-size 3
+                           :adapter "postgresql"
+                           :username "devuser"
+                           :password "devuser"
+                           :database-name "dev_reverie"}}}
 
  :admin {:tasks {:edits {:minutes 30}}}
  :log {:rotor {:path "logs/reverie.log"}}
  :site {:host-names []}
  :filemanager {:base-dir "media"
                :media-dirs ["media/images"
-                            "media/files"]}}
+                            "media/files"]}
+ :storage {:redis {;;:admin {}
+                   :session {}
+                   :internal {}
+                   :cache {}}}}

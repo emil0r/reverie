@@ -61,8 +61,9 @@
                  (assoc final-resp :body)))
           final-resp))
       ;; in the event of being unable to give a response we return a 404
-      (or (get system-pages 404)
-          (response/get 404)))))
+      {:type :response
+       :response (or (get system-pages 404)
+                     (response/get 404))})))
 
 (defrecord Site [host-names system cachemanager
                  system-pages settings database render-fn]
@@ -117,8 +118,8 @@
                        :routes (:routes page-data)
                        :database database}))
               :module (assoc (:module (sys/module name))
-                        :route route
-                        :database database)
+                             :route route
+                             :database database)
               :app (let [p (db/get-page database serial public?)]
                      (if (and p
                               (= (:path route) (-> p :route :path)))
@@ -135,8 +136,9 @@
     (try+
      (if-not (host-match? this request)
        ;; no match for against the host names -> 404
-       (or (get system-pages 404)
-           (response/get 404))
+       {:type :response
+        :response (or (get system-pages 404)
+                      (response/get 404))}
        ;; match found, go through the complicated maze towards the end...
        (if-let [p (get-page this request)]
          ;; in the event of a page found...
@@ -174,8 +176,9 @@
                  ((wrap-anti-forgery (wrap-csrf-token handler)) request)
                  (handler request)))))
          ;; didn't find page -> 404
-         (or (get system-pages 404)
-             (response/get 404))))
+         {:type :response
+          :response (or (get system-pages 404)
+                        (response/get 404))}))
      (catch [:type :ring-response] out
        out)
      (catch [:type :response] {:keys [status args]}

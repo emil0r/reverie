@@ -1,6 +1,7 @@
 (ns reverie.page
   (:refer-clojure :exclude [type name])
-  (:require [clojure.string :as str]
+  (:require [clojure.core.match :refer [match]]
+            [clojure.string :as str]
             [reverie.auth :refer [with-access]]
             [reverie.database :as db]
             [reverie.object :as object]
@@ -9,8 +10,12 @@
             [reverie.response :as response]
             [reverie.system :as sys]
             [reverie.util :as util]
+            [schema.core :as s]
+            [taoensso.timbre :as log]
             reverie.RenderException)
-  (:import [reverie RenderException]))
+  (:import [reverie RenderException]
+           [reverie.object ReverieObject]
+           [reverie.route Route]))
 
 
 (defprotocol IPage
@@ -18,8 +23,8 @@
   (serial [page])
   (parent [page])
   (root? [page])
-  (children [page])
-  (children? [page])
+  (children [page database])
+  (children? [page database])
   (title [page])
   (name [page])
   (order [page])
@@ -51,9 +56,23 @@
                       headers)
       :body response})))
 
-(defrecord Page [route id serial name title properties template
-                 created updated parent database version slug
-                 published-date published? objects raw-data]
+(s/defrecord Page [route :- Route
+                   id :- s/Int
+                   serial :- s/Int
+                   name :- s/Str
+                   title :- s/Str
+                   properties :- {s/Any s/Any}
+                   template :- (s/either s/Keyword s/Str {s/Keyword s/Any})
+                   created :- org.joda.time.DateTime
+                   updated :- org.joda.time.DateTime
+                   parent :- (s/maybe s/Int)
+                   version :- s/Int
+                   slug :- s/Str
+                   database :- s/Any
+                   published-date :- org.joda.time.DateTime
+                   published? :- s/Bool
+                   objects :- [ReverieObject]
+                   raw-data :- s/Any]
   route/IRouting
   (get-route [this] route)
   (match? [this request] (route/match? route request))
@@ -65,8 +84,8 @@
   (published? [this] published?)
   (parent [this] parent)
   (root? [page] (nil? parent))
-  (children [this] (db/get-children database this))
-  (children? [this] (pos? (db/get-children-count database this)))
+  (children [this database] (db/get-children database this))
+  (children? [this database] (pos? (db/get-children-count database this)))
   (title [this] title)
   (name [this] name)
   (order [this] order)
@@ -90,7 +109,10 @@
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/Page"))))
 
 
-(defrecord RawPage [route options routes database]
+(s/defrecord RawPage [route :- Route
+                      options :- {s/Any s/Any}
+                      routes :- [s/Any]
+                      database :- s/Any]
   route/IRouting
   (get-route [this] route)
   (match? [this request] (route/match? route request))
@@ -102,8 +124,8 @@
   (published? [this] true)
   (parent [this] nil)
   (root? [this] false)
-  (children [this] nil)
-  (children? [this] false)
+  (children [this database] nil)
+  (children? [this database] false)
   (title [this] nil)
   (name [this] nil)
   (order [this] nil)
@@ -131,24 +153,81 @@
          (if-let [page-route (first (filter #(route/match? % request) routes))]
            (let [{:keys [request method]} (route/match? page-route request)]
              (if (and request method)
-               (let [resp (method request this (:params request))
+               (let [renderer (sys/renderer (:renderer options))
+                     resp (method request this (:params request))
                      t (sys/template (:template options))]
-                 (if (and t
-                          (map? resp)
-                          (not (contains? resp :status))
-                          (not (contains? resp :body))
-                          (not (contains? resp :headers)))
-                   (render/render t request (assoc this :rendered resp))
-                   resp))))
+                 (match [;; raw response
+                         (and (map? resp)
+                              (contains? resp :status)
+                              (contains? resp :body)
+                              (contains? resp :headers))
+
+                         ;; renderer
+                         (not (nil? renderer))
+
+                         ;; routes
+                         (not (nil? (:methods-or-routes renderer)))
+
+                         ;; map
+                         (map? resp)
+
+                         ;; template
+                         (not (nil? t))]
+
+                        ;; raw response
+                        [true _ _ _ _] resp
+
+                        ;; ~renderer, _ , map, template
+                        [_ false _ true true] (render/render t request (assoc this :rendered resp))
+
+                        ;; renderer, routes, map, template
+                        [_ true true true true] (let [out (render/render renderer (:request-method request)
+                                                                       {:data resp
+                                                                        ::render/type :page/routes
+                                                                        :meta {:route-name (get-in page-route [:options :name])}})]
+                                                (render/render t request (assoc this :rendered out)))
+
+                        ;; renderer, ~routes, map, template
+                        [_ true false true true] (let [out (render/render renderer (:request-method request)
+                                                                        {:data resp
+                                                                         ::render/type :page/no-routes
+                                                                         :meta {:route-name (get-in page-route [:options :name])}})]
+                                                 (render/render t request (assoc this :rendered out)))
+
+                        ;; renderer, ~routes, ~map, ~template
+                        [_ true false false false] (render/render renderer (:request-method request)
+                                                                {:data resp
+                                                                 ::render/type :page/no-routes
+                                                                 :meta {:route-name (get-in page-route [:options :name])}})
+
+                        ;; default
+                        [_ _ _ _ _] resp))))
            (response/raise 404))))))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/RawPage"))))
 
 
-(defrecord AppPage [route app app-routes app-area-mappings slug
-                    id serial name title properties options template
-                    created updated parent database version
-                    published-date published? objects raw-data]
+(s/defrecord AppPage [route :- Route
+                      app :- s/Str
+                      app-routes :- [s/Any]
+                      app-area-mappings :- s/Any
+                      slug :- s/Str
+                      id :- s/Int
+                      serial :- s/Int
+                      name :- s/Str
+                      title :- s/Str
+                      properties :- {s/Any s/Any}
+                      options :- {s/Any s/Any}
+                      template :- (s/either s/Keyword s/Str {s/Keyword s/Any})
+                      created :- org.joda.time.DateTime
+                      updated :- org.joda.time.DateTime
+                      parent :- (s/maybe s/Int)
+                      database :- s/Any
+                      version :- s/Int
+                      published-date :- org.joda.time.DateTime
+                      published? :- s/Bool
+                      objects :- [ReverieObject]
+                      raw-data :- s/Any]
   route/IRouting
   (get-route [this] route)
   (match? [this request]
@@ -172,8 +251,8 @@
   (published? [this] published?)
   (parent [this] parent)
   (root? [page] (nil? parent))
-  (children [this] (db/get-children database this))
-  (children? [this] (pos? (db/get-children-count database this)))
+  (children [this database] (db/get-children database this))
+  (children? [this database] (pos? (db/get-children-count database this)))
   (title [this] title)
   (name [this] name)
   (order [this] order)
@@ -201,11 +280,39 @@
        options
        (if-let [app-route (first (filter #(route/match? % request) app-routes))]
          (let [{:keys [request method]} (route/match? app-route request)
-               resp (method request this properties (:params request))]
-           (if (map? resp)
-             (let [t (or (:template properties) template)]
-               (render/render t request (assoc this :rendered resp)))
-             resp))))))
+               renderer (sys/renderer (:renderer options))
+               resp (method request this properties (:params request))
+               t (or (:template properties) template)]
+           (match [(not (nil? renderer)) (not (nil? (:methods-or-routes renderer))) (map? resp) (not (nil? t))]
+                  ;; ~renderer, _ , map, template
+                  [false _ true true] (render/render t request (assoc this :rendered resp))
+
+                  ;; renderer, routes, map, template
+                  [true true true true] (let [out (render/render renderer (:request-method request)
+                                                                 {:data resp
+                                                                  ::render/type :page/routes
+                                                                  :meta {:route-name (get-in app-route [:options :name])}})]
+                                          (render/render t request (assoc this :rendered out)))
+
+                  ;; renderer, ~routes, map, template
+                  [true false true true] (let [out (render/render renderer (:request-method request)
+                                                                  {:data resp
+                                                                   ::render/type :page/no-routes
+                                                                   :meta {:route-name (get-in app-route [:options :name])}})]
+                                           (render/render t request (assoc this :rendered out)))
+
+                  ;; _, _, ~map, template
+                  ;; invalid combiation
+                  ;; when a template is being used there has to be a map of some sort
+                  [_ _ false true] (do (log/error {:what ::AppPage
+                                                   :message "Invalid combitation rendering AppPage. Tried to render a template without a corresponding map"
+                                                   :template t
+                                                   :route route
+                                                   :app-route app-route
+                                                   :response resp})
+                                       (response/raise 500))
+                  ;; default
+                  [_ _ _ _] resp))))))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/Page"))))
 

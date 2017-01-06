@@ -1,9 +1,20 @@
 (ns reverie.site.core
-  (:require [reverie.site.init :as init]))
+  (:gen-class)
+  (:require [clojure.edn :as edn]
+            [joplin.core :as joplin]
+            [joplin.jdbc.database]
+            [reverie.site.init :as init]))
 
+
+(defn read-args [args]
+  (reduce (fn [out [arg value]]
+            (assoc out (edn/read-string arg) (edn/read-string value)))
+          {} (partition 2 args)))
+
+(defn -main [& args]
+  (init/init "settings.edn" (read-args args)))
 
 (comment
-
 
   ;; run this for running the server in dev mode through the REPL
   (do
@@ -15,7 +26,7 @@
   ;; run in the REPL as necessary during development
   (let [mmaps (map (fn [[table path]]
                      {:db {:type :sql
-                           :migration-table table
+                           :migrations-table table
                            :url (str "jdbc:postgresql:"
                                      "//localhost:5432/dev_reverie"
                                      "?user=" "devuser"
@@ -23,7 +34,10 @@
                       :migrator path})
                    (array-map
                     ;;"migrations_module_reverie_blog" "resources/migrations/modules/blog/"
+                    ;;"migrations_reverie_reset_password" "src/reverie/batteries/objects/migrations/reset-password"
                     ))]
+
+
     ;; IMPORTANT NOTE: this has destructive side effects in the sense
     ;; of wiping out previously applied migrations.
     ;; due to the nature of the weak binding between objects and the table
@@ -34,5 +48,4 @@
     (doseq [mmap mmaps]
       (joplin/rollback-db mmap 1)
       (joplin/migrate-db mmap)))
-
   )

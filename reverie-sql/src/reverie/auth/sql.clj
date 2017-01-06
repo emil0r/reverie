@@ -1,17 +1,28 @@
 (ns reverie.auth.sql
   (:require [buddy.hashers :as hashers]
+            [clj-time.core :as t]
+            [clj-time.local :as t.local]
             [clojure.string :as str]
             [ez-database.core :as db]
             [noir.session :as session]
             [reverie.auth :as auth]
             [reverie.module :as m]
             [reverie.page :as page]
-            [reverie.auth :refer [IAuthorize IUserAdd IUserLogin IUserUpdate]]
+            [reverie.auth :refer [IAuthorize
+                                  IUserAdd
+                                  IUserLogin
+                                  IUserUpdate
+                                  IUserToken]]
             [reverie.util :as util]
             [taoensso.timbre :as log])
-  (:import [reverie.auth User]
-           [reverie.page Page AppPage RawPage]
-           [reverie.module Module]))
+  (:import [reverie.auth
+            User]
+           [reverie.page
+            AppPage
+            Page
+            RawPage]
+           [reverie.module
+            Module]))
 
 (extend-type Page
   IAuthorize
@@ -174,6 +185,7 @@
       false)))
 
 (extend-type clojure.lang.PersistentArrayMap
+
   IUserLogin
   (login [{:keys [username password]} db]
     (let [username (str/lower-case username)
@@ -190,16 +202,40 @@
                            :where [:= :id (:id user)]})
             true)
           false)
-        false))))
+        false)))
+
+  IUserToken
+  (enable-token
+    ([user db] (reverie.auth/enable-token user 60 db))
+    ([user minutes db]
+     (let [token (java.util.UUID/randomUUID)]
+       (db/query! db {:update :auth_user
+                      :set {:token token
+                            :token_expire (t/plus (t.local/local-now) (t/minutes minutes))}
+                      :where [:= :id (:id user)]})
+       token)))
+  (retire-token [user db] (db/query! db {:update :auth_user
+                                         :set {:token nil}
+                                         :where [:= :id (:id user)]}))
+  (expired-token? [user db]
+    (->> (db/query db {:select [:token]
+                       :from [:auth_user]
+                       :where [:and
+                               [:= :id (:id user)]
+                               [:is-not :token nil]
+                               [:> :token_expire #sql/raw "now()"]]})
+         (empty?))))
 
 
 (extend-type User
+
   IUserLogin
   (login [user db]
     (if user
       (do (session/swap! merge {:user-id (:id user)})
           true)
       false))
+
   IUserUpdate
   (update! [user data db]
     (let [data (reduce (fn [out [k v]]
@@ -216,4 +252,119 @@
   (set-password! [user new-password db]
     (db/query! db {:update :auth_user
                    :set {:password (hashers/encrypt new-password)}
-                   :where [:= :id (:id user)]})))
+                   :where [:= :id (:id user)]}))
+
+  IUserToken
+  (enable-token
+    ([user db] (reverie.auth/enable-token user 60 db))
+    ([user minutes db]
+     (let [token (java.util.UUID/randomUUID)]
+       (db/query! db {:update :auth_user
+                      :set {:token token
+                            :token_expire (t/plus (t.local/local-now) (t/minutes minutes))}
+                      :where [:= :id (:id user)]})
+       token)))
+  (retire-token [user db] (db/query! db {:update :auth_user
+                                         :set {:token nil}
+                                         :where [:= :id (:id user)]}))
+  (expired-token? [user db]
+    (->> (db/query db {:select [:token]
+                       :from [:auth_user]
+                       :where [:and
+                               [:= :id (:id user)]
+                               [:is-not :token nil]
+                               [:> :token_expire #sql/raw "now()"]]})
+         (empty?))))
+
+
+(extend-type java.lang.Long
+
+  IUserToken
+  (enable-token
+    ([id db] (reverie.auth/enable-token id 60 db))
+    ([id minutes db]
+     (let [token (java.util.UUID/randomUUID)]
+       (db/query! db {:update :auth_user
+                      :set {:token token
+                            :token_expire (t/plus (t.local/local-now) (t/minutes minutes))}
+                      :where [:= :id id]})
+       token)))
+  (retire-token [id db] (db/query! db {:update :auth_user
+                                       :set {:token nil}
+                                       :where [:= :id id]}))
+  (expired-token? [id db]
+    (->> (db/query db {:select [:token]
+                       :from [:auth_user]
+                       :where [:and
+                               [:= :id id]
+                               [:is-not :token nil]
+                               [:> :token_expire #sql/raw "now()"]]})
+         (empty?))))
+
+
+(extend-type java.lang.Integer
+
+  IUserToken
+  (enable-token
+    ([id db] (reverie.auth/enable-token id 60 db))
+    ([id minutes db]
+     (let [token (java.util.UUID/randomUUID)]
+       (db/query! db {:update :auth_user
+                      :set {:token token
+                            :token_expire (t/plus (t.local/local-now) (t/minutes minutes))}
+                      :where [:= :id id]})
+
+       token)))
+  (retire-token [id db] (db/query! db {:update :auth_user
+                                       :set {:token nil}
+                                       :where [:= :id id]}))
+  (expired-token? [id db]
+    (->> (db/query db {:select [:token]
+                       :from [:auth_user]
+                       :where [:and
+                               [:= :id id]
+                               [:is-not :token nil]
+                               [:> :token_expire #sql/raw "now()"]]})
+         (empty?))))
+
+(extend-type java.util.UUID
+
+  IUserToken
+  (enable-token
+    ([id db] (reverie.auth/enable-token id 60 db))
+    ([id minutes db] (throw (ex-info "reverie.auth/enable-token can't be used with a UUID"
+                                   {:id id
+                                    :minutes minutes }))))
+  (retire-token [id db] (db/query! db {:update :auth_user
+                                       :set {:token nil}
+                                       :where [:= :token id]}))
+  (expired-token? [id db]
+    (->> (db/query db {:select [:token]
+                       :from [:auth_user]
+                       :where [:and
+                               [:= :token id]
+                               [:> :token_expire #sql/raw "now()"]]})
+         (empty?))))
+
+
+(extend-type java.lang.String
+
+  IUserToken
+  (enable-token
+    ([id db] (reverie.auth/enable-token id 60 db))
+    ([id minutes db] (throw (ex-info "reverie.auth/enable-token can't be used with a string"
+                                   {:id id
+                                    :minutes minutes}))))
+  (retire-token [id db] (db/query! db {:update :auth_user
+                                       :set {:token nil}
+                                       :where [:= :token (java.util.UUID/fromString id)]}))
+  (expired-token? [id db]
+    (try
+      (->> (db/query db {:select [:token]
+                         :from [:auth_user]
+                         :where [:and
+                                 [:= :token (java.util.UUID/fromString id)]
+                                 [:> :token_expire #sql/raw "now()"]]})
+           (empty?))
+      (catch Exception _
+        true))))

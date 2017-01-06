@@ -1,5 +1,6 @@
 (ns reverie.middleware
-  (:require [clojure.string :as str]
+  (:require [clojure.core.memoize :as memo]
+            [clojure.string :as str]
             [noir.cookies :as cookies]
             [noir.session :as session]
             [reverie.admin.api.editors :as editors]
@@ -23,16 +24,15 @@
 (defn wrap-admin
   "Wrap admin access"
   [handler]
-  (fn [{:keys [uri] :as request}]
+  (fn [{:keys [^String uri] :as request}]
     (if (and
-         (re-find #"^/admin" uri)
-         (not (re-find #"^/admin/login" uri))
-         (not (re-find #"^/admin/logout" uri)))
+         (.startsWith uri "/admin")
+         (not (.startsWith uri "/admin/log")))
       (try+
        (handler request)
        (catch [:type :reverie.auth/not-allowed] {}
          (log/info "Unauthorized request for admin area"
-                   {:user (get-in request [:reverie :user])
+                   {:user-id (auth/get-id)
                     :request (select-keys request [:headers
                                                    :remote-address
                                                    :uri])})
@@ -81,9 +81,8 @@
   "Add commonly used data from reverie into the request"
   [handler {:keys [dev?]}]
   (fn [{:keys [uri] :as request}]
-    (let [data (sys/get-reveriedata)
-          user (auth/get-user (:database data))]
-      (handler (assoc request :reverie (assoc data :user user :dev? dev?))))))
+    (let [user (auth/get-user (:database sys/reverie-data))]
+      (handler (assoc request :reverie (assoc sys/reverie-data :user user :dev? dev?))))))
 
 (defn- session-token [request]
   (get-in request [:session :ring.middleware.anti-forgery/anti-forgery-token]))
@@ -114,47 +113,82 @@
           (cookies/put! "x-csrf-token" *anti-forgery-token*)
           response)))))
 
+(defn- get-locales* [headers-accept-language
+                     {:keys [only-locale enforce-locale preferred-locale fallback-locale] :as opts}
+                     session-locale]
+  (if only-locale
+    only-locale
+    (let [ ;; ["en-GB" "en" "en-US"], etc.
+          accept-lang-locales (->> headers-accept-language
+                                   (tower.utils/parse-http-accept-header)
+                                   (mapv (fn [[l q]] l)))]
+      (->> [enforce-locale
+            session-locale
+            preferred-locale
+            accept-lang-locales
+            (or fallback-locale :en)]
+           flatten
+           (remove nil?)
+           (into [])))))
+
+;; minor speed boost
+(def get-locales (memo/lru get-locales* :lru/threshold 50))
+
 (defn wrap-i18n
   "Borrows bits and pieces from tower's wrap-tower"
   [handler {:keys [enforce-locale preferred-locale fallback-locale] :as opts}]
   (fn [{:keys [headers] :as request}]
-    (let [accept-lang-locales ; ["en-GB" "en" "en-US"], etc.
-          (->> (get headers "accept-language")
-               (tower.utils/parse-http-accept-header)
-               (mapv (fn [[l q]] l)))
-          session-locale (session/get :locale nil)]
-      (binding [i18n/*locale* (->> [enforce-locale
-                                    session-locale
-                                    preferred-locale
-                                    accept-lang-locales
-                                    (or fallback-locale :en)]
-                                   flatten
-                                   (remove nil?)
-                                   (into []))]
-        (handler request)))))
+    (binding [i18n/*locale* (get-locales (get headers "accept-language") opts (session/get :locale nil))]
+      (handler request))))
 
+;; TODO: look at this again. potentially the server does a lot of
+;; unnecessary work
 (defn wrap-forker [handler & handlers]
   (fn [request]
     (loop [resp (handler request)
+           saved-resp resp
            [handler & handlers] handlers]
       (cond
-       ;; was the response raised with response/raise-response?
-       (= (:type resp) :ring-response)
-       (:response resp)
+        ;; was the response raised with response/raise-response?
+        (= (:type resp) :ring-response)
+        (:response resp)
 
-       ;; was the response raised with response/raise?
-       (= (:type resp) :response)
-       (:response resp)
+        ;; was the response raised with response/raise and it's not a 404?
+        (and (= (:type resp) :response)
+             (not= 404 (get-in resp [:response :status])))
+        (:response resp)
 
-       ;; was the response nil and do we still have more handlers to try?
-       (and (nil? resp) (not (nil? handler)))
-       (recur (handler request) handlers)
+        ;; was the response nil and do we still have more handlers to try?
+        (and (nil? resp) (not (nil? handler)))
+        (recur (handler request) saved-resp handlers)
 
-       ;; end of the line. no more handlers to try
-       ;; or it was something other than a 404
-       (or (not= 404 (:status resp)) (nil? handler))
-       resp
+        ;; end of the line. no more handlers to try
+        ;; or it was something other than a 404
+        (or (and
+              (not (nil? (get-in resp [:response :status])))
+              (not= 404 (get-in resp [:response :status])))
+            (and
+              (not (nil? (get-in resp [:status])))
+              (not= 404 (get-in resp [:status])))
+            (nil? handler))
+        ;; resp can be from reverie.site or from ring middleware.
+        ;; reverie.site always gives back map with keys :type and :response
+        ;; whereas ring middleware just gives back the map that reverie.site
+        ;; places in :response
+        (or (:response resp) resp (:response saved-resp) saved-resp)
 
-       ;; continue trying
-       :else
-       (recur (handler request) handlers)))))
+        ;; continue trying
+        :else
+        (recur (handler request) saved-resp handlers)))))
+
+(defn wrap-resources
+  "Check for resources being used based on URI"
+  [handler routes]
+  (fn [{:keys [uri] :as request}]
+    (if-let [new-handler (reduce (fn [out [paths handler]]
+                                   (if (some #(str/starts-with? uri %) paths)
+                                     handler
+                                     out))
+                                 nil routes)]
+      (new-handler request)
+      (handler request))))

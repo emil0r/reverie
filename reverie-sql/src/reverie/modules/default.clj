@@ -1,7 +1,9 @@
 (ns reverie.modules.default
+  "Modules with interface? set to true will use this code for generating the HTML"
   (:require [clojure.string :as str]
             [clojure.walk :as walk]
             [ez-database.core :as db]
+            [ez-form.core :as form]
             [ez-web.paginator :as paginator]
             [ez-web.uri :refer [join-uri]]
             [ez-web.breadcrumbs :refer [crumb]]
@@ -30,8 +32,25 @@
       pk)))
 
 (defn get-display-name [entity entity-data]
-  (get (:form-params entity-data)
-       (first (e/display entity))))
+  (let [k (->> (e/display entity)
+               (map (fn [[k v]]
+                      (if (:link? v)
+                        k)))
+               (remove nil?)
+               first)]
+    (get (:form-params entity-data) k)))
+
+(def get-display-row nil)
+(defmulti get-display-row (fn [db k value options field-attribs] (:type field-attribs)))
+(defmethod get-display-row :boolean [db k value options field-attribs]
+  (if (:fn options)
+    ((:fn options) {:database db :value value})
+    (if (true? (get value k))
+      [:i.fa.fa-check-circle])))
+(defmethod get-display-row :default [db k value options field-attribs]
+  (if (:fn options)
+    ((:fn options) {:database db :value value})
+    (get value k)))
 
 (defn clean-form-params [form-params]
   (walk/keywordize-keys
@@ -114,13 +133,14 @@
 (defn pagination [{:keys [uri params query-params] :as request} module entity]
   (let [qs query-params
         db (:database module)
+        db-name (get-in module [:options :database] :default)
         page (or (:page params) 1)
 
         {:keys [pages page
                 next-seq
                 prev-seq]
          :as paginated} (paginator/paginate
-                         (-> (db/query db
+                         (-> (db/query db db-name
                                        {:select [:%count.*]
                                         :from [(e/table entity)]})
                              first :count)
@@ -153,45 +173,146 @@
          {:href (str uri "?" (qsize (assoc qs "page" last)))}
          "last"]]])))
 
+
+(defn get-th
+  "Get the th header with optional ordering"
+  [interface [k v] params]
+  [:th
+   (let [n (or (:name v)
+               (name k))]
+     (if-let [sort-key (:sort v)]
+       (let [direction (condp = (get params sort-key)
+                         "0" 1
+                         "1" 0
+                         0)
+             dir (if (get params sort-key)
+                   (if (zero? direction)
+                     [:i.fa.fa-angle-down]
+                     [:i.fa.fa-angle-up]))
+             sort-ks (->> interface :display
+                          (map (fn [[k v]]
+                                 (:sort v)))
+                          (remove nil?))
+             params (merge {sort-key direction} (apply dissoc
+                                                       params
+                                                       :entity
+                                                       sort-ks))]
+         [:a {:href (str "?" (qsize params))} n " " dir])
+       n))])
+
+(defn get-order-query [{:keys [display default-order]} params]
+  (or (->> display
+           (map (fn [[k v]]
+                  (cond
+
+                    (and (:sort v) (= (get params (:sort v)) "0"))
+                    [(or (:sort-name v) k) :desc]
+
+                    (and (:sort v) (= (get params (:sort v)) "1"))
+                    [(or (:sort-name v) k) :asc]
+
+                    :else
+                    nil)))
+           (remove nil?)
+           first)
+      default-order))
+
+(defn default-query
+  "Return a default query based on the entity options"
+  [{:keys [table pk interface page params]}]
+  (fn [{:keys [database database-name]}]
+    (let [{:keys [display default-order]} interface
+          order (get-order-query interface params)]
+      (db/query database database-name
+                {:select (into #{} (concat (keys display) [pk]))
+                 :from [table]
+                 :order-by [order]
+                 :limit pagination-limit
+                 :offset (* pagination-limit
+                            (dec page))}))))
+
+(defn get-filter
+  "Get the filter based on the interface filter option"
+  [database-name database interface params]
+  (let [f (form/form (:filter interface)
+                     {:css {:field {:all :form-control
+                                    :checkbox nil}}}
+                     nil
+                     params
+                     {:database database
+                      :database-name database-name})]
+    [:form
+     {:method :get}
+     (map (fn [[_ v]]
+            (if-let [value (get params (:sort v))]
+              [:input {:type :hidden :name (:sort v) :value value}]))
+          (:display interface))
+     [:table.table
+      (form/as-table f)
+      [:tr [:td] [:td [:input.btn.btn-primary {:type :submit :value "Filter"}]]]]]))
+
 (defn list-entity [request module {:keys [entity page] :as params}]
   (with-access
     (get-in request [:reverie :user]) (:required-roles (m/options module))
     (if-let [entity (m/get-entity module entity)]
       (let [db (:database module)
-            {:keys [order]} (:options entity)
-            pk (e/pk entity)
+            db-name (get-in module [:options :database] :default)
             table (e/table entity)
-            page (try (Integer/parseInt page)
+            pk (e/pk entity)
+            page (try (Integer/parseInt (:page params))
                       (catch Exception _
                         1))
-            display (e/display entity)
-            data (db/query db {:select (into #{} (concat display [pk]))
-                               :from [table]
-                               :order-by [order]
-                               :limit pagination-limit
-                               :offset (* pagination-limit
-                                          (dec page))})]
-        (array-map
-         :content
-         (html (list
-                [:div.options
-                 [:ul
-                  [:li [:a.btn.btn-primary
-                        {:href (join-uri base-link (m/slug module) (e/slug entity) "add")}
-                        (str "Add " (e/name entity))]]]]
-                [:table.table.entity
-                 [:tr
-                  (map (fn [h]
-                         [:th (name h)]) display)]
-                 (map (fn [d]
-                        [:tr (map (fn [k]
-                                    [:td (if (= k (first display))
-                                           [:a {:href (join-uri base-link (m/slug module) (e/slug entity) (str (get d pk)))} (get d k)]
-                                           (get d k))]) display)])
-                      data)]))
-         :nav (html (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
-                                     [(join-uri base-link (m/slug module) (e/slug entity))  (e/name entity)]])))
-         :pagination (html (pagination request module entity))))
+            {:keys [display] :as interface} (e/interface entity)
+            fn-query (or (:query interface)
+                         (default-query {:database db
+                                         :database-name db-name
+                                         :page page
+                                         :interface interface
+                                         :pk pk
+                                         :table table
+                                         :params params}))
+            data (fn-query (assoc params
+                                  :entity entity
+                                  :database db
+                                  :database-name db-name
+                                  :interface interface
+                                  :limit pagination-limit
+                                  :offset (* pagination-limit
+                                             (dec page))
+                                  :page page))]
+
+        (let [options
+              [:div.options
+               [:ul
+                [:li [:a.btn.btn-primary
+                      {:href (join-uri base-link (m/slug module) (e/slug entity) "add")}
+                      (str "Add " (e/name entity))]]]]
+              table
+              [:table.table.entity
+               [:tr (map #(get-th interface % params) display)]
+               (map (fn [data]
+                      [:tr (map
+                            (fn [[k v]]
+                              (let [display-row (get-display-row db k data v (e/field-options entity k))]
+                                [:td (if (:link? (get display k))
+                                       [:a {:href (join-uri base-link (m/slug module) (e/slug entity) (str (get data pk)))} display-row]
+                                       display-row)]))
+                            display)])
+                    data)]]
+          (array-map
+           :content
+           (html (list
+                  options
+                  (if (:filter interface)
+                    (list
+                     [:div.row [:div.col-md-4.col-md-offset-8 [:h2 "Filter"]]]
+                     [:div.row
+                      [:div.col-md-8 table]
+                      [:div.col-md-4 (get-filter db-name db interface params)]])
+                    table)))
+           :nav (html (:crumbs (crumb [[(join-uri base-link (m/slug module)) (m/name module)]
+                                       [(join-uri base-link (m/slug module) (e/slug entity))  (e/name entity)]])))
+           :pagination (html (pagination request module entity)))))
       (entity-does-not-exist module))))
 
 (defn single-entity [request module {:keys [entity id] :as params}

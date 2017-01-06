@@ -3,11 +3,11 @@
     var tree_search = $("#tree-search");
     var tree_search_form = $("#tree-search-form");
     var tree_search_icon = $("#tree-search-form #tree-search-icon");
-    var icon_refresh = $(".icons i.icon-refresh");
-    var icon_add_page = $(".icons i.icon-plus-sign");
-    var icon_edit = $(".icons i.icon-edit-sign");
-    var icon_view = $(".icons i.icon-eye-open");
-    var icon_trash = $(".icons i.icon-trash");
+    var icon_refresh = $(".icons i.fa-refresh");
+    var icon_add_page = $(".icons i.fa-plus-circle");
+    var icon_edit = $(".icons i.fa-pencil");
+    var icon_view = $(".icons i.fa-eye");
+    var icon_trash = $(".icons i.fa-trash");
 
     var icon_publish = $(".meta .buttons .publish");
     var icon_meta = $(".meta .buttons .meta");

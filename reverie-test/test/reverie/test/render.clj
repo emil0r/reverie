@@ -108,46 +108,46 @@
    (hiccup/html (:body (render/render p req))))
  => (expected-result [:p "app route base"]))
 
-(fact
- "rendering with site/Site"
- (let [dummy-db (dummy/get-db)
-       dummy-sys (dummy/get-system)
-       s (component/start (site/site {:host-names ["example.com"]
-                                      :database dummy-db
-                                      :system dummy-sys
-                                      :render-fn (fn [data] (hiccup.compiler/render-html data))}))]
-   (reset! sys/storage {})
-   (sys/add-template-type! dummy-sys
-                           :testus (template/template template-render))
-   (sys/add-app-type! dummy-sys
-                      :foobar {:properties {}
-                               :app-routes [(route/route ["/" {:get app-route-base}])
-                                            (route/route ["/:bar" {:get app-route-foobar}])]})
-   (sys/add-object-type! dummy-sys
-                         :text {:properties {:name :text :etc :...}
-                                :methods {:any object-text-render}})
-   (sys/add-object-type! dummy-sys
-                         :image {:properties {:name :text :etc :...}
-                                 :methods {:get object-image-render}})
-   (fact "get page"
-         (page/id (site/get-page s {:uri "/"})) => 1)
-   (fact "get page /foo/bar"
-         (page/id (site/get-page s {:uri "/foo/bar"})) => 2)
-   (fact "404 due to wrong host name"
-         (:status (render/render s {:uri "/"})) => 404)
-   (fact "rendered page, uri /"
-         (:body
-          (render/render s {:uri "/" :server-name "example.com"
-                            :request-method :get}))
-         => (expected-result))
-   (fact "rendered page, uri /foo/bar"
-         (:body
-          (render/render s {:uri "/foo/bar" :server-name "example.com"
-                            :request-method :get}))
-         => (expected-result (list [:p "app route foobar"]
-                                   [:p "bar is bar"])))
-   (fact "404 due to wrong path"
-         (:status
-          (render/render s {:uri "/foo/bar/baz" :server-name "example.com"
-                            :request-method :get}))
-         => 404)))
+;; (fact
+;;  "rendering with site/Site"
+;;  (let [dummy-db (dummy/get-db)
+;;        dummy-sys (dummy/get-system)
+;;        s (component/start (site/site {:host-names ["example.com"]
+;;                                       :database dummy-db
+;;                                       :system dummy-sys
+;;                                       :render-fn (fn [data] (hiccup.compiler/render-html data))}))]
+;;    (reset! sys/storage {})
+;;    (sys/add-template-type! dummy-sys
+;;                            :testus (template/template template-render))
+;;    (sys/add-app-type! dummy-sys
+;;                       :foobar {:properties {}
+;;                                :app-routes [(route/route ["/" {:get app-route-base}])
+;;                                             (route/route ["/:bar" {:get app-route-foobar}])]})
+;;    (sys/add-object-type! dummy-sys
+;;                          :text {:properties {:name :text :etc :...}
+;;                                 :methods {:any object-text-render}})
+;;    (sys/add-object-type! dummy-sys
+;;                          :image {:properties {:name :text :etc :...}
+;;                                  :methods {:get object-image-render}})
+;;    (fact "get page"
+;;          (page/id (site/get-page s {:uri "/"})) => 1)
+;;    (fact "get page /foo/bar"
+;;          (page/id (site/get-page s {:uri "/foo/bar"})) => 2)
+;;    (fact "404 due to wrong host name"
+;;          (:status (render/render s {:uri "/"})) => 404)
+;;    (fact "rendered page, uri /"
+;;          (:body
+;;           (render/render s {:uri "/" :server-name "example.com"
+;;                             :request-method :get}))
+;;          => (expected-result))
+;;    (fact "rendered page, uri /foo/bar"
+;;          (:body
+;;           (render/render s {:uri "/foo/bar" :server-name "example.com"
+;;                             :request-method :get}))
+;;          => (expected-result (list [:p "app route foobar"]
+;;                                    [:p "bar is bar"])))
+;;    (fact "404 due to wrong path"
+;;          (:status
+;;           (render/render s {:uri "/foo/bar/baz" :server-name "example.com"
+;;                             :request-method :get}))
+;;          => 404)))

@@ -1,5 +1,8 @@
 (ns reverie.util
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [hiccup.form :refer [hidden-field]]
+            [reverie.response :refer [raise-response]]
+            [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]))
 
 (defn shorten-uri
   "shortens the uri by removing the unwanted part. Used for defpage and defapp"
@@ -16,6 +19,7 @@
 (defn slugify [name]
   (-> name
       str
+      str/trim
       (str/replace #"[åÅäÄĀāĀāÀÁÂÃÆàáâãæ]" "a")
       (str/replace #"[ČčÇç]" "c")
       (str/replace #"[Ðð]" "d")
@@ -55,8 +59,22 @@
     (keyword x)
     x))
 
+(defn namespaced-kw? [x]
+  (and (keyword? x)
+       (.contains (str x) "/")))
+
+(defn regex? [x]
+  (= (type x) java.util.regex.Pattern))
+
 (defn qsize [qs]
-  (str/join "&" (map (fn [[k v]] (str (name k) "=" v)) qs)))
+  (->> qs
+       (map (fn [[k v]]
+              (if (sequential? v)
+                (map (fn [x]
+                       (str (name k) "=" x)) v)
+                (str (name k) "=" v))))
+       (flatten)
+       (str/join "&")))
 
 
 ;; shamelessly borrowed from pedestal's source code
@@ -66,3 +84,14 @@
   (if (every? map? vals)
     (apply merge-with deep-merge vals)
         (last vals)))
+
+(defn anti-forgery-field
+  "Get the CSRF token as hiccup"
+  []
+  ;; primary reason for doing it this way and not use the provided
+  ;; function from ring.util.anti-forgery is that enlive
+  ;; can become problematic to use when you get back a HTML string
+  (hidden-field "__anti-forgery-token" *anti-forgery-token*))
+
+(defn uuid? [x]
+  (= java.util.UUID (class x)))

@@ -37,11 +37,19 @@
   (update! [user data db])
   (set-password! [user new-password db]))
 
+(defprotocol IUserToken
+  (enable-token [id db] [id minutes db])
+  (retire-token [id db])
+  (expired-token? [id db]))
+
 (defprotocol IUserAdd
   (add-user! [data roles groups db]))
 
 (defn logged-in? []
   (not (nil? (session/get :user-id))))
+
+(defn get-id []
+  (session/get :user-id))
 
 (defn logout []
   (session/clear!)

@@ -4,7 +4,7 @@
             [reverie.object :as object]
             [reverie.system :as sys]
             [reverie.util :as util]
-            reverie.RenderException)
+            [reverie.RenderException])
   (:import [reverie RenderException]))
 
 (defn- get-object-menu []
@@ -53,6 +53,7 @@
        (apply str (->>
                    @sys/storage
                    :objects
+                   (filter (fn [[k v]] (not (true? (get-in v [:options :disabled?])))))
                    (sort-by #(-> % first str))
                    (map (fn [[k _]]
                           (str "<li>" (util/kw->str k)  "</li>")))))
@@ -63,12 +64,16 @@
   (render [this _]
     (throw (RenderException. "[component request] not implemented for reverie.area/Area")))
   (render [this request page]
-    (if (contains? page :rendered)
+    (if (and (contains? page :rendered)
+             (not (page/type? page :app)))
+      ;; for RawPage
       (get-in page [:rendered name])
       (let [edit? (get-in request [:reverie :edit?])
             [before after] (if (and edit? ;; edit the page?
                                     (zero? (page/version page)) ;; page is unpublished?
                                     )
+                             ;; mix in strings here for the possibility of using other
+                             ;; template libraries than strictly hiccup
                              [(list
                                (str "<div class='reverie-area' area='"
                                     (util/kw->str name)

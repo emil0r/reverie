@@ -15,16 +15,24 @@
 
 ;; atom of fns to be skipped by the caching, requiring
 ;; them to be run every time a request comes in
-(def skip-fns (atom {}))
+(defonce saved-fns (atom {}))
 ;; are we caching during this rendering phase? control
 ;; mechanism for the skip macro
 (def ^:dynamic *caching?* false)
+
+(defn get-fn [fragment]
+  (if-let [f (get @saved-fns fragment)]
+    f
+    (let [f (resolve (symbol (.replace (str fragment) ":" "")))]
+      (swap! saved-fns assoc fragment f)
+      f)))
 
 (defmacro skip
   "Pass in a function to be skipped by the caching system. The function will be called every time for every request hitting the server. The functions must always take a request parameter"
   [function]
   (let [params (keys &env)
-        ns (str *ns*)]
+        ns (str *ns*)
+        fragment (str/replace (str (resolve function)) #"#'" "")]
     (cond
 
      (not (some #(= 'request %) params))
@@ -32,10 +40,7 @@
 
      :else
      `(if *caching?*
-        (let [x# (str ~ns "/" '~function)]
-          (if (nil? (get @skip-fns x#))
-            (swap! skip-fns assoc (keyword x#) ~function))
-          (str "#reverie.cache/skip-start " x# " #reverie.cache/skip-end"))
+        (str "#reverie.cache/skip-start " ~fragment " #reverie.cache/skip-end")
         (~function ~'request)))))
 
 (defn- get-skipped-rendering [rendered skips]
@@ -149,12 +154,13 @@
   render/IRender
   (render [this _]
     (throw (RenderException. "[component request] not implemented for reverie.cache/CacheManager")))
+  ;; TODO: add with-access here
   (render [this request hit]
     (if (string? hit)
       hit
       (map (fn [fragment]
              (if (keyword? fragment)
-               (if-let [f (get @skip-fns fragment)]
+               (if-let [f (get-fn fragment)]
                  (f request))
                fragment)) hit)))
 
