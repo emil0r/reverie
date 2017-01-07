@@ -51,7 +51,7 @@ If you want to use renderers for apps, pages or modules you use the following re
   
 ;; this renderer will convert everything to a HTML string using hiccup,
 ;; in addition it separates the calculations and the presentation
-(defrenderer ::renderer-targeted {:render-fn :hiccup} {::index present-index})
+(defrenderer ::renderer-targeted {:render-fn :hiccup} {::index {:any present-index}})
 
 
 
