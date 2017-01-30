@@ -16,7 +16,7 @@ Current version is 0.8. See [installation guide](doc/installation/getting-starte
 
 ## Supporting libraries for reverie specifically
 
-- [reverie-batteries](https://github.com/emil0r/reverie/tree/master/reverie-batteries)
+- [reverie-batteries](https://github.com/emil0r/reverie-batteries)
 - [reverie-redis](https://github.com/emil0r/reverie-redis)
 - [reverie-blog](https://github.com/emil0r/reverie-blog)
 - [reverie-blockade](https://github.com/emil0r/reverie-blockade)
