@@ -1,4 +1,4 @@
-(defproject reverie-sql "0.8.0"
+(defproject reverie-sql "0.8.1-SNAPSHOT"
   :description "The SQL backbone of reverie; a CMS for power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
@@ -7,14 +7,14 @@
                  [org.clojure/clojure "1.8.0"]
 
                  ;; reverie
-                 [reverie-core "0.8.0"]
+                 [reverie-core "0.8.1-SNAPSHOT"]
 
                  ;; database libraries
                  [org.clojure/java.jdbc "0.4.1"]
                  [honeysql "0.6.3"]
                  [yesql "0.5.2"]
                  [ez-database "0.5.3"]
-                 [ez-form "0.7.0"]
+                 [ez-form "0.7.3"]
 
                  ;; database migrations
                  [joplin.jdbc "0.3.4"]

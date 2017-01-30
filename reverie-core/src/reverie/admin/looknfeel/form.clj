@@ -237,10 +237,10 @@
 
 
 
- (defn get-entity-form [module entity {:keys [entity-id
-                                              published?
-                                              unpublished?
-                                              display-name] :as data}]
+(defn get-entity-form [module entity {:keys [entity-id
+                                             published?
+                                             unpublished?
+                                             display-name] :as data}]
   (form/form-to
    {:id :edit-form}
    ["POST" ""]
@@ -258,8 +258,8 @@
            (if name [:legend name])
            (map (fn [field]
                   (row entity field (assoc data
-                                      :module? true
-                                      :module module)))
+                                           :module? true
+                                           :module module)))
                 fields)])
         (e/sections entity))
    [:div.bottom-bar

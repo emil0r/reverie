@@ -382,7 +382,13 @@
   (with-access
     (get-in request [:reverie :user]) (:required-roles (m/options module))
     (if-let [entity (m/get-entity module entity)]
-      (let [entity-data (m/get-data module entity params)]
+      ;; if add-entity is called with GET we use the initial values
+      ;; in the entity. otherwise we go with the params as it's a POST
+      (let [entity-data (if (= :get (:request-method request))
+                          (reduce (fn [out [k v]]
+                                    (assoc out k (:initial v)))
+                                  {} (get-in entity [:options :fields]))
+                          (m/get-data module entity params))]
         (array-map
          :content (html
                    (get-entity-form

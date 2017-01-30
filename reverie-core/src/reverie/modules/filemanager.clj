@@ -347,9 +347,13 @@
 ;; define file picker
 (defmethod form/row :image [entity field {:keys [form-params errors
                                                  error-field-names]
+                                          :as data
                                           :or {form-params {}}}]
-  (let [path (str/join "/" (butlast (str/split (form-params field) #"/")))
-        file-name (last (str/split (form-params field) #"/"))]
+  ;; use form-params first, otherwise pick up the default data from
+  ;; the field which should hold the initial values of the entity field
+  (let [field-data (or (form-params field) (data field))
+        path (str/join "/" (butlast (str/split field-data #"/")))
+        file-name (last (str/split field-data #"/"))]
    [:div.row-form {:style "margin-bottom: 10px;"}
     [:table
      [:tr
