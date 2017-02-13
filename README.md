@@ -6,7 +6,7 @@ A CMS for power users.
 
 ## Usage
 
-See [docs](doc/index.md). Work in progress. reverie/CMS works only with PostgreSQL at the moment.
+See [docs](doc/index.md). Work in progress. reverie/CMS works only with PostgreSQL at the moment. Want a walk through? Contact me and I'll set one up.
 
 Current version is 0.8. See [installation guide](doc/installation/getting-started.md) on how to install.
 
