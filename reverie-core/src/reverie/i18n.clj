@@ -111,7 +111,8 @@
   ([] (write-cljs-i18n! "resources/i18n/" "cljs-dictionary.edn"))
   ([path name]
    (with-open [w (io/writer (str path name))]
-     (.write w (pr-str (:dictionary @i18n-dictionary))))))
+     (binding [*print-length* false]
+       (.write w (pr-str (:dictionary @i18n-dictionary)))))))
 
 (defprotocol Ii18n
   (load-i18n! [component]))
