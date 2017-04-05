@@ -24,7 +24,9 @@
 (defmethod cast-field :number [_ value]
   (if (str/blank? value)
     nil
-    (Integer/parseInt value)))
+    (try (Integer/parseInt value)
+         (catch Exception _
+           (Double/parseDouble value)))))
 (defmethod cast-field :datetime [_ value]
   (if (str/blank? value)
     nil
