@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [clout.core :as clout]
             [reverie.cast :as cast]
+            [reverie.helpers.middleware :refer [wrap-response-with-handlers]]
             [reverie.system :as sys]
             [reverie.util :as util :refer [regex?]]
             [schema.core :as s]))
@@ -79,7 +80,9 @@
                              (do
                                (when (:name arg)
                                  (assert (util/namespaced-kw? (:name arg)) ":name must be a namespaced keyword"))
-                               (assoc out :options arg))
+                               (if-let [handlers (:middleware arg)]
+                                 (assoc out :options (assoc arg :middleware (wrap-response-with-handlers handlers)))
+                                 (assoc out :options arg)))
 
                              (and (map? arg) (some casting? (vals arg)))
                              (assoc out :casting arg)

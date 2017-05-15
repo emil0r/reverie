@@ -1,5 +1,6 @@
 (ns reverie.database.sql
-  (:require [clojure.edn :as edn]
+  (:require [clj-time.coerce :as t.coerce]
+            [clojure.edn :as edn]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :as set]
             [clojure.string :as str]
@@ -8,7 +9,7 @@
             [hikari-cp.core :as hikari-cp]
             [honeysql.core :as sql]
             [joplin.core :as joplin]
-            joplin.jdbc.database
+            [joplin.jdbc.database]
             [noir.session :as session]
             [reverie.auth :as auth :refer [IUserDatabase]]
             [reverie.database :as rev.db :refer [IDatabase]]
@@ -29,17 +30,27 @@
            [reverie DatabaseException]))
 
 
+; http://clojure.github.io/java.jdbc/#clojure.java.jdbc/IResultSetReadColumn
 (extend-protocol jdbc/IResultSetReadColumn
-  org.postgresql.jdbc4.Jdbc4Array
+  org.postgresql.jdbc.PgArray
   (result-set-read-column [pgobj metadata i]
-    ;; loop through the elements in the result in the event
-    ;; of a matrix being returned from postgres
-    (let [result (vec (.getArray pgobj))]
-      (reduce (fn [out v]
-                (conj out (if (.. v getClass isArray)
-                            (vec v)
-                            v)))
-              [] result))))
+    (vec (.getArray pgobj)))
+  java.sql.Timestamp
+  (result-set-read-column [v _2 _3]
+    (t.coerce/from-sql-time v))
+  java.sql.Date
+  (result-set-read-column [v _2 _3]
+    (t.coerce/from-sql-date v))
+  java.sql.Time
+  (result-set-read-column [v _2 _3]
+    (org.joda.time.DateTime. v)))
+
+; http://clojure.github.io/java.jdbc/#clojure.java.jdbc/ISQLValue
+(extend-protocol jdbc/ISQLValue
+  org.joda.time.DateTime
+  (sql-value [v]
+    (t.coerce/to-sql-time v)))
+
 
 (defqueries "queries/database.sql")
 

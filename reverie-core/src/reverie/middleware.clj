@@ -149,6 +149,11 @@
            saved-resp resp
            [handler & handlers] handlers]
       (cond
+        (and (map? resp)
+             (contains? resp :status)
+             (not= 404 :status resp))
+        resp
+
         ;; was the response raised with response/raise-response?
         (= (:type resp) :ring-response)
         (:response resp)

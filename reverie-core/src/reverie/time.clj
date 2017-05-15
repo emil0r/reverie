@@ -4,7 +4,6 @@
   (:require [clj-time.core :as t]
             [clj-time.coerce :as c]
             [clj-time.format :as f]
-            clj-time.jdbc
             [reverie.i18n :as i18n]
             [taoensso.tower :as tower]))
 

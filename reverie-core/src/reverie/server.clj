@@ -10,6 +10,7 @@
             [noir.cookies :refer [wrap-noir-cookies]]
             [noir.session :refer [wrap-noir-session wrap-noir-flash mem]]
             [noir.util.middleware :refer [wrap-strip-trailing-slash]]
+            [reverie.helpers.middleware :refer [create-handler]]
             [reverie.middleware :refer [wrap-admin
                                         wrap-authorized
                                         wrap-downstream
@@ -34,15 +35,6 @@
             [ring.middleware.stacktrace :refer [wrap-stacktrace]]))
 
 
-(defn- create-handler [handlers routes]
-  (reduce (fn [current new]
-            (if (nil? new)
-              current
-              (let [[new & args] new]
-                (apply new current args))))
-          routes
-          handlers))
-
 (defn site-route [site]
   (fn [request]
     (render/render site request)))
@@ -50,6 +42,7 @@
 (defrecord Server [dev? server store run-server stop-server
                    site middleware-options server-options settings
                    site-handlers resource-handlers media-handlers
+                   opt-out-handler
                    post-handlers pre-handlers filemanager]
   component/Lifecycle
   (start [this]
@@ -111,7 +104,9 @@
             ;; wrap site-handler, resource-handler and media-handler in a handler
             ;; that cycles through all of them in the event that :resources
             ;; are not specified in the settings
-            handler (wrap-forker site-handler resource-handler media-handler)
+            handler (if opt-out-handler
+                      (wrap-forker opt-out-handler site-handler resource-handler media-handler)
+                      (wrap-forker site-handler resource-handler media-handler))
             server (run-server handler server-options)]
         (log/info (format "Running server on port %s..." (:port server-options)))
         (assoc this :server server))))

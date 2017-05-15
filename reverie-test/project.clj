@@ -3,15 +3,18 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [reverie-core "0.8.1"]
-                 [reverie-sql "0.8.1"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha15"]
+                 [reverie-core "0.9.0-SNAPSHOT"]
+                 [reverie-sql "0.9.0-SNAPSHOT"]
                  [reverie-batteries "0.4.0"]
                  [reverie-redis "0.1.0"]
                  [reverie-blog "0.3.4"]
                  [reverie-blockade "0.11.0"]
-                 [http-kit "2.1.19"]
-                 [org.postgresql/postgresql "9.3-1102-jdbc41"]]
+                 [http-kit "2.2.0"]
+                 [org.postgresql/postgresql "42.0.0"]
+
+                 ;; for testing
+                 [ring/ring-json "0.4.0"]]
 
   :main reverie.site.core
 
@@ -20,10 +23,11 @@
   :repl-options {:timeout 120000}
 
   :profiles {:uberjar {:aot [reverie.site.core]}
-             :dev {:dependencies [[midje "1.6.3"]
+             :dev {:dependencies [[midje "1.9.0-alpha6"]
                                   [ring-mock "0.1.5"]
-                                  [spyscope "0.1.5"]
-                                  [org.clojure/tools.namespace "0.2.9"]]
+                                  [spyscope "0.1.7-SNAPSHOT"]
+                                  ;;[org.clojure/tools.namespace "0.2.10"]
+                                  ]
                    :injections [(require 'spyscope.core)
                                 (require 'spyscope.repl)
                                 (require '[clojure.tools.namespace.repl :refer [refresh]])]
