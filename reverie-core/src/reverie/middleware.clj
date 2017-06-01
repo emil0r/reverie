@@ -150,8 +150,13 @@
            [handler & handlers] handlers]
       (cond
         (and (map? resp)
+             (contains? resp :body)
+             (not (contains? resp :status)))
+        resp
+
+        (and (map? resp)
              (contains? resp :status)
-             (not= 404 :status resp))
+             (not= 404 (:status resp)))
         resp
 
         ;; was the response raised with response/raise-response?
