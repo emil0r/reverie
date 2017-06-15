@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [;;core
-                 [org.clojure/clojure "1.9.0-alpha15"]
+                 [org.clojure/clojure "1.9.0-alpha16"]
 
                  ;; reverie
                  [reverie-core "0.9.0-SNAPSHOT"]
