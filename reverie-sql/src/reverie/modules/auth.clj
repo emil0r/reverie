@@ -28,7 +28,7 @@
   [:div.form-row
    (looknfeel/error-items :repeat-password errors {[:repeat-password] "Repeat password"})
    (form/label :repeat-password "Repeat password")
-   (form/password-field :repeat-password (form-params :repeat-password))
+   (form/password-field :repeat-password (get form-params :repeat-password))
    (looknfeel/help-text {:help "Make sure the password is the same"})])
 
 (defn- change-password [request module {:keys [entity id] :as params}
@@ -49,7 +49,7 @@
                              [:div.form-row
                               (looknfeel/error-items :password errors (e/error-field-names entity))
                               (form/label :password "Password")
-                              (form/password-field {:min 8} :password (form-params :password))]
+                              (form/password-field {:min 8} :password (get form-params :password))]
                              (repeat-password-field form-params errors)]
                             [:div.buttons
                              [:input.btn.btn-primary {:type :submit :id :_cancel :name :_cancel :value "Cancel"}]
@@ -73,6 +73,7 @@
 (defn- password-html [entity field {:keys [form-params entity-id uri
                                            errors error-field-names]}]
   (if entity-id
+
     [:div.form-row
      [:label "Password"]
      [:a {:href (join-uri uri "/password")} "Change password"]]
@@ -80,7 +81,7 @@
      [:div.form-row
       (looknfeel/error-items field errors error-field-names)
       (form/label field (e/field-name entity field))
-      (form/password-field (e/field-attribs entity field) field (form-params field))
+      (form/password-field (e/field-attribs entity field) field (get form-params field))
       (looknfeel/help-text (e/field-options entity field))]
      (repeat-password-field form-params errors))))
 
