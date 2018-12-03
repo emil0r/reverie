@@ -4,6 +4,10 @@
 
 A CMS for power users.
 
+## NOTICE
+
+reverie/CMS is on hold until further notice due to Life™.
+
 ## Usage
 
 See [docs](doc/index.md). Work in progress. reverie/CMS works only with PostgreSQL at the moment. Want a walk through? Contact me and I'll set one up.
@@ -33,7 +37,7 @@ Current version is 0.8.2. See [installation guide](doc/installation/getting-star
 
 ## License
 
-Copyright © 2012-2017 Emil Bengtsson
+Copyright © 2012-2018 Emil Bengtsson
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
 
