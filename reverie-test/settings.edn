@@ -14,6 +14,7 @@
       :ds-specs {:default {:maximum-pool-size 3
                            :adapter "postgresql"
                            :username "devuser"
+                           :port-number 5432
                            :password "devuser"
                            :database-name "dev_reverie"}}}
 
