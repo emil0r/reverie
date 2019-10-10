@@ -1,27 +1,27 @@
-(defproject reverie-core "0.9.0-SNAPSHOT"
+(defproject reverie-core "0.8.3-SNAPSHOT"
   :description "The core of reverie; a CMS for power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [;; core
-                 [org.clojure/clojure "1.9.0-alpha16"]
-                 [org.clojure/core.match "0.2.2"]
-                 [org.clojure/core.async "0.3.442"]
-                 [org.clojure/core.memoize "0.5.9"]
+                 [org.clojure/clojure "1.10.1"]
+                 [org.clojure/core.match "0.3.0"]
+                 [org.clojure/core.async "0.4.500"]
+                 [org.clojure/core.memoize "0.7.2"]
 
-                 ;; core.async fails to compile unless more up to date
-                 ;; version of tools.analyzer and tools.analyzer.jvm is
-                 ;; present
-                 [org.clojure/tools.analyzer "0.6.9"]
-                 [org.clojure/tools.analyzer.jvm "0.7.0"]
+                 ;; ;; core.async fails to compile unless more up to date
+                 ;; ;; version of tools.analyzer and tools.analyzer.jvm is
+                 ;; ;; present
+                 ;; [org.clojure/tools.analyzer "0.6.9"]
+                 ;; [org.clojure/tools.analyzer.jvm "0.7.0"]
 
                  ;; structure
-                 [com.stuartsierra/component "0.3.2"]
+                 [com.stuartsierra/component "0.4.0"]
 
                  ;; web
-                 [ring/ring-anti-forgery "1.0.1"]
-                 [ring/ring-core "1.5.1"]
-                 [clout "2.1.2"]
+                 [ring/ring-anti-forgery "1.3.0"]
+                 [ring/ring-core "1.7.1"]
+                 [clout "2.2.1"]
                  [hiccup "1.0.5"]
                  [vlad "3.3.2"]
                  [lib-noir "0.9.9"]
@@ -29,7 +29,7 @@
                  [ez-image "1.0.4"]
 
                  ;; time
-                 [clj-time "0.13.0"]
+                 [clj-time "0.15.2"]
 
                  ;; email
                  [ez-email "0.1.0"]
@@ -41,11 +41,12 @@
                  [slingshot "0.12.2"]
 
                  ;; hashing, digests, crypto, etc
-                 [buddy "1.3.0"]
-                 [digest "1.4.5"]
+                 [buddy "2.0.0"]
+                 [digest "1.4.9"]
 
                  ;; logging
-                 [com.taoensso/timbre "4.7.4"]
+                 [com.taoensso/timbre "4.10.0"]
+                 [com.taoensso/encore "2.105.0"]
 
                  ;; i18n
                  [com.taoensso/tower "3.0.2"]
@@ -54,10 +55,10 @@
                  [me.raynes/fs "1.4.6"]
 
                  ;; scheduling
-                 [im.chit/cronj "1.4.3"]
+                 [im.chit/cronj "1.4.4"]
 
                  ;; schema
-                 [prismatic/schema "1.1.0"]]
+                 [prismatic/schema "1.1.9"]]
   :aot [reverie.AreaException
         reverie.CacheException
         reverie.DatabaseException
@@ -72,14 +73,14 @@
   :shell {:dir ".."
           :commands {"compile-editing" {:default-command "tools/editing.compile"}
                      "compile-admin" {:default-command "tools/admin.compile"}}}
-  :profiles {:dev {:dependencies [[midje "1.9.0-alpha6"]
+  :profiles {:dev {:dependencies [[midje "1.9.4"]
                                   [ring-mock "0.1.5"]
-                                  [spyscope "0.1.7-SNAPSHOT"]
-                                  [http-kit "2.2.0"]
+                                  ;;[spyscope "0.1.7-SNAPSHOT"]
+                                  [http-kit "2.3.0"]
                                   ;;[org.clojure/tools.namespace "0.2.10"]
-                                  [org.postgresql/postgresql "42.0.0"]]
-                   :injections [(require 'spyscope.core)
-                                (require 'spyscope.repl)
-                                (require '[clojure.tools.namespace.repl :refer [refresh]])]
+                                  [org.postgresql/postgresql "42.2.5"]]
+                   ;; :injections [(require 'spyscope.core)
+                   ;;              (require 'spyscope.repl)
+                   ;;              (require '[clojure.tools.namespace.repl :refer [refresh]])]
                    :resource-paths ["../reverie-sql/resources"]
                    :plugins [[lein-midje "3.1.3"]]}})
