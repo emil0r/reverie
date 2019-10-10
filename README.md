@@ -1,12 +1,7 @@
 # reverie
 
-![](https://raw.githubusercontent.com/emil0r/reverie/master/reverie-core/resources/public/static/admin/img/reveriecms.png)
+![](assets/reveriecms.png)
 
-A CMS for power users.
-
-## NOTICE
-
-reverie/CMS is on hold until further notice due to Life™.
 
 ## Usage
 
