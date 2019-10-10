@@ -4,7 +4,7 @@
             [noir.cookies :as cookies]
             [reverie.auth :as auth :refer [with-access with-authorize]]
             [reverie.database :as db]
-            reverie.nsloader
+            [reverie.nsloader]
             [reverie.test.database.sql-helpers :refer [get-db seed!]]
             [reverie.test.helpers :refer [with-noir]]
             [slingshot.slingshot :refer [try+]]

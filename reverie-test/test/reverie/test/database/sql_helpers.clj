@@ -4,10 +4,10 @@
             [com.stuartsierra.component :as component]
             [ez-database.core :as db]
             [joplin.core :as joplin]
-            joplin.jdbc.database
-            reverie.modules.auth
-            reverie.sql.objects.text
-            reverie.sql.objects.image
+            [joplin.jdbc.database]
+            [reverie.modules.auth]
+            [reverie.batteries.objects.text]
+            [reverie.batteries.objects.image]
             [reverie.database.sql :as sql]
             [reverie.system :as sys]))
 
@@ -44,9 +44,9 @@
                       :migrator path})
                    (array-map
                     "migrations_auth" "resources/migrations/modules/auth/"
-                    "migrations_reverie_text" "src/reverie/sql/objects/migrations/text/"
-                    "migrations_reverie_raw" "src/reverie/sql/objects/migrations/raw/"
-                    "migrations_reverie_image" "src/reverie/sql/objects/migrations/image/"
+                    "migrations_reverie_text" "src/reverie/batteries/objects/migrations/text/"
+                    "migrations_reverie_raw" "src/reverie/batteries/objects/migrations/raw/"
+                    "migrations_reverie_image" "src/reverie/batteries/objects/migrations/image/"
                     "migrations" "resources/migrations/postgresql"
                     ))]
     (doseq [mmap mmaps]
