@@ -16,8 +16,8 @@
                  [ez-form "0.7.3"]
 
                  ;; database migrations
-                 [joplin.core "0.3.11"]
-                 [joplin.jdbc "0.3.11"]
+                 [migratus "1.2.6"]
+                 [com.fzakaria/slf4j-timbre "0.3.12"]
 
                  ;; connection pool
                  [hikari-cp "2.6.0"]]
