@@ -3,8 +3,7 @@
             [clojure.string :as str]
             [com.stuartsierra.component :as component]
             [ez-database.core :as db]
-            [joplin.core :as joplin]
-            [joplin.jdbc.database]
+            [migratus.core :as migratus]
             [reverie.modules.auth]
             [reverie.batteries.objects.text]
             [reverie.batteries.objects.image]
@@ -18,6 +17,12 @@
               :subname "//localhost:5432/dev_reverie"
               :user "devuser"
               :password "devuser"})
+(def ds-spec {:maximum-pool-size 3
+              :adapter "postgresql"
+              :username "devuser"
+              :port-number 5432
+              :password "devuser"
+              :database-name "dev_reverie"})
 
 (def db-spec-two
   {:classname "org.postgresql.Driver"
@@ -25,34 +30,37 @@
    :subname "//localhost:5432/dev_reverie"
    :user "devuser"
    :password "devuser"})
+(def ds-spec-two
+  {:maximum-pool-size 3
+   :adapter "postgresql"
+   :username "devuser"
+   :port-number 5432
+   :password "devuser"
+   :database-name "dev_reverie"})
 
 (defn get-db []
-  (let [db (sql/database {:default db-spec
-                          :two db-spec-two})]
-   (assoc db
-     :system (component/start (sys/map->ReverieSystem {:database db})))))
+  (sql/database true {:default db-spec :two db-spec-two} {:default ds-spec :two ds-spec-two}))
 
 
 (defn seed! []
   (let [mmaps (map (fn [[table path]]
-                     {:db {:type :sql
-                           :migration-table table
-                           :url (str "jdbc:postgresql:"
-                                     "//localhost:5432/dev_reverie"
-                                     "?user=" "devuser"
-                                     "&password=" "devuser")}
-                      :migrator path})
+                     {:store :database
+                      :migration-dir path
+                      :migration-table-name table
+                      :db db-spec})
                    (array-map
-                    "migrations_auth" "resources/migrations/modules/auth/"
-                    "migrations_reverie_text" "src/reverie/batteries/objects/migrations/text/"
-                    "migrations_reverie_raw" "src/reverie/batteries/objects/migrations/raw/"
-                    "migrations_reverie_image" "src/reverie/batteries/objects/migrations/image/"
-                    "migrations" "resources/migrations/postgresql"
+                    "migrations_auth" "migrations/modules/auth/"
+                    "migrations_reverie_text" "reverie/batteries/objects/migrations/text/"
+                    "migrations_reverie_raw" "reverie/batteries/objects/migrations/raw/"
+                    "migrations_reverie_image" "reverie/batteries/objects/migrations/image/"
+                    "migrations_reverie" "migrations/reverie/postgresql/"
                     ))]
     (doseq [mmap mmaps]
-      (joplin/rollback-db mmap 9000))
+      (println "Rolling back" mmap)
+      (migratus/down mmap 6 5 4 3 2 1))
     (doseq [mmap (reverse mmaps)]
-      (joplin/migrate-db mmap)))
+      (println "Migrating" mmap)
+      (migratus/migrate mmap)))
   (let [db (component/start (get-db))
         seed (slurp (io/resource "seeds/postgresql/seed.sql"))]
     (try
@@ -60,10 +68,20 @@
         (if-not (.startsWith line "--")
           (db/query! db line)))
       (catch Exception e
-        (println e)))
-    (component/stop db)))
+        (println e))
+      (finally
+        (component/stop db)))))
+
 
 
 (comment
   ;; re-seed!
-  (seed!))
+  (seed!)
+
+  (def db (component/start (get-db)))
+
+  (db/query db {:select [:*] :from [:reverie_page]})
+
+  (db/query db "select * from migrations")
+  (component/stop db)
+  )

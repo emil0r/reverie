@@ -1,6 +1,7 @@
 (ns reverie.test.database.migrations
   (:require [migratus.core :as migratus]
-            [midje.sweet :refer :all]))
+            [midje.sweet :refer :all]
+            [reverie.test.database.sql-helpers :refer [db-spec]]))
 
 
 (comment
@@ -8,11 +9,7 @@
   (let [mmap {:store :database
               :migration-dir "migrations/reverie/postgresql"
               :migration-table-name "migrations"
-              :db {:classname "org.postgresql.Driver"
-                   :subprotocol "postgresql"
-                   :subname "//localhost:5432/dev_reverie"
-                   :user "devuser"
-                   :password "devuser"}}]
+              :db db-spec}]
     (migratus/down mmap 2 1)
     (migratus/migrate mmap))
   )

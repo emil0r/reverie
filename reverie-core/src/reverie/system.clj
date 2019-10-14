@@ -101,9 +101,9 @@
   (start [this]
     (reset! sys this)
     (alter-var-root #'reverie-data (fn [_] (map->ReverieData {:settings settings
-                                                             :filemanager filemanager
-                                                             :database database
-                                                             :cachemanager cachemanager})))
+                                                              :filemanager filemanager
+                                                              :database database
+                                                              :cachemanager cachemanager})))
     this)
   (stop [this]
     (reset! sys nil)
@@ -113,6 +113,6 @@
 
 (defn get-system
   ([]
-     (map->ReverieSystem {}))
+   (map->ReverieSystem {}))
   ([data]
-     (map->ReverieSystem data)))
+   (map->ReverieSystem data)))

@@ -8,8 +8,6 @@
             [ez-database.core :as db]
             [hikari-cp.core :as hikari-cp]
             [honeysql.core :as sql]
-            [joplin.core :as joplin]
-            [joplin.jdbc.database]
             [noir.session :as session]
             [reverie.auth :as auth :refer [IUserDatabase]]
             [reverie.database :as rev.db :refer [IDatabase]]
@@ -212,9 +210,11 @@
 (defn- get-datasource
   "HikaruCP based connection pool"
   [db-spec datasource]
-  (let [{:keys [subprotocol subname user password]} db-spec
-        ds (hikari-cp/make-datasource datasource)]
-    (assoc db-spec :datasource ds)))
+  {:datasource (hikari-cp/make-datasource datasource)}
+  ;; (let [{:keys [subprotocol subname user password]} db-spec
+  ;;       ds (hikari-cp/make-datasource datasource)]
+  ;;   (assoc db-spec :datasource ds))
+  )
 
 
 (extend-type EzDatabase
