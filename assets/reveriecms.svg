@@ -15,7 +15,10 @@
    version="1.1"
    id="svg8"
    inkscape:version="0.92.2 5c3e80d, 2017-08-06"
-   sodipodi:docname="reveriecms.svg">
+   sodipodi:docname="reveriecms.svg"
+   inkscape:export-filename="/Users/emil/dev/reverie/assets/reveriecms.png"
+   inkscape:export-xdpi="62.330002"
+   inkscape:export-ydpi="62.330002">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -26,10 +29,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="369.84218"
-     inkscape:cy="624.62106"
+     inkscape:cx="275.99005"
+     inkscape:cy="584.62106"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer2"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1155"
@@ -44,7 +47,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -52,9 +55,10 @@
      inkscape:label="background"
      inkscape:groupmode="layer"
      id="layer1"
+     style="display:inline"
      sodipodi:insensitive="true">
     <path
-       style="fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.21356626"
+       style="fill:#f5f5f5;fill-opacity:1;stroke:none;stroke-width:0.21356626"
        d="m 33.328106,67.346949 c 54.331984,0 108.663974,0 162.995944,0 0,40.748991 0,81.498001 0,122.246961 -54.33197,0 -108.66396,0 -162.995944,0 0,-40.74896 0,-81.49797 0,-122.246961 z"
        id="rect10"
        inkscape:connector-curvature="0" />
@@ -65,7 +69,7 @@
      inkscape:label="graphic"
      sodipodi:insensitive="true">
     <path
-       style="display:inline;fill:#f5f5f5;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="display:inline;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="M 44.918787,120.75458 115.12436,71.610673 185.32993,120.75458 115.12436,78.631231 Z"
        id="path832"
        inkscape:connector-curvature="0"
@@ -75,7 +79,7 @@
        inkscape:connector-curvature="0"
        id="path834"
        d="m 185.32993,136.16925 -70.20557,49.14407 -70.205573,-49.14407 70.205573,42.12351 z"
-       style="display:inline;fill:#f5f5f5;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+       style="display:inline;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -85,7 +89,7 @@
      sodipodi:insensitive="true">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#f5f5f5;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        x="74.738106"
        y="126.50626"
        id="text824"><tspan
@@ -93,7 +97,7 @@
          id="tspan822"
          x="74.738106"
          y="126.50626"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.11111069px;font-family:Futura;-inkscape-font-specification:Futura;fill:#f5f5f5;fill-opacity:1;stroke-width:0.26458332">reverie/CMS</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.11111069px;font-family:Futura;-inkscape-font-specification:Futura;fill:#1b466b;fill-opacity:1;stroke-width:0.26458332">reverie/CMS</tspan></text>
   </g>
   <g
      inkscape:groupmode="layer"
@@ -103,7 +107,7 @@
      sodipodi:insensitive="true">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#f5f5f5;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        x="81.448029"
        y="139.9046"
        id="text828"><tspan
@@ -111,6 +115,6 @@
          id="tspan826"
          x="81.448029"
          y="139.9046"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05555534px;font-family:Futura;-inkscape-font-specification:'Futura Bold';fill:#f5f5f5;fill-opacity:1;stroke-width:0.26458332">FOR POWER USERS</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05555534px;font-family:Futura;-inkscape-font-specification:'Futura Bold';fill:#1b466b;fill-opacity:1;stroke-width:0.26458332">FOR POWER USERS</tspan></text>
   </g>
 </svg>
