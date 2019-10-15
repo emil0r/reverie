@@ -8,7 +8,9 @@
                  [reverie-blog "0.3.4"]
                  [reverie-blockade "0.11.0"]
                  [http-kit "2.3.0"]
-                 [org.postgresql/postgresql "42.2.5"]
+                 [org.postgresql/postgresql "42.2.8"]
+                 [hikari-cp "2.9.0"]
+                 [ez-database "0.7.0-alpha2"]
 
                  ;; for testing
                  [ring/ring-json "0.4.0"]]

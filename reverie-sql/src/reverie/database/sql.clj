@@ -147,12 +147,8 @@
     (when-not (empty? page-ids)
       (doseq [page-id page-ids]
         (db/query! db
-                   {:update :reverie_page
-                    :set {:route :r.route}
-                    :from [(sql/raw (str "(SELECT route FROM get_route("
-                                         page-id
-                                         ")) AS r"))]
-                    :where [:= :id page-id]}))
+                   ;; HoneySQL broke the order in which the query was parsed as
+                   ["UPDATE reverie_page SET route = r.route FROM (SELECT route FROM get_route(?)) AS r WHERE id = ?" (int page-id) (int page-id)]))
       (let [page-ids (map :id
                           (db/query db
                                     {:select [:p.id]

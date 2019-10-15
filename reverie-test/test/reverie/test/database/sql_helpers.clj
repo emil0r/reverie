@@ -8,7 +8,8 @@
             [reverie.batteries.objects.text]
             [reverie.batteries.objects.image]
             [reverie.database.sql :as sql]
-            [reverie.system :as sys]))
+            [reverie.system :as sys]
+            [taoensso.timbre :as log]))
 
 
 
@@ -42,35 +43,39 @@
   (sql/database true {:default db-spec :two db-spec-two} {:default ds-spec :two ds-spec-two}))
 
 
-(defn seed! []
-  (let [mmaps (map (fn [[table path]]
-                     {:store :database
-                      :migration-dir path
-                      :migration-table-name table
-                      :db db-spec})
-                   (array-map
-                    "migrations_auth" "migrations/modules/auth/"
-                    "migrations_reverie_text" "reverie/batteries/objects/migrations/text/"
-                    "migrations_reverie_raw" "reverie/batteries/objects/migrations/raw/"
-                    "migrations_reverie_image" "reverie/batteries/objects/migrations/image/"
-                    "migrations_reverie" "migrations/reverie/postgresql/"
-                    ))]
-    (doseq [mmap mmaps]
-      (println "Rolling back" mmap)
-      (migratus/down mmap 6 5 4 3 2 1))
-    (doseq [mmap (reverse mmaps)]
-      (println "Migrating" mmap)
-      (migratus/migrate mmap)))
-  (let [db (component/start (get-db))
-        seed (slurp (io/resource "seeds/postgresql/seed.sql"))]
-    (try
-      (doseq [line (str/split-lines seed)]
-        (if-not (.startsWith line "--")
-          (db/query! db line)))
-      (catch Exception e
-        (println e))
-      (finally
-        (component/stop db)))))
+(defn seed!
+  ([]
+   (let [db (component/start (get-db))]
+     (try
+       (seed! db)
+       (finally
+         (component/stop db)))))
+  ([db]
+   (let [seed (slurp (io/resource "seeds/postgresql/seed.sql"))
+         mmaps (map (fn [[table path]]
+                      {:store :database
+                       :migration-dir path
+                       :migration-table-name table
+                       :db db-spec})
+                    (array-map
+                     "migrations_auth" "migrations/modules/auth/"
+                     "migrations_reverie_text" "reverie/batteries/objects/migrations/text/"
+                     "migrations_reverie_raw" "reverie/batteries/objects/migrations/raw/"
+                     "migrations_reverie_image" "reverie/batteries/objects/migrations/image/"
+                     "migrations_reverie" "migrations/reverie/postgresql/"
+                     ))]
+     (doseq [mmap mmaps]
+       (log/debug "Rolling back" mmap)
+       (migratus/down mmap 6 5 4 3 2 1))
+     (doseq [mmap (reverse mmaps)]
+       (log/debug "Migrating" mmap)
+       (migratus/migrate mmap))
+     (try
+       (doseq [line (str/split-lines seed)]
+         (if-not (.startsWith line "--")
+           (db/query! db line)))
+       (catch Exception e
+         (log/error e))))))
 
 
 

@@ -1,8 +1,6 @@
 (ns reverie.site.core
   (:gen-class)
   (:require [clojure.edn :as edn]
-            [joplin.core :as joplin]
-            [joplin.jdbc.database]
             [reverie.site.init :as init]))
 
 
