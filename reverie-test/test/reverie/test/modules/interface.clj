@@ -17,9 +17,9 @@
  "module data manipulation"
  (let [db (component/start (get-db))
        mod (assoc (-> @sys/storage :modules :auth :module)
-             :database db)]
+                  :database db)]
    (try
-     (seed!)
+     (seed! db)
      (let [user-ent (module/get-entity mod "user")
            group-ent (module/get-entity mod "group")]
        ;; add two groups
@@ -46,41 +46,37 @@
                                       :groups [3]})
 
        (module/delete-data mod user-ent 3 true)
-       (select-keys (:form-data (module/get-data mod user-ent 2))
+       (select-keys (:form-params (module/get-data mod user-ent nil 2))
                     [:id :username :roles :groups])
        => {:id 2 :username "user1" :roles #{2} :groups #{3}})
-     (catch Exception e
-       (println e)))
-   (component/stop db)))
+     (finally (component/stop db)))))
 
 
 (fact
  "module data get"
  (let [db (component/start (get-db))
        mod (assoc (-> @sys/storage :modules :auth :module)
-             :database db)]
+                  :database db)]
    (try
-     (seed!)
+     (seed! db)
      (let [user-ent (module/get-entity mod "user")
            group-ent (module/get-entity mod "group")]
-       (select-keys (:form-data (module/get-data mod user-ent {} 1))
+       (select-keys (:form-params (module/get-data mod user-ent {} 1))
                     [:id :username :roles :groups])
        => {:id 1 :username "admin" :roles #{1} :groups #{1}})
-     (catch Exception e
-       (println e)))
-   (component/stop db)))
+     (finally (component/stop db)))))
 
 
 (fact
  "casting"
- (let [mod (-> @sys/storage :modules :auth :module)]
-   (let [user-ent (module/get-entity mod "user")]
-     (msql/cast-data user-ent {:username "admin",
-                               :email "admin@reveriecms.org",
-                               :spoken_name "Mr Admin",
-                               :full_name "Admin Adminsson",
-                               :active_p "true",
-                               :roles "1"}))
+ (let [mod (-> @sys/storage :modules :auth :module)
+       user-ent (module/get-entity mod "user")]
+   (msql/cast-data user-ent {:username "admin",
+                             :email "admin@reveriecms.org",
+                             :spoken_name "Mr Admin",
+                             :full_name "Admin Adminsson",
+                             :active_p "true",
+                             :roles "1"})
    => {:username "admin",
        :email "admin@reveriecms.org",
        :spoken_name "Mr Admin",
@@ -91,13 +87,19 @@
 
 (fact
  "looknfeel/row"
- (let [mod (-> @sys/storage :modules :auth :module)]
-   (let [user-ent (module/get-entity mod "user")]
-     (fact ":default"
-           (looknfeel/row user-ent :username {})
-           => [:div.form-row
-               []
-               [:label {:for "username"} "Username"]
-               [:input {:id "username", :max 255, :name "username", :type "text", :value nil}]
-               [:div.help [:i.icon-question-sign] "A maximum of 255 characters may be used"]])
-     )))
+ (let [mod (-> @sys/storage :modules :auth :module)
+       user-ent (module/get-entity mod "user")]
+   (fact ":default"
+         (looknfeel/row user-ent :username {})
+         => [:div.form-row
+             []
+             [:label {:for "username"} "Username"]
+             [:input  {:class :form-control
+                       :id "username"
+                       :max 255
+                       :name "username"
+                       :type "text"
+                       :value nil}]
+             [:div.help
+              [:i.fa.fa-question-sign]
+              "A maximum of 255 characters may be used"]])))
