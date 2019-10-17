@@ -16,9 +16,9 @@
    id="svg8"
    inkscape:version="0.92.2 5c3e80d, 2017-08-06"
    sodipodi:docname="reveriecms.svg"
-   inkscape:export-filename="/Users/emil/dev/reverie/assets/reveriecms.png"
-   inkscape:export-xdpi="72.360001"
-   inkscape:export-ydpi="72.360001"
+   inkscape:export-filename="/Users/emil/dev/reverie/assets/reveriecms-logo.png"
+   inkscape:export-xdpi="36.18"
+   inkscape:export-ydpi="36.18"
    enable-background="new">
   <defs
      id="defs2">
@@ -129,10 +129,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4142136"
-     inkscape:cx="217.13914"
+     inkscape:cx="320.70052"
      inkscape:cy="745.97915"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer6"
+     inkscape:current-layer="layer3"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1155"
@@ -217,9 +217,10 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="graphic"
-     style="display:inline">
+     style="display:inline"
+     sodipodi:insensitive="true">
     <path
-       style="display:inline;fill:#0000b4;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="display:inline;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="M 44.918787,120.75458 115.12436,71.610673 185.32993,120.75458 115.12436,78.631231 Z"
        id="path832"
        inkscape:connector-curvature="0"
@@ -229,13 +230,13 @@
        inkscape:connector-curvature="0"
        id="path834"
        d="m 185.32993,136.16925 -70.20557,49.14407 -70.205573,-49.14407 70.205573,42.12351 z"
-       style="display:inline;fill:#0000b4;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+       style="display:inline;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer6"
      inkscape:label="line"
-     style="display:inline">
+     style="display:none">
     <path
        style="fill:none;stroke:#9400d3;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 74.877082,129.28884 H 155.17812"
@@ -264,34 +265,36 @@
      inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="text"
-     style="display:inline">
+     style="display:inline"
+     sodipodi:insensitive="true">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#0000b4;fill-opacity:1;stroke:none;stroke-width:0.26458332;"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        x="73.679771"
-       y="124.52081"
+       y="132.9874"
        id="text824"><tspan
          sodipodi:role="line"
          id="tspan822"
          x="73.679771"
-         y="124.52081"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.11111069px;font-family:Futura;-inkscape-font-specification:Futura;fill:#0000b4;fill-opacity:1;stroke-width:0.26458332;">reverie/CMS</tspan></text>
+         y="132.9874"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.11111069px;font-family:Futura;-inkscape-font-specification:Futura;fill:#1b466b;fill-opacity:1;stroke-width:0.26458332">reverie/CMS</tspan></text>
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer4"
      inkscape:label="slogan"
-     style="display:inline">
+     style="display:inline"
+     sodipodi:insensitive="true">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#0000b4;fill-opacity:1;stroke:none;stroke-width:0.26458332;"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        x="78.802193"
-       y="138.84628"
+       y="147.31284"
        id="text828"><tspan
          sodipodi:role="line"
          id="tspan826"
          x="78.802193"
-         y="138.84628"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05555534px;font-family:Futura;-inkscape-font-specification:'Futura Bold';fill:#0000b4;fill-opacity:1;stroke-width:0.26458332;">FOR POWER USERS</tspan></text>
+         y="147.31284"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05555534px;font-family:Futura;-inkscape-font-specification:'Futura Bold';fill:#1b466b;fill-opacity:1;stroke-width:0.26458332">FOR POWER USERS</tspan></text>
   </g>
 </svg>
