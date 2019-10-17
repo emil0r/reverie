@@ -17,10 +17,110 @@
    inkscape:version="0.92.2 5c3e80d, 2017-08-06"
    sodipodi:docname="reveriecms.svg"
    inkscape:export-filename="/Users/emil/dev/reverie/assets/reveriecms.png"
-   inkscape:export-xdpi="62.330002"
-   inkscape:export-ydpi="62.330002">
+   inkscape:export-xdpi="72.360001"
+   inkscape:export-ydpi="72.360001"
+   enable-background="new">
   <defs
-     id="defs2" />
+     id="defs2">
+    <marker
+       inkscape:stockid="Arrow1Mstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Mstart"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path833"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#9400d3;stroke-width:1pt;stroke-opacity:1;fill:#9400d3;fill-opacity:1"
+         transform="scale(0.4) translate(10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="DotM"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker1253"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path1251"
+         d="M -2.5,-1.0 C -2.5,1.7600000 -4.7400000,4.0 -7.5,4.0 C -10.260000,4.0 -12.5,1.7600000 -12.5,-1.0 C -12.5,-3.7600000 -10.260000,-6.0 -7.5,-6.0 C -4.7400000,-6.0 -2.5,-3.7600000 -2.5,-1.0 z "
+         style="fill-rule:evenodd;stroke:#9400d3;stroke-width:1pt;stroke-opacity:1;fill:#9400d3;fill-opacity:1"
+         transform="scale(0.4) translate(7.4, 1)" />
+    </marker>
+    <marker
+       inkscape:stockid="DotM"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="DotM"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path891"
+         d="M -2.5,-1.0 C -2.5,1.7600000 -4.7400000,4.0 -7.5,4.0 C -10.260000,4.0 -12.5,1.7600000 -12.5,-1.0 C -12.5,-3.7600000 -10.260000,-6.0 -7.5,-6.0 C -4.7400000,-6.0 -2.5,-3.7600000 -2.5,-1.0 z "
+         style="fill-rule:evenodd;stroke:#9400d3;stroke-width:1pt;stroke-opacity:1;fill:#9400d3;fill-opacity:1"
+         transform="scale(0.4) translate(7.4, 1)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Send"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Send"
+       style="overflow:visible;"
+       inkscape:isstock="true">
+      <path
+         id="path842"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#9400d3;stroke-width:1pt;stroke-opacity:1;fill:#9400d3;fill-opacity:1"
+         transform="scale(0.2) rotate(180) translate(6,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker1137"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path1135"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#9400d3;stroke-width:1pt;stroke-opacity:1;fill:#9400d3;fill-opacity:1"
+         transform="scale(0.8) translate(12.5,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Mend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Mend"
+       style="overflow:visible;"
+       inkscape:isstock="true">
+      <path
+         id="path836"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#9400d3;stroke-width:1pt;stroke-opacity:1;fill:#9400d3;fill-opacity:1"
+         transform="scale(0.4) rotate(180) translate(10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lstart"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path827"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#9400d3;stroke-width:1pt;stroke-opacity:1;fill:#9400d3;fill-opacity:1"
+         transform="scale(0.8) translate(12.5,0)" />
+    </marker>
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -28,17 +128,67 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="275.99005"
-     inkscape:cy="584.62106"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="217.13914"
+     inkscape:cy="745.97915"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer6"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1155"
      inkscape:window-x="0"
      inkscape:window-y="1"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:measure-start="430.688,465.375"
+     inkscape:measure-end="435.116,468.125">
+    <sodipodi:guide
+       position="115.12436,225.38933"
+       orientation="1,0"
+       id="guide10984"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="115.04,213.21697"
+       orientation="0,1"
+       id="guide10986"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="114.8816,207.24378"
+       orientation="0,1"
+       id="guide10988"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="46.186327,176.24558"
+       orientation="0,1"
+       id="guide10990"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="45.240378,160.83195"
+       orientation="0,1"
+       id="guide10992"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="44.918787,176.24542"
+       orientation="1,0"
+       id="guide10994"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="50.339193,176.24558"
+       orientation="1,0"
+       id="guide10996"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="179.90426,176.24558"
+       orientation="1,0"
+       id="guide10998"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="115.3666,123.85808"
+       orientation="0,1"
+       id="guide11000"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -55,7 +205,7 @@
      inkscape:label="background"
      inkscape:groupmode="layer"
      id="layer1"
-     style="display:inline"
+     style="display:none"
      sodipodi:insensitive="true">
     <path
        style="fill:#f5f5f5;fill-opacity:1;stroke:none;stroke-width:0.21356626"
@@ -67,9 +217,9 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="graphic"
-     sodipodi:insensitive="true">
+     style="display:inline">
     <path
-       style="display:inline;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="display:inline;fill:#0000b4;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="M 44.918787,120.75458 115.12436,71.610673 185.32993,120.75458 115.12436,78.631231 Z"
        id="path832"
        inkscape:connector-curvature="0"
@@ -79,42 +229,69 @@
        inkscape:connector-curvature="0"
        id="path834"
        d="m 185.32993,136.16925 -70.20557,49.14407 -70.205573,-49.14407 70.205573,42.12351 z"
-       style="display:inline;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+       style="display:inline;fill:#0000b4;fill-opacity:1;stroke:none;stroke-width:0.37150449px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="line"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#9400d3;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 74.877082,129.28884 H 155.17812"
+       id="path11004"
+       inkscape:connector-curvature="0" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="graphic2"
+     style="display:none">
+    <path
+       sodipodi:nodetypes="ccccc"
+       inkscape:connector-curvature="0"
+       id="path3310"
+       d="M 179.90426,120.75442 115.12436,83.783031 50.339194,120.75442 115.12436,89.756221 Z"
+       style="display:inline;fill:#9400d3;fill-opacity:1;stroke:none;stroke-width:0.30127952px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       style="display:inline;fill:#9400d3;fill-opacity:1;stroke:none;stroke-width:0.30127952px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 179.90426,136.17053 -64.7799,36.97139 -64.785166,-36.97139 64.785166,30.9982 z"
+       id="path11002"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc" />
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="text"
-     style="display:inline"
-     sodipodi:insensitive="true">
+     style="display:inline">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="74.738106"
-       y="126.50626"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#0000b4;fill-opacity:1;stroke:none;stroke-width:0.26458332;"
+       x="73.679771"
+       y="124.52081"
        id="text824"><tspan
          sodipodi:role="line"
          id="tspan822"
-         x="74.738106"
-         y="126.50626"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.11111069px;font-family:Futura;-inkscape-font-specification:Futura;fill:#1b466b;fill-opacity:1;stroke-width:0.26458332">reverie/CMS</tspan></text>
+         x="73.679771"
+         y="124.52081"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.11111069px;font-family:Futura;-inkscape-font-specification:Futura;fill:#0000b4;fill-opacity:1;stroke-width:0.26458332;">reverie/CMS</tspan></text>
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer4"
      inkscape:label="slogan"
-     style="display:inline"
-     sodipodi:insensitive="true">
+     style="display:inline">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#1b466b;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="81.448029"
-       y="139.9046"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#0000b4;fill-opacity:1;stroke:none;stroke-width:0.26458332;"
+       x="78.802193"
+       y="138.84628"
        id="text828"><tspan
          sodipodi:role="line"
          id="tspan826"
-         x="81.448029"
-         y="139.9046"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05555534px;font-family:Futura;-inkscape-font-specification:'Futura Bold';fill:#1b466b;fill-opacity:1;stroke-width:0.26458332">FOR POWER USERS</tspan></text>
+         x="78.802193"
+         y="138.84628"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05555534px;font-family:Futura;-inkscape-font-specification:'Futura Bold';fill:#0000b4;fill-opacity:1;stroke-width:0.26458332;">FOR POWER USERS</tspan></text>
   </g>
 </svg>
