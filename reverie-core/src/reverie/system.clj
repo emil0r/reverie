@@ -1,6 +1,7 @@
 (ns reverie.system
   (:refer-clojure :exclude [System])
   (:require [bultitude.core :refer [namespaces-on-classpath]]
+            [clojure.java.classpath :as cp]
             [clojure.java.io :as io]
             [com.stuartsierra.component :as component]))
 
@@ -10,7 +11,9 @@
 
 (defn load-views-ns [& ns-syms]
   (doseq [sym ns-syms
-          f (namespaces-on-classpath :prefix (name sym))]
+          f (namespaces-on-classpath
+             :prefix (name sym)
+             :classpath (cp/system-classpath))]
     (require f)))
 
 (defonce storage (atom {:raw-pages {}

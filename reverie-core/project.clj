@@ -35,7 +35,7 @@
                  [ez-email "0.1.0"]
 
                  ;; reverie specific
-                 [bultitude "0.2.8"]
+                 [timofreiberg/bultitude "0.3.1"]
 
                  ;; exception handling
                  [slingshot "0.12.2"]
@@ -72,7 +72,7 @@
                "javac" "compile"]
   :shell {:dir ".."
           :commands {"compile-editing" {:default-command "tools/editing.compile"}
-                     "compile-admin" {:default-command "tools/admin.compile"}}}
+                     "compile-admin"   {:default-command "tools/admin.compile"}}}
   :profiles {:dev {:dependencies [[midje "1.9.4"]
                                   [ring-mock "0.1.5"]
                                   ;;[spyscope "0.1.7-SNAPSHOT"]
