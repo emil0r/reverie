@@ -49,7 +49,8 @@
    (swap! sys/storage assoc-in [:renderers ::renderer] renderer)
    (swap! sys/storage assoc-in [:templates ::template] template)
    (render/render (get-module ::template ::renderer routes) {:uri "/module"}))
- => "<!DOCTYPE html>\n<html><head><title>Hi!</title></head><body><div>Hi there!</div></body></html>")
+ => "<!DOCTYPE html>\n<html><head><title>Hi!</title></head><body><div>Hi there!</div></body></html>"
+ )
 
 
 (defn raw-http-any [request properties params]
