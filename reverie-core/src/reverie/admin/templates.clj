@@ -28,10 +28,10 @@
        [:table.table
         [:tr
          [:th (form/label :username "Username")]
-         [:td (form/text-field :username username)]]
+         [:td (form/text-field {:class :form-control} :username username)]]
         [:tr
          [:th (form/label :password "Password")]
-         [:td (form/password-field :password)]]
+         [:td (form/password-field {:class :form-control} :password)]]
         [:tr
          [:th]
          [:td (form/submit-button {:class "btn btn-primary"} "Log in")]]]]]]]))
