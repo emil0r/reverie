@@ -2,7 +2,7 @@
   (:require [clojure.edn :as edn]
             [com.stuartsierra.component :as component]
             [org.httpkit.server :as http-server :refer [run-server]]
-            reverie.nsloader
+            [reverie.nsloader]
             [reverie.admin :as admin]
             [reverie.admin.api.editors :refer [get-edits-task]]
             [reverie.cache :as cache]
