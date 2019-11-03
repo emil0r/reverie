@@ -4,18 +4,19 @@
             [clojure.string :as str]
             [reverie.auth :refer [with-access]]
             [reverie.database :as db]
+            [reverie.http.response :as response]
+            [reverie.http.route :as route]
             [reverie.object :as object]
-            [reverie.route :as route]
             [reverie.render :as render]
-            [reverie.response :as response]
             [reverie.system :as sys]
             [reverie.util :as util]
             [schema.core :as s]
             [taoensso.timbre :as log]
-            reverie.RenderException)
+
+            [reverie.RenderException])
   (:import [reverie RenderException]
            [reverie.object ReverieObject]
-           [reverie.route Route]))
+           [reverie.http.route Route]))
 
 
 (defprotocol IPage

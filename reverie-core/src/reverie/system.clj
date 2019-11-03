@@ -3,7 +3,9 @@
   (:require [bultitude.core :refer [namespaces-on-classpath]]
             [clojure.java.classpath :as cp]
             [clojure.java.io :as io]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component]
+            [org.httpkit.server :as http-server :refer [run-server]]
+            [taoensso.timbre :as log]))
 
 (defn load-views [& dirs]
   (doseq [f (namespaces-on-classpath :classpath (map io/file dirs))]
@@ -119,3 +121,4 @@
    (map->ReverieSystem {}))
   ([data]
    (map->ReverieSystem data)))
+

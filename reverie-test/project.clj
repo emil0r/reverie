@@ -3,7 +3,7 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [reverie-core "0.8.3-SNAPSHOT"]
                  [reverie-sql "0.8.3-SNAPSHOT"]
-                 [reverie-batteries "0.4.0"]
+                 [reverie-batteries "0.4.1-SNAPSHOT"]
                  [reverie-redis "0.1.0"]
                  [reverie-blog "0.3.4"]
                  [reverie-blockade "0.11.0"]

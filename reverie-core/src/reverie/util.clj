@@ -1,7 +1,6 @@
 (ns reverie.util
   (:require [clojure.string :as str]
             [hiccup.form :refer [hidden-field]]
-            [reverie.response :refer [raise-response]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]))
 
 (defn shorten-uri

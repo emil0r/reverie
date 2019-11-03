@@ -1,4 +1,4 @@
-(ns reverie.response
+(ns reverie.http.response
   (:refer-clojure :exclude [get])
   (:require [clojure.core.match :refer [match]]
             [slingshot.slingshot :refer [throw+]]))

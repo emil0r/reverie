@@ -11,6 +11,7 @@
             [reverie.database.sql :as db.sql]
             [reverie.email :as email]
             [reverie.i18n :as i18n]
+            [reverie.http.server :as server]
             [reverie.logger :as logger]
             [reverie.migrator :as migrator]
             [reverie.migrator.sql :as migrator.sql]
@@ -19,7 +20,6 @@
             [reverie.page :as page]
             [reverie.redis.core :as redis]
             [reverie.scheduler :as scheduler]
-            [reverie.server :as server]
             [reverie.settings :as settings]
             [reverie.site :as site]
             [reverie.system :refer [load-views-ns] :as sys]))

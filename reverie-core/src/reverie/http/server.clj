@@ -1,4 +1,4 @@
-(ns reverie.server
+(ns reverie.http.server
   (:require [com.stuartsierra.component :as component]
             [reverie.modules.filemanager :as fm]
             [reverie.render :as render]
@@ -11,15 +11,15 @@
             [noir.session :refer [wrap-noir-session wrap-noir-flash mem]]
             [noir.util.middleware :refer [wrap-strip-trailing-slash]]
             [reverie.helpers.middleware :refer [create-handler]]
-            [reverie.middleware :refer [wrap-admin
-                                        wrap-authorized
-                                        wrap-downstream
-                                        wrap-editor
-                                        wrap-error-log
-                                        wrap-forker
-                                        wrap-i18n
-                                        wrap-resources
-                                        wrap-reverie-data]]
+            [reverie.http.middleware :refer [wrap-admin
+                                             wrap-authorized
+                                             wrap-downstream
+                                             wrap-editor
+                                             wrap-error-log
+                                             wrap-forker
+                                             wrap-i18n
+                                             wrap-resources
+                                             wrap-reverie-data]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file :refer [wrap-file]] ;; research for later
             [ring.middleware.file-info :refer [wrap-file-info]]
