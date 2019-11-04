@@ -38,7 +38,7 @@
   (base-dir [filemanager])
   (get-abs-path [filemanager path]))
 
-(defrecord FileManager [base media-dirs]
+(defrecord FileManager [base-directory media-dirs]
   component/Lifecycle
   (start [this]
     (log/info "Starting FileManager" {:base-dir (base-dir this)
@@ -57,13 +57,17 @@
 
   IFileMananger
   (base-dir [this]
-    (.getAbsolutePath (io/file base)))
+    (try
+      (.getAbsolutePath (io/file base-directory))
+      (catch Throwable t
+        (log/error {:e t
+                    :this this}))))
   (get-abs-path [this path]
     (join-paths (base-dir this) path)))
 
 
-(defn get-filemanager [base-dir media-dirs]
-  (FileManager. base-dir media-dirs))
+(defn get-filemanager [settings]
+  (map->FileManager settings))
 
 
 

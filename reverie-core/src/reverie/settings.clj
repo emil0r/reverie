@@ -36,8 +36,8 @@
   (true? [this path expected]
     (= expected (get-in settings path)))
   (initialized? [this] initialized?)
-  (dev? [this] (= :dev (:server-mode settings)))
-  (prod? [this] (= :prod (:server-mode settings))))
+  (dev? [this] (= :dev (get-in settings [:server :mode])))
+  (prod? [this] (= :prod (get-in settings [:server :mode]))))
 
 (defn get
   ([settings path]
@@ -55,5 +55,5 @@
            value)))))
 
 
-(defn settings [path]
+(defn get-settings [path]
   (map->Settings {:path path}))

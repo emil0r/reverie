@@ -1,27 +1,25 @@
 {
  ;; reverie
 
- ;; set to true for starting a scheduled services meant to take care of the server
- :primary? true
- :server-mode :dev
- :server {:options {:port 9090}
-          :middleware {}}
- :db {:specs {:default {:classname "org.postgresql.Driver"
-                        :subprotocol "postgresql"
-                        :subname "//localhost:5432/dev_reverie"
-                        :user "devuser"
-                        :password "devuser"}}
-      :ds-specs {:default {:maximum-pool-size 3
-                           :adapter "postgresql"
-                           :username "devuser"
-                           :port-number 5432
-                           :password "devuser"
-                           :database-name "dev_reverie"}}}
+ :server {:mode :dev}
+ :http {:server {:options {:port 9090}
+                 :middleware {}}}
+ :database {:specs {:default {:classname "org.postgresql.Driver"
+                              :subprotocol "postgresql"
+                              :subname "//localhost:5432/dev_reverie"
+                              :user "devuser"
+                              :password "devuser"}}
+            :ds-specs {:default {:maximum-pool-size 3
+                                 :adapter "postgresql"
+                                 :username "devuser"
+                                 :port-number 5432
+                                 :password "devuser"
+                                 :database-name "dev_reverie"}}}
 
  :admin {:tasks {:edits {:minutes 30}}}
- :log {:rotor {:path "logs/reverie.log"}}
+ :log {:appenders {:rotor {:path "logs/reverie.log"}}}
  :site {:host-names []}
- :filemanager {:base-dir "media"
+ :filemanager {:base-directory "media"
                :media-dirs ["media/images"
                             "media/files"]}
  :storage {:redis {;;:admin {}

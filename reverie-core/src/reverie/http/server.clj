@@ -39,6 +39,10 @@
   (fn [request]
     (render/render site request)))
 
+(defn stop-server [server]
+  (when (fn? server)
+    (server)))
+
 (defrecord Server [dev? server store run-server stop-server
                    site middleware-options server-options settings
                    site-handlers resource-handlers media-handlers
@@ -108,13 +112,13 @@
                       (wrap-forker opt-out-handler site-handler resource-handler media-handler)
                       (wrap-forker site-handler resource-handler media-handler))
             server (run-server handler server-options)]
-        (log/info (format "Running server on port %s..." (:port server-options)))
+        (log/info (format "Running HTTP server on port %s..." (:port server-options)))
         (assoc this :server server))))
   (stop [this]
     (if-not server
       this
       (do
-        (log/info "Stopping server")
+        (log/info "Stopping HTTP server")
         (stop-server server)
         (assoc this :server nil)))))
 

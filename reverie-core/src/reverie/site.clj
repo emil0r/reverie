@@ -13,7 +13,9 @@
             [reverie.system :as sys]
             [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
             [slingshot.slingshot :refer [try+]]
-            reverie.RenderException)
+            [taoensso.timbre :as log]
+
+            [reverie.RenderException])
   (:import [reverie RenderException]))
 
 (defonce routes (atom {}))
@@ -69,9 +71,12 @@
                  system-pages settings database render-fn]
   component/Lifecycle
   (start [this]
+    (log/info "Starting Site")
     (reset-routes! this)
     this)
-  (stop [this] this)
+  (stop [this]
+    (log/info "Stopping Site")
+    this)
 
   ISite
   (add-route! [this route properties]
@@ -190,5 +195,5 @@
     (throw (RenderException. "[component request sub-component] not implemented for reverie.site/Site"))))
 
 
-(defn site [data]
+(defn get-site [data]
   (map->Site data))

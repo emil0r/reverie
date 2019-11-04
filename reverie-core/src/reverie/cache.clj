@@ -220,5 +220,5 @@
                        :opts {:strategy strategy
                               :cachemanager cachemanager}}))
 
-(defn cachemananger [data]
+(defn get-cachemanager [data]
   (map->CacheManager data))
