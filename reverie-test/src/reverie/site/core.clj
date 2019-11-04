@@ -1,23 +1,26 @@
 (ns reverie.site.core
   (:gen-class)
   (:require [clojure.edn :as edn]
-            [reverie.site.init :as init]))
+            [reverie.server :as server]))
 
-
-(defn read-args [args]
-  (reduce (fn [out [arg value]]
-            (assoc out (edn/read-string arg) (edn/read-string value)))
-          {} (partition 2 args)))
 
 (defn -main [& args]
-  (init/init "settings.edn" (read-args args)))
+  (server/start {:reverie.settings/path "settings.edn"
+                 :reverie.system/load-namespaces ['reverie.batteries.objects
+                                                  'reverie.site.templates
+                                                  'reverie.site.apps
+                                                  'reverie.site.endpoints]} []))
 
 (comment
 
   ;; run this for running the server in dev mode through the REPL
   (do
-    (init/stop)
-    (init/init "settings.edn"))
+    (server/stop)
+    (server/start {:reverie.settings/path "settings.edn"
+                   :reverie.system/load-namespaces ['reverie.batteries.objects
+                                                    'reverie.site.templates
+                                                    'reverie.site.apps
+                                                    'reverie.site.endpoints]} []))
 
 
   ;; copy/paste and change the commented out migration to suit your needs

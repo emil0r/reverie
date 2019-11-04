@@ -1,16 +1,16 @@
 (ns reverie.object
   (:refer-clojure :exclude [name])
   (:require [clojure.string :as str]
-            [reverie.render :as render]
+            [reverie.http.route :as route]
             [reverie.module.entity :as entity]
-            [reverie.route :as route]
+            [reverie.render :as render]
             [reverie.system :as sys]
             [schema.core :as s]
 
-            reverie.RenderException
-            reverie.ObjectException)
+            [reverie.RenderException]
+            [reverie.ObjectException])
   (:import [reverie RenderException ObjectException]
-           [reverie.route Route]))
+           [reverie.http.route Route]))
 
 
 (defn initial-fields [object-name data]

@@ -24,8 +24,8 @@
               (log/info {:what ::EmailManager
                          :result result})
               (recur)))
-          (log/error {:what ::EmailManager
-                      :message "Missing c-result channel from email provider"}))
+          (log/warn {:what ::EmailManager
+                     :message "Missing c-result channel from email provider"}))
 
 
         (assoc this

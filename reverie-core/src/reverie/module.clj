@@ -1,15 +1,16 @@
 (ns reverie.module
   (:require [clojure.core.match :refer [match]]
             [reverie.auth :refer [with-access]]
+            [reverie.http.response :as response]
+            [reverie.http.route :as route]
             [reverie.module.entity :as entity]
             [reverie.page :as page]
             [reverie.render :as render]
-            [reverie.response :as response]
-            [reverie.route :as route]
             [reverie.system :as sys]
             [reverie.util :as util]
-            reverie.ModuleException
-            reverie.RenderException)
+
+            [reverie.ModuleException]
+            [reverie.RenderException])
   (:refer-clojure :exclude [list name])
   (:import [reverie ModuleException RenderException]))
 

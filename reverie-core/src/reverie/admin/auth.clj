@@ -3,7 +3,7 @@
             [reverie.admin.api.editors :as editors]
             [reverie.auth :as auth]
             [reverie.core :refer [defpage]]
-            [reverie.response :as response]))
+            [reverie.http.response :as response]))
 
 
 
