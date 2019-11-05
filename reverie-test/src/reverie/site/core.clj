@@ -1,44 +1,47 @@
 (ns reverie.site.core
   (:gen-class)
-  (:require [reverie.command :as command]
-            [reverie.server :as server]))
+  (:require [migratus.core :as migratus]
+            [reverie.command :as command]
+            [reverie.server :as server]
+            [taoensso.timbre :as log]))
 
 
-(defn -main [& args]
-  ;; run commands first. if a command is sent in the system exits after the command has run
-  (command/run-command "settings.edn" args)
-  ;; if we manage to continue, we start the server 
+(defn start-server []
   (server/start {:reverie.settings/path "settings.edn"
                  :reverie.system/load-namespaces ['reverie.batteries.objects
                                                   'reverie.site.templates
                                                   'reverie.site.apps
                                                   'reverie.site.endpoints]} []))
 
+(defn -main [& args]
+  ;; run commands first. if a command is sent in the system exits after the command has run
+  (command/run-command "settings.edn" args)
+  ;; if we manage to continue, we start the server 
+  (start-server))
+
 (comment
 
   ;; run this for running the server in dev mode through the REPL
   (do
     (server/stop)
-    (server/start {:reverie.settings/path "settings.edn"
-                   :reverie.system/load-namespaces ['reverie.batteries.objects
-                                                    'reverie.site.templates
-                                                    'reverie.site.apps
-                                                    'reverie.site.endpoints]} []))
+    (start-server))
 
 
   ;; copy/paste and change the commented out migration to suit your needs
   ;; run in the REPL as necessary during development
-  (let [mmaps (map (fn [[table path]]
-                     {:db {:type :sql
-                           :migrations-table table
-                           :url (str "jdbc:postgresql:"
-                                     "//localhost:5432/dev_reverie"
-                                     "?user=" "devuser"
-                                     "&password=" "devuser")}
-                      :migrator path})
-                   (array-map))]
-                    ;;"migrations_module_reverie_blog" "resources/migrations/modules/blog/"
-                    ;;"migrations_reverie_reset_password" "src/reverie/batteries/objects/migrations/reset-password"
+  (let [datasource (get-in @server/system [:database :db-specs :default :datasource])
+        get-migrator-map (fn [[table path]]
+                           {:store :database
+                            :db datasource
+                            :migration-table-name table
+                            :migration-dir path
+                            :name table})
+        mmaps (map get-migrator-map
+                   (array-map
+                    ;;"migrations_module_reverie_blog" "migrations/modules/blog/"
+                    "migrations_reverie_reset_password" "reverie/batteries/objects/migrations/reset-password"))]
+    
+    
 
 
 
@@ -50,6 +53,10 @@
     ;; to manually delete the reference for that object in the reverie_object
     ;; table
     (doseq [mmap mmaps]
-      (joplin/rollback-db mmap 1)
-      (joplin/migrate-db mmap))))
+      (log/debug "Rolling back" (:name mmap))
+      (with-out-str (migratus/rollback mmap))
+      (log/debug "Migrating" (:name mmap))
+      (with-out-str (migratus/migrate mmap))
+      ))
+  )
 

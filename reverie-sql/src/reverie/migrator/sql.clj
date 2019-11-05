@@ -8,7 +8,7 @@
             [taoensso.timbre :as log]))
 
 
-(defn- get-migration-map [type name datasource table path]
+(defn get-migration-map [type name datasource table path]
   {:store :database
    :migration-table-name table
    :migration-dir path
@@ -36,9 +36,11 @@
                            (let [table (or table
                                            (str
                                             "migrations_"
-                                            (clojure.core/name name)
+                                            (clojure.core/name type)
                                             "_"
-                                            (str/replace (slugify name)  #"-" "_")))]
+                                            (str/replace (slugify name) #"-" "_")
+                                            "_"
+                                            (str/replace (slugify name) #"-" "_")))]
                              [name type table path]))))]
     paths))
 
