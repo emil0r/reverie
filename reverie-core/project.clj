@@ -1,4 +1,4 @@
-(defproject reverie-core "0.8.3-SNAPSHOT"
+(defproject reverie-core "0.9.0-SNAPSHOT"
   :description "The core of reverie; a CMS for power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
@@ -8,12 +8,6 @@
                  [org.clojure/core.match "0.3.0"]
                  [org.clojure/core.async "0.4.500"]
                  [org.clojure/core.memoize "0.7.2"]
-
-                 ;; ;; core.async fails to compile unless more up to date
-                 ;; ;; version of tools.analyzer and tools.analyzer.jvm is
-                 ;; ;; present
-                 ;; [org.clojure/tools.analyzer "0.6.9"]
-                 ;; [org.clojure/tools.analyzer.jvm "0.7.0"]
 
                  ;; structure
                  [com.stuartsierra/component "0.4.0"]

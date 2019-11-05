@@ -1,8 +1,8 @@
 (defproject reverie-test "0.1.0-SNAPSHOT"
   :description "Just for manual tests"
   :dependencies [[org.clojure/clojure "1.10.1"]
-                 [reverie-core "0.8.3-SNAPSHOT"]
-                 [reverie-sql "0.8.3-SNAPSHOT"]
+                 [reverie-core "0.9.0-SNAPSHOT"]
+                 [reverie-sql "0.9.0-SNAPSHOT"]
                  [reverie-batteries "0.4.1-SNAPSHOT"]
                  [reverie-redis "0.1.0"]
                  [reverie-blog "0.3.4"]

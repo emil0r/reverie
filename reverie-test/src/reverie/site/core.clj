@@ -1,10 +1,13 @@
 (ns reverie.site.core
   (:gen-class)
-  (:require [clojure.edn :as edn]
+  (:require [reverie.command :as command]
             [reverie.server :as server]))
 
 
 (defn -main [& args]
+  ;; run commands first. if a command is sent in the system exits after the command has run
+  (command/run-command "settings.edn" args)
+  ;; if we manage to continue, we start the server 
   (server/start {:reverie.settings/path "settings.edn"
                  :reverie.system/load-namespaces ['reverie.batteries.objects
                                                   'reverie.site.templates

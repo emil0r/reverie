@@ -15,14 +15,14 @@
    width="1365.3333"
    height="1024"
    viewBox="0 0 1365.3333 1024"
-   sodipodi:docname="reveriecms3.svg"
+   sodipodi:docname="reveriecms.svg"
    inkscape:version="0.92.2 5c3e80d, 2017-08-06"
    inkscape:export-filename="/Users/emil/dev/reverie/assets/reveriecms.png"
    inkscape:export-xdpi="99.949997"
    inkscape:export-ydpi="99.949997"><metadata
      id="metadata8"><rdf:RDF><cc:Work
          rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
      id="defs6"><linearGradient
        x1="0"
        y1="0"
@@ -1140,13 +1140,13 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1924"
+     inkscape:window-width="1920"
      inkscape:window-height="1059"
      id="namedview4"
      showgrid="false"
-     inkscape:zoom="1.3037281"
-     inkscape:cx="222.76887"
-     inkscape:cy="687.6332"
+     inkscape:zoom="1.84375"
+     inkscape:cx="379.90205"
+     inkscape:cy="595.39352"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="0"
@@ -1449,7 +1449,7 @@
      id="layer1"
      inkscape:label="text"><text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:30px;line-height:1.25;font-family:'.Al Bayan PUA';-inkscape-font-specification:'.Al Bayan PUA';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:30px;line-height:1.25;font-family:'.Al Bayan PUA';-inkscape-font-specification:'.Al Bayan PUA';letter-spacing:0px;word-spacing:0px;fill:#222222;fill-opacity:1;stroke:none;stroke-width:0.75;stroke-opacity:1;"
        x="87.092087"
        y="-366.4491"
        id="text2479"
@@ -1458,5 +1458,5 @@
          id="tspan2477"
          x="87.092087"
          y="-366.4491"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:70px;font-family:Futura;-inkscape-font-specification:Futura;stroke-width:0.75">rever  e</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:70px;font-family:Futura;-inkscape-font-specification:Futura;stroke-width:0.75;fill:#222222;fill-opacity:1;stroke:none;stroke-opacity:1;">rever  e</tspan></text>
 </g></svg>
