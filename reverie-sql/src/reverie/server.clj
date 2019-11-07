@@ -135,7 +135,6 @@
   ;; this step will set up any necessary migrations
   (when-let [namespaces (:reverie.system/load-namespaces opts)]
     (assert (vector? namespaces) "(:reverie.system/load-namespaces opts) needs to be a vector")
-    (log/info "Loading namespaces" namespaces)
     (apply load-views-ns namespaces))
 
   (reset! system (component/start (system-map opts components)))

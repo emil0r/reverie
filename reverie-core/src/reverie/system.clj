@@ -9,14 +9,22 @@
 
 (defn load-views [& dirs]
   (doseq [f (namespaces-on-classpath :classpath (map io/file dirs))]
-    (require f)))
+    (try
+      (require f)
+      (log/info "Loading namespace" f)
+      (catch Throwable t
+        (log/error "Unable to load namespace " f t)))))
 
 (defn load-views-ns [& ns-syms]
   (doseq [sym ns-syms
           f (namespaces-on-classpath
              :prefix (name sym)
              :classpath (cp/system-classpath))]
-    (require f)))
+    (try
+      (require f)
+      (log/info "Loading namespace" f)
+      (catch Throwable t
+        (log/error "Unable to load namespace " f t)))))
 
 (defonce storage (atom {:raw-pages {}
                         :apps {}

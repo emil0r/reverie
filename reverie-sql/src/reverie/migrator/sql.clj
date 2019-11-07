@@ -10,12 +10,13 @@
 
 
 (defn get-migration-map [type name datasource table path]
-  {:store :database
-   :migration-table-name table
-   :migration-dir path
-   :db datasource
-   :type type
-   :name name})
+  (let [mmap {:store :database
+              :migration-table-name table
+              :migration-dir path
+              :db datasource
+              :type type
+              :name name}]
+    (assoc mmap :migration-dir-valid? (some? (io/resource path)))))
 
 (defn- get-migrations []
   (let [paths (->> (sys/migrations)
@@ -54,13 +55,19 @@
                          (get-migration-map name type ds table path))
                        migrations)]
         (log/info "Starting migrations")
-        (doseq [mmap mmaps]
-          (log/info "Migration:" (:name mmap) " " (:type mmap))
-          (when-not (io/resource (:migration-dir mmap))
-            (throw (ex-info "Migration path does not exist" (select-keys mmap [:migration-dir
-                                                                               :type
-                                                                               :name]))))
-          (with-out-str (migratus/migrate mmap)))))))
+        (if (every? true? (map :migration-dir-valid? mmaps))
+          (doseq [mmap mmaps]
+            (log/info "Migration:" (:name mmap) " " (:type mmap))
+            (with-out-str (migratus/migrate mmap)))
+          (do
+            (let [error-data {:migrations (->> mmaps
+                                               (remove :migration-dir-valid?)
+                                               (map #(select-keys % [:migration-dir
+                                                                     :type
+                                                                     :name])))}]
+              (doseq [error (:migrations error-data)]
+                (log/error "Migration path does not exist" error))
+              (throw (ex-info "Migration path(s) does not exist" error-data)))))))))
 
 (defn get-migrator [database]
   (Migrator. database))
