@@ -7,7 +7,7 @@
                  [org.clojure/clojure "1.10.1"]
 
                  ;; reverie
-                 [reverie-core "0.9.1-alpha1"]
+                 [reverie-core "0.9.0-alpha1"]
 
                  ;; database libraries
                  [org.clojure/java.jdbc "0.7.8"]
