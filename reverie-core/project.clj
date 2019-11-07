@@ -1,4 +1,4 @@
-(defproject reverie-core "0.9.0-SNAPSHOT"
+(defproject reverie-core "0.9.0-alpha1"
   :description "The core of reverie; a CMS for power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
@@ -46,7 +46,7 @@
                  [com.taoensso/tower "3.0.2"]
 
                  ;; filesystem
-                 [me.raynes/fs "1.4.6"]
+                 [clj-commons/fs "1.5.1"]
 
                  ;; scheduling
                  [im.chit/cronj "1.4.4"]

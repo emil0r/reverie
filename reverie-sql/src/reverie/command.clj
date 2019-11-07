@@ -12,6 +12,7 @@
             [reverie.modules.auth]
             [reverie.modules.role :as role]
             [reverie.settings :as settings]
+            [reverie.system :refer [load-views-ns]]
             [taoensso.timbre :as log]))
 
 (defn- print-info
@@ -33,7 +34,7 @@
   (print-info info)
   (read-line))
 
-(defn- command-superuser [db args]
+(defn- command-superuser [opts db args]
   (print-info "Adding new superuser" true)
   (let [full-name (read-input "Full name?")
         spoken-name (read-input "Spoken name?")
@@ -59,10 +60,10 @@
                          :email email
                          :full_name full-name
                          :spoken_name spoken-name} #{:admin} nil db)
-        (print-info (str "Superuser" username "added")))
-      (print-info (str "Could not add new superuser:" passes?)))))
+        (print-info (str "Superuser " username " added")))
+      (print-info (str "Could not add new superuser: " passes?)))))
 
-(defn- command-migrate [db args]
+(defn- command-migrate [opts db args]
   (print-info "Migrating..." true)
   (->> db
        (migrator.sql/get-migrator)
@@ -70,7 +71,7 @@
   (print-info "Migration done..."))
 
 
-(defn- command-root-page [db args]
+(defn- command-root-page [opts db args]
   (print-info "Adding root page" true)
   (if (->> (db/query db {:select [:%count.*]
                          :from [:reverie_page]})
@@ -94,13 +95,13 @@
                                   :version 0
                                   (sql/raw "\"order\"") 1
                                   :template "main"}]})
-         (print-info (str "Root page" name "added")))))
+         (print-info (str "Root page " name " added")))))
    (print-info "Root page already exists. Aborting...")))
 
-(defn- command-init [db args]
-  (command-migrate db args)
-  (command-root-page db args)
-  (command-superuser db args))
+(defn- command-init [opts db args]
+  (command-migrate opts db args)
+  (command-root-page opts db args)
+  (command-superuser opts db args))
 
 (defn- command-help []
   (println "
@@ -116,7 +117,8 @@ commands are
 
 "))
 
-(defn run-command [path args]
+(defn run-command [{:keys [reverie.settings/path
+                           reverie.system/load-namespaces] :as opts} args]
   (let [[command? command & args] (map edn/read-string args)]
     (when (= :command command?)
       (log/set-level! :info)
@@ -125,13 +127,17 @@ commands are
         (command-help)
         (let [settings (get-settings path)
               db (get-db settings)]
+          (when load-namespaces
+            (assert (vector? load-namespaces) "(:reverie.system/load-namespaces opts) needs to be a vector")
+            (apply load-views-ns load-namespaces))
           (case command
-            :init (command-init db args)
-            :migrate (command-migrate db args)
-            :root-page (command-root-page db args)
-            :superuser (command-superuser db args)
-            :help (command-help db args)
-            (print-info "No command found"))
+            :init (command-init opts db args)
+            :migrate (command-migrate opts db args)
+            :root-page (command-root-page opts db args)
+            :superuser (command-superuser opts db args)
+            :help (command-help)
+            (do (print-info (str "Command " command " not found"))
+                (command-help)))
           (component/stop db)
           (component/stop settings)))
       ;; exit the system as commands are meant to be run from the command line
