@@ -19,7 +19,6 @@
             [reverie.modules.filemanager :as fm]
             [reverie.modules.role :as rm]
             [reverie.page :as page]
-            [reverie.redis.core :as redis]
             [reverie.scheduler :as scheduler]
             [reverie.settings :as settings]
             [reverie.site :as site]

@@ -59,8 +59,8 @@
                          :email email
                          :full_name full-name
                          :spoken_name spoken-name} #{:admin} nil db)
-        (print-info (str "Superuser" username "added")))
-      (print-info (str "Could not add new superuser:" passes?)))))
+        (print-info (str "Superuser " username " added")))
+      (print-info (str "Could not add new superuser: " passes?)))))
 
 (defn- command-migrate [db args]
   (print-info "Migrating..." true)
@@ -94,7 +94,7 @@
                                   :version 0
                                   (sql/raw "\"order\"") 1
                                   :template "main"}]})
-         (print-info (str "Root page" name "added")))))
+         (print-info (str "Root page " name " added")))))
    (print-info "Root page already exists. Aborting...")))
 
 (defn- command-init [db args]
@@ -130,8 +130,9 @@ commands are
             :migrate (command-migrate db args)
             :root-page (command-root-page db args)
             :superuser (command-superuser db args)
-            :help (command-help db args)
-            (print-info "No command found"))
+            :help (command-help)
+            (do (print-info (str "Command " command " not found"))
+                (command-help)))
           (component/stop db)
           (component/stop settings)))
       ;; exit the system as commands are meant to be run from the command line

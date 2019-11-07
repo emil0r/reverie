@@ -1,5 +1,6 @@
 (ns reverie.migrator.sql
   (:require [com.stuartsierra.component :as component]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [migratus.core :as migratus]
             [reverie.migrator :refer [IMigrator]]
@@ -38,8 +39,6 @@
                                             "migrations_"
                                             (clojure.core/name type)
                                             "_"
-                                            (str/replace (slugify name) #"-" "_")
-                                            "_"
                                             (str/replace (slugify name) #"-" "_")))]
                              [name type table path]))))]
     paths))
@@ -57,6 +56,10 @@
         (log/info "Starting migrations")
         (doseq [mmap mmaps]
           (log/info "Migration:" (:name mmap) " " (:type mmap))
+          (when-not (io/resource (:migration-dir mmap))
+            (throw (ex-info "Migration path does not exist" (select-keys mmap [:migration-dir
+                                                                               :type
+                                                                               :name]))))
           (with-out-str (migratus/migrate mmap)))))))
 
 (defn get-migrator [database]

@@ -46,7 +46,7 @@
                  [com.taoensso/tower "3.0.2"]
 
                  ;; filesystem
-                 [me.raynes/fs "1.4.6"]
+                 [clj-commons/fs "1.5.1"]
 
                  ;; scheduling
                  [im.chit/cronj "1.4.4"]
