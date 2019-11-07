@@ -8,17 +8,15 @@
             [ez-database.core :as db]
             [hikari-cp.core :as hikari-cp]
             [honeysql.core :as sql]
-            [joplin.core :as joplin]
-            [joplin.jdbc.database]
             [noir.session :as session]
             [reverie.auth :as auth :refer [IUserDatabase]]
             [reverie.database :as rev.db :refer [IDatabase]]
+            [reverie.http.route :as route]
             [reverie.internal :as internal :refer [storage]]
             [reverie.movement :as movement]
             [reverie.object :as object]
             [reverie.page :as page]
             [reverie.publish :as publish :refer [IPublish]]
-            [reverie.route :as route]
             [reverie.site :as site]
             [reverie.system :as sys]
             [reverie.util :refer [slugify kw->str str->kw uuid?]]
@@ -149,12 +147,8 @@
     (when-not (empty? page-ids)
       (doseq [page-id page-ids]
         (db/query! db
-                   {:update :reverie_page
-                    :set {:route :r.route}
-                    :from [(sql/raw (str "(SELECT route FROM get_route("
-                                         page-id
-                                         ")) AS r"))]
-                    :where [:= :id page-id]}))
+                   ;; HoneySQL broke the order in which the query was parsed as
+                   ["UPDATE reverie_page SET route = r.route FROM (SELECT route FROM get_route(?)) AS r WHERE id = ?" (int page-id) (int page-id)]))
       (let [page-ids (map :id
                           (db/query db
                                     {:select [:p.id]
@@ -212,9 +206,11 @@
 (defn- get-datasource
   "HikaruCP based connection pool"
   [db-spec datasource]
-  (let [{:keys [subprotocol subname user password]} db-spec
-        ds (hikari-cp/make-datasource datasource)]
-    (assoc db-spec :datasource ds)))
+  {:datasource (hikari-cp/make-datasource datasource)}
+  ;; (let [{:keys [subprotocol subname user password]} db-spec
+  ;;       ds (hikari-cp/make-datasource datasource)]
+  ;;   (assoc db-spec :datasource ds))
+  )
 
 
 (extend-type EzDatabase

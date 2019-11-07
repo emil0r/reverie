@@ -1,4 +1,4 @@
-(ns reverie.route
+(ns reverie.http.route
   (:require [clojure.string :as str]
             [clout.core :as clout]
             [reverie.cast :as cast]

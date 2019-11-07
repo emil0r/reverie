@@ -42,5 +42,5 @@
           :started? false)))))
 
 
-(defn logger [prod? appenders]
-  (map->Logger {:prod? prod? :appenders appenders}))
+(defn logger [data]
+  (map->Logger data))

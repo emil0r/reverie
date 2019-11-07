@@ -1,25 +1,24 @@
 (ns reverie.migrator.sql
   (:require [com.stuartsierra.component :as component]
+            [clojure.java.io :as io]
             [clojure.string :as str]
-            [joplin.core :as joplin]
-            joplin.jdbc.database
+            [migratus.core :as migratus]
             [reverie.migrator :refer [IMigrator]]
             [reverie.system :as sys]
             [reverie.util :refer [slugify]]
             [taoensso.timbre :as log]))
 
 
-(defn- get-migrator-map [{:keys [subprotocol subname user password] :as x}
-                         table path]
-  {:db {:type :sql
-        :migrations-table table
-        :url (str "jdbc:" subprotocol ":"
-                  subname
-                  "?user=" user
-                  "&password=" password)}
-   :migrator path})
+(defn get-migration-map [type name datasource table path]
+  (let [mmap {:store :database
+              :migration-table-name table
+              :migration-dir path
+              :db datasource
+              :type type
+              :name name}]
+    (assoc mmap :migration-dir-valid? (some? (io/resource path)))))
 
-(defn- get-migrators []
+(defn- get-migrations []
   (let [paths (->> (sys/migrations)
                    (filter (fn [[_ {:keys [automatic?]}]]
                              automatic?))
@@ -35,30 +34,40 @@
                    (vals)
                    (flatten)
                    (partition 2)
-                   (mapv (fn [[kw {:keys [table path]}]]
+                   (mapv (fn [[name {:keys [table path type]}]]
                            (let [table (or table
                                            (str
                                             "migrations_"
-                                            (str/replace (slugify kw)  #"-" "_")))]
-                             [table path]))))]
+                                            (clojure.core/name type)
+                                            "_"
+                                            (str/replace (slugify name) #"-" "_")))]
+                             [name type table path]))))]
     paths))
 
 (defrecord Migrator [database]
   IMigrator
   (migrate [this]
-    (when-let [default-spec (get-in database [:db-specs :default])]
-      (if (get-in default-spec [:datasource])
-        (let [migrators (concat
-                         [["migrations" (str "resources/migrations/reverie/"
-                                             (:subprotocol default-spec))]]
-                         (get-migrators))
-              mmaps (map (fn [[table path]]
-                           (get-migrator-map default-spec table path))
-                         migrators)]
-          (log/info "Starting migrations")
+    (when-let [ds (get-in database [:db-specs :default :datasource])]
+      (let [migrations (into
+                        [[:core :pre "migrations_reverie" "migrations/reverie/postgresql/"]]
+                        (get-migrations))
+            mmaps (map (fn [[name type table path]]
+                         (get-migration-map name type ds table path))
+                       migrations)]
+        (log/info "Starting migrations")
+        (if (every? true? (map :migration-dir-valid? mmaps))
           (doseq [mmap mmaps]
-            (log/info "Migration:" (get-in mmap [:migrator]))
-            (with-out-str (joplin/migrate-db mmap))))))))
+            (log/info "Migration:" (:name mmap) " " (:type mmap))
+            (with-out-str (migratus/migrate mmap)))
+          (do
+            (let [error-data {:migrations (->> mmaps
+                                               (remove :migration-dir-valid?)
+                                               (map #(select-keys % [:migration-dir
+                                                                     :type
+                                                                     :name])))}]
+              (doseq [error (:migrations error-data)]
+                (log/error "Migration path does not exist" error))
+              (throw (ex-info "Migration path(s) does not exist" error-data)))))))))
 
 (defn get-migrator [database]
   (Migrator. database))

@@ -1,8 +1,9 @@
 (ns reverie.test.modules.auth
   (:require [clojure.set :as set]
             [com.stuartsierra.component :as component]
+            [ez-database.core :as db]
             [reverie.core :refer [defmodule]]
-            [reverie.database :as db]
+            [reverie.database]
             [reverie.module :as module]
             [reverie.modules.role :as role]
             [reverie.modules.auth :as auth]

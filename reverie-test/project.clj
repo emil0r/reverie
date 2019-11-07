@@ -1,17 +1,16 @@
 (defproject reverie-test "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
-  :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.9.0-alpha16"]
+  :description "Just for manual tests"
+  :dependencies [[org.clojure/clojure "1.10.1"]
                  [reverie-core "0.9.0-SNAPSHOT"]
                  [reverie-sql "0.9.0-SNAPSHOT"]
-                 [reverie-batteries "0.4.0"]
+                 [reverie-batteries "0.4.1-SNAPSHOT"]
                  [reverie-redis "0.1.0"]
                  [reverie-blog "0.3.4"]
                  [reverie-blockade "0.11.0"]
-                 [http-kit "2.2.0"]
-                 [org.postgresql/postgresql "42.0.0"]
+                 [http-kit "2.3.0"]
+                 [org.postgresql/postgresql "42.2.8"]
+                 [hikari-cp "2.9.0"]
+                 [ez-database "0.7.0-alpha2"]
 
                  ;; for testing
                  [ring/ring-json "0.4.0"]]
@@ -23,13 +22,13 @@
   :repl-options {:timeout 120000}
 
   :profiles {:uberjar {:aot [reverie.site.core]}
-             :dev {:dependencies [[midje "1.9.0-alpha6"]
+             :dev {:dependencies [[midje "1.9.4"]
                                   [ring-mock "0.1.5"]
-                                  [spyscope "0.1.7-SNAPSHOT"]
+                                  ;;[spyscope "0.1.7-SNAPSHOT"]
                                   ;;[org.clojure/tools.namespace "0.2.10"]
                                   ]
-                   :injections [(require 'spyscope.core)
-                                (require 'spyscope.repl)
-                                (require '[clojure.tools.namespace.repl :refer [refresh]])]
+                   ;; :injections [(require 'spyscope.core)
+                   ;;              (require 'spyscope.repl)
+                   ;;              (require '[clojure.tools.namespace.repl :refer [refresh]])]
                    :resource-paths ["../reverie-sql/resources"]
                    :plugins [[lein-midje "3.1.3"]]}})

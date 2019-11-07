@@ -1,17 +1,30 @@
 (ns reverie.system
   (:refer-clojure :exclude [System])
   (:require [bultitude.core :refer [namespaces-on-classpath]]
+            [clojure.java.classpath :as cp]
             [clojure.java.io :as io]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component]
+            [org.httpkit.server :as http-server :refer [run-server]]
+            [taoensso.timbre :as log]))
 
 (defn load-views [& dirs]
   (doseq [f (namespaces-on-classpath :classpath (map io/file dirs))]
-    (require f)))
+    (try
+      (require f)
+      (log/info "Loading namespace" f)
+      (catch Throwable t
+        (log/error "Unable to load namespace " f t)))))
 
 (defn load-views-ns [& ns-syms]
   (doseq [sym ns-syms
-          f (namespaces-on-classpath :prefix (name sym))]
-    (require f)))
+          f (namespaces-on-classpath
+             :prefix (name sym)
+             :classpath (cp/system-classpath))]
+    (try
+      (require f)
+      (log/info "Loading namespace" f)
+      (catch Throwable t
+        (log/error "Unable to load namespace " f t)))))
 
 (defonce storage (atom {:raw-pages {}
                         :apps {}
@@ -101,9 +114,9 @@
   (start [this]
     (reset! sys this)
     (alter-var-root #'reverie-data (fn [_] (map->ReverieData {:settings settings
-                                                             :filemanager filemanager
-                                                             :database database
-                                                             :cachemanager cachemanager})))
+                                                              :filemanager filemanager
+                                                              :database database
+                                                              :cachemanager cachemanager})))
     this)
   (stop [this]
     (reset! sys nil)
@@ -113,6 +126,7 @@
 
 (defn get-system
   ([]
-     (map->ReverieSystem {}))
+   (map->ReverieSystem {}))
   ([data]
-     (map->ReverieSystem data)))
+   (map->ReverieSystem data)))
+

@@ -1,15 +1,16 @@
 (ns reverie.module
   (:require [clojure.core.match :refer [match]]
             [reverie.auth :refer [with-access]]
+            [reverie.http.response :as response]
+            [reverie.http.route :as route]
             [reverie.module.entity :as entity]
             [reverie.page :as page]
             [reverie.render :as render]
-            [reverie.response :as response]
-            [reverie.route :as route]
             [reverie.system :as sys]
             [reverie.util :as util]
-            reverie.ModuleException
-            reverie.RenderException)
+
+            [reverie.ModuleException]
+            [reverie.RenderException])
   (:refer-clojure :exclude [list name])
   (:import [reverie ModuleException RenderException]))
 
@@ -100,39 +101,25 @@
                    ;; renderer, routes, map, template
                    [_ true true true true] (let [out (render/render renderer (:request-method request)
                                                                     {:data resp
-                                                                     ::render/type :page
+                                                                     ::render/type :page/routes
                                                                      :meta {:route-name (get-in page-route [:options :name])}})]
                                              (render/render t request (assoc this :rendered out)))
 
                    ;; renderer, ~routes, map, template
                    [_ true false true true] (let [out (render/render renderer (:request-method request)
                                                                      {:data resp
-                                                                      ::render/type :page/simple
+                                                                      ::render/type :page/no-routes
                                                                       :meta {:route-name (get-in page-route [:options :name])}})]
                                               (render/render t request (assoc this :rendered out)))
 
                    ;; renderer, ~routes, ~map, ~template
                    [_ true false false false] (render/render renderer (:request-method request)
                                                              {:data resp
-                                                              ::render/type :page/simple
+                                                              ::render/type :page/no-routes
                                                               :meta {:route-name (get-in page-route [:options :name])}})
 
                    ;; default
-                   [_ _ _ _ _] resp)
-            #_(cond
-                ;; we have provided methods to the renderer
-                (and renderer (:methods-or-routes renderer))
-                (render/render renderer (:request-method request)
-                               {:data out
-                                :route-name (get-in route [:options :name])})
-
-                ;; we just want to utilize the render-method
-                renderer
-                (render/render renderer out)
-
-                ;; we don't want to do anything, just return what we got
-                :else
-                out))
+                   [_ _ _ _ _] resp))
           (response/get 404)))))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.module/Module")))

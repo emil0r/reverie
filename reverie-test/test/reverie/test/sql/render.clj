@@ -4,8 +4,8 @@
             [reverie.render :as render]
             [reverie.core :refer [deftemplate area defapp]]
             [reverie.database :as db]
-            reverie.sql.objects.text
-            reverie.sql.objects.image
+            [reverie.batteries.objects.text]
+            [reverie.batteries.objects.image]
             [reverie.page :as page]
             [reverie.site :as site]
             [reverie.test.database.sql-helpers :refer [seed! get-db]]

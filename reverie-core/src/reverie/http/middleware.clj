@@ -1,4 +1,4 @@
-(ns reverie.middleware
+(ns reverie.http.middleware
   (:require [clojure.core.memoize :as memo]
             [clojure.string :as str]
             [noir.cookies :as cookies]
@@ -6,9 +6,9 @@
             [reverie.admin.api.editors :as editors]
             [reverie.auth :as auth]
             [reverie.downstream :refer [*downstream*]]
+            [reverie.http.response :as response]
             [reverie.i18n :as i18n]
             [reverie.system :as sys]
-            [reverie.response :as response]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log]

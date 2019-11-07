@@ -14,7 +14,7 @@ CREATE TABLE reverie_page (
     app text NOT NULL DEFAULT '',
     "order" integer NOT NULL
 );
-
+--;;
 CREATE TABLE reverie_page_properties (
     id bigserial primary key,
     created timestamp with time zone NOT NULL DEFAULT now(),
@@ -22,7 +22,7 @@ CREATE TABLE reverie_page_properties (
     value text NOT NULL,
     page_serial bigint NOT NULL
 );
-
+--;;
 CREATE TABLE reverie_object (
     id bigserial primary key,
     created timestamp with time zone NOT NULL DEFAULT now(),
@@ -34,8 +34,7 @@ CREATE TABLE reverie_object (
     version integer NOT NULL default 0,
     page_id bigint NOT NULL references reverie_page(id)
 );
-
-
+--;;
 CREATE TABLE reverie_publishing (
     id bigserial primary key,
     created timestamp with time zone DEFAULT now() NOT NULL,
@@ -43,18 +42,21 @@ CREATE TABLE reverie_publishing (
     publish_time timestamp with time zone NOT NULL
 );
 
-
-
+--;;
 CREATE INDEX object_index_id ON reverie_object USING btree (id);
+--;;
 CREATE INDEX page_index_name ON reverie_page USING btree (name);
+--;;
 CREATE INDEX page_index_parent ON reverie_page USING btree (parent);
+--;;
 CREATE INDEX page_index_serial ON reverie_page USING btree (serial);
+--;;
 CREATE INDEX page_index_route ON reverie_page USING btree (route);
 
+--;;
 ALTER TABLE reverie_page ADD CONSTRAINT page_unique_serial UNIQUE(serial,route,version);
 
-
-
+--;;
 CREATE OR REPLACE FUNCTION get_route(start_id integer)
 RETURNS TABLE(route text, id bigint)
         LANGUAGE sql
@@ -81,8 +83,7 @@ RETURNS TABLE(route text, id bigint)
 )
 SELECT slug, id FROM transverse WHERE parent IS NULL OR iterator = 100
 $$;
-
-
+--;;
 CREATE OR REPLACE FUNCTION get_serials_recursively(start_serial integer)
 RETURNS TABLE(serial integer, parent integer)
         LANGUAGE sql
@@ -102,3 +103,4 @@ RETURNS TABLE(serial integer, parent integer)
 SELECT serial, parent FROM transverse
 ORDER BY serial
 $$;
+--;;

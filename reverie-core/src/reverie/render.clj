@@ -22,6 +22,7 @@
 (defmulti get-data (fn [data] (::type data)))
 (defmethod get-data :page/routes [data] [(assoc (:meta data) ::type :page/routes) (:data data)])
 (defmethod get-data :page/no-routes [data] [(assoc (:meta data) ::type :page/no-routes) (:data data)])
+(defmethod get-data :page/simple [data] [(assoc (:meta data) ::type :page/simple) (:data data)])
 (defmethod get-data :default [data] [nil data])
 
 

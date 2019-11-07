@@ -4,7 +4,7 @@
             reverie.modules.auth
             [reverie.system :as sys]
             [midje.sweet :refer :all]
-            vlad))
+            [vlad.core :as vlad]))
 
 
 (fact
@@ -14,4 +14,4 @@
        {})
       (filter (fn [{:keys [selector]}]
                 (some #(= selector %) [[:username] [:email]]))))
- => [{:selector [:username], :type :vlad.validations/present} {:selector [:email], :type :vlad.validations/present}])
+ => [{:selector [:username], :type :vlad.core/present} {:selector [:email], :type :vlad.core/present}])

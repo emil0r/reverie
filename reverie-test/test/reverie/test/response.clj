@@ -15,7 +15,7 @@
  (fact
   "404"
   (response/get 404)
-  => {:status 404 :headers {} :body "404, Page Not Found"})
+  => {:status 404 :headers {"Content-Type" "text/plain"} :body "404, Page Not Found"})
  (fact
   "301"
   (response/get 301 "http://www.example.com/")
