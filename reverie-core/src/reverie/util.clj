@@ -14,6 +14,15 @@
         "/"
         uri))))
 
+(defn join-paths
+  "Join two or more fragments of a path together"
+  [& paths]
+  (loop [parts []
+         [path & paths] paths]
+    (if (nil? path)
+      (str (str/join "/" (flatten parts)))
+      (recur (conj parts (remove str/blank? (str/split path #"/"))) paths))))
+
 
 (defn slugify [name]
   (-> name
@@ -94,3 +103,6 @@
 
 (defn uuid? [x]
   (= java.util.UUID (class x)))
+
+(defn get-table-name [prefix name]
+  (str/replace (slugify (str (clojure.core/name prefix) "_" name)) #"-" "_"))
