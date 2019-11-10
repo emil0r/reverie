@@ -4,7 +4,8 @@
   (:import [reverie MigrationException]))
 
 (defprotocol IMigrator
-  (migrate [migrator]))
+  (migrate [migrator] [migrator mmap])
+  (rollback [migrator mmap]))
 
 (defn- check-type! [type]
   (let [types [:pre :module :raw-page :app :object :unknown :post]]

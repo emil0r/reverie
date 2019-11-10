@@ -8,6 +8,13 @@
             [reverie.util :refer [slugify]]
             [taoensso.timbre :as log]))
 
+(defn get-migration-table [{:keys [table type name]}]
+  (or table
+      (str
+       "migrations_"
+       (clojure.core/name type)
+       "_"
+       (str/replace (slugify name) #"-" "_"))))
 
 (defn get-migration-map [type name datasource table path]
   (let [mmap {:store :database
@@ -35,12 +42,7 @@
                    (flatten)
                    (partition 2)
                    (mapv (fn [[name {:keys [table path type]}]]
-                           (let [table (or table
-                                           (str
-                                            "migrations_"
-                                            (clojure.core/name type)
-                                            "_"
-                                            (str/replace (slugify name) #"-" "_")))]
+                           (let [table (get-migration-table {:table table :type type :name name})]
                              [name type table path]))))]
     paths))
 
@@ -57,8 +59,7 @@
         (log/info "Starting migrations")
         (if (every? true? (map :migration-dir-valid? mmaps))
           (doseq [mmap mmaps]
-            (log/info "Migration:" (:name mmap) " " (:type mmap))
-            (with-out-str (migratus/migrate mmap)))
+            (reverie.migrator/migrate this mmap))
           (do
             (let [error-data {:migrations (->> mmaps
                                                (remove :migration-dir-valid?)
@@ -67,7 +68,13 @@
                                                                      :name])))}]
               (doseq [error (:migrations error-data)]
                 (log/error "Migration path does not exist" error))
-              (throw (ex-info "Migration path(s) does not exist" error-data)))))))))
+              (throw (ex-info "Migration path(s) does not exist" error-data))))))))
+  (migrate [this mmap]
+    (log/info (format "Migrating %s %s" (:name mmap)  (:type mmap)))
+    (with-out-str (migratus/migrate mmap)))
+  (rollback [this mmap]
+    (log/info (format "Rolling back %s %s" (:name mmap)  (:type mmap)))
+    (with-out-str (migratus/rollback mmap))))
 
 (defn get-migrator [database]
   (Migrator. database))
