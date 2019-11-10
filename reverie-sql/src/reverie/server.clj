@@ -75,18 +75,18 @@
                                               (settings/get settings [:i18n :tconfig]
                                                             {:dictionary {}
                                                              :dev-mode? (settings/dev? settings)
-                                                             :fallback-locale :en})))]
+                                                             :fallback-locale :en})))
+        migrator (migrator.sql/get-migrator db)]
 
     ;; run the migrations as the migrator is not a component
-    (->> db
-         (migrator.sql/get-migrator)
-         (migrator/migrate))
+    (migrator/migrate migrator)
 
     ;; load the translations for i18n
     (->> i18n-
          (i18n/load-i18n!))
 
-    (let [internal-components [[:settings       settings]
+    (let [internal-components [[:migrator       migrator]
+                               [:settings       settings]
                                [:database       db]
                                [:rolemanager    {:f rm/get-rolemanager
                                                  :deps [:database]}]

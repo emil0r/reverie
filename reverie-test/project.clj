@@ -24,11 +24,6 @@
   :profiles {:uberjar {:aot [reverie.site.core]}
              :dev {:dependencies [[midje "1.9.4"]
                                   [ring-mock "0.1.5"]
-                                  ;;[spyscope "0.1.7-SNAPSHOT"]
-                                  ;;[org.clojure/tools.namespace "0.2.10"]
-                                  ]
-                   ;; :injections [(require 'spyscope.core)
-                   ;;              (require 'spyscope.repl)
-                   ;;              (require '[clojure.tools.namespace.repl :refer [refresh]])]
+                                  [reverie-dev "0.1.0"]]
                    :resource-paths ["../reverie-sql/resources"]
                    :plugins [[lein-midje "3.1.3"]]}})
