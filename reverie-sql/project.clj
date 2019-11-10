@@ -1,4 +1,4 @@
-(defproject reverie-sql "0.9.0-alpha2"
+(defproject reverie-sql "0.9.0-SNAPSHOT"
   :description "The SQL backbone of reverie; a CMS for power users"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
@@ -7,7 +7,7 @@
                  [org.clojure/clojure "1.10.1"]
 
                  ;; reverie
-                 [reverie-core "0.9.0-alpha2"]
+                 [reverie-core "0.9.0-SNAPSHOT"]
 
                  ;; database libraries
                  [org.clojure/java.jdbc "0.7.8"]
