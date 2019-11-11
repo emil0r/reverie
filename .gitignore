@@ -25,3 +25,5 @@ blackboard/
 /reverie-core/resources/public/static/admin/css/editing.css
 /reverie-core/resources/public/static/admin/css/main.css
 .docker-data
+reverie-test/src/reverie/site/objects/testus.clj
+reverie-test/src/reverie/site/objects/migrations/testus

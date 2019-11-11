@@ -2,6 +2,7 @@
   (:gen-class)
   (:require [migratus.core :as migratus]
             [reverie.dev.migration :as migration]
+            [reverie.dev.object :as object]
             [reverie.command :as command]
             [reverie.server :as server]
             [taoensso.timbre :as log]))
@@ -28,9 +29,12 @@
     (server/stop)
     (start-server opts))
 
-  (doseq [[type name] [:object 'object-name-here]]
-    (migration/migrate type name))
 
-  (doseq [[type name] [:object 'object-name-here]]
-    (migration/rollback type name)))
+  ;; for manual testing
+  (object/create {:override? true} 'reverie/testus)
+  (migration/migrate :object 'reverie/testus)
+  (migration/rollback :object 'reverie/testus)
+  (object/add-migration 'reverie/testus "foobar")
+  (object/remove-migration 'reverie/testus "foobar")
+  )
 
