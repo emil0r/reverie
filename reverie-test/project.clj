@@ -24,6 +24,6 @@
   :profiles {:uberjar {:aot [reverie.site.core]}
              :dev {:dependencies [[midje "1.9.4"]
                                   [ring-mock "0.1.5"]
-                                  [reverie-dev "0.2.0-SNAPSHOT"]]
+                                  [reverie-dev "0.2.0"]]
                    :resource-paths ["../reverie-sql/resources"]
                    :plugins [[lein-midje "3.1.3"]]}})
