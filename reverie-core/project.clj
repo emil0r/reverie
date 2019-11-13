@@ -1,5 +1,5 @@
-(defproject reverie-core "0.9.0-alpha3"
-  :description "The core of reverie; a CMS for power users"
+(defproject reverie-core "0.9.0-alpha4"
+  :description "The core of reverie"
   :url "http://reveriecms.org"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
@@ -69,12 +69,7 @@
                      "compile-admin"   {:default-command "tools/admin.compile"}}}
   :profiles {:dev {:dependencies [[midje "1.9.4"]
                                   [ring-mock "0.1.5"]
-                                  ;;[spyscope "0.1.7-SNAPSHOT"]
                                   [http-kit "2.3.0"]
-                                  ;;[org.clojure/tools.namespace "0.2.10"]
                                   [org.postgresql/postgresql "42.2.5"]]
-                   ;; :injections [(require 'spyscope.core)
-                   ;;              (require 'spyscope.repl)
-                   ;;              (require '[clojure.tools.namespace.repl :refer [refresh]])]
                    :resource-paths ["../reverie-sql/resources"]
                    :plugins [[lein-midje "3.1.3"]]}})
