@@ -106,3 +106,18 @@
 
 (defn get-table-name [prefix name]
   (str/replace (slugify (str (clojure.core/name prefix) "_" name)) #"-" "_"))
+
+(defn- group-by-ns [pair]
+  (namespace (key pair)))
+
+(defn select-ns-keys
+  "Select keys from a map based on a namespace. By default it gives back the map with the namespace stripped from the keys"
+  ([map ns] (select-ns-keys map ns true))
+  ([map ns strip-namespace?]
+   (let [ns (if (keyword? ns)
+              (or (namespace ns) (subs (str ns) 1))
+              ns)
+         map (into {} (get (group-by group-by-ns map) ns))]
+     (if strip-namespace?
+       (into {} (clojure.core/map (fn [pair] [(keyword (name (key pair))) (val pair)]) map))
+       map))))

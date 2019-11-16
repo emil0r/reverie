@@ -1,8 +1,12 @@
-(defproject reverie-core "0.9.0-alpha4"
+(defproject reverie-core "0.9.0-SNAPSHOT"
+
   :description "The core of reverie"
-  :url "http://reveriecms.org"
+
+  :url "http://reveriecms.com"
+
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+
   :dependencies [;; core
                  [org.clojure/clojure "1.10.1"]
                  [org.clojure/core.match "0.3.0"]
@@ -21,6 +25,9 @@
                  [lib-noir "0.9.9"]
                  [ez-web "0.3.0"]
                  [ez-image "1.0.4"]
+
+                 ;; errors
+                 [expound "0.7.2"]
 
                  ;; time
                  [clj-time "0.15.2"]
@@ -53,6 +60,7 @@
 
                  ;; schema
                  [prismatic/schema "1.1.9"]]
+
   :aot [reverie.AreaException
         reverie.CacheException
         reverie.DatabaseException
@@ -60,16 +68,22 @@
         reverie.ModuleException
         reverie.ObjectException
         reverie.RenderException]
+
   :plugins [[lein-shell "0.4.1"]]
+
   :prep-tasks [["shell" "compile-editing"]
                ["shell" "compile-admin"]
                "javac" "compile"]
+
   :shell {:dir ".."
           :commands {"compile-editing" {:default-command "tools/editing.compile"}
                      "compile-admin"   {:default-command "tools/admin.compile"}}}
+
   :profiles {:dev {:dependencies [[midje "1.9.4"]
                                   [ring-mock "0.1.5"]
                                   [http-kit "2.3.0"]
                                   [org.postgresql/postgresql "42.2.5"]]
+
                    :resource-paths ["../reverie-sql/resources"]
+
                    :plugins [[lein-midje "3.1.3"]]}})
