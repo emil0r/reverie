@@ -20,7 +20,7 @@
     (if cj
       this
       (assoc this
-        :cj (atom nil))))
+             :cj (atom nil))))
   (stop [this]
     (log/info "Stopping scheduler")
     (if-not cj
@@ -28,8 +28,8 @@
       (do
         (stop! this)
         (assoc this
-          :cj nil
-          :tasks nil))))
+               :cj nil
+               :tasks nil))))
   IScheduler
   (start! [this]
     (reset! cj (cron/cronj :entries @tasks))
@@ -51,4 +51,4 @@
 (defn get-scheduler
   ([] (map->Scheduler {:tasks (atom [])}))
   ([tasks]
-     (map->Scheduler {:tasks (atom tasks)})))
+   (map->Scheduler {:tasks (atom tasks)})))

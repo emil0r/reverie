@@ -23,6 +23,7 @@
             [reverie.settings :as settings]
             [reverie.site :as site]
             [reverie.system :refer [load-views-ns] :as sys]
+            [reverie.util :refer [select-ns-keys]]
             [taoensso.timbre :as log]))
 
 
@@ -92,30 +93,38 @@
                                                  :deps [:database]}]
                                [:i18n           i18n-]
                                [:server         {:f server/get-server
-                                                 :args {:server-options (settings/get settings [:http :server :options])
-                                                        :run-server run-server
-                                                        :stop-server server/stop-server
-                                                        :dev? (settings/dev? settings)
-                                                        :store (:reverie.http.server/store opts)}
+                                                 :args (merge
+                                                        {:server-options (settings/get settings [:http :server :options])
+                                                         :run-server run-server
+                                                         :stop-server server/stop-server
+                                                         :dev? (settings/dev? settings)}
+                                                        (select-ns-keys opts :reverie.http.server))
                                                  :deps [:filemanager :site]}]
                                [:cachemanager   {:f cache/get-cachemanager
-                                                 :args {:store (:reverie.cache/store opts)}
+                                                 :args (select-ns-keys opts :reverie.cache)
                                                  :deps [:database]}]
                                [:emailmanager   {:f email/email-manager
-                                                 :args (settings/get settings [:email] {})}]
+                                                 :args (merge
+                                                        (settings/get settings [:email] {})
+                                                        (select-ns-keys opts :reverie.email))}]
                                [:filemanager    {:f fm/get-filemanager
-                                                 :args (settings/get settings [:filemanager])}]
+                                                 :args (merge
+                                                        (settings/get settings [:filemanager])
+                                                        (select-ns-keys opts :reverie.filemanager))}]
                                [:site           {:f site/get-site
-                                                 :args {:host-names (settings/get settings [:site :host-names])
-                                                        :render-fn hiccup.compiler/render-html}
+                                                 :args (merge
+                                                        {:host-names (settings/get settings [:site :host-names])
+                                                         :render-fn hiccup.compiler/render-html}
+                                                        (select-ns-keys opts :reverie.site))
                                                  :deps [:database :cachemanager]}]
                                [:logger         {:f logger/logger
                                                  :args (merge
                                                         (settings/get settings [:log])
-                                                        {:prod? (settings/prod? settings)})}]
+                                                        {:prod? (settings/prod? settings)}
+                                                        (select-ns-keys opts :reverie.logger))}]
                                [:scheduler      {:f scheduler/get-scheduler}]
                                [:admin          {:f admin/get-admin-initializer
-                                                 :args {:store (:reverie.admin/store opts)}
+                                                 :args (select-ns-keys opts :reverie.admin)
                                                  :deps [:database]}]
                                [:system         {:f sys/get-system
                                                  :deps [:database :filemanager :site :scheduler
