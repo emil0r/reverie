@@ -1,5 +1,7 @@
 (ns reverie.core
-  (:require [clojure.string :as str]
+  (:require [clojure.spec.alpha :as spec]
+            [clojure.string :as str]
+            [expound.alpha :as expound]
             [reverie.area :as a]
             [reverie.i18n :as i18n]
             [reverie.helpers.middleware :refer [wrap-response-with-handlers]]
@@ -8,6 +10,7 @@
             [reverie.module.entity :as entity]
             [reverie.render :as render]
             [reverie.site :as site]
+            [reverie.specs.object]
             [reverie.system :as sys]
             [reverie.template :as template]
             [reverie.util :as util]
@@ -130,13 +133,18 @@
          nil))))
 
 (defmacro defobject [name options methods]
+  (assert (spec/valid? :reverie.object/name name)
+          (expound/expound-str :reverie.object/name name))
+  (assert (spec/valid? :reverie.object/options options)
+          (expound/expound-str :reverie.object/options options))
+  (assert (spec/valid? :reverie.object/methods methods)
+          (expound/expound-str :reverie.object/methods methods))
   (when (not (true? (:disabled? options)))
     (let [name (keyword name)
           migration (assoc (:migration options) :type :object)
           renderer (:renderer options)]
       (if-not (nil? renderer)
-        (do (assert (util/namespaced-kw? renderer) ":renderer must be a namespaced keyword")
-            (assert (not (nil? (sys/renderer renderer))) (format "Renderer %s has not yet been defined." (util/kw->str renderer)))))
+        (assert (not (nil? (sys/renderer renderer))) (format "Renderer %s has not yet been defined." (util/kw->str renderer))))
       `(do
          (i18n/load-from-options! ~options)
          (when ~migration
