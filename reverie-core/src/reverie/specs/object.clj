@@ -41,4 +41,6 @@
                                       :opt-un [::object/disabled?
                                                ::object/i18n
                                                :reverie.renderer/renderer]))
-(spec/def ::object/methods (spec/map-of #{:any :get :post :put :delete :head :options} fn? ))
+(spec/def ::object/methods (spec/map-of #{:any :get :post :put :delete :head :options}
+                                        (spec/or :fn fn?
+                                                 :symbol symbol?)))
