@@ -3,7 +3,7 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [reverie-core "0.9.0-SNAPSHOT"]
                  [reverie-sql "0.9.0-SNAPSHOT"]
-                 [reverie-batteries "0.7.0"]
+                 [reverie-batteries "0.8.0-SNAPSHOT"]
                  [reverie-redis "0.1.0"]
                  [reverie-blog "0.3.4"]
                  [reverie-blockade "0.11.0"]
@@ -24,6 +24,6 @@
   :profiles {:uberjar {:aot [reverie.site.core]}
              :dev {:dependencies [[midje "1.9.4"]
                                   [ring-mock "0.1.5"]
-                                  [reverie-dev "0.2.0"]]
+                                  [reverie-dev "0.3.0-SNAPSHOT"]]
                    :resource-paths ["../reverie-sql/resources"]
                    :plugins [[lein-midje "3.1.3"]]}})

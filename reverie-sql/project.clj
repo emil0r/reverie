@@ -1,4 +1,4 @@
-(defproject reverie-sql "0.9.0-alpha6"
+(defproject reverie-sql "0.9.0-alpha7"
 
   :description "The SQL backbone of reverie"
 
@@ -11,7 +11,7 @@
                  [org.clojure/clojure "1.10.1"]
 
                  ;; reverie
-                 [reverie-core "0.9.0-alpha6"]
+                 [reverie-core "0.9.0-alpha7"]
 
                  ;; database libraries
                  [org.clojure/java.jdbc "0.7.8"]

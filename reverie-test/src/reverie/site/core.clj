@@ -3,6 +3,7 @@
   (:require [migratus.core :as migratus]
             [reverie.dev.migration :as migration]
             [reverie.dev.object :as object]
+            [reverie.dev.module :as module]
             [reverie.command :as command]
             [reverie.server :as server]
             [taoensso.timbre :as log]))
@@ -34,6 +35,10 @@
   (object/create {:override? true} 'reverie/testus)
   (migration/migrate :object 'reverie/testus)
   (migration/rollback :object 'reverie/testus)
+
+  (migration/migrate :object 'reverie/faq)
+  (migration/rollback :object 'reverie/faq)
+  
   (object/add-migration 'reverie/testus "foobar")
   (object/remove-migration 'reverie/testus "foobar")
   )

@@ -1,4 +1,4 @@
-(defproject reverie-core "0.9.0-alpha6"
+(defproject reverie-core "0.9.0-alpha7"
 
   :description "The core of reverie"
 
