@@ -262,7 +262,7 @@
             page (try (Integer/parseInt (:page params))
                       (catch Exception _
                         1))
-            {:keys [display] :as interface} (e/interface entity)
+            {:keys [display disabled] :or {disabled #{}} :as interface} (e/interface entity)
             fn-query (or (:query interface)
                          (default-query {:database db
                                          :database-name db-name
@@ -285,7 +285,8 @@
               [:div.options
                [:ul
                 [:li [:a.btn.btn-primary
-                      {:href (join-uri base-link (m/slug module) (e/slug entity) "add")}
+                      {:href (join-uri base-link (m/slug module) (e/slug entity) "add")
+                       :disabled (some? (disabled :add-entity))}
                       (str "Add " (e/name entity))]]]]
               table
               [:table.table.entity
