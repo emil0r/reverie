@@ -16,6 +16,7 @@ Current version is 0.8.2. See [installation guide](doc/installation/getting-star
 ## Supporting libraries for reverie specifically
 
 - [reverie-batteries](https://github.com/emil0r/reverie-batteries)
+- [reverie-dev](https://github.com/emil0r/reverie-dev)
 - [reverie-redis](https://github.com/emil0r/reverie-redis)
 - [reverie-blog](https://github.com/emil0r/reverie-blog)
 - [reverie-blockade](https://github.com/emil0r/reverie-blockade)
