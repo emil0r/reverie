@@ -157,6 +157,16 @@
                              (str/replace ~name #"/|\." "_")))})
          nil))))
 
+(defmacro defextension [name type extension-name options]
+  (let [name (keyword name)]
+    (assert (= type :object) "Only :object supported as type")
+    (assert (get-in @sys/storage [:objects name]) "Objet doesn't exist")
+    (assert (qualified-keyword? extension-name) "extension-name needs to be a namespaced keyword")
+    `(do
+       (swap! sys/storage assoc-in [:objects ~name :extensions ~extension-name] ~options)
+       (swap! sys/storage assoc-in [:migrations :extension ~extension-name] (:migration ~options)))
+    nil))
+
 (defmacro defrenderer
   "Define a renderer which separates the rendering from the computation of an object/page"
   [name options & [methods]]
@@ -175,7 +185,8 @@
          ;; have we designed the renderer to be overriding another renderer?
          (if-not (nil? ~override)
            (swap! sys/storage assoc-in [:renderers :reverie.system/override ~override] ~name))
-         nil))))
+         nil))
+    nil))
 
 (defn undefrenderer
   "Undefine a renderer"

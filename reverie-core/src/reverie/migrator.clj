@@ -8,7 +8,7 @@
   (rollback [migrator mmap]))
 
 (defn- check-type! [type]
-  (let [types [:pre :module :raw-page :app :object :unknown :post]]
+  (let [types [:pre :module :raw-page :app :object :extension :unknown :post]]
     (when-not (some #(= % type) types)
       (throw (MigrationException. (format "Type for exception was not valid. Only %s allowed" types))))))
 

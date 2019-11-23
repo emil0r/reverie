@@ -36,6 +36,7 @@
                                       :raw-page []
                                       :app []
                                       :object []
+                                      :extension []
                                       :unknown []
                                       :post []))
                    (vals)
