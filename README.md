@@ -33,7 +33,7 @@ Current version is 0.8.2. See [installation guide](doc/installation/getting-star
 
 ## License
 
-Copyright © 2012-2018 Emil Bengtsson
+Copyright © 2012-2019 Emil Bengtsson
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
 
