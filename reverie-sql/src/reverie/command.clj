@@ -18,7 +18,7 @@
 (defn- print-info
   ([s] (print-info s false))
   ([s expand?]
-   (let [to-print (if expand? ["\n\n" s "\n-----\n\n"] ["\n\n" s "\n\n"])]
+   (let [to-print (if expand? ["         " s "\n==--------------------------------------------------=="] [s])]
      (apply println to-print))))
 
 (defn- get-settings [path]
@@ -30,9 +30,15 @@
         ds-specs (settings/get settings [:database :ds-specs])]
     (component/start (db.sql/database dev? db-specs ds-specs))))
 
-(defn- read-input [info]
-  (print-info info)
-  (read-line))
+(defn- read-input
+  ([info] (read-input info false))
+  ([info hidden?]
+   (print-info info)
+   (if hidden?
+     (let [console (System/console)
+           input (.readPassword console "")]
+       input)
+     (read-line))))
 
 (defn- command-superuser [opts db args]
   (print-info "Adding new superuser" true)
@@ -40,11 +46,13 @@
         spoken-name (read-input "Spoken name?")
         username (read-input "User name? (This is what you will log in with)")
         email (read-input "Email?")
-        password (read-input "Password?")
+        password1 (read-input "Password?" true)
+        password2 (read-input "Repeat password?" true)
         passes? (cond
                  (str/blank? email) "Blank email"
                  (str/blank? username) "Blank username"
-                 (str/blank? password) "Blank password"
+                 (str/blank? password1) "Blank password"
+                 (not= password1 password2) "Did not repeat the password correctly"
                  (not (zero? (count (->> (db/query db {:select [:*]
                                                        :from [:auth_user]
                                                        :where [:= :username username]}))))) "User already exists"
@@ -56,7 +64,7 @@
             (component/start)
             (component/stop))
         (auth/add-user! {:username username
-                         :password password
+                         :password password1
                          :email email
                          :full_name full-name
                          :spoken_name spoken-name} #{:admin} nil db)
