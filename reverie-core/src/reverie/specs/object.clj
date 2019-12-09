@@ -28,4 +28,4 @@
                                       :opt-un [::object/disabled?
                                                ::object/i18n
                                                :reverie.renderer/renderer]))
-(spec/def ::object/methods :reverie.route/http-methods)
+(spec/def ::object/methods :reverie.http.route/http-methods)
