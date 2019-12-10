@@ -79,7 +79,7 @@
 (defmacro defpage
   "Define a page directly into the tree structure of the site"
   [path options routes]
-  (assert-spec :reverie.http.routes/path path)
+  (assert-spec :reverie.http.route/path path)
   (assert-spec :reverie.page/options options)
   (assert-spec :reverie.http.route/routes routes)
   (when (not (true? (:disabled? options)))

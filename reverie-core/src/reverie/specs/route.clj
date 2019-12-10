@@ -26,4 +26,4 @@
                                      :roles (spec/* :reverie.http.route/roles)
                                      :http-methods :reverie.http.route/http-methods))
 
-(spec/def :reverie.http.route/routes (spec/coll-of :reverie-http.route/routes))
+(spec/def :reverie.http.route/routes (spec/coll-of :reverie.http.route/route))
