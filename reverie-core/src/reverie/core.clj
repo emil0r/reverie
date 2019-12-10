@@ -9,8 +9,10 @@
             [reverie.module.entity :as entity]
             [reverie.render :as render]
             [reverie.site :as site]
+            [reverie.specs.app]
             [reverie.specs.object]
             [reverie.specs.module]
+            [reverie.specs.page]
             [reverie.specs.util :refer [assert-spec]]
             [reverie.system :as sys]
             [reverie.template :as template]
@@ -55,6 +57,9 @@
          nil)))
 
 (defmacro defapp [name options routes]
+  (assert-spec :reverie.app/name name)
+  (assert-spec :reverie.app/options options)
+  (assert-spec :reverie.http.route/routes routes)
   (when (not (true? (:disabled? options)))
     (let [name (keyword name)
           migration (assoc (:migration options) :type :app)
@@ -74,6 +79,9 @@
 (defmacro defpage
   "Define a page directly into the tree structure of the site"
   [path options routes]
+  (assert-spec :reverie.http.routes/path path)
+  (assert-spec :reverie.page/options options)
+  (assert-spec :reverie.http.route/routes routes)
   (when (not (true? (:disabled? options)))
     (let [properties {:name path :type :raw}
           migration (assoc (:migration options) :type :raw-page)
