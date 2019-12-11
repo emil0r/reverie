@@ -1,7 +1,6 @@
 (ns reverie.core
   (:require [clojure.spec.alpha :as spec]
             [clojure.string :as str]
-            [expound.alpha :as expound]
             [reverie.area :as a]
             [reverie.i18n :as i18n]
             [reverie.helpers.middleware :refer [wrap-response-with-handlers]]
@@ -10,7 +9,11 @@
             [reverie.module.entity :as entity]
             [reverie.render :as render]
             [reverie.site :as site]
+            [reverie.specs.app]
             [reverie.specs.object]
+            [reverie.specs.module]
+            [reverie.specs.page]
+            [reverie.specs.util :refer [assert-spec]]
             [reverie.system :as sys]
             [reverie.template :as template]
             [reverie.util :as util]
@@ -54,6 +57,9 @@
          nil)))
 
 (defmacro defapp [name options routes]
+  (assert-spec :reverie.app/name name)
+  (assert-spec :reverie.app/options options)
+  (assert-spec :reverie.http.route/routes routes)
   (when (not (true? (:disabled? options)))
     (let [name (keyword name)
           migration (assoc (:migration options) :type :app)
@@ -73,6 +79,9 @@
 (defmacro defpage
   "Define a page directly into the tree structure of the site"
   [path options routes]
+  (assert-spec :reverie.http.route/path path)
+  (assert-spec :reverie.page/options options)
+  (assert-spec :reverie.http.route/routes routes)
   (when (not (true? (:disabled? options)))
     (let [properties {:name path :type :raw}
           migration (assoc (:migration options) :type :raw-page)
@@ -100,6 +109,9 @@
   nil)
 
 (defmacro defmodule [name options & [routes]]
+  (assert-spec :reverie.module/name name)
+  (when routes
+    (assert-spec :reverie.http.route/routes routes))
   (when (not (true? (:disabled? options)))
     (let [name (keyword name)
           interface? (:interface? options)
@@ -133,12 +145,9 @@
          nil))))
 
 (defmacro defobject [name options methods]
-  (assert (spec/valid? :reverie.object/name name)
-          (expound/expound-str :reverie.object/name name))
-  (assert (spec/valid? :reverie.object/options options)
-          (expound/expound-str :reverie.object/options options))
-  (assert (spec/valid? :reverie.object/methods methods)
-          (expound/expound-str :reverie.object/methods methods))
+  (assert-spec :reverie.object/name name)
+  (assert-spec :reverie.object/options options)
+  (assert-spec :reverie.object/methods methods)
   (when (not (true? (:disabled? options)))
     (let [name (keyword name)
           migration (assoc (:migration options) :type :object)

@@ -1,6 +1,6 @@
-(ns reverie.specs.module
+(ns reverie.specs.page
   (:require [clojure.spec.alpha :as spec]
             [reverie.specs.route]))
 
-(spec/def :reverie.module/name symbol?)
+(spec/def :reverie.page/options map?)
 
