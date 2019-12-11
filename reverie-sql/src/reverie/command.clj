@@ -94,7 +94,7 @@
                                   :serial 1
                                   :version 0
                                   (sql/raw "\"order\"") 1
-                                  :template "main"}]})
+                                  :template "start"}]})
          (print-info (str "Root page " name " added")))))
    (print-info "Root page already exists. Aborting...")))
 
