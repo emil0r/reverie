@@ -103,21 +103,38 @@
       new-out)))
 
 (defmacro defapi [path options routes]
-  `(when (not (true? (:disabled? ~options)))
-    (let [properties# {:name ~path :type :api :options ~options}
-          middleware# (if-let [handlers# (:middleware ~options)]
-                        (wrap-response-with-handlers handlers#))
-          tags# (mapv (fn [[k# data#]] (assoc data# :name k#)) (:tags ~options))
-          routes# (build-api-routes {:routes []
-                                     :openapi (merge
-                                               {:paths {}
-                                                :tags tags#}
-                                               (select-keys ~options
-                                                            [:info
-                                                             :definitions
-                                                             :produces
-                                                             :consumes]))} ~path ~routes)]
-      (update-in routes# [:openapi] rs/swagger-json)
+  (when (not (true? (:disabled? options)))
+    (let [properties {:name path :type :api}
+          middleware (if-let [handlers (:middleware options)]
+                       (wrap-response-with-handlers handlers))
+          tags (mapv (fn [[k data]] (assoc data :name k)) (:tags options))
+          spec-path (str "/" (util/join-paths path (get-in options [:openapi :spec-path] "docs-spec")))
+          docs-path (str "/" (util/join-paths path (get-in options [:openapi :docs-path] "docs")) "*")
+          
+          routes (build-api-routes {:routes [[spec-path {:get reverie.page.api/get-schema}]
+                                             [docs-path {:get reverie.page.api/get-docs}]]
+                                    :openapi (merge
+                                              {:paths {}
+                                               :tags tags
+                                               :swagger-docs docs-path}
+                                              (select-keys (:openapi options)
+                                                           [:info
+                                                            :definitions
+                                                            :produces
+                                                            :consumes]))} path routes)]
+      `(let [schema# (rs/swagger-json (:openapi ~routes))
+             docs-handler# (ring.swagger.swagger-ui/swagger-ui {:swagger-docs ~spec-path})]
+         (i18n/load-from-options! ~options)
+         (swap! site/routes assoc ~path [(route/route [~path]) ~properties])
+         (swap! sys/storage assoc-in [:apis ~path]
+                {:routes (map route/route (:routes ~routes))
+                 :options (assoc ~options
+                                 :middleware ~middleware
+                                 :openapi schema#
+                                 :docs-handler docs-handler#)})
+         nil)
+      ;; this needs to be inside a macro body, otherwise ring-swagger throws an exception
+      
       )))
 
 (defmacro defpage

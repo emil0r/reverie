@@ -14,9 +14,10 @@
   (swap! children update-in [id] payload))
 
 (defapi "/api"
-  {:info {:title "My Test API"
-          :version "1.0.0"}
-   :tags {"child" {:description "Child info"}}}
+  {:openapi {:info {:title "My Test API"
+                    :version "1.0.0"}
+             :tags {"child" {:description "Child info"}}
+             :spec-path "/docs-spec"}}
   [["/child" {:tags ["child"]
               :methods {:put {:handler add-child
                               :responses {200 {:schema Child}}}}}
