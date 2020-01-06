@@ -25,6 +25,9 @@
                             (map :routes))
                        (->> (sys/raw-pages)
                             vals
+                            (map :routes))
+                       (->> (sys/apis)
+                            vals
                             (map :routes))]
                       flatten)]
       (->> routes
