@@ -91,7 +91,8 @@
                                                                :app
                                                                :type
                                                                :name
-                                                               :serial])]})
+                                                               :serial
+                                                               :api])]})
                  (db/get-pages-by-route database)))))
   (get-page [this {:keys [reverie] :as request}]
     (let [uri (:uri request)]
@@ -122,6 +123,11 @@
                        :options (:options page-data)
                        :routes (:routes page-data)
                        :database database}))
+              :api (let [page-data (sys/api name)]
+                     (page/api-page
+                      {:route route
+                       :options (:options page-data)
+                       :routes (:routes page-data)}))
               :module (assoc (:module (sys/module name))
                              :route route
                              :database database)
