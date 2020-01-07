@@ -60,7 +60,8 @@
   (get-route [this] this))
 
 (defn- casting? [x]
-  (= (type x) java.lang.Class))
+  (or (= (type x) java.lang.Class)
+      (= (type x) schema.core.Predicate)))
 
 (defn- method? [x]
   (fn? x))
