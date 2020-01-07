@@ -7,11 +7,15 @@
 (defonce children (atom {}))
 
 (defn add-child [request page payload params]
-  (swap! children assoc (:id payload) payload))
+  (swap! children assoc (:id payload) payload)
+  [201 payload])
 (defn get-child [request page payload params]
-  (get @children (:id params)))
+  (if-let [child (get @children (:id params))]
+    child
+    [404 nil]))
 (defn update-child [request page payload {:keys [id] :as params}]
-  (swap! children update-in [id] payload))
+  (swap! children assoc id payload)
+  [200 payload])
 
 (defapi "/api"
   {:openapi {:info {:title "My Test API"
@@ -21,12 +25,12 @@
   [["/child" {:tags ["child"]
               :methods {:put {:parameters {:body Child}
                               :handler add-child
-                              :responses {200 {:schema Child}}}}}
+                              :responses {201 {:schema Child}}}}}
     ["/:id" {:parameters {:path {:id s/Int}}
              :methods {:get {:handler get-child
-                             :responses {200 {:schema Child}}}
+                             :responses {200 {:schema Child}
+                                         404 nil}}
                        :post {:parameters {:body Child}
                               :handler update-child
                               :responses {200 {:schema Child}
-                                          404 {}}}}}]]])
-
+                                          404 nil}}}}]]])

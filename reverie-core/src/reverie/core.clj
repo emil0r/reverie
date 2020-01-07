@@ -79,26 +79,34 @@
 
 (defn build-api-routes [out
                         parent-route
+                        extras
                         [[route {:keys [methods] :as meta-properties} & child-routes]
                          & routes]]
   (let [new-route (str parent-route route)
         new-methods (->> methods ; take the methods in the current route
                          (map (fn [[k {:keys [handler]}]] [k handler])) ; take out k and handler
                          (into {})) ; create a new map with all http methods and corresponding handlers
+        openapi-data (select-keys meta-properties [:parameters :tags])
         ;; gather up info for the openapi spec
         openapi-info {new-route (into {} (map (fn [[k properties]]
-                                                 [k (merge
-                                                     (select-keys meta-properties [:parameters :tags])
+                                                [k (util/deep-merge
+                                                    (:openapi-data extras)
+                                                    openapi-data
                                                     (dissoc properties :handler))])
                                               methods))}
         new-out (-> out
-                    (update-in [:routes] conj [new-route new-methods])
+                    (update-in [:routes] conj [new-route (get-in openapi-data [:parameters :path]) new-methods])
                     (update-in [:openapi :paths] merge openapi-info))]
     (cond
       (not (empty? child-routes))
-      (recur new-out new-route child-routes)
+      (recur new-out
+             new-route
+             (update-in extras [:openapi-data] merge openapi-data)
+             child-routes)
+      
       (not (empty? routes))
-      (recur new-out new-route routes)
+      (recur new-out new-route extras routes)
+      
       :else
       new-out)))
 
@@ -108,9 +116,8 @@
           middleware (if-let [handlers (:middleware options)]
                        (wrap-response-with-handlers handlers))
           tags (mapv (fn [[k data]] (assoc data :name k)) (:tags options))
-          spec-path (str "/" (util/join-paths path (get-in options [:openapi :spec-path] "docs-spec")))
           docs-path (str "/" (util/join-paths path (get-in options [:openapi :docs-path] "docs")) "*")
-          
+          spec-path (str "/" (util/join-paths path (get-in options [:openapi :spec-path] "docs-spec")))
           routes (build-api-routes {:routes [[spec-path {:get reverie.page.api/get-schema}]
                                              [docs-path {:get reverie.page.api/get-docs}]]
                                     :openapi (merge
@@ -121,7 +128,10 @@
                                                            [:info
                                                             :definitions
                                                             :produces
-                                                            :consumes]))} path routes)]
+                                                            :consumes]))}
+                                   path {:openapi-data {}} routes)]
+      ;; schema and docs-handler has to be defined inside the macro, otherwise
+      ;; the lookups done by ring.swagger functions fail
       `(let [schema# (rs/swagger-json (:openapi ~routes))
              docs-handler# (ring.swagger.swagger-ui/swagger-ui {:swagger-docs ~spec-path})]
          (i18n/load-from-options! ~options)
