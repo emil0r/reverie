@@ -129,6 +129,7 @@
          (swap! sys/storage assoc-in [:apis ~path]
                 {:routes (map route/route (:routes ~routes))
                  :options (assoc ~options
+                                 :forgery? false
                                  :middleware ~middleware
                                  :openapi schema#
                                  :docs-handler docs-handler#)})

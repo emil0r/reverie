@@ -38,7 +38,7 @@
        (if-let [page-route (first (filter #(route/match? % request) routes))]
          (let [{:keys [request method]} (route/match? page-route request)]
            (if (and request method)
-             (let [resp (method request this (:params request))
+             (let [resp (method request this (json/parse-string (slurp (:body request)) true) (:params request))
                    middleware-handler-page-route (get-in page-route [:options :middleware])
                    middleware-handler (get options :middleware)
                    final-resp (match [ ;; raw response
