@@ -232,7 +232,7 @@
   (slug [this] nil)
   (path [this] (:path route))
   (objects [this] nil)
-  (type [page] :raw)
+  (type [page] :api)
   (created [page] nil)
   (updated [page] nil)
   (raw [page] nil)
