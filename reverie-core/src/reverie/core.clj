@@ -5,6 +5,7 @@
             [reverie.i18n :as i18n]
             [reverie.helpers.middleware :refer [wrap-response-with-handlers]]
             [reverie.http.route :as route]
+            [reverie.page.api :refer [build-api-routes]]
             [reverie.module :as module]
             [reverie.module.entity :as entity]
             [reverie.render :as render]
@@ -77,39 +78,6 @@
                  :options ~options})
          nil))))
 
-(defn build-api-routes [out
-                        parent-route
-                        extras
-                        [[route {:keys [methods] :as meta-properties} & child-routes]
-                         & routes]]
-  (let [new-route (str parent-route route)
-        new-methods (->> methods ; take the methods in the current route
-                         (map (fn [[k {:keys [handler]}]] [k handler])) ; take out k and handler
-                         (into {})) ; create a new map with all http methods and corresponding handlers
-        openapi-data (select-keys meta-properties [:parameters :tags])
-        ;; gather up info for the openapi spec
-        openapi-info {new-route (into {} (map (fn [[k properties]]
-                                                [k (util/deep-merge
-                                                    (:openapi-data extras)
-                                                    openapi-data
-                                                    (dissoc properties :handler))])
-                                              methods))}
-        new-out (-> out
-                    (update-in [:routes] conj [new-route (get-in openapi-data [:parameters :path]) new-methods])
-                    (update-in [:openapi :paths] merge openapi-info))]
-    (cond
-      (not (empty? child-routes))
-      (recur new-out
-             new-route
-             (update-in extras [:openapi-data] merge openapi-data)
-             child-routes)
-      
-      (not (empty? routes))
-      (recur new-out new-route extras routes)
-      
-      :else
-      new-out)))
-
 (defmacro defapi [path options routes]
   (when (not (true? (:disabled? options)))
     (let [properties {:name path :type :api}
@@ -143,10 +111,19 @@
                                  :middleware ~middleware
                                  :openapi schema#
                                  :docs-handler docs-handler#)})
-         nil)
-      ;; this needs to be inside a macro body, otherwise ring-swagger throws an exception
-      
-      )))
+         nil))))
+
+(defmacro defws [path options]
+  (when (not (true? (:disabled? options)))
+    (let [properties {:name path :type :websocket}
+          middleware (if-let [handlers (:middleware options)]
+                       (wrap-response-with-handlers handlers))]
+      `(do
+         (i18n/load-from-options! ~options)
+         (swap! site/routes assoc ~path [(route/route [~path]) ~properties])
+         (swap! sys/storage assoc-in [:websockets ~path]
+                {:options ~options})
+         nil))))
 
 (defmacro defpage
   "Define a page directly into the tree structure of the site"

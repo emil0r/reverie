@@ -128,6 +128,10 @@
                       {:route route
                        :options (:options page-data)
                        :routes (:routes page-data)}))
+              :websocket (let [page-data (sys/websocket name)]
+                           (page/websocket-page
+                            {:route route
+                             :options (:options page-data)}))
               :module (assoc (:module (sys/module name))
                              :route route
                              :database database)

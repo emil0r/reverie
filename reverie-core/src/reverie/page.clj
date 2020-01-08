@@ -10,6 +10,7 @@
             [reverie.page.api :as page.api]
             [reverie.page.app :as page.app]
             [reverie.page.raw-page :as page.raw-page]
+            [reverie.page.websocket :as page.websocket]
             [reverie.page.util :refer [type? handle-response throw-render-exception]]
             [reverie.render :as render]
             [reverie.system :as sys]
@@ -232,7 +233,7 @@
   (slug [this] nil)
   (path [this] (:path route))
   (objects [this] nil)
-  (type [page] :raw)
+  (type [page] :api)
   (created [page] nil)
   (updated [page] nil)
   (raw [page] nil)
@@ -243,6 +244,42 @@
     (page.api/render-fn this request))
   (render [this _ _]
     (throw-render-exception)))
+
+(s/defrecord WebsocketPage [route :- Route
+                            options :- {s/Any s/Any}]
+  route/IRouting
+  (get-route [this] route)
+  (match? [this request] (route/match? route request))
+
+  IPage
+  (id [this] (:path route))
+  (serial [this] (:path route))
+  (version [this] 1)
+  (published? [this] true)
+  (parent [this] nil)
+  (root? [this] false)
+  (children [this database] nil)
+  (children? [this database] false)
+  (title [this] nil)
+  (name [this] nil)
+  (order [this] nil)
+  (options [this] options)
+  (properties [this] nil)
+  (slug [this] nil)
+  (path [this] (:path route))
+  (objects [this] nil)
+  (type [page] :websocket)
+  (created [page] nil)
+  (updated [page] nil)
+  (raw [page] nil)
+  (cache? [page] false)
+
+  render/IRender
+  (render [this request]
+    (page.websocket/render-fn this request))
+  (render [this _ _]
+    (throw-render-exception)))
+
 
 
 (defn page [data]
@@ -260,3 +297,6 @@
 
 (defn api-page [data]
   (map->ApiPage data))
+
+(defn websocket-page [data]
+  (map->WebsocketPage data))

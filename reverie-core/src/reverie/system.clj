@@ -28,6 +28,7 @@
 (defonce storage (atom {:raw-pages {}
                         :apps {}
                         :apis {}
+                        :websockets {}
                         :objects {}
                         :templates {}
                         :roles {}
@@ -45,6 +46,11 @@
   (:apis @storage))
 (defn api [key]
   (get-in @storage [:apis key]))
+
+(defn websockets []
+  (:websockets @storage))
+(defn websocket [key]
+  (get-in @storage [:websockets key]))
 
 (defn templates []
   (:templates @storage))
