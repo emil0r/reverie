@@ -1,4 +1,4 @@
-(defproject reverie-core "0.9.0-alpha7"
+(defproject reverie-core "0.9.0-SNAPSHOT"
 
   :description "The core of reverie"
 
@@ -25,6 +25,10 @@
                  [lib-noir "0.9.9"]
                  [ez-web "0.3.0"]
                  [ez-image "1.0.4"]
+
+                 ;; swagger
+                 [metosin/ring-swagger "0.26.2"]
+                 [metosin/ring-swagger-ui "3.20.1"]
 
                  ;; errors
                  [expound "0.7.2"]

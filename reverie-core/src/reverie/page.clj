@@ -7,6 +7,10 @@
             [reverie.http.response :as response]
             [reverie.http.route :as route]
             [reverie.object :as object]
+            [reverie.page.api :as page.api]
+            [reverie.page.app :as page.app]
+            [reverie.page.raw-page :as page.raw-page]
+            [reverie.page.util :refer [type? handle-response throw-render-exception]]
             [reverie.render :as render]
             [reverie.system :as sys]
             [reverie.util :as util]
@@ -14,8 +18,7 @@
             [taoensso.timbre :as log]
 
             [reverie.RenderException])
-  (:import [reverie RenderException]
-           [reverie.object ReverieObject]
+  (:import [reverie.object ReverieObject]
            [reverie.http.route Route]))
 
 
@@ -43,19 +46,6 @@
   (cache? [page]))
 
 
-(defn type? [page expected]
-  (= (type page) expected))
-
-(defn- handle-response [options response]
-  (cond
-   (map? response) response
-   (nil? response) response
-   :else
-   (let [{:keys [headers status]} (:http options)]
-     {:status (or status 200)
-      :headers (merge {"Content-Type" "text/html; charset=utf-8;"}
-                      headers)
-      :body response})))
 
 (s/defrecord Page [route :- Route
                    id :- s/Int
@@ -107,7 +97,7 @@
      options
      (render/render template request this)))
   (render [this _ _]
-    (throw (RenderException. "[component request sub-component] not implemented for reverie.page/Page"))))
+    (throw-render-exception)))
 
 
 (s/defrecord RawPage [route :- Route
@@ -142,88 +132,10 @@
   (cache? [page] (get-in options [:cache :cache?]))
 
   render/IRender
-  (render [this {:keys [request-method] :as request}]
-    (let [request (merge request
-                         {:shortened-uri (util/shorten-uri
-                                          (:uri request) (:path route))})]
-      (with-access
-        (get-in request [:reverie :user])
-        (:required-roles options)
-        (handle-response
-         options
-         (if-let [page-route (first (filter #(route/match? % request) routes))]
-           (let [{:keys [request method]} (route/match? page-route request)]
-             (if (and request method)
-               (let [renderer (sys/renderer (:renderer options))
-                     resp (method request this (:params request))
-                     t (sys/template (:template options))
-                     middleware-handler-page-route (get-in page-route [:options :middleware])
-                     middleware-handler (get options :middleware)
-                     final-resp (match [;; raw response
-                                        (and (map? resp)
-                                             (contains? resp :status)
-                                             (contains? resp :body)
-                                             (contains? resp :headers))
-
-                                        ;; renderer
-                                        (not (nil? renderer))
-
-                                        ;; routes
-                                        (not (nil? (:methods-or-routes renderer)))
-
-                                        ;; map
-                                        (map? resp)
-
-                                        ;; template
-                                        (not (nil? t))]
-
-                                       ;; raw response
-                                       [true _ _ _ _] resp
-
-                                       ;; ~renderer, _ , map, template
-                                       [_ false _ true true] (render/render t request (assoc this :rendered resp))
-
-                                       ;; renderer, routes, map, template
-                                       [_ true true true true] (let [out (render/render renderer (:request-method request)
-                                                                                        {:data resp
-                                                                                         ::render/type :page/routes
-                                                                                         :meta {:route-name (get-in page-route [:options :name])}})]
-                                                                 (render/render t request (assoc this :rendered out)))
-
-                                       ;; renderer, ~routes, map, template
-                                       [_ true false true true] (let [out (render/render renderer (:request-method request)
-                                                                                         {:data resp
-                                                                                          ::render/type :page/no-routes
-                                                                                          :meta {:route-name (get-in page-route [:options :name])}})]
-                                                                  (render/render t request (assoc this :rendered out)))
-
-                                       ;; renderer, ~routes, ~map, ~template
-                                       [_ true false false false] (render/render renderer (:request-method request)
-                                                                                 {:data resp
-                                                                                  ::render/type :page/no-routes
-                                                                                  :meta {:route-name (get-in page-route [:options :name])}})
-
-                                       ;; default
-                                       [_ _ _ _ _] resp)]
-                 (match [(nil? middleware-handler) (nil? middleware-handler-page-route)]
-                        [false false]
-                        (middleware-handler
-                         (assoc-in
-                          request [:reverie :response]
-                          (middleware-handler-page-route
-                           (assoc-in request [:reverie :response] final-resp))))
-
-                        [false true]
-                        (middleware-handler (assoc-in request [:reverie :response] final-resp))
-
-                        [true false]
-                        (middleware-handler-page-route (assoc-in request [:reverie :response] final-resp))
-
-                        [_ _]
-                        final-resp))))
-           (response/raise 404))))))
+  (render [this request]
+    (page.raw-page/render-fn this request))
   (render [this _ _]
-    (throw (RenderException. "[component request sub-component] not implemented for reverie.page/RawPage"))))
+    (throw-render-exception)))
 
 
 (s/defrecord AppPage [route :- Route
@@ -292,48 +204,45 @@
 
   render/IRender
   (render [this request]
-    (let [request (merge request
-                         {:shortened-uri (util/shorten-uri
-                                          (:uri request) (:path route))})]
-      (handle-response
-       options
-       (if-let [app-route (first (filter #(route/match? % request) app-routes))]
-         (let [{:keys [request method]} (route/match? app-route request)
-               renderer (sys/renderer (:renderer options))
-               resp (method request this properties (:params request))
-               t (or (:template properties) template)]
-           (match [(not (nil? renderer)) (not (nil? (:methods-or-routes renderer))) (map? resp) (not (nil? t))]
-                  ;; ~renderer, _ , map, template
-                  [false _ true true] (render/render t request (assoc this :rendered resp))
-
-                  ;; renderer, routes, map, template
-                  [true true true true] (let [out (render/render renderer (:request-method request)
-                                                                 {:data resp
-                                                                  ::render/type :page/routes
-                                                                  :meta {:route-name (get-in app-route [:options :name])}})]
-                                          (render/render t request (assoc this :rendered out)))
-
-                  ;; renderer, ~routes, map, template
-                  [true false true true] (let [out (render/render renderer (:request-method request)
-                                                                  {:data resp
-                                                                   ::render/type :page/no-routes
-                                                                   :meta {:route-name (get-in app-route [:options :name])}})]
-                                           (render/render t request (assoc this :rendered out)))
-
-                  ;; _, _, ~map, template
-                  ;; invalid combiation
-                  ;; when a template is being used there has to be a map of some sort
-                  [_ _ false true] (do (log/error {:what ::AppPage
-                                                   :message "Invalid combitation rendering AppPage. Tried to render a template without a corresponding map"
-                                                   :template t
-                                                   :route route
-                                                   :app-route app-route
-                                                   :response resp})
-                                       (response/raise 500))
-                  ;; default
-                  [_ _ _ _] resp))))))
+    (page.app/render-fn this request))
   (render [this _ _]
-    (throw (RenderException. "[component request sub-component] not implemented for reverie.page/Page"))))
+    (throw-render-exception)))
+
+(s/defrecord ApiPage [route :- Route
+                      options :- {s/Any s/Any}
+                      routes :- [s/Any]]
+  route/IRouting
+  (get-route [this] route)
+  (match? [this request] (route/match? route request))
+
+  IPage
+  (id [this] (:path route))
+  (serial [this] (:path route))
+  (version [this] 1)
+  (published? [this] true)
+  (parent [this] nil)
+  (root? [this] false)
+  (children [this database] nil)
+  (children? [this database] false)
+  (title [this] nil)
+  (name [this] nil)
+  (order [this] nil)
+  (options [this] options)
+  (properties [this] nil)
+  (slug [this] nil)
+  (path [this] (:path route))
+  (objects [this] nil)
+  (type [page] :raw)
+  (created [page] nil)
+  (updated [page] nil)
+  (raw [page] nil)
+  (cache? [page] (get-in options [:cache :cache?]))
+
+  render/IRender
+  (render [this request]
+    (page.api/render-fn this request))
+  (render [this _ _]
+    (throw-render-exception)))
 
 
 (defn page [data]
@@ -348,3 +257,6 @@
   (if (string? (:route data))
     (map->AppPage (assoc data :route (route/route [(:route data)])))
     (map->AppPage data)))
+
+(defn api-page [data]
+  (map->ApiPage data))

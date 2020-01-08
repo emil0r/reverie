@@ -25,6 +25,9 @@
                             (map :routes))
                        (->> (sys/raw-pages)
                             vals
+                            (map :routes))
+                       (->> (sys/apis)
+                            vals
                             (map :routes))]
                       flatten)]
       (->> routes
@@ -57,7 +60,8 @@
   (get-route [this] this))
 
 (defn- casting? [x]
-  (= (type x) java.lang.Class))
+  (or (= (type x) java.lang.Class)
+      (= (type x) schema.core.Predicate)))
 
 (defn- method? [x]
   (fn? x))

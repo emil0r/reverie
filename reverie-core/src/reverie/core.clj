@@ -17,6 +17,7 @@
             [reverie.system :as sys]
             [reverie.template :as template]
             [reverie.util :as util]
+            [ring.swagger.swagger2 :as rs]
             reverie.AreaException)
   (:import [reverie AreaException]))
 
@@ -25,23 +26,23 @@
    (let [name (if (symbol? name) (keyword name) name)
          params (keys &env)]
      (cond
-      (some #(= name %) [:body :headers :status])
-      (throw (AreaException. "areas can't be named body, headers or status"))
-      (and (some #(= 'request %) params)
-           (some #(= 'page %) params))
-      `(render/render (a/area (keyword ~name)) ~'request ~'page)
-      :else (throw (AreaException. "area assumes variables 'request' and 'page' to be present. If you wish to use other named variables send them after the name of the area like this -> (area :a req p)")))))
+       (some #(= name %) [:body :headers :status])
+       (throw (AreaException. "areas can't be named body, headers or status"))
+       (and (some #(= 'request %) params)
+            (some #(= 'page %) params))
+       `(render/render (a/area (keyword ~name)) ~'request ~'page)
+       :else (throw (AreaException. "area assumes variables 'request' and 'page' to be present. If you wish to use other named variables send them after the name of the area like this -> (area :a req p)")))))
   ([name display]
    (let [name (if (symbol? name) (keyword name) name)
          display (if (symbol? display) (keyword display) display)
          params (keys &env)]
      (cond
-      (some #(= name %) [:body :headers :status])
-      (throw (AreaException. "areas can't be named body, headers or status"))
-      (and (some #(= 'request %) params)
-           (some #(= 'page %) params))
-      `(render/render (a/area ~(keyword name) ~(keyword display)) ~'request ~'page)
-      :else (throw (AreaException. "area assumes variables 'request' and 'page' to be present. If you wish to use other named variables send them after the name of the area like this -> (area :a req p)")))))
+       (some #(= name %) [:body :headers :status])
+       (throw (AreaException. "areas can't be named body, headers or status"))
+       (and (some #(= 'request %) params)
+            (some #(= 'page %) params))
+       `(render/render (a/area ~(keyword name) ~(keyword display)) ~'request ~'page)
+       :else (throw (AreaException. "area assumes variables 'request' and 'page' to be present. If you wish to use other named variables send them after the name of the area like this -> (area :a req p)")))))
   ([name request page]
    (let [name (if (symbol? name) (keyword name) name)]
      `(render/render (a/area (keyword ~name)) ~request ~page)))
@@ -76,6 +77,77 @@
                  :options ~options})
          nil))))
 
+(defn build-api-routes [out
+                        parent-route
+                        extras
+                        [[route {:keys [methods] :as meta-properties} & child-routes]
+                         & routes]]
+  (let [new-route (str parent-route route)
+        new-methods (->> methods ; take the methods in the current route
+                         (map (fn [[k {:keys [handler]}]] [k handler])) ; take out k and handler
+                         (into {})) ; create a new map with all http methods and corresponding handlers
+        openapi-data (select-keys meta-properties [:parameters :tags])
+        ;; gather up info for the openapi spec
+        openapi-info {new-route (into {} (map (fn [[k properties]]
+                                                [k (util/deep-merge
+                                                    (:openapi-data extras)
+                                                    openapi-data
+                                                    (dissoc properties :handler))])
+                                              methods))}
+        new-out (-> out
+                    (update-in [:routes] conj [new-route (get-in openapi-data [:parameters :path]) new-methods])
+                    (update-in [:openapi :paths] merge openapi-info))]
+    (cond
+      (not (empty? child-routes))
+      (recur new-out
+             new-route
+             (update-in extras [:openapi-data] merge openapi-data)
+             child-routes)
+      
+      (not (empty? routes))
+      (recur new-out new-route extras routes)
+      
+      :else
+      new-out)))
+
+(defmacro defapi [path options routes]
+  (when (not (true? (:disabled? options)))
+    (let [properties {:name path :type :api}
+          middleware (if-let [handlers (:middleware options)]
+                       (wrap-response-with-handlers handlers))
+          tags (mapv (fn [[k data]] (assoc data :name k)) (:tags options))
+          docs-path (str "/" (util/join-paths path (get-in options [:openapi :docs-path] "docs")) "*")
+          spec-path (str "/" (util/join-paths path (get-in options [:openapi :spec-path] "docs-spec")))
+          routes (build-api-routes {:routes [[spec-path {:get reverie.page.api/get-schema}]
+                                             [docs-path {:get reverie.page.api/get-docs}]]
+                                    :openapi (merge
+                                              {:paths {}
+                                               :tags tags
+                                               :swagger-docs docs-path}
+                                              (select-keys (:openapi options)
+                                                           [:info
+                                                            :definitions
+                                                            :produces
+                                                            :consumes]))}
+                                   path {:openapi-data {}} routes)]
+      ;; schema and docs-handler has to be defined inside the macro, otherwise
+      ;; the lookups done by ring.swagger functions fail
+      `(let [schema# (rs/swagger-json (:openapi ~routes))
+             docs-handler# (ring.swagger.swagger-ui/swagger-ui {:swagger-docs ~spec-path})]
+         (i18n/load-from-options! ~options)
+         (swap! site/routes assoc ~path [(route/route [~path]) ~properties])
+         (swap! sys/storage assoc-in [:apis ~path]
+                {:routes (map route/route (:routes ~routes))
+                 :options (assoc ~options
+                                 :forgery? false
+                                 :middleware ~middleware
+                                 :openapi schema#
+                                 :docs-handler docs-handler#)})
+         nil)
+      ;; this needs to be inside a macro body, otherwise ring-swagger throws an exception
+      
+      )))
+
 (defmacro defpage
   "Define a page directly into the tree structure of the site"
   [path options routes]
@@ -100,6 +172,7 @@
                 {:routes (map route/route ~routes)
                  :options (assoc ~options :middleware ~middleware)})
          nil))))
+
 (defn undefpage
   "Undefine a page"
   [path]

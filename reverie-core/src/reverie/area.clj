@@ -1,6 +1,7 @@
 (ns reverie.area
   (:require [reverie.render :as render]
             [reverie.page :as page]
+            [reverie.page.util :as page.util]
             [reverie.object :as object]
             [reverie.system :as sys]
             [reverie.util :as util]
@@ -65,7 +66,7 @@
     (throw (RenderException. "[component request] not implemented for reverie.area/Area")))
   (render [this request page]
     (if (and (contains? page :rendered)
-             (not (page/type? page :app)))
+             (not (page.util/type? page :app)))
       ;; for RawPage
       (get-in page [:rendered name])
       (let [edit? (get-in request [:reverie :edit?])
@@ -93,7 +94,7 @@
                                     "</div>"))
                               "</div>"]
                              [nil nil])
-            middle (if (page/type? page :app)
+            middle (if (page.util/type? page :app)
                      (get (:rendered page) name)
                      nil)]
         (list
