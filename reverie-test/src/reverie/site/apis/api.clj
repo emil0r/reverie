@@ -3,15 +3,19 @@
             [schema.core :as s]))
 
 (s/defschema Child {:name s/Str :id s/Int})
+(s/defschema Children [Child])
 
 (defonce children (atom {}))
+
+(defn get-children [request page payload params]
+  [200 (into [] (vals @children))])
 
 (defn add-child [request page payload params]
   (swap! children assoc (:id payload) payload)
   [201 payload])
 (defn get-child [request page payload params]
   (if-let [child (get @children (:id params))]
-    child
+    [200 child]
     [404 nil]))
 (defn update-child [request page payload {:keys [id] :as params}]
   (swap! children assoc id payload)
@@ -23,7 +27,9 @@
              :tags {"child" {:description "Child info"}}
              :spec-path "/docs-spec"}}
   [["/child" {:tags ["child"]
-              :methods {:put {:parameters {:body Child}
+              :methods {:get {:handler get-children
+                              :responses {200 {:schema Children}}}
+                        :put {:parameters {:body Child}
                               :handler add-child
                               :responses {201 {:schema Child}}}}}
     ["/:id" {:parameters {:path {:id s/Int}}

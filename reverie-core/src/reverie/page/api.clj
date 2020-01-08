@@ -34,9 +34,7 @@
            (contains? resp :body)
            (contains? resp :headers))
     resp
-    (let [[status data] (if (vector? resp)
-                          resp
-                          [200 resp])]
+    (let [[status data] resp]
       {:status status
        :body (json/generate-string data)
        :headers {"Content-Type" "application/json"}})))
