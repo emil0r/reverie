@@ -113,7 +113,7 @@
                                  :docs-handler docs-handler#)})
          nil))))
 
-(defmacro defws [path options]
+(defmacro defwebsocket [path options]
   (when (not (true? (:disabled? options)))
     (let [properties {:name path :type :websocket}
           middleware (if-let [handlers (:middleware options)]

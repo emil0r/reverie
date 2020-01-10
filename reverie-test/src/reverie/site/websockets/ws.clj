@@ -1,5 +1,6 @@
 (ns reverie.site.websockets.ws
-  (:require [reverie.core :refer [defws]]))
+  (:require [reverie.core :refer [defwebsocket]]
+            [reverie.websocket :refer [send!]]))
 
 
 (defn receive [data]
@@ -8,6 +9,6 @@
 (defn close [data]
   (println "close" data))
 
-(defws "/ws"
+(defwebsocket "/ws"
   {:on-receive receive
    :on-close close})

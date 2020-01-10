@@ -92,7 +92,8 @@
                                                                :type
                                                                :name
                                                                :serial
-                                                               :api])]})
+                                                               :api
+                                                               :websocket])]})
                  (db/get-pages-by-route database)))))
   (get-page [this {:keys [reverie] :as request}]
     (let [uri (:uri request)]
@@ -156,40 +157,43 @@
                       (response/get 404))}
        ;; match found, go through the complicated maze towards the end...
        (if-let [p (get-page this request)]
-         ;; in the event of a page found...
-         (do
-           ;; update edits for the admin panel
-           (editors/edit-follow! p (get-in request [:reverie :user]))
-           ;; update the request with required information
-           (let [request (assoc-in request [:reverie :edit?]
-                                   (editors/edit? p (get-in request [:reverie :user])))
-                 ;; get cache hit
-                 hit (if (and (page/cache? p)
-                              (= 1 (page/version p)))
-                       (cache/lookup cachemanager p request))
-                 forgery? (->> p
-                               (page/options)
-                               :forgery?
-                               false?
-                               not)
-                 ;; check if we need to cache. needs to be done in the beginning
-                 ;; for the reverie.cache/skip macro
-                 ;; set really-cache? to true -> when...
-                 ;; the request method is a GET
-                 ;; AND we can cache the page
-                 ;; AND the hit is nil
-                 ;; AND no session flash is present to skip it
-                 really-cache? (and (nil? hit)
-                                    (= (:request-method request) :get)
-                                    (page/cache? p)
-                                    (not (session/flash-get :skip-cache? false))
-                                    (= 1 (page/version p)))
-                 handler (handler-render hit p render-fn cachemanager really-cache? system-pages)]
-             ;; dynamically set *caching*? for the skip macro to work
-             (binding [cache/*caching?* really-cache?]
-               (if forgery?
-                 ((wrap-anti-forgery (wrap-csrf-token handler)) request)
-                 (handler request)))))
+         ;; check for a websocket first, so that it can upgrade properly
+         (if (= (page/type p) :websocket)
+           (render/render p request)
+           ;; in the event of a page found...
+           (do
+             ;; update edits for the admin panel
+             (editors/edit-follow! p (get-in request [:reverie :user]))
+             ;; update the request with required information
+             (let [request (assoc-in request [:reverie :edit?]
+                                     (editors/edit? p (get-in request [:reverie :user])))
+                   ;; get cache hit
+                   hit (if (and (page/cache? p)
+                                (= 1 (page/version p)))
+                         (cache/lookup cachemanager p request))
+                   forgery? (->> p
+                                 (page/options)
+                                 :forgery?
+                                 false?
+                                 not)
+                   ;; check if we need to cache. needs to be done in the beginning
+                   ;; for the reverie.cache/skip macro
+                   ;; set really-cache? to true -> when...
+                   ;; the request method is a GET
+                   ;; AND we can cache the page
+                   ;; AND the hit is nil
+                   ;; AND no session flash is present to skip it
+                   really-cache? (and (nil? hit)
+                                      (= (:request-method request) :get)
+                                      (page/cache? p)
+                                      (not (session/flash-get :skip-cache? false))
+                                      (= 1 (page/version p)))
+                   handler (handler-render hit p render-fn cachemanager really-cache? system-pages)]
+               ;; dynamically set *caching*? for the skip macro to work
+               (binding [cache/*caching?* really-cache?]
+                 (if forgery?
+                   ((wrap-anti-forgery (wrap-csrf-token handler)) request)
+                   (handler request))))))
          ;; didn't find page -> 404
          {:type :response
           :response (or (get system-pages 404)
