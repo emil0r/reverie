@@ -2,6 +2,8 @@
   (:require [org.httpkit.server :as server]
             [reverie.system :as sys]))
 
+(defonce channels (atom {}))
+
 (defn get-channel [path]
   (get-in @sys/storage [:websockets path :channel]))
 

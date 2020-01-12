@@ -107,3 +107,17 @@
   (authorize? [what user database action])
   (add-authorization! [what database role action])
   (remove-authorization! [what database role action]))
+
+
+(defprotocol IAuth
+  (get-id [authed]))
+
+(extend-protocol IAuth
+  User
+  (get-id [user] (:id user))
+
+  clojure.lang.IPersistentMap
+  (get-id [request] (get-in request [:reverie :user :id]))
+
+  nil
+  (get-id [_] nil))
