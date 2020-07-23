@@ -1,4 +1,4 @@
-(defproject reverie-core "0.9.0-alpha7"
+(defproject reverie-core "0.9.0-SNAPSHOT"
 
   :description "The core of reverie"
 
@@ -22,7 +22,6 @@
                  [clout "2.2.1"]
                  [hiccup "1.0.5"]
                  [vlad "3.3.2"]
-                 [lib-noir "0.9.9"]
                  [ez-web "0.3.0"]
                  [ez-image "1.0.4"]
 

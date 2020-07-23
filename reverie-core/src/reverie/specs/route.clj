@@ -2,10 +2,13 @@
   (:require [clojure.spec.alpha :as spec]
             [reverie.util :refer [regex?]]))
 
+(def http-methods #{:any :get :post :put :delete :head :options})
+(defn not-http-methods [x]
+  (not (http-methods x)))
+
 (spec/def :reverie.http.route/path string?)
-(spec/def :reverie.http.route/casting (spec/and map?
-                                                (fn [arg]
-                                                  (some #(instance? java.lang.Class %) (vals arg)))))
+(spec/def :reverie.http.route/casting (spec/map-of not-http-methods
+                                                   symbol?))
 (spec/def :reverie.http.route/matching (spec/and map?
                                                  #(some regex? (vals %))))
 (spec/def :reverie.http.route/meta (spec/and map?
@@ -14,7 +17,7 @@
                                               #(every? keyword? %)))
 
 (spec/def :reverie.http.route/http-methods
-  (spec/map-of #{:any :get :post :put :delete :head :options}
+  (spec/map-of http-methods
                (spec/or :fn fn?
                         :symbol symbol?)))
 
