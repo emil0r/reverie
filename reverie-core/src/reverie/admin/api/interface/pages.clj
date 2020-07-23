@@ -4,7 +4,7 @@
             [clojure.edn :as edn]
             [clojure.string :as str]
             [reverie.admin.api.editors :as editors]
-            [reverie.admin.api.util :refer [boolean? json-response]]
+            [reverie.admin.api.util :refer [json-response]]
             [reverie.auth :as auth]
             [reverie.database :as db]
             [reverie.page :as page]
