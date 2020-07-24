@@ -99,7 +99,7 @@
   (:settings @sys))
 
 (defrecord ReverieData [settings database filemanager cachemanager user
-                        dev? edit? editor?])
+                        dev? edit? editor? session cookies])
 
 (defmethod clojure.core/print-method ReverieData [data ^java.io.Writer writer]
   (.write writer "#<ReverieData>"))

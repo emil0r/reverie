@@ -1,6 +1,6 @@
 (ns reverie.auth
   (:require [clojure.set :as set]
-            [noir.session :as session]
+            [reverie.session :as session]
             [slingshot.slingshot :refer [throw+]]))
 
 
@@ -28,7 +28,7 @@
 
 (defprotocol IUserDatabase
   (get-users [db] "Get all users")
-  (get-user [db] [db id-or-email] "Get user by session or by id/email"))
+  (get-user [db id-or-email] "Get user by session or by id/email"))
 
 (defprotocol IUserLogin
   (login [data db]))
@@ -45,14 +45,14 @@
 (defprotocol IUserAdd
   (add-user! [data roles groups db]))
 
-(defn logged-in? []
-  (not (nil? (session/get :user-id))))
+(defn logged-in? [request]
+  (not (nil? (session/get request :user-id))))
 
-(defn get-id []
-  (session/get :user-id))
+(defn get-id [request]
+  (session/get request :user-id))
 
-(defn logout []
-  (session/clear!)
+(defn logout [request]
+  (session/clear! request)
   true)
 
 

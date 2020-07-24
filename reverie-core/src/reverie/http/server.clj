@@ -7,8 +7,6 @@
             [taoensso.timbre :as log]
 
             ;; middleware
-            [noir.cookies :refer [wrap-noir-cookies]]
-            [noir.session :refer [wrap-noir-session wrap-noir-flash mem]]
             [noir.util.middleware :refer [wrap-strip-trailing-slash]]
             [reverie.helpers.middleware :refer [create-handler]]
             [reverie.http.middleware :refer [wrap-admin
@@ -19,7 +17,10 @@
                                              wrap-forker
                                              wrap-i18n
                                              wrap-resources
-                                             wrap-reverie-data]]
+                                             wrap-reverie-data
+                                             ;;wrap-strip-trailing-slash
+                                             ]]
+            [ring.middleware.cookies :refer [wrap-cookies]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file :refer [wrap-file]] ;; research for later
             [ring.middleware.file-info :refer [wrap-file-info]]
@@ -31,6 +32,7 @@
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.reload :refer [wrap-reload]]
+            [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.session.memory :refer [memory-store]]
             [ring.middleware.stacktrace :refer [wrap-stacktrace]]))
 
@@ -88,13 +90,12 @@
                                  [wrap-params]
                                  [wrap-multipart-params
                                   (:multipart-opts middleware-options)]
-                                 [wrap-noir-flash]
-                                 [wrap-noir-session
+                                 [wrap-session
                                   {:store (or store (memory-store))
                                    ;; store session
                                    ;; cookies for 360 days
                                    :cookie-attrs {:max-age (get-in middleware-options [:cookie :max-age] 31104000)}}]
-                                 [wrap-noir-cookies]
+                                 [wrap-cookies]
                                  [wrap-strip-trailing-slash]
                                  [wrap-error-log dev?]
                                  [wrap-resources [[(get-in middleware-options [:resources :media]) media-handler]

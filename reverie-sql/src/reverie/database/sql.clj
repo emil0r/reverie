@@ -807,30 +807,26 @@
             db))
          (db/query db sql-get-users)))
 
-  (get-user
-    ([db]
-     (if-let [user-id (session/get :user-id)]
-       (auth/get-user db user-id)))
-    ([db id]
-     (if-let [user (->> {:id id}
-                        (db/query db (cond
-                                       (and (string? id) (re-find #"@" id)) sql-get-user-by-email
-                                       (string? id) sql-get-user-by-username
-                                       (uuid? id) sql-get-user-by-token
-                                       :else sql-get-user-by-id))
-                        first)]
-       (let [{:keys [id created username active_p email
-                     spoken_name full_name last_login roles groups]} user]
-         (extend-user
-          (auth/map->User
-           {:id id :created created
-            :username username :email email
-            :spoken-name spoken_name :full-name full_name
-            :last-login last_login
-            :active? active_p
-            :roles (get-user-roles roles groups)
-            :groups (get-user-groups groups)})
-          db))))))
+  (get-user [db id]
+    (if-let [user (->> {:id id}
+                       (db/query db (cond
+                                      (and (string? id) (re-find #"@" id)) sql-get-user-by-email
+                                      (string? id) sql-get-user-by-username
+                                      (uuid? id) sql-get-user-by-token
+                                      :else sql-get-user-by-id))
+                       first)]
+      (let [{:keys [id created username active_p email
+                    spoken_name full_name last_login roles groups]} user]
+        (extend-user
+         (auth/map->User
+          {:id id :created created
+           :username username :email email
+           :spoken-name spoken_name :full-name full_name
+           :last-login last_login
+           :active? active_p
+           :roles (get-user-roles roles groups)
+           :groups (get-user-groups groups)})
+         db)))))
 
 (s/defn ^:always-validate database
   ([settings :- {s/Any s/Any}]

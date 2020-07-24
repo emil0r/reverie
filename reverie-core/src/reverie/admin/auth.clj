@@ -3,7 +3,8 @@
             [reverie.admin.api.editors :as editors]
             [reverie.auth :as auth]
             [reverie.core :refer [defpage]]
-            [reverie.http.response :as response]))
+            [reverie.http.response :as response]
+            [reverie.session :as session]))
 
 
 
@@ -11,15 +12,16 @@
 
 (defn handle-login [request {:keys [database] :as page}
                     params]
-  (if (auth/login params database)
+  (if-let [user (auth/login params database)]
     (do
-      (editors/editor! (auth/get-user database))
+      (session/swap! request merge {:user-id (:id user)})
+      (editors/editor! user)
       (response/get 302 "/admin"))
     (response/get 302 "/admin/login")))
 
 
 (defn logout [request page params]
-  (auth/logout)
+  (auth/logout request)
   (response/get 302 "/"))
 
 
