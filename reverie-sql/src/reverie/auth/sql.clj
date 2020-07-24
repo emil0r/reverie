@@ -4,7 +4,6 @@
             [clj-time.local :as t.local]
             [clojure.string :as str]
             [ez-database.core :as db]
-            [noir.session :as session]
             [reverie.auth :as auth]
             [reverie.module :as m]
             [reverie.page :as page]
@@ -196,11 +195,10 @@
       (if user
         (if (hashers/check password (:password user))
           (do
-            (session/swap! merge {:user-id (:id user)})
             (db/query! db {:update :auth_user
                            :set {:last_login :%now}
                            :where [:= :id (:id user)]})
-            true)
+            (auth/get-user db (:id user)))
           false)
         false)))
 
@@ -232,8 +230,7 @@
   IUserLogin
   (login [user db]
     (if user
-      (do (session/swap! merge {:user-id (:id user)})
-          true)
+      user
       false))
 
   IUserUpdate

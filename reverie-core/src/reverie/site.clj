@@ -1,6 +1,5 @@
 (ns reverie.site
   (:require [com.stuartsierra.component :as component]
-            [noir.session :as session]
             [reverie.admin.api.editors :as editors]
             [reverie.cache :as cache]
             [reverie.database :as db]
@@ -168,11 +167,9 @@
                  ;; the request method is a GET
                  ;; AND we can cache the page
                  ;; AND the hit is nil
-                 ;; AND no session flash is present to skip it
                  really-cache? (and (nil? hit)
                                     (= (:request-method request) :get)
                                     (page/cache? p)
-                                    (not (session/flash-get :skip-cache? false))
                                     (= 1 (page/version p)))
                  handler (handler-render hit p render-fn cachemanager really-cache? system-pages)]
              ;; dynamically set *caching*? for the skip macro to work

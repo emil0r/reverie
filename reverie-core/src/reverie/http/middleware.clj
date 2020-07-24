@@ -1,13 +1,13 @@
 (ns reverie.http.middleware
   (:require [clojure.core.memoize :as memo]
             [clojure.string :as str]
-            [noir.cookies :as cookies]
-            [noir.session :as session]
             [reverie.admin.api.editors :as editors]
             [reverie.auth :as auth]
+            [reverie.cookies :as cookies]
             [reverie.downstream :refer [*downstream*]]
             [reverie.http.response :as response]
             [reverie.i18n :as i18n]
+            [reverie.session :as session]
             [reverie.system :as sys]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [slingshot.slingshot :refer [try+]]
@@ -32,7 +32,7 @@
        (handler request)
        (catch [:type :reverie.auth/not-allowed] {}
          (log/info "Unauthorized request for admin area"
-                   {:user-id (auth/get-id)
+                   {:user-id (auth/get-id request)
                     :request (select-keys request [:headers
                                                    :remote-address
                                                    :uri])})
@@ -80,37 +80,52 @@
 (defn wrap-reverie-data
   "Add commonly used data from reverie into the request"
   [handler {:keys [dev?]}]
-  (fn [{:keys [uri] :as request}]
-    (let [user (auth/get-user (:database sys/reverie-data))]
-      (handler (assoc request :reverie (assoc sys/reverie-data :user user :dev? dev?))))))
+  (fn [{:keys [session cookies] :as request}]
+    (let [user (if (:user-id session)
+                 (auth/get-user (:database sys/reverie-data) (:user-id session))
+                 nil)
+          atom-cookies (atom cookies)
+          atom-session (atom session)
+          response (handler (assoc request :reverie (assoc sys/reverie-data
+                                                           :user user
+                                                           :dev? dev?
+                                                           :cookies atom-cookies
+                                                           :session atom-session)))]
+      (as-> response $
+        (if-not (= @atom-cookies cookies)
+          (assoc $ :cookies @atom-cookies)
+          $)
+        (if-not (= @atom-session session)
+          (assoc $ :session @atom-session)
+          $)))))
 
 (defn- session-token [request]
   (get-in request [:session :ring.middleware.anti-forgery/anti-forgery-token]))
 
 
 (defn wrap-csrf-token [handler]
-  (fn [request]
+  (fn [{{cookies :cookies} :reverie :as request}]
     (let [old-token (session-token request)
-          x-csrf-token (cookies/get "x-csrf-token" nil)
+          x-csrf-token (cookies/get cookies "x-csrf-token" nil)
           response (handler request)]
       (if (= old-token *anti-forgery-token*)
         (cond
          ;; no x-csrf-token found in the inbound cookie
          (nil? x-csrf-token)
-         (do (cookies/put! "x-csrf-token" *anti-forgery-token*)
+         (do (cookies/put! cookies "x-csrf-token" *anti-forgery-token*)
              response)
          ;; x-csrf-token from the cookie does not equal the
          ;; one we got from the wrap-anti-forgery middleware
          ;; NOTE: we should only hit this during GET, HEAD and OPTIONS
          ;; the rest will be blocked by the wrap-anti-forgery middleware
          (not= x-csrf-token old-token)
-         (do (cookies/put! "x-csrf-token" *anti-forgery-token*)
+         (do (cookies/put! cookies "x-csrf-token" *anti-forgery-token*)
              response)
          ;; all is good
          :else
           response)
         (do
-          (cookies/put! "x-csrf-token" *anti-forgery-token*)
+          (cookies/put! cookies "x-csrf-token" *anti-forgery-token*)
           response)))))
 
 (defn- get-locales* [headers-accept-language
@@ -138,7 +153,7 @@
   "Borrows bits and pieces from tower's wrap-tower"
   [handler {:keys [enforce-locale preferred-locale fallback-locale] :as opts}]
   (fn [{:keys [headers] :as request}]
-    (binding [i18n/*locale* (get-locales (get headers "accept-language") opts (session/get :locale nil))]
+    (binding [i18n/*locale* (get-locales (get headers "accept-language") opts (session/get request :locale nil))]
       (handler request))))
 
 ;; TODO: look at this again. potentially the server does a lot of
@@ -201,4 +216,11 @@
                                      out))
                                  nil routes)]
       (new-handler request)
+      (handler request))))
+
+
+(defn wrap-strip-trailing-slash [handler]
+  (fn [{:keys [uri] :as request}]
+    (if (str/ends-with? uri "/")
+      (handler (assoc request :uri (subs uri (dec (count uri)))))
       (handler request))))

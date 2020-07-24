@@ -121,3 +121,6 @@
      (if strip-namespace?
        (into {} (clojure.core/map (fn [pair] [(keyword (name (key pair))) (val pair)]) map))
        map))))
+
+(defn atom? [data]
+  (= (type data) clojure.lang.Atom))

@@ -6,13 +6,13 @@
                  :middleware {}}}
  :database {:specs {:default {:classname "org.postgresql.Driver"
                               :subprotocol "postgresql"
-                              :subname "//localhost:5432/dev_reverie"
+                              :subname "//localhost:15432/dev_reverie"
                               :user "devuser"
                               :password "devuser"}}
             :ds-specs {:default {:maximum-pool-size 3
                                  :adapter "postgresql"
                                  :username "devuser"
-                                 :port-number 5432
+                                 :port-number 15432
                                  :password "devuser"
                                  :database-name "dev_reverie"}}}
 
