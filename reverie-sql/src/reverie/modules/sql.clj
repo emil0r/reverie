@@ -5,7 +5,8 @@
             [honeysql.format :as sql.format]
             [reverie.module :as m]
             [reverie.module.entity :as e]
-            [reverie.time :as time])
+            ;;[reverie.time :as time]
+            )
   (:import [reverie.module Module]))
 
 
@@ -74,7 +75,8 @@
 (defmethod convert-data [:datetime java.lang.String] [_ v]
   (if (str/blank? v)
     nil
-    (time/coerce (time/coerce v "YYYY-MM-dd HH:mm") :java.sql.Timestamp)))
+    ;;(time/coerce (time/coerce v "YYYY-MM-dd HH:mm") :java.sql.Timestamp)
+    ))
 (defmethod convert-data :default [_ v]
   v)
 

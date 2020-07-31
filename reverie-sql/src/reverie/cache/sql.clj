@@ -1,12 +1,11 @@
 (ns reverie.cache.sql
-  (:require [clj-time.core :as t]
-            [ez-database.core :as db]
+  (:require [ez-database.core :as db]
             [reverie.cache :as cache]
             [reverie.core :refer [defmodule]]
             [reverie.page :as page]
             [reverie.system :as sys]
-            [reverie.time :as time]
-            [ring.util.anti-forgery :refer [anti-forgery-field]]))
+            [ring.util.anti-forgery :refer [anti-forgery-field]]
+            [tick.alpha.api :as t]))
 
 (defn- evict-public? [meta]
   (nil? (:user-id meta)))
@@ -18,7 +17,7 @@
   cache/IPruneStrategy
   (prune! [this cachemanager]
     (let [{db :database} cachemanager
-          minute (Integer/parseInt (time/format (t/now) "mm"))
+          minute (t/minute (t/now))
 
           ;; both public and private views will
           ;; be purged from the cache if they're

@@ -1,6 +1,5 @@
 (ns reverie.database.sql
-  (:require [clj-time.coerce :as t.coerce]
-            [clojure.edn :as edn]
+  (:require [clojure.edn :as edn]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :as set]
             [clojure.string :as str]
@@ -8,7 +7,6 @@
             [ez-database.core :as db]
             [hikari-cp.core :as hikari-cp]
             [honeysql.core :as sql]
-            [noir.session :as session]
             [reverie.auth :as auth :refer [IUserDatabase]]
             [reverie.database :as rev.db :refer [IDatabase]]
             [reverie.http.route :as route]
@@ -19,10 +17,11 @@
             [reverie.publish :as publish :refer [IPublish]]
             [reverie.site :as site]
             [reverie.system :as sys]
-            [reverie.util :refer [slugify kw->str str->kw uuid?]]
+            [reverie.util :refer [slugify kw->str str->kw]]
             [schema.core :as s]
             [slingshot.slingshot :refer [try+ throw+]]
             [taoensso.timbre :as log]
+            [tick.alpha.api :as t]
             [yesql.core :refer [defqueries]])
   (:import [ez_database.core EzDatabase]
            [reverie DatabaseException]))
@@ -35,19 +34,28 @@
     (vec (.getArray pgobj)))
   java.sql.Timestamp
   (result-set-read-column [v _2 _3]
-    (t.coerce/from-sql-time v))
+    (.toInstant v))
   java.sql.Date
   (result-set-read-column [v _2 _3]
-    (t.coerce/from-sql-date v))
+     (t/date (.toString v)))
   java.sql.Time
   (result-set-read-column [v _2 _3]
-    (org.joda.time.DateTime. v)))
+    (t/time (.toString v))))
 
 ; http://clojure.github.io/java.jdbc/#clojure.java.jdbc/ISQLValue
 (extend-protocol jdbc/ISQLValue
-  org.joda.time.DateTime
+  java.util.Date
   (sql-value [v]
-    (t.coerce/to-sql-time v)))
+    (java.sql.Timestamp. (.getTime v)))
+  java.time.Instant
+  (sql-value [v]
+    (java.sql.Timestamp/from v))
+  java.time.LocalDate
+  (sql-value [v]
+    (java.sql.Date/valueOf v))
+  java.time.LocalTime
+  (sql-value [v]
+    (java.sql.Time/valueOf v)))
 
 
 (defqueries "queries/database.sql")

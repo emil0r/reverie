@@ -19,7 +19,7 @@
             [reverie.page :as page]
             [reverie.publish :as publish]
             [reverie.system :as sys]
-            [reverie.time :as time]
+            ;;[reverie.time :as time]
             [ring.util.anti-forgery :refer :all]
             [vlad.core :as vlad])
   (:import [reverie.admin.looknfeel.form PageForm]))
@@ -190,8 +190,9 @@
                      :published_p false
                      :path (page/path page)
                      :page_title (page/title page)
-                     :created (time/format (page/created page) :mysql)
-                     :updated (time/format (page/updated page) :mysql)})
+                     ;; :created (time/format (page/created page) :mysql)
+                     ;; :updated (time/format (page/updated page) :mysql)
+                     })
                    ");"
                    "</script>")]))
           (add-page request page (assoc params :errors errors))))
@@ -221,8 +222,8 @@
              [:table.table
               [:tr [:th "Name"] [:td (page/name page)]]
               [:tr [:th "Title"] [:td (page/title page)]]
-              [:tr [:th "Created"] [:td (time/format (page/created page) :mysql)]]
-              [:tr [:th "Updated"] [:td (time/format (page/updated page) :mysql)]]
+              ;; [:tr [:th "Created"] [:td (time/format (page/created page) :mysql)]]
+              ;; [:tr [:th "Updated"] [:td (time/format (page/updated page) :mysql)]]
               [:tr [:th]
                [:td (hf/submit-button {:class "btn btn-primary"} "Delete this page")]]])))]])
       (html5
@@ -359,8 +360,9 @@
                         :path (page/path page)
                         :slug (page/slug page)
                         :page_title (page/title page)
-                        :created (time/format (page/created page) :mysql)
-                        :updated (time/format (page/updated page) :mysql)})
+                        ;; :created (time/format (page/created page) :mysql)
+                        ;; :updated (time/format (page/updated page) :mysql)
+                        })
                       ");"
                       "</script>"))]]))
           (meta-page request page (assoc params :errors errors))))
@@ -387,8 +389,8 @@
           [:table.table
            [:tr [:th "Name"] [:td (page/name page)]]
            [:tr [:th "Title"] [:td (page/title page)]]
-           [:tr [:th "Created"] [:td (time/format (page/created page) :mysql)]]
-           [:tr [:th "Updated"] [:td (time/format (page/updated page) :mysql)]]
+           ;; [:tr [:th "Created"] [:td (time/format (page/created page) :mysql)]]
+           ;; [:tr [:th "Updated"] [:td (time/format (page/updated page) :mysql)]]
            [:tr [:th]
             [:td
              (hf/submit-button {:class "btn btn-primary"

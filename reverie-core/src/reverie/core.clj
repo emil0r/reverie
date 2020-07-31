@@ -3,7 +3,6 @@
             [clojure.string :as str]
             [reverie.area :as a]
             [reverie.i18n :as i18n]
-            [reverie.helpers.middleware :refer [wrap-response-with-handlers]]
             [reverie.http.route :as route]
             [reverie.module :as module]
             [reverie.module.entity :as entity]
@@ -85,9 +84,7 @@
   (when (not (true? (:disabled? options)))
     (let [properties {:name path :type :raw}
           migration (assoc (:migration options) :type :raw-page)
-          renderer (:renderer options)
-          middleware (if-let [handlers (:middleware options)]
-                       (wrap-response-with-handlers handlers))]
+          renderer (:renderer options)]
       (if-not (nil? renderer)
         (do (assert (util/namespaced-kw? renderer) ":renderer must be a namespaced keyword")
             (assert (not (nil? (sys/renderer renderer))) (format "Renderer %s has not yet been defined." (util/kw->str renderer)))))
@@ -98,8 +95,9 @@
          (swap! site/routes assoc ~path [(route/route [~path]) ~properties])
          (swap! sys/storage assoc-in [:raw-pages ~path]
                 {:routes (map route/route ~routes)
-                 :options (assoc ~options :middleware ~middleware)})
+                 :options ~options})
          nil))))
+
 (defn undefpage
   "Undefine a page"
   [path]

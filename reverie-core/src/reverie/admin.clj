@@ -5,31 +5,30 @@
             [reverie.database :as db]
             [reverie.internal :as internal]
             [reverie.internal.memory :as internal.memory]
-            [reverie.time :as time]
             [taoensso.timbre :as log]))
 
 (defn- get-edits []
   (->> @edits
        (map (fn [[k {:keys [time] :as v}]]
-              [k (assoc v :time (time/coerce time :java.sql.Timestamp))]))
+              [k (assoc v :time time)]))
        (into {})))
 
 (defn- reverse-edits [edits]
   (->> edits
        (map (fn [[k {:keys [time] :as v}]]
-              [k (assoc v :time (time/coerce time :joda))]))
+              [k (assoc v :time time)]))
        (into {})))
 
 (defn- get-editors []
   (->> @editors
        (map (fn [[k v]]
-              [k (time/coerce v :java.sql.Timestamp)]))
+              [k v]))
        (into {})))
 
 (defn- reverse-editors [editors]
   (->> editors
        (map (fn [[k v]]
-              [k (time/coerce v :joda)]))
+              [k v]))
        (into {})))
 
 (defrecord AdminInitializer [database store]

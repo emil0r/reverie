@@ -18,7 +18,9 @@
 
                  ;; web
                  [ring/ring-anti-forgery "1.3.0"]
-                 [ring/ring-core "1.7.1"]
+                 [ring/ring-core "1.8.1"]
+                 [ring/ring-devel "1.8.1"]
+                 [javax.servlet/servlet-api "2.5"]
                  [clout "2.2.1"]
                  [hiccup "1.0.5"]
                  [vlad "3.3.2"]
@@ -29,7 +31,7 @@
                  [expound "0.7.2"]
 
                  ;; time
-                 [clj-time "0.15.2"]
+                 [tick "0.4.24-alpha"]
 
                  ;; email
                  [ez-email "0.1.0"]

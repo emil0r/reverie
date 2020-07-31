@@ -1,10 +1,10 @@
 (ns reverie.admin.api.editors
-  (:require [clj-time.core :as t]
-            [clojure.core.match :refer [match]]
+  (:require [clojure.core.match :refer [match]]
             [clojure.string :as str]
             [reverie.internal :refer [read-storage write-storage delete-storage]]
             [reverie.page :as page]
-            [reverie.scheduler :as scheduler])
+            [reverie.scheduler :as scheduler]
+            [tick.alpha.api :as t])
   (:import [reverie.page Page AppPage RawPage]))
 
 (defonce edits (atom {}))
@@ -104,8 +104,8 @@
   (let [now (t/now)
         expired-edits (map first
                            (filter (fn [[k {:keys [time]}]]
-                                     (t/after? now (t/plus time
-                                                           (t/seconds minutes))))
+                                     (let [edit-timeout (t/+ time (t/new-duration minutes :minutes))]
+                                       (t/> now edit-timeout)))
                                    @edits))]
     (when-not (empty? expired-edits)
       (apply swap! edits dissoc expired-edits))))

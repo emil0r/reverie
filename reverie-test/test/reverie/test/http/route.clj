@@ -1,8 +1,7 @@
-(ns reverie.test.route
-  (:require [reverie.route :as route]
+(ns reverie.test.http.route
+  (:require [reverie.http.route :as route]
             [midje.sweet :refer :all]
             [ring.mock.request :refer :all]))
-
 
 (fact
  "route matches"

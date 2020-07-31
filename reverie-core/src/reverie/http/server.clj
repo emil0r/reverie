@@ -7,7 +7,6 @@
             [taoensso.timbre :as log]
 
             ;; middleware
-            [noir.util.middleware :refer [wrap-strip-trailing-slash]]
             [reverie.helpers.middleware :refer [create-handler]]
             [reverie.http.middleware :refer [wrap-admin
                                              wrap-authorized
@@ -18,8 +17,7 @@
                                              wrap-i18n
                                              wrap-resources
                                              wrap-reverie-data
-                                             ;;wrap-strip-trailing-slash
-                                             ]]
+                                             wrap-strip-trailing-slash]]
             [ring.middleware.cookies :refer [wrap-cookies]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file :refer [wrap-file]] ;; research for later

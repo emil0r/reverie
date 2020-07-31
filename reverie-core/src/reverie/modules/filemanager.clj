@@ -14,7 +14,7 @@
             [reverie.core :refer [defmodule defpage]]
             [reverie.database :as db]
             [reverie.module.entity :as e]
-            [reverie.time :as time]
+            ;;[reverie.time :as time]
             [reverie.util :as util]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [ring.util.response :as response]
@@ -115,7 +115,9 @@
 
 (defn- get-mod-time [{:keys [mod]}]
   (if mod
-    (time/format (time/coerce mod) time-display)))
+    nil
+    ;;(time/format (time/coerce mod) time-display)
+    ))
 
 (defn- get-size [{:keys [size]}]
   (cond

@@ -4,7 +4,7 @@
    [hiccup.page :refer [html5]]
    [reverie.core :refer [area]]
    [reverie.page :as page]
-   [reverie.route :as route]
+   [reverie.http.route :as route]
    [reverie.render :as render]
    [reverie.system :as sys]
    [reverie.template :as template]
@@ -49,6 +49,7 @@
                       :published? true
                       :objects []
                       :raw-data nil}))
+
 
 (defn get-raw-page [template renderer routes]
   (page/map->RawPage {:route (route/route ["/foo"])

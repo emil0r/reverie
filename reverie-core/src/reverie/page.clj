@@ -7,6 +7,8 @@
             [reverie.http.response :as response]
             [reverie.http.route :as route]
             [reverie.object :as object]
+            [reverie.page.rawpage :as page.rawpage]
+            [reverie.page.util :refer [handle-response]]
             [reverie.render :as render]
             [reverie.system :as sys]
             [reverie.util :as util]
@@ -20,42 +22,31 @@
 
 
 (defprotocol IPage
-  (id [page])
-  (serial [page])
-  (parent [page])
-  (root? [page])
-  (children [page database])
-  (children? [page database])
-  (title [page])
-  (name [page])
-  (order [page])
-  (options [page])
-  (properties [page])
-  (path [page])
-  (slug [page])
-  (objects [page])
-  (type [page])
-  (version [page])
-  (published? [page])
-  (created [page])
-  (updated [page])
-  (raw [page])
-  (cache? [page]))
+  (id [page] "The id of the page")
+  (serial [page] "The serial of the page (this is what ties different versions of the same page together)")
+  (parent [page] "The parent of the page, if any")
+  (root? [page] "Is this page the root?")
+  (children [page database] "Any children of the page")
+  (children? [page database] "Does the page have children?")
+  (title [page] "The title of the page")
+  (name [page] "The name of the page")
+  (order [page] "The order of the page with regards to any siblings")
+  (options [page] "The options of the page")
+  (properties [page] "The properties of the page")
+  (path [page] "The URI path of the page")
+  (slug [page] "The slug of the page")
+  (objects [page] "Any objects belonging the page")
+  (type [page] "What type of page")
+  (version [page] "Which version of the page (-1 deleted, 0 unpublished, 1 published, 2+ older versions")
+  (published? [page] "Is the page published?")
+  (created [page] "When was the page created")
+  (updated [page] "When was the page updated")
+  (raw [page] "Get the raw data of the page (no rendering)")
+  (cache? [page] "Is the page cached?"))
 
 
 (defn type? [page expected]
   (= (type page) expected))
-
-(defn- handle-response [options response]
-  (cond
-   (map? response) response
-   (nil? response) response
-   :else
-   (let [{:keys [headers status]} (:http options)]
-     {:status (or status 200)
-      :headers (merge {"Content-Type" "text/html; charset=utf-8;"}
-                      headers)
-      :body response})))
 
 (s/defrecord Page [route :- Route
                    id :- s/Int
@@ -64,13 +55,13 @@
                    title :- s/Str
                    properties :- {s/Any s/Any}
                    template :- (s/either s/Keyword s/Str {s/Keyword s/Any})
-                   created :- org.joda.time.DateTime
-                   updated :- org.joda.time.DateTime
+                   created :- java.time.Instant
+                   updated :- java.time.Instant
                    parent :- (s/maybe s/Int)
                    version :- s/Int
                    slug :- s/Str
                    database :- s/Any
-                   published-date :- org.joda.time.DateTime
+                   published-date :- java.time.Instant
                    published? :- s/Bool
                    objects :- [ReverieObject]
                    raw-data :- s/Any]
@@ -142,86 +133,8 @@
   (cache? [page] (get-in options [:cache :cache?]))
 
   render/IRender
-  (render [this {:keys [request-method] :as request}]
-    (let [request (merge request
-                         {:shortened-uri (util/shorten-uri
-                                          (:uri request) (:path route))})]
-      (with-access
-        (get-in request [:reverie :user])
-        (:required-roles options)
-        (handle-response
-         options
-         (if-let [page-route (first (filter #(route/match? % request) routes))]
-           (let [{:keys [request method]} (route/match? page-route request)]
-             (if (and request method)
-               (let [renderer (sys/renderer (:renderer options))
-                     resp (method request this (:params request))
-                     t (sys/template (:template options))
-                     middleware-handler-page-route (get-in page-route [:options :middleware])
-                     middleware-handler (get options :middleware)
-                     final-resp (match [;; raw response
-                                        (and (map? resp)
-                                             (contains? resp :status)
-                                             (contains? resp :body)
-                                             (contains? resp :headers))
-
-                                        ;; renderer
-                                        (not (nil? renderer))
-
-                                        ;; routes
-                                        (not (nil? (:methods-or-routes renderer)))
-
-                                        ;; map
-                                        (map? resp)
-
-                                        ;; template
-                                        (not (nil? t))]
-
-                                       ;; raw response
-                                       [true _ _ _ _] resp
-
-                                       ;; ~renderer, _ , map, template
-                                       [_ false _ true true] (render/render t request (assoc this :rendered resp))
-
-                                       ;; renderer, routes, map, template
-                                       [_ true true true true] (let [out (render/render renderer (:request-method request)
-                                                                                        {:data resp
-                                                                                         ::render/type :page/routes
-                                                                                         :meta {:route-name (get-in page-route [:options :name])}})]
-                                                                 (render/render t request (assoc this :rendered out)))
-
-                                       ;; renderer, ~routes, map, template
-                                       [_ true false true true] (let [out (render/render renderer (:request-method request)
-                                                                                         {:data resp
-                                                                                          ::render/type :page/no-routes
-                                                                                          :meta {:route-name (get-in page-route [:options :name])}})]
-                                                                  (render/render t request (assoc this :rendered out)))
-
-                                       ;; renderer, ~routes, ~map, ~template
-                                       [_ true false false false] (render/render renderer (:request-method request)
-                                                                                 {:data resp
-                                                                                  ::render/type :page/no-routes
-                                                                                  :meta {:route-name (get-in page-route [:options :name])}})
-
-                                       ;; default
-                                       [_ _ _ _ _] resp)]
-                 (match [(nil? middleware-handler) (nil? middleware-handler-page-route)]
-                        [false false]
-                        (middleware-handler
-                         (assoc-in
-                          request [:reverie :response]
-                          (middleware-handler-page-route
-                           (assoc-in request [:reverie :response] final-resp))))
-
-                        [false true]
-                        (middleware-handler (assoc-in request [:reverie :response] final-resp))
-
-                        [true false]
-                        (middleware-handler-page-route (assoc-in request [:reverie :response] final-resp))
-
-                        [_ _]
-                        final-resp))))
-           (response/raise 404))))))
+  (render [this request]
+    (page.rawpage/render-page this request))
   (render [this _ _]
     (throw (RenderException. "[component request sub-component] not implemented for reverie.page/RawPage"))))
 
@@ -238,12 +151,12 @@
                       properties :- {s/Any s/Any}
                       options :- {s/Any s/Any}
                       template :- (s/either s/Keyword s/Str {s/Keyword s/Any})
-                      created :- org.joda.time.DateTime
-                      updated :- org.joda.time.DateTime
+                      created :- java.time.Instant
+                      updated :- java.time.Instant
                       parent :- (s/maybe s/Int)
                       database :- s/Any
                       version :- s/Int
-                      published-date :- org.joda.time.DateTime
+                      published-date :- java.time.Instant
                       published? :- s/Bool
                       objects :- [ReverieObject]
                       raw-data :- s/Any]

@@ -15,27 +15,27 @@
 
 (def db-spec {:classname "org.postgresql.Driver"
               :subprotocol "postgresql"
-              :subname "//localhost:5432/dev_reverie"
+              :subname "//localhost:15432/dev_reverie"
               :user "devuser"
               :password "devuser"})
 (def ds-spec {:maximum-pool-size 3
               :adapter "postgresql"
               :username "devuser"
-              :port-number 5432
+              :port-number 15432
               :password "devuser"
               :database-name "dev_reverie"})
 
 (def db-spec-two
   {:classname "org.postgresql.Driver"
    :subprotocol "postgresql"
-   :subname "//localhost:5432/dev_reverie"
+   :subname "//localhost:15432/dev_reverie"
    :user "devuser"
    :password "devuser"})
 (def ds-spec-two
   {:maximum-pool-size 3
    :adapter "postgresql"
    :username "devuser"
-   :port-number 5432
+   :port-number 15432
    :password "devuser"
    :database-name "dev_reverie"})
 

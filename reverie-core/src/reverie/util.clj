@@ -101,9 +101,6 @@
   ;; can become problematic to use when you get back a HTML string
   (hidden-field "__anti-forgery-token" *anti-forgery-token*))
 
-(defn uuid? [x]
-  (= java.util.UUID (class x)))
-
 (defn get-table-name [prefix name]
   (str/replace (slugify (str (clojure.core/name prefix) "_" name)) #"-" "_"))
 

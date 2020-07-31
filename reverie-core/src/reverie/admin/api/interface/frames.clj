@@ -13,8 +13,7 @@
             [reverie.module.entity :as e]
             [reverie.object :as object]
             [reverie.page :as page]
-            [reverie.system :as sys]
-            [reverie.time :as time]))
+            [reverie.system :as sys]))
 
 
 (def cast-field nil)
@@ -29,8 +28,7 @@
            (Double/parseDouble value)))))
 (defmethod cast-field :datetime [_ value]
   (if (str/blank? value)
-    nil
-    (time/coerce value "YYYY-MM-DD HH:mm" :java.sql.Timestamp)))
+    nil))
 (defmethod cast-field :boolean [_ value]
   (if (str/blank? value)
     false

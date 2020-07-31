@@ -8,7 +8,7 @@
             [reverie.auth :as auth]
             [reverie.database :as db]
             [reverie.page :as page]
-            [reverie.time :as time]
+            ;;[reverie.time :as time]
             [taoensso.timbre :as log]))
 
 
@@ -24,8 +24,8 @@
    :path (page/path page)
    :slug (page/slug page)
    :page_title (page/title page)
-   :created (time/format (page/created page) :mysql)
-   :updated (time/format (page/updated page) :mysql)})
+   :created nil #_(time/format (page/created page) :mysql)
+   :updated nil #_(time/format (page/updated page) :mysql)})
 
 (defn get-pages [{{db :database} :reverie :as request} page {:keys [id]}]
   (->>
