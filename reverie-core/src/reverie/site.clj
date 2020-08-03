@@ -115,12 +115,8 @@
                                (= (:path route) (-> p :route :path)))
                         (assoc p :route route)
                         nil))
-              :raw (let [page-data (sys/raw-page name)]
-                     (page/raw-page
-                      {:route route
-                       :options (:options page-data)
-                       :routes (:routes page-data)
-                       :database database}))
+              :raw (let [page (sys/raw-page name)]
+                     (assoc page :database database))
               :module (assoc (:module (sys/module name))
                              :route route
                              :database database)

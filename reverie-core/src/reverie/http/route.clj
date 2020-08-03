@@ -32,11 +32,11 @@
 
 
 
-(s/defrecord Route [path options compiled roles matching casting methods]
+(s/defrecord Route [parent-path path options compiled roles matching casting methods]
   IRouting
   (match? [this request]
-    (let [temp-request (if (:shortened-uri request)
-                         (assoc request :uri (:shortened-uri request))
+    (let [temp-request (if parent-path
+                         (assoc request :uri (util/shorten-uri (:uri request) parent-path))
                          request)]
       (if-let [matched (clout/route-matches compiled temp-request)]
         (let [method (if methods
@@ -96,7 +96,10 @@
              (clout/route-compile (:path raw-data) (:matching raw-data))
              (clout/route-compile (:path raw-data))))))
 
-(defn route [route]
-  (let [settings (get-data route)]
-    (assert (not (str/blank? (:path settings))) "Path must be a non-empty string containing a URI")
-    (map->Route settings)))
+(defn route
+  ([-route]
+   (route nil -route))
+  ([parent-path route]
+   (let [settings (get-data route)]
+     (assert (not (str/blank? (:path settings))) "Path must be a non-empty string containing a URI")
+     (map->Route (assoc settings :parent-path parent-path)))))

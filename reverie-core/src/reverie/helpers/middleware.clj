@@ -21,14 +21,6 @@
          [_ _] nil))
 
 
-
-(defn- massage-routes [page default-handler]
-  (fn [{:keys [options] :as route}]
-    (if (and (map? options)
-             (contains? options :middleware))
-      (assoc options :middleware (create-handler (merge-handlers default-handler (:middleware options))
-                                                 (wrap-page-render page))))))
-
 (defn add-page-middleware [page]
   (let [handlers-page (get-in page [:options :middleware])
         default-handler (if handlers-page

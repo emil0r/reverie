@@ -3,9 +3,11 @@
             [clojure.string :as str]
             [reverie.area :as a]
             [reverie.i18n :as i18n]
+            [reverie.helpers.middleware :refer [add-page-middleware]]
             [reverie.http.route :as route]
             [reverie.module :as module]
             [reverie.module.entity :as entity]
+            [reverie.page :as page]
             [reverie.render :as render]
             [reverie.site :as site]
             [reverie.specs.app]
@@ -94,8 +96,11 @@
            (swap! sys/storage assoc-in [:migrations :raw-page ~path] ~migration))
          (swap! site/routes assoc ~path [(route/route [~path]) ~properties])
          (swap! sys/storage assoc-in [:raw-pages ~path]
-                {:routes (map route/route ~routes)
-                 :options ~options})
+                (-> {:routes (map #(route/route ~path %) ~routes)
+                     :options ~options
+                     :route [(route/route [~path])]}
+                    (page/raw-page)
+                    (add-page-middleware)))
          nil))))
 
 (defn undefpage

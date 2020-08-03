@@ -8,7 +8,7 @@
             [reverie.http.route :as route]
             [reverie.object :as object]
             [reverie.page.rawpage :as page.rawpage]
-            [reverie.page.util :refer [handle-response]]
+            [reverie.page.util :refer [find-route handle-response]]
             [reverie.render :as render]
             [reverie.system :as sys]
             [reverie.util :as util]
@@ -42,7 +42,8 @@
   (created [page] "When was the page created")
   (updated [page] "When was the page updated")
   (raw [page] "Get the raw data of the page (no rendering)")
-  (cache? [page] "Is the page cached?"))
+  (cache? [page] "Should this page be cached?")
+  (handler [page request] "Get the handler for the page"))
 
 
 (defn type? [page expected]
@@ -91,6 +92,7 @@
   (updated [page] updated)
   (raw [page] raw-data)
   (cache? [page] (get-in properties [:cache :cache?]))
+  (handler [page request] nil)
 
   render/IRender
   (render [this request]
@@ -131,6 +133,10 @@
   (updated [page] nil)
   (raw [page] nil)
   (cache? [page] (get-in options [:cache :cache?]))
+  (handler [page request]
+    (if-let [page-route (find-route request routes)]
+      (get-in page-route [:options :middleware])
+      (get-in options [:middleware])))
 
   render/IRender
   (render [this request]
@@ -202,6 +208,7 @@
                        (get-in options [:cache :cache?])]
                       (remove nil?)
                       first))
+  (handler [page request] nil)
 
   render/IRender
   (render [this request]
