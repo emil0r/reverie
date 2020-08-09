@@ -1,5 +1,6 @@
 (ns reverie.http.middleware
   (:require [clojure.core.memoize :as memo]
+            [clojure.spec.alpha :as spec]
             [clojure.string :as str]
             [reverie.admin.api.editors :as editors]
             [reverie.auth :as auth]
@@ -8,6 +9,7 @@
             [reverie.http.response :as response]
             [reverie.i18n :as i18n]
             [reverie.session :as session]
+            [reverie.specs.http]
             [reverie.system :as sys]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [slingshot.slingshot :refer [try+]]
@@ -38,6 +40,63 @@
                                                    :uri])})
          (response/get 302 "/admin/login")))
       (handler request))))
+
+(defn wrap-authz [handler roles]
+  (fn [request]
+    (let [user (get-in request [:reverie :user])]
+      (if (auth/role? user roles)
+        (handler request)
+        (throw (ex-info "Credentials not accepted"
+                        {:type :auth/not-authorized}))))))
+
+(defn wrap-authn [handler]
+  (fn [request]
+    (if (get-in request [:reverie :user])
+      (handler request)
+      (throw (ex-info "No authentication credentials found" {:type :auth/not-authenticated})))))
+
+(defn authz-exception-handler [exception request]
+  (let [body {:message (ex-message exception)
+              :exception (str (.getClass exception))
+              :data (ex-data exception)
+              :uri (:uri request)
+              :host (:host-name request)
+              :user/id (get-in request [:reverie :user :id])}]
+    (log/warn "Permission denied" body)
+    (response/get 403)))
+
+(defn authn-exception-handler [exception request]
+  (response/get 401))
+
+(defn default-exception-handler [exception request]
+  (let [body {:message (ex-message exception)
+              :exception (str (.getClass exception))
+              :data (ex-data exception)
+              :uri (:uri request)
+              :host (:host-name request)
+              :user/id (get-in request [:reverie :user :id])}]
+    (log/warn "Uncaught exception" body)
+    (response/get 500)))
+
+(defn wrap-exceptions [handler exception-handlers]
+  (fn [request]
+    (try
+      (handler request)
+      (catch clojure.lang.ExceptionInfo e
+        (let [handle-exception (or (get exception-handlers (:type (ex-data e)))
+                                   (get exception-handlers :default))
+              response (handle-exception e request)]
+          (if (spec/valid? :http/response response)
+            response
+            (do (log/debug "Invalid response" (spec/explain-str :http/response response))
+                (response/get 500)))))
+      (catch Throwable t
+        (let [handle-exception (get exception-handlers :default)
+              response (handle-exception t request)]
+          (if (spec/valid? :http/response response)
+            response
+            (do (log/debug "Invalid response" (spec/explain-str :http/response response))
+                (response/get 500))))))))
 
 (defn wrap-editor
   "Wrap editor awareness"

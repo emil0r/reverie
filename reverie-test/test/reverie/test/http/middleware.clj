@@ -3,6 +3,13 @@
             [reverie.helpers.middleware :refer [add-page-middleware
                                                 create-handler
                                                 merge-handlers]]
+            [reverie.http.middleware :refer [authn-exception-handler
+                                             authz-exception-handler
+                                             default-exception-handler
+                                             wrap-authn
+                                             wrap-authz
+                                             wrap-exceptions]]
+            [reverie.http.response :as response]
             [reverie.http.route :as route]
             [reverie.page :as page]
             [reverie.system :as sys]
@@ -45,3 +52,49 @@
    (-> (handler req)
        :wrap-x
        first) => :test/http/middleware))
+
+(defn get-fn-exception [f]
+  (fn [request]
+    (f)))
+
+(defn get-fn-simple [request]
+  :get-simple-fn)
+
+(fact
+ "wrap-exceptions"
+ (let [exception-handlers {:default default-exception-handler
+                           :auth/not-authenticated authn-exception-handler
+                           :auth/not-authorized authz-exception-handler}]
+   (fact "clojure.lang.ExceptionInfo"
+         (let [handler (wrap-exceptions (get-fn-exception #(throw (ex-info "Default handler" {}))) exception-handlers)]
+           (handler (request :get "/"))
+           => (response/get 500)))
+   (fact "java.class.ClassCastException"
+         (let [handler (wrap-exceptions (get-fn-exception #(throw "asdf")) exception-handlers)]
+           (handler (request :get "/"))
+           => (response/get 500)))
+   (fact "authn"
+         (let [handler (-> get-fn-simple
+                           (wrap-authn)
+                           (wrap-exceptions exception-handlers))]
+           (fact "fail"
+                 (let [req (request :get "/")]
+                   (handler req))
+                 => (response/get 401))
+           (fact "success"
+                 (let [req (assoc-in (request :get "/") [:reverie :user :id] 1)]
+                   (handler req))
+                 => :get-simple-fn)))
+   (fact "authz"
+         (let [handler (-> get-fn-simple
+                           (wrap-authz #{:foo})
+                           (wrap-exceptions exception-handlers))]
+           (fact "fail"
+                 (let [req (assoc-in (request :get "/") [:reverie :user :roles] #{:bar})]
+                   (handler req))
+                 => (response/get 403))
+           (fact "success"
+                 (let [req (assoc-in (request :get "/") [:reverie :user :roles] #{:foo})]
+                   (handler req))
+                 => :get-simple-fn))))
+ )
