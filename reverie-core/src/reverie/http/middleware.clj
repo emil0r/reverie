@@ -61,8 +61,10 @@
               :data (ex-data exception)
               :uri (:uri request)
               :host (:host-name request)
-              :user/id (get-in request [:reverie :user :id])}]
+              :user/id (get-in request [:reverie :user :id])}
+        stacktrace (apply str (interpose "\n" (.getStackTrace exception)))]
     (log/warn "Permission denied" body)
+    (log/debug stacktrace)
     (response/get 403)))
 
 (defn authn-exception-handler [exception request]
