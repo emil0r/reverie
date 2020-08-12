@@ -126,9 +126,11 @@
 
   page/IPage
   (properties [this] nil)
+  (published? [this] true)
   (type [this] :module)
   (cache? [this] false)
-  (version [this] 0))
+  (version [this] 1)
+  (handler [this request] nil))
 
 (defn module [name entities options routes]
   (map->Module {:name name :entities entities

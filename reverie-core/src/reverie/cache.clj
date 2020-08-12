@@ -64,7 +64,7 @@
   (clear-cache [store]))
 
 (defprotocol ICacheMananger
-  (cache! [manager page request] [manager page rendered request])
+  (cache! [manager page rendered request])
   (evict! [manager page] [mananager page evict?-fn])
   (clear! [manager])
   (lookup [manager page request]))
@@ -165,8 +165,6 @@
                fragment)) hit)))
 
   ICacheMananger
-  (cache! [this page request]
-    (cache! this page (render/render page request) request))
   (cache! [this page rendered request]
     (let [[k k-meta] (get-hash-key hash-key-strategy page request)
           serial (page/serial page)

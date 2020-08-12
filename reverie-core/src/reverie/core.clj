@@ -5,6 +5,7 @@
             [reverie.i18n :as i18n]
             [reverie.helpers.middleware :refer [add-page-middleware]]
             [reverie.http.route :as route]
+            [reverie.http.router :as router]
             [reverie.module :as module]
             [reverie.module.entity :as entity]
             [reverie.page :as page]
@@ -94,7 +95,7 @@
          (i18n/load-from-options! ~options)
          (when ~migration
            (swap! sys/storage assoc-in [:migrations :raw-page ~path] ~migration))
-         (swap! site/routes assoc ~path [(route/route [~path]) ~properties])
+         (swap! router/static-routes assoc ~path [(route/route [~path]) ~properties])
          (swap! sys/storage assoc-in [:raw-pages ~path]
                 (-> {:routes (map #(route/route ~path %) ~routes)
                      :options ~options
@@ -108,7 +109,7 @@
   [path]
   (swap! sys/storage assoc-in [:migrations :raw-page path] nil)
   (swap! sys/storage assoc-in [:raw-pages path] nil)
-  (swap! site/routes dissoc path)
+  (swap! router/static-routes dissoc path)
   nil)
 
 (defmacro defmodule [name options & [routes]]
@@ -128,7 +129,7 @@
          (i18n/load-from-options! ~options)
          (when ~migration
            (swap! sys/storage assoc-in [:migrations :module ~name] ~migration))
-         (swap! site/routes assoc ~path
+         (swap! router/static-routes assoc ~path
                 [(route/route [~path]) {:name ~name
                                         :path ~path
                                         :type :module}])

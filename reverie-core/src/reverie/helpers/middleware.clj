@@ -4,14 +4,14 @@
             [reverie.page.middleware :refer [wrap-page-render]]))
 
 
-(defn create-handler [handlers routes]
+(defn create-handler [middleware routes]
   (reduce (fn [current new]
             (if (nil? new)
               current
               (let [[new & args] new]
                 (apply new current args))))
           routes
-          handlers))
+          middleware))
 
 (defn merge-handlers [handlers-page handlers-route]
   (match [(not (empty? handlers-page)) (not (empty? handlers-route))]

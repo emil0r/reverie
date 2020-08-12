@@ -11,6 +11,9 @@
 
 (def ^:dynamic *extended* "Extended data" {})
 
+(defn get-user [request]
+  (get-in request [:reverie :user]))
+
 (defn extend!
   "Extend extensions to User record"
   [k v]

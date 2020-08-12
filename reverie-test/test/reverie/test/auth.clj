@@ -1,12 +1,9 @@
 (ns reverie.test.auth
   (:require [com.stuartsierra.component :as component]
-            [noir.session :as session]
-            [noir.cookies :as cookies]
             [reverie.auth :as auth :refer [with-access with-authorize]]
             [reverie.database :as db]
             [reverie.nsloader]
             [reverie.test.database.sql-helpers :refer [get-db seed!]]
-            [reverie.test.helpers :refer [with-noir]]
             [slingshot.slingshot :refer [try+]]
             [taoensso.timbre :as log]
             [midje.sweet :refer :all]))
@@ -16,24 +13,23 @@
  (let [db (component/start (get-db))]
    (try
      (seed! db)
-     (with-noir
-       (try
-         (fact "login"
-               (auth/login {:username "admin"
-                            :password "admin"} db)
-               (auth/logged-in?)
-               => true)
-         (fact "get user"
-               (auth/login {:username "admin"
-                            :password "admin"} db)
-               (:username (auth/get-user db))
-               => "admin")
-         (fact "logout"
-               (auth/logout)
-               (auth/logged-in?)
-               => false)
-         (catch Exception e
-           (log/error e))))
+     (try
+       (fact "login"
+             (auth/login {:username "admin"
+                          :password "admin"} db)
+             (auth/logged-in?)
+             => true)
+       (fact "get user"
+             (auth/login {:username "admin"
+                          :password "admin"} db)
+             (:username (auth/get-user db 1))
+             => "admin")
+       (fact "logout"
+             (auth/logout)
+             (auth/logged-in?)
+             => false)
+       (catch Exception e
+         (log/error e)))
      (finally (component/stop db)))))
 
 

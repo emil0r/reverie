@@ -1,4 +1,5 @@
 (ns reverie.http.middleware
+  "Generic middleware for reverie"
   (:require [clojure.core.memoize :as memo]
             [clojure.spec.alpha :as spec]
             [clojure.string :as str]

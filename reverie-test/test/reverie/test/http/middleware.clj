@@ -13,52 +13,41 @@
             [reverie.http.route :as route]
             [reverie.page :as page]
             [reverie.system :as sys]
-            [midje.sweet :refer :all]
-            [ring.mock.request :refer :all]))
+            [reverie.test.helpers.middleware :refer [wrap-tag]]
+            [reverie.test.helpers.render-functions :refer [get-fn
+                                                           get-fn-exception
+                                                           get-fn-simple]]
+            [ring.mock.request :refer :all]
+            [midje.sweet :refer :all]))
 
-
-(defn wrap-x [handler x]
-  (fn [request]
-    (let [response (handler request)]
-      (update-in response [:wrap-x] conj x))))
-
-(defn get-fn [request page params]
-  :get-fn)
 
 (fact
  "add-page-middleware"
  (fact "merging middleware from options of page to options in routes"
        (let [page (->> {:route (route/route ["/"])
-                        :options {:middleware [[wrap-x :wrapped-options]]}
-                        :routes (map route/route [["/foo/bar" ^:meta {:middleware [[wrap-x "foo"]
-                                                                                   [wrap-x "bar"]]} {:get get-fn}]
-                                                  ["/" ;; ^:meta {:middleware [[wrap-x "/"]]}
-                                                   {:get get-fn}]])}
+                        :options {:middleware [[wrap-tag :wrapped-options]]}
+                        :routes (map route/route [["/foo/bar" ^:meta {:middleware [[wrap-tag "foo"]
+                                                                                   [wrap-tag "bar"]]} {:get get-fn}]
+                                                  ["/" {:get get-fn}]])}
                        (page/raw-page)
                        (add-page-middleware))
              handler (-> page :routes first :options :middleware)]
-         (:wrap-x (handler (request :get "/foo/bar")))
+         (:tag (handler (request :get "/foo/bar")))
          => ["bar" "foo" :wrapped-options])))
 
 (fact
  "defpage with middleware"
  (do
    (defpage "/test/http/middleware"
-     {:middleware [[wrap-x :test/http/middleware]]}
+     {:middleware [[wrap-tag :test/http/middleware]]}
      [["/" {:get get-fn}]]))
  (let [req (request :get "/test/http/middleware")
        handler (-> (sys/raw-page "/test/http/middleware")
                    (page/handler req))]
    (-> (handler req)
-       :wrap-x
+       :tag
        first) => :test/http/middleware))
 
-(defn get-fn-exception [f]
-  (fn [request]
-    (f)))
-
-(defn get-fn-simple [request]
-  :get-simple-fn)
 
 (fact
  "wrap-exceptions"
@@ -96,5 +85,4 @@
            (fact "success"
                  (let [req (assoc-in (request :get "/") [:reverie :user :roles] #{:foo})]
                    (handler req))
-                 => :get-simple-fn))))
- )
+                 => :get-simple-fn)))))

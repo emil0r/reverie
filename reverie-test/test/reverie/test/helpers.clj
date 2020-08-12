@@ -4,16 +4,6 @@
             [reverie.page :as page]))
 
 
-(defmacro with-noir
-  "Executes the body within the context of Noir's bindings"
-  [& body]
-  `(binding [session/*noir-session* (atom {})
-             session/*noir-flash* (atom {})
-             cookies/*new-cookies* (atom {})
-             cookies/*cur-cookies* (atom {})]
-     ~@body))
-
-
 (defn- template-render [request page properties params]
   [:html
    [:head

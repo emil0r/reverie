@@ -4,7 +4,6 @@
             [reverie.http.response :as response]
             [reverie.http.route :as route]
             [reverie.page.util :refer [find-route handle-response]]
-            [reverie.page.middleware :refer [wrap-page-middleware]]
             [reverie.render :as render]
             [reverie.system :as sys]
             [reverie.util :as util]))
@@ -18,8 +17,6 @@
          (let [{:keys [request method]} (route/match? page-route request)]
            (if (and request method)
              (let [renderer (sys/renderer (:renderer options))
-                   ;; middleware-page (:middleware options)
-                   ;; middleware-route (get-in page-route [:options :middleware])
                    resp (method request page (:params request))
                    t (sys/template (:template options))]
                (match [;; raw response

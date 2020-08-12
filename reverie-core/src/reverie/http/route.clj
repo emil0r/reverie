@@ -10,28 +10,6 @@
   (match? [component request])
   (get-route [component]))
 
-(extend-type clojure.lang.Keyword
-  IRouting
-  (get-route [this]
-    (let [routes (->> [(->> (sys/apps)
-                            vals
-                            (map :app-routes))
-                       (->> (sys/objects)
-                            vals
-                            (map :route))
-                       (->> (sys/modules)
-                            vals
-                            (map :routes))
-                       (->> (sys/raw-pages)
-                            vals
-                            (map :routes))]
-                      flatten)]
-      (->> routes
-           (filter #(= this (get-in % [:options :name])))
-           first))))
-
-
-
 (s/defrecord Route [parent-path path options compiled roles matching casting methods]
   IRouting
   (match? [this request]

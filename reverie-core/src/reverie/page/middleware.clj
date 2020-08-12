@@ -1,5 +1,5 @@
 (ns reverie.page.middleware
-  (:require #_[reverie.util :as util]
+  (:require [reverie.util :as util]
             [reverie.render :as render]))
 
 
@@ -11,4 +11,4 @@
 
 (defn wrap-shorten-uri [handler page]
   (fn [request]
-    (handler (merge request {:shortened-uri (reverie.util/shorten-uri (:uri request) (:path page))}))))
+    (handler (merge request {:shortened-uri (util/shorten-uri (:uri request) (:path page))}))))
