@@ -18,7 +18,7 @@
 
  :admin {:tasks {:edits {:minutes 30}}}
  :log {:appenders {:rotor {:path "logs/reverie.log"}}}
- :site {:host-names []}
+ :site {:host-names ["*"]}
  :filemanager {:base-directory "media"
                :media-dirs ["media/images"
                             "media/files"]}

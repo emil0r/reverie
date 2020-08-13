@@ -55,12 +55,11 @@
         (get hosts "*")))
 
   render/IRender
-  (render [this request]
+  (render [this {{user :user} :reverie :as request}]
     (try+
      (let [host (get-host this request)
            {:keys [router handler]} host
-           page (router/get-page router request)
-           user (auth/get-user request)]
+           page (router/get-page router request)]
        (cond
          ;; no host found
          (nil? router) 

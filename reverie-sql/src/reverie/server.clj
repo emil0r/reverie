@@ -12,6 +12,7 @@
             [reverie.database.sql :as db.sql]
             [reverie.email :as email]
             [reverie.i18n :as i18n]
+            [reverie.http.router :as router]
             [reverie.http.server :as server]
             [reverie.logger :as logger]
             [reverie.migrator :as migrator]
@@ -49,11 +50,12 @@
                 ;; it's an already existing component
                 [dependancy opts-or-component]
                 ;; get the component if it's a map 
-                (let [{:keys [f args deps]} opts-or-component
+                (let [{:keys [c f args deps]} opts-or-component
                       args (if (map? args) [args] args)
-                      component (if deps
-                                  (component/using (apply f args) deps)
-                                  (apply f args))]
+                      component (cond
+                                  c c
+                                  deps (component/using (apply f args) deps)
+                                  :else (apply f args))]
                   [dependancy component]))))
        ;; flatten so that it can be applied to component/system-map
        (flatten)))
@@ -86,9 +88,13 @@
     (->> i18n-
          (i18n/load-i18n!))
 
-    (let [internal-components [[:migrator       migrator]
+    (let [hosts (reduce (fn [out host-name]
+                          (assoc out host-name (component/start (router/router {:database db}))))
+                        {} (settings/get settings [:site :host-names]))
+          internal-components [[:migrator       migrator]
                                [:settings       settings]
-                               [:database       db]
+                               [:database       {:c db
+                                                 :deps [:site]}]
                                [:rolemanager    {:f rm/get-rolemanager
                                                  :deps [:database]}]
                                [:i18n           i18n-]
@@ -113,7 +119,7 @@
                                                         (select-ns-keys opts :reverie.filemanager))}]
                                [:site           {:f site/get-site
                                                  :args (merge
-                                                        {:host-names (settings/get settings [:site :host-names])
+                                                        {:hosts hosts
                                                          :render-fn hiccup.compiler/render-html}
                                                         (select-ns-keys opts :reverie.site))
                                                  :deps [:database :cachemanager]}]

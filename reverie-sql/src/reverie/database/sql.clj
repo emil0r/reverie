@@ -10,12 +10,12 @@
             [reverie.auth :as auth :refer [IUserDatabase]]
             [reverie.database :as rev.db :refer [IDatabase]]
             [reverie.http.route :as route]
+            [reverie.http.router :as router]
             [reverie.internal :as internal :refer [storage]]
             [reverie.movement :as movement]
             [reverie.object :as object]
             [reverie.page :as page]
             [reverie.publish :as publish :refer [IPublish]]
-            [reverie.site :as site]
             [reverie.system :as sys]
             [reverie.util :refer [slugify kw->str str->kw]]
             [schema.core :as s]
@@ -169,9 +169,10 @@
                                              [:= :o.version 0]]}))]
         (recur db page-ids)))))
 
-(defn- recalculate-routes [db page-ids]
+(defn- recalculate-routes [db page-ids site]
   (recalculate-routes-db db page-ids)
-  (site/reset-routes! (sys/get-site)))
+  ;;(site/reset-routes! (sys/get-site))
+  )
 
 (defn- shift-versions! [db serial]
   (let [;; pages-published
@@ -299,7 +300,7 @@
                           :order (inc order)
                           :version 0)
               {:keys [id] :as page-data} (db/query! db sql-add-page<! data)]
-          (recalculate-routes db id)
+          (recalculate-routes db id (:site db))
           (auth/add-authorization! (rev.db/get-page db id)
                                    db
                                    :all
@@ -322,7 +323,7 @@
         (db/query! db {:update :reverie_page
                        :set (assoc data :updated (sql/raw "now()"))
                        :where [:= :id id]})
-        (recalculate-routes db id)
+        (recalculate-routes db id (:site db))
         (rev.db/get-page db id))))
 
   (save-page-properties! [db serial data]
@@ -368,7 +369,7 @@
                            :set {(sql/raw "\"order\"") (inc order)
                                  :parent new-parent}
                            :where [:= :id id]})
-            (recalculate-routes db id)))
+            (recalculate-routes db id (:site db))))
         (let [parent-origo
               (-> (db/query db {:select [:parent]
                                 :from [:reverie_page]
@@ -404,7 +405,7 @@
                              :set {(sql/raw "\"order\"") order
                                    :parent parent-origo}
                              :where [:= :id id]}))
-            (recalculate-routes db id))))
+            (recalculate-routes db id (:site db)))))
       (do (delete-stored-page id)
           (rev.db/get-page db id))))
 
@@ -741,7 +742,7 @@
                    (db/query! db {:insert-into (:table obj-meta)
                                   :values [(assoc (object/properties obj)
                                                   fk (:id new-meta-obj))]})))))
-           (recalculate-routes db (page/id pu))
+           (recalculate-routes db (page/id pu) (:site db))
            (db/query! db sql-update-published-pages-order! {:parent (page/parent pu)})))
        (doseq [p pages]
          ;; first remove unpublished from cache and the refetch it
