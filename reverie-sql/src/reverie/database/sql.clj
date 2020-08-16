@@ -171,8 +171,10 @@
 
 (defn- recalculate-routes [db page-ids site]
   (recalculate-routes-db db page-ids)
-  ;;(site/reset-routes! (sys/get-site))
-  )
+  (let [hosts (:hosts site)]
+    ;; this is a temp fix
+    (doseq [host (vals hosts)]
+      (router/reset-routes! (:router host)))))
 
 (defn- shift-versions! [db serial]
   (let [;; pages-published
@@ -215,11 +217,7 @@
 (defn- get-datasource
   "HikaruCP based connection pool"
   [db-spec datasource]
-  {:datasource (hikari-cp/make-datasource datasource)}
-  ;; (let [{:keys [subprotocol subname user password]} db-spec
-  ;;       ds (hikari-cp/make-datasource datasource)]
-  ;;   (assoc db-spec :datasource ds))
-  )
+  {:datasource (hikari-cp/make-datasource datasource)})
 
 
 (extend-type EzDatabase
