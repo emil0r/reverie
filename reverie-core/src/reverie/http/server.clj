@@ -8,11 +8,15 @@
 
             ;; middleware
             [reverie.helpers.middleware :refer [create-handler]]
-            [reverie.http.middleware :refer [wrap-admin
-                                             wrap-authorized
+            [reverie.http.middleware :refer [;; wrap-admin
+                                             ;; wrap-authorized
+                                             authz-exception-handler
+                                             authn-exception-handler
+                                             default-exception-handler
                                              wrap-downstream
-                                             wrap-editor
-                                             wrap-error-log
+                                             wrap-exceptions
+                                             ;; wrap-editor
+                                             ;; wrap-error-log
                                              wrap-forker
                                              wrap-i18n
                                              wrap-resources
@@ -74,13 +78,7 @@
                                 post-handlers
                                 [[wrap-i18n (:i18n middleware-options)]
                                  [wrap-downstream]
-                                 [wrap-editor]
-                                 [wrap-admin]
-                                 [wrap-authorized]
                                  [wrap-reverie-data {:dev? dev?}]
-                                 ;; we are not wrapping wrap-anti-forgery or
-                                 ;; wrap-csrf-token here because it's taken care of
-                                 ;; in reverie.site/render
                                  [wrap-content-type (:content-type middleware-options)]
                                  [wrap-content-type]
                                  [wrap-keyword-params]
@@ -95,7 +93,9 @@
                                    :cookie-attrs {:max-age (get-in middleware-options [:cookie :max-age] 31104000)}}]
                                  [wrap-cookies]
                                  [wrap-strip-trailing-slash]
-                                 [wrap-error-log dev?]
+                                 [wrap-exceptions {:default default-exception-handler
+                                                   :auth/not-authenticated authn-exception-handler
+                                                   :auth/not-authorize authz-exception-handler}]
                                  [wrap-resources [[(get-in middleware-options [:resources :media]) media-handler]
                                                   [(get-in middleware-options [:resources :resource]) resource-handler]]]]
                                 pre-handlers

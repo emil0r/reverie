@@ -30,25 +30,28 @@
 
 (defn wrap-response [handler]
   (fn [request]
-    (let [response (handler request)]
+    (let [response (handler request)
+          body (if (instance? java.io.InputStream (:body response))
+                 (:body response)
+                 (*render-fn* (:body response)))]
       (match [(get-type response)
               (nil? (get-in response [:headers "Content-Type"]))
               (nil? (:status response))]
 
              [:map false false]
              (-> response
-                 (assoc :body (*render-fn* (:body response))))
+                 (assoc :body body))
 
              [:map true false]
              (-> response
                  (assoc-in [:headers "Content-Type"] "text/html; charset=utf-8;")
-                 (assoc :body (*render-fn* (:body response))))
+                 (assoc :body body))
 
              [:map true true]
              (-> response
                  (assoc-in [:headers "Content-Type"] "text/html; charset=utf-8;")
                  (assoc :status 200)
-                 (assoc :body (*render-fn* (:body response))))
+                 (assoc :body body))
 
              [:nil _ _]
              (or (get *system-pages* 404)
@@ -57,7 +60,7 @@
              [_ _ _]
              {:status 200
               :headers {"Content-Type" "text/html; charset=utf-8;"}
-              :body (*render-fn* response)}))))
+              :body body}))))
 
 (defn wrap-cache [handler]
   (fn [request]
@@ -90,9 +93,10 @@
 (defn wrap-maybe-forgery [handler]
   (fn [request]
     ;; should we use CSRF protection or not?
-    (if (true? (:forgery? (page/options *page*)))
-      ((wrap-anti-forgery (wrap-csrf-token handler)) request)
-      (handler request))))
+    ;; needs to be specifically set to false to remove it
+    (if (false? (:forgery? (page/options *page*)))
+      (handler request)
+      ((wrap-anti-forgery (wrap-csrf-token handler)) request))))
 
 (defn page-handler [request]
   (if-let [handler (page/handler *page* request)]

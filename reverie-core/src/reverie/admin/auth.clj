@@ -1,33 +1,40 @@
 (ns reverie.admin.auth
-  (:require [hiccup.form :as form]
-            [reverie.admin.api.editors :as editors]
+  (:require [muuntaja.middleware :refer [wrap-format]]
             [reverie.auth :as auth]
             [reverie.core :refer [defpage]]
+            [reverie.http.middleware :refer [wrap-authn
+                                             wrap-authz]]
+            [reverie.http.negotiation :refer [muuntaja-instance]]
             [reverie.http.response :as response]
             [reverie.session :as session]))
 
 
 
-(defn login-view [request page params] {})
+(defn auth-get [request page params]
+  {:status 200
+   :body (get-in request [:reverie :user])})
 
-(defn handle-login [request {:keys [database] :as page}
-                    params]
-  (if-let [user (auth/login params database)]
+(defn auth-post [{{database :database} :reverie body-params :body-params :as request} page params]
+  (if-let [user (auth/login body-params database)]
     (do
       (session/swap! request merge {:user-id (:id user)})
-      (editors/editor! user)
-      (response/get 302 "/admin"))
-    (response/get 302 "/admin/login")))
+      {:status 200
+       :body user})
+    {:status 400
+     :body "Unable to login"}))
 
 
 (defn logout [request page params]
   (auth/logout request)
-  (response/get 302 "/"))
+  {:status 200
+   :body {:result :success}})
 
 
-(defpage "/admin/login" {:template :admin/login
-                         :forgery? true}
-  [["/" {:get login-view :post handle-login}]])
+(defpage "/admin/auth"
+  {:middleware [[wrap-format muuntaja-instance]]
+   :forgery? false}
+  [["/" {:get auth-get :post auth-post}]])
 
-(defpage "/admin/logout" {}
-  [["/" {:get logout}]])
+(defpage "/admin/auth/logout"
+  {:forgery? false}
+  [["/" {:post logout}]])

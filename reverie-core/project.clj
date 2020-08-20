@@ -12,6 +12,8 @@
                  [org.clojure/core.match "0.3.0"]
                  [org.clojure/core.async "0.4.500"]
                  [org.clojure/core.memoize "0.7.2"]
+                 [metosin/muuntaja "0.6.7"]
+                 [metosin/jsonista "0.2.6"]
 
                  ;; structure
                  [com.stuartsierra/component "0.4.0"]

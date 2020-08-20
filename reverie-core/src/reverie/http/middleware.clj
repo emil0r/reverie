@@ -17,6 +17,7 @@
             [taoensso.timbre :as log]
             [taoensso.tower.utils :as tower.utils]))
 
+
 (defn wrap-downstream
   "Wrap downstream. Used for sending data downstream for later use during a request response cycle."
   [handler]
@@ -92,6 +93,8 @@
           (if (spec/valid? :http/response response)
             response
             (do (log/debug "Invalid response" (spec/explain-str :http/response response))
+                (log/error {:uri (:uri request)
+                            :message (.getMessage e)})
                 (response/get 500)))))
       (catch Throwable t
         (let [handle-exception (get exception-handlers :default)
@@ -99,6 +102,8 @@
           (if (spec/valid? :http/response response)
             response
             (do (log/debug "Invalid response" (spec/explain-str :http/response response))
+                (log/error {:uri (:uri request)
+                            :message (.getMessage t)})
                 (response/get 500))))))))
 
 (defn wrap-editor
@@ -109,26 +114,6 @@
      (assoc-in request
                [:reverie :editor?]
                (editors/editor? (get-in request [:reverie :user]))))))
-
-(defn wrap-error-log
-  "Log errors"
-  [handler dev?]
-  (fn [request]
-    (if dev?
-      (handler request)
-      (try+
-       (handler request)
-       (catch Object _
-         (do
-           (let [{:keys [message cause throwable]} &throw-context]
-             (log/error {:where ::wrap-error-log
-                         :uri (:uri request)
-                         :message message
-                         :cause cause
-                         :stacktrace (if throwable
-                                       (log/stacktrace throwable))
-                         :request (dissoc request :reverie)}))
-           (response/get 500)))))))
 
 (defn wrap-authorized
   "Wrap authorization"
