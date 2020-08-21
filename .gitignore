@@ -27,3 +27,9 @@ blackboard/
 .docker-data
 reverie-test/src/reverie/site/objects/testus.clj
 reverie-test/src/reverie/site/objects/migrations/testus
+
+# reverie-admin
+reverie-admin/.shadow-cljs
+reverie-admin/node_modules
+reverie-admin/package.json
+reverie-admin/public/js/compiled
