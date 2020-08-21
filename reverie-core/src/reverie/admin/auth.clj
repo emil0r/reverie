@@ -31,10 +31,9 @@
 
 
 (defpage "/admin/auth"
-  {:middleware [[wrap-format muuntaja-instance]]
-   :forgery? false}
+  {:middleware [[wrap-format muuntaja-instance]]}
   [["/" {:get auth-get :post auth-post}]])
 
 (defpage "/admin/auth/logout"
-  {:forgery? false}
+  {}
   [["/" {:post logout}]])

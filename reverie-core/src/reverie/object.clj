@@ -36,7 +36,7 @@
                             order :- s/Int
                             page :- s/Any
                             route :- Route
-                            database :- s/Any
+                            ;; database :- s/Any ;; <-- should be safe to remove?
                             options :- {s/Any s/Any}
                             methods :- {s/Any s/Any}
                             properties :- {s/Any s/Any}]

@@ -8,14 +8,14 @@
             [reverie.render :as render]
             [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]))
 
-;; we need these to be dynamic, because site calculates these in the middle of a request
-;; and we want to use the middleware pattern for functionality
-;; since we also wish to apply various forms of middleware before we hit these middleware functions
-;; this leaves us with somehow passing along data, or injecting the middleware
-;; of the two passing along via dynamic binding, is maybe not the most elegant solution, but it sidesteps
+;; We need these to be dynamic, because site calculates these in the middle of a request
+;; and we want to use the middleware pattern for functionality.
+;; Since we also wish to apply various forms of middleware before we hit these middleware functions.
+;; This leaves us with somehow passing along data, or injecting the middleware.
+;; Of the two, passing along via dynamic binding, is maybe not the most elegant solution, but it sidesteps
 ;; an important issue, namely compiling a chain of middleware functions in order to create the handler function
-;; you want for each request. doign it this way that compliation only needs to happen once, instead of dynamically
-;; creating it every time. the dynamic binding seems to be a small price to pay in comparison
+;; you want for each request. Doing it this way that compliation only needs to happen once, instead of dynamically
+;; creating it every time. The dynamic binding seems to be a small price to pay in comparison
 
 (def ^:dynamic *cachemanager*)
 (def ^:dynamic *page*)
