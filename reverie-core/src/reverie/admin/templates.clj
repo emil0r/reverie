@@ -10,9 +10,15 @@
    (head "Admin reverie" {:request request})
    [:body
     [:div#container
-     [:iframe {:src "/admin/frame/controlpanel" :frameborder "no" :id "framecontrol" :name "framecontrol"}]
-     [:iframe {:src "/" :frameborder "no" :id "framemain" :name "framemain"}]
-     [:iframe {:src "/admin/frame/options" :frameborder "no" :id "frameoptions" :name "frameoptions"}]]]))
+     [:div#app
+      "reverie/CMS &mdash; initializing..."]
+     [:script {:type "text/javascript" :src "http://localhost:8700/js/compiled/main.js"}]
+     [:script {:type "text/javascript"}
+      "reverie.core.init({});"]
+     ;; [:iframe {:src "/admin/frame/controlpanel" :frameborder "no" :id "framecontrol" :name "framecontrol"}]
+     ;; [:iframe {:src "/" :frameborder "no" :id "framemain" :name "framemain"}]
+     ;; [:iframe {:src "/admin/frame/options" :frameborder "no" :id "frameoptions" :name "frameoptions"}]
+     ]]))
 
 (defn admin-login [request page properties {:keys [username password]}]
   (html5

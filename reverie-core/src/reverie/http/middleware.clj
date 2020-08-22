@@ -159,20 +159,23 @@
         (cond
          ;; no x-csrf-token found in the inbound cookie
          (nil? x-csrf-token)
-         (do (cookies/put! cookies "x-csrf-token" *anti-forgery-token*)
+         (do (cookies/put! cookies "x-csrf-token" {:value *anti-forgery-token*
+                                                   :path "/"})
              response)
          ;; x-csrf-token from the cookie does not equal the
          ;; one we got from the wrap-anti-forgery middleware
          ;; NOTE: we should only hit this during GET, HEAD and OPTIONS
          ;; the rest will be blocked by the wrap-anti-forgery middleware
          (not= x-csrf-token old-token)
-         (do (cookies/put! cookies "x-csrf-token" *anti-forgery-token*)
+         (do (cookies/put! cookies "x-csrf-token" {:value *anti-forgery-token*
+                                                   :path "/"})
              response)
          ;; all is good
          :else
           response)
         (do
-          (cookies/put! cookies "x-csrf-token" *anti-forgery-token*)
+          (cookies/put! cookies "x-csrf-token" {:value *anti-forgery-token*
+                                                :path "/"})
           response)))))
 
 (defn- get-locales* [headers-accept-language
@@ -271,3 +274,10 @@
     (if (str/ends-with? uri "/")
       (handler (assoc request :uri (subs uri (dec (count uri)))))
       (handler request))))
+
+
+(defn wrap-allow-credentials [handler value]
+  (fn [request]
+    (let [resp (handler request)]
+      (-> resp
+          (assoc-in [:headers "Access-Control-Allow-Credentials"] (str value))))))

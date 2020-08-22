@@ -8,15 +8,12 @@
 
             ;; middleware
             [reverie.helpers.middleware :refer [create-handler]]
-            [reverie.http.middleware :refer [;; wrap-admin
-                                             ;; wrap-authorized
-                                             authz-exception-handler
+            [reverie.http.middleware :refer [authz-exception-handler
                                              authn-exception-handler
                                              default-exception-handler
+                                             wrap-allow-credentials
                                              wrap-downstream
                                              wrap-exceptions
-                                             ;; wrap-editor
-                                             ;; wrap-error-log
                                              wrap-forker
                                              wrap-i18n
                                              wrap-resources
@@ -24,6 +21,7 @@
                                              wrap-strip-trailing-slash]]
             [ring.middleware.cookies :refer [wrap-cookies]]
             [ring.middleware.content-type :refer [wrap-content-type]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.file :refer [wrap-file]] ;; research for later
             [ring.middleware.file-info :refer [wrap-file-info]]
             [ring.middleware.head :refer [wrap-head]]
@@ -76,7 +74,11 @@
                               (vec
                                (concat
                                 post-handlers
-                                [[wrap-i18n (:i18n middleware-options)]
+                                [[wrap-cors
+                                  :access-control-allow-origin [#".*"]
+                                  :access-control-allow-methods [:get :post :options :put :delete]]
+                                 [wrap-allow-credentials true]
+                                 [wrap-i18n (:i18n middleware-options)]
                                  [wrap-downstream]
                                  [wrap-reverie-data {:dev? dev?}]
                                  [wrap-content-type (:content-type middleware-options)]

@@ -12,14 +12,14 @@
 
 (defn auth-get [request page params]
   {:status 200
-   :body (get-in request [:reverie :user])})
+   :body {:user (get-in request [:reverie :user])}})
 
 (defn auth-post [{{database :database} :reverie body-params :body-params :as request} page params]
   (if-let [user (auth/login body-params database)]
     (do
       (session/swap! request merge {:user-id (:id user)})
       {:status 200
-       :body user})
+       :body {:user user}})
     {:status 400
      :body "Unable to login"}))
 

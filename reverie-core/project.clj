@@ -20,6 +20,7 @@
 
                  ;; web
                  [ring/ring-anti-forgery "1.3.0"]
+                 [ring-cors "0.1.13"]
                  [ring/ring-core "1.8.1"]
                  [ring/ring-devel "1.8.1"]
                  [javax.servlet/servlet-api "2.5"]
