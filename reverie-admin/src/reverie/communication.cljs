@@ -2,11 +2,13 @@
   (:require [ajax.core :as ajax]
             [ajax.interceptors :as ajax-interceptors]
             [ajax.transit :as ajax-transit]
+            [com.stuartsierra.component :as component]
             [clojure.string :as str]
             [cognitect.transit :as transit]
             [java.time]
             [re-frame.core :as rf]
             [reverie.communication.records :as records]
+            [taoensso.timbre :as log]
             [tick.alpha.api :as t]))
 
 (defn get-cookie [cookie-name]
@@ -167,3 +169,25 @@
                                 (ajax/DELETE (str @base-url uri)
                                              (event-fx-request-map params chained))
                                 nil))
+
+
+(defrecord CommunicationManager [started? url]
+  component/Lifecycle
+  (start [this]
+    (if started?
+      this
+      (do (log/info "Starting CommunicationManager")
+          (log/info "Setting Communication base-url to " url)
+          (reset! base-url url)
+          (assoc this
+                 :started? true))))
+  (stop [this]
+    (if-not started?
+      this
+      (do (log/info "Stopping CommunicationManager")
+          (reset! base-url nil)
+          (assoc this
+                 :started? false)))))
+
+(defn communication-manager [settings]
+  (map->CommunicationManager settings))

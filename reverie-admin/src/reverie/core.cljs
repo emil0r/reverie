@@ -1,5 +1,6 @@
 (ns reverie.core
-  (:require [reagent.dom :as dom]))
+  (:require [reagent.dom :as dom]
+            [reverie.init :as init]))
 
 
 (defn index []
@@ -14,7 +15,7 @@
   ;; init is called ONCE when the page loads
   ;; this is called in the index.html and must be exported
   ;; so it is available even in :advanced release builds
-  ;;(init/init (js->clj config :keywordize-keys true))
+  (init/init (js->clj config :keywordize-keys true))
   (start))
 
 (defn stop []
