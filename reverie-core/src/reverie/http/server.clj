@@ -97,7 +97,7 @@
                                  [wrap-strip-trailing-slash]
                                  [wrap-exceptions {:default default-exception-handler
                                                    :auth/not-authenticated authn-exception-handler
-                                                   :auth/not-authorize authz-exception-handler}]
+                                                   :auth/not-authorized authz-exception-handler}]
                                  [wrap-resources [[(get-in middleware-options [:resources :media]) media-handler]
                                                   [(get-in middleware-options [:resources :resource]) resource-handler]]]]
                                 pre-handlers

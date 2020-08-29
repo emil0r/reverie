@@ -272,7 +272,7 @@
 (defn wrap-strip-trailing-slash [handler]
   (fn [{:keys [uri] :as request}]
     (if (str/ends-with? uri "/")
-      (handler (assoc request :uri (subs uri (dec (count uri)))))
+      (handler (assoc request :uri (subs uri 0 (dec (.length uri)))))
       (handler request))))
 
 

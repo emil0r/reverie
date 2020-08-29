@@ -26,19 +26,17 @@
                 nil)))
           nil routes-atom-seq))
 
-(defn get-route+properties [uri routes-atom-seq]
-  (let [[data selected-routes] (get-route+routes uri routes-atom-seq)]
-    (if data
-      data
-      (->>
-       selected-routes
-       (filter (fn [[k [r properties]]]
-                 (and (not= (:type properties) :page)
-                      (re-find (re-pattern (str "^" k)) uri))))
-       (sort-by first)
-       reverse
-       first
-       second))))
+(defn get-route+properties [uri routes]
+  (if-let [data (get routes uri)]
+    data
+    (->>
+     @static-routes
+     (filter (fn [[k [r properties]]]
+               (re-find (re-pattern (str "^" k)) uri)))
+     (sort-by first)
+     reverse
+     first
+     second)))
 
 (defrecord Router [database started? routes middleware]
   component/Lifecycle
@@ -73,28 +71,28 @@
                                                                :name
                                                                :serial])]})
                  (reverie.db/get-pages-by-route database)))))
-  (get-page [router request]
-    (let [uri (:uri request)]
-      (let [[route properties] (get-route+properties uri [routes static-routes])]
-        (if route
-          (let [{:keys [template app type name serial]} properties
-                public? (not (get-in request [:reverie :editor?]))]
-            (case type
-              :page (let [p (reverie.db/get-page database serial public?)]
-                      (if (and p
-                               (= (:path route) (-> p :route :path)))
-                        (assoc p :route route)
-                        nil))
-              :raw (let [page (sys/raw-page name)]
-                     (assoc page :database database))
-              :module (assoc (:module (sys/module name))
-                             :route route
-                             :database database)
-              :app (let [p (reverie.db/get-page database serial public?)]
-                     (if (and p
-                              (= (:path route) (-> p :route :path)))
-                       (assoc p :route route)
-                       nil)))))))))
+  (get-page [router {:keys [uri] :as request}]
+    (let [[route properties] (get-route+properties uri @routes)]
+      (if route
+        (let [{:keys [template app type name serial]} properties
+              public? (not (get-in request [:reverie :editor?]))]
+          (case type
+            :page (let [p (reverie.db/get-page database serial public?)]
+                    (if (and p
+                             (= (:path route) (-> p :route :path)))
+                      (assoc p :route route)
+                      nil))
+            :raw (let [page (sys/raw-page name)]
+                   (assoc page :database database))
+            :module (assoc (:module (sys/module name))
+                           :route route
+                           :database database)
+            :app (let [p (reverie.db/get-page database serial public?)]
+                   (if (and p
+                            (= (:path route) (-> p :route :path)))
+                     (assoc p :route route)
+                     nil))))
+        nil))))
 
 
 (defn router [settings]

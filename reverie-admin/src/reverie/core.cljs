@@ -1,13 +1,11 @@
 (ns reverie.core
   (:require [reagent.dom :as dom]
-            [reverie.init :as init]))
+            [reverie.init :as init]
+            [reverie.views :as views]))
 
-
-(defn index []
-  [:h1 "hi"])
 
 (defn start []
-  (dom/render [index]
+  (dom/render [views/index]
               (. js/document (getElementById "app"))))
 
 

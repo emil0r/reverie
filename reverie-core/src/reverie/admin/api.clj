@@ -1,13 +1,21 @@
 (ns reverie.admin.api
-  (:require [reverie.core :refer [defpage]]
+  (:require [muuntaja.middleware :refer [wrap-format]]
+            [reverie.core :refer [defpage]]
             [reverie.admin.api.interface.frames :as iframes]
             [reverie.admin.api.interface.frames.pages :as ifpages]
             [reverie.admin.api.interface.objects :as iobjects]
-            [reverie.admin.api.interface.pages :as ipages]))
+            [reverie.admin.api.interface.pages :as ipages]
+            [reverie.admin.api.page :as api.page]
+            [reverie.http.middleware :refer [wrap-authn
+                                             wrap-authz]]
+            [reverie.http.negotiation :refer [muuntaja-instance]]))
 
 
-(defpage "/admin/api" {}
-  [["/" {:get ipages/get-pages}]
+(defpage "/admin/api"
+  {:middleware [[wrap-format muuntaja-instance]
+                [wrap-authz #{:admin :staff}]
+                [wrap-authn]]}
+  [["/page" {:get api.page/get-pages}]
 
    ;; frames
    ["/interface/frames/object/:object-id" {:object-id #"\d+"} {:object-id Integer} {:get iframes/edit-object :post iframes/handle-object}]

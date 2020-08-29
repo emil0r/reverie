@@ -12,14 +12,16 @@
 
 (defn auth-get [request page params]
   {:status 200
-   :body {:user (get-in request [:reverie :user])}})
+   :body {:result :success
+          :payload (get-in request [:reverie :user])}})
 
 (defn auth-post [{{database :database} :reverie body-params :body-params :as request} page params]
   (if-let [user (auth/login body-params database)]
     (do
       (session/swap! request merge {:user-id (:id user)})
       {:status 200
-       :body {:user user}})
+       :body {:result :success
+              :payload user}})
     {:status 400
      :body "Unable to login"}))
 
@@ -35,5 +37,5 @@
   [["/" {:get auth-get :post auth-post}]])
 
 (defpage "/admin/auth/logout"
-  {}
+  {:middleware [[wrap-format muuntaja-instance]]}
   [["/" {:post logout}]])

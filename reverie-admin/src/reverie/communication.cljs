@@ -39,7 +39,7 @@
 
 
 (def credentials (atom nil))
-(def base-url (atom nil))
+(defonce base-url (atom nil))
 
 (defn time-fn [obj]
   (str obj))
@@ -103,7 +103,8 @@
     (merge {:params params
             :writer writer
             :with-credentials true
-            :response-format response-format}
+            :response-format response-format
+            :headers {"Content-Type" "application/transit+json"}}
            (when handler
              {:handler handler})
            (when error-handler
@@ -115,7 +116,8 @@
    (merge {:params params
            :writer writer
            :with-credentials true
-           :response-format response-format}
+           :response-format response-format
+           :headers {"Content-Type" "application/transit+json"}}
           (when handler
             {:handler handler})
           (when error-handler
