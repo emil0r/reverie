@@ -33,3 +33,5 @@ reverie-admin/.shadow-cljs
 reverie-admin/node_modules
 reverie-admin/package.json
 reverie-admin/public/js/compiled
+reverie-admin/public/css
+reverie-admin/build

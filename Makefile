@@ -28,3 +28,10 @@ lein-install-sql:
 
 lein-install:	lein-install-core \
 		lein-install-sql
+
+
+# styling
+
+styling-vendor:
+	@echo "Compiling vendor styling"
+	(cd reverie-admin && npm run build && cp build/static/css/*.css public/css/vendor/antd.css)
