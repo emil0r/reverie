@@ -45,22 +45,15 @@ WITH published AS (
      SELECT serial, version
      FROM reverie_page
      WHERE version = 1
-), properties AS (
-   SELECT page_serial,
-          ARRAY_AGG(concat(key, ':' , value)) AS value
-   FROM
-          reverie_page_properties
-   GROUP BY
-          page_serial
 )
 SELECT
         p.*,
         COALESCE(pub.version, 0) = 1 AS published_p,
-        prop.value AS properties
+        prop.data AS properties
 FROM
         reverie_page p
         LEFT JOIN published pub ON p.serial = pub.serial
-        LEFT JOIN properties prop ON p.serial = prop.page_serial
+        LEFT JOIN reverie_page_properties prop ON p.serial = prop.page_serial
 WHERE
         p.version = 0
         OR p.version = 1
@@ -73,22 +66,15 @@ WITH published AS (
      SELECT serial, version
      FROM reverie_page
      WHERE version = 1
-), properties AS (
-   SELECT page_serial,
-          ARRAY_AGG(concat(key, ':' , value)) AS value
-   FROM
-          reverie_page_properties
-   GROUP BY
-          page_serial
 )
 SELECT
         p.*,
         COALESCE(pub.version, 0) = 1 AS published_p,
-        prop.value AS properties
+        prop.data AS properties
 FROM
         reverie_page p
         LEFT JOIN published pub ON p.serial = pub.serial
-        LEFT JOIN properties prop ON p.serial = prop.page_serial
+        LEFT JOIN reverie_page_properties prop ON p.serial = prop.page_serial
 WHERE
         p.version = :version
 ORDER BY
@@ -100,22 +86,15 @@ WITH published AS (
      SELECT serial, version
      FROM reverie_page
      WHERE version = 1
-), properties AS (
-   SELECT page_serial,
-          ARRAY_AGG(concat(key, ':' , value)) AS value
-   FROM
-          reverie_page_properties
-   GROUP BY
-          page_serial
 )
 SELECT
         p.*,
         COALESCE(pub.version, 0) = 1 AS published_p,
-        prop.value AS properties
+        prop.data AS properties
 FROM
         reverie_page p
         LEFT JOIN published pub ON p.serial = pub.serial
-        LEFT JOIN properties prop ON p.serial = prop.page_serial
+        LEFT JOIN reverie_page_properties prop ON p.serial = prop.page_serial
 WHERE
         p.id = :id;
 
@@ -124,22 +103,15 @@ WITH published AS (
      SELECT serial, version
      FROM reverie_page
      WHERE version = 1
-), properties AS (
-   SELECT page_serial,
-          ARRAY_AGG(concat(key, ':' , value)) AS value
-   FROM
-          reverie_page_properties
-   GROUP BY
-          page_serial
 )
 SELECT
         p.*,
         COALESCE(pub.version, 0) = 1 AS published_p,
-        prop.value AS properties
+        prop.data AS properties
 FROM
         reverie_page p
         LEFT JOIN published pub ON p.serial = pub.serial
-        LEFT JOIN properties prop ON p.serial = prop.page_serial
+        LEFT JOIN reverie_page_properties prop ON p.serial = prop.page_serial
 WHERE
         p.serial = :serial
         AND p.version = :version;
@@ -149,22 +121,15 @@ WITH published AS (
      SELECT serial, version
      FROM reverie_page
      WHERE version = 1
-), properties AS (
-   SELECT page_serial,
-          ARRAY_AGG(concat(key, ':' , value)) AS value
-   FROM
-          reverie_page_properties
-   GROUP BY
-          page_serial
 )
 SELECT
         p.*,
         COALESCE(pub.version, 0) = 1 AS published_p,
-        prop.value AS properties
+        prop.data AS properties
 FROM
         reverie_page p
         LEFT JOIN published pub ON p.serial = pub.serial
-        LEFT JOIN properties prop ON p.serial = prop.page_serial
+        LEFT JOIN reverie_page_properties prop ON p.serial = prop.page_serial
 WHERE
         p.parent = :parent
         AND p.version = :version

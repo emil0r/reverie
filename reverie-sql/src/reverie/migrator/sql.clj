@@ -16,11 +16,12 @@
        "_"
        (str/replace (slugify name) #"-" "_"))))
 
-(defn get-migration-map [type name datasource table path]
+(defn get-migration-map [type name database datasource table path]
   (let [mmap {:store :database
               :migration-table-name table
               :migration-dir path
               :db datasource
+              :ezdb database
               :type type
               :name name}]
     (assoc mmap :migration-dir-valid? (some? (io/resource path)))))
@@ -54,7 +55,7 @@
                         [[:core :pre "migrations_reverie" "migrations/reverie/postgresql/"]]
                         (get-migrations))
             mmaps (map (fn [[name type table path]]
-                         (get-migration-map name type ds table path))
+                         (get-migration-map name type database ds table path))
                        migrations)]
         (log/info "Starting migrations")
         (if (every? true? (map :migration-dir-valid? mmaps))

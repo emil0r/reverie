@@ -1,5 +1,6 @@
 (ns reverie.database.sql
-  (:require [clojure.edn :as edn]
+  (:require [cheshire.core :as json]
+            [clojure.edn :as edn]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :as set]
             [clojure.string :as str]
@@ -7,6 +8,7 @@
             [ez-database.core :as db]
             [hikari-cp.core :as hikari-cp]
             [honeysql.core :as sql]
+            [honeysql.format]
             [reverie.auth :as auth :refer [IUserDatabase]]
             [reverie.database :as rev.db :refer [IDatabase]]
             [reverie.http.route :as route]
@@ -24,11 +26,31 @@
             [tick.alpha.api :as t]
             [yesql.core :refer [defqueries]])
   (:import [ez_database.core EzDatabase]
+           [org.postgresql.util PGobject]
            [reverie DatabaseException]))
+
+
+(defrecord JSONB [data])
+(defn ->JSONB [data] (map->JSONB {:data data}))
+(defrecord JSON [data])
+(defn ->JSON [data] (map->JSON {:data data}))
+
+(extend-protocol honeysql.format/ToSql
+  JSON
+  (to-sql [v]
+    (let [value (json/generate-string (:data v))]
+      (str "'" value "'::JSON")))
+  JSONB
+  (to-sql [v]
+    (let [value (json/generate-string (:data v))]
+      (str "'" value "'::JSONB"))))
 
 
 ; http://clojure.github.io/java.jdbc/#clojure.java.jdbc/IResultSetReadColumn
 (extend-protocol jdbc/IResultSetReadColumn
+  PGobject
+  (result-set-read-column [pgobj _2 _3]
+    (json/parse-string (.getValue pgobj) true))
   org.postgresql.jdbc.PgArray
   (result-set-read-column [pgobj metadata i]
     (vec (.getArray pgobj)))
@@ -110,12 +132,6 @@
       (assoc :published? (:published_p data)
              :raw-data data
              :type (keyword (:type data))
-             :properties (->> data
-                              :properties
-                              (reduce (fn [out x]
-                                        (let [[a b] (str/split x #":")]
-                                          (assoc-in out (map keyword (str/split a #"_")) (edn/read-string b))))
-                                      {}))
              :template (keyword (:template data))
              :app (if (str/blank? (:app data))
                     ""

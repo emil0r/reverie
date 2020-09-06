@@ -1,0 +1,3 @@
+{:ns reverie.migrations.page-properties
+ :up-fn migrate-up
+ :down-fn migrate-down}
