@@ -3,7 +3,9 @@
             [reverie.communication :as communication]
             [reverie.config :refer [config]]
             [reverie.event :as event]
+            [reverie.i18n :as i18n]
             [reverie.logging :as logging]
+            [reverie.subs]
             [taoensso.timbre :as log]))
 
 (defonce -system (atom nil))

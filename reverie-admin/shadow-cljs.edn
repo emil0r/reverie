@@ -21,6 +21,10 @@
                 [re-frame "0.12.0"]
                 [com.stuartsierra/component "1.0.0"]
 
+                ;; database
+                [datascript "1.0.1"]
+                [re-posh "0.3.2"]
+
                 ;; communication
                 [cljs-ajax "0.8.0"]
                 [tick "0.4.23-alpha"]
@@ -30,7 +34,11 @@
                 
                 ;; logging
                 [com.taoensso/timbre "4.10.0"]
-                
+
+                ;; i18n
+                [tongue "0.2.9"]
+
+                ;; reagent
                 [reagent "0.10.0" :exclusions [cljsjs/react
                                                cljsjs/react-dom
                                                cljsjs/react-dom-server

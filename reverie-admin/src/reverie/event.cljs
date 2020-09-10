@@ -1,5 +1,6 @@
 (ns reverie.event
   (:require [com.stuartsierra.component :as component]
+            [reverie.event.auth]
             [reverie.event.init :as event.init]
             [re-frame.core :as rf]
             [taoensso.timbre :as log]))

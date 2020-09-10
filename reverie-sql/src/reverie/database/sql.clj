@@ -50,7 +50,12 @@
 (extend-protocol jdbc/IResultSetReadColumn
   PGobject
   (result-set-read-column [pgobj _2 _3]
-    (json/parse-string (.getValue pgobj) true))
+    (let [type  (.getType pgobj)
+          value (.getValue pgobj)]
+      (case type
+        "jsonb" (json/parse-string value true)
+        "json" (json/parse-string value true)
+        value)))
   org.postgresql.jdbc.PgArray
   (result-set-read-column [pgobj metadata i]
     (vec (.getArray pgobj)))

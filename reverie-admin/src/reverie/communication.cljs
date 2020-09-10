@@ -11,6 +11,9 @@
             [taoensso.timbre :as log]
             [tick.alpha.api :as t]))
 
+(defn success? [data]
+  (= (:result data) :success))
+
 (defn get-cookie [cookie-name]
   ;; check that cookie does exist
   (if (and (.-cookie js/document) (not= "" (.-cookie js/document)))
