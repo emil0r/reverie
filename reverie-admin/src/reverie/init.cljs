@@ -38,6 +38,9 @@
      :init          (component/using
                      (init-manager (:init @config))
                      [])
+     :i18n-manager (component/using
+                    (i18n/i18n-manager (:i18n @config))
+                    [])
      :logging-manager (component/using
                        (logging/logging-manager (:logging-manager @config))
                        [])

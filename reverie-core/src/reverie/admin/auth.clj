@@ -34,8 +34,5 @@
 
 (defpage "/admin/auth"
   {:middleware [[wrap-format muuntaja-instance]]}
-  [["/" {:get auth-get :post auth-post}]])
-
-(defpage "/admin/auth/logout"
-  {:middleware [[wrap-format muuntaja-instance]]}
-  [["/" {:post logout}]])
+  [["/logout" {:post logout}]
+   ["/" {:get auth-get :post auth-post}]])

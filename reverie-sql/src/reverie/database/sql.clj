@@ -30,6 +30,10 @@
            [reverie DatabaseException]))
 
 
+(defmethod honeysql.format/fn-handler "search" [_ field value]
+  (str (honeysql.format/to-sql field) " ILIKE " (honeysql.format/to-sql (str "%" value "%"))))
+
+
 (defrecord JSONB [data])
 (defn ->JSONB [data] (map->JSONB {:data data}))
 (defrecord JSON [data])
@@ -346,7 +350,7 @@
         (rev.db/get-page db id))))
 
   (save-page-properties! [db serial data]
-    (db/with-transaction [db :default]
+    #_#_(db/with-transaction [db :default]
       (db/query! db {:delete-from :reverie_page_properties
                      :where [:and
                              [:in :key (vec (map name (keys data)))]

@@ -3,4 +3,12 @@
     flex-direction: column;
     margin-top: calc(20vh + 50px);
     align-items: center;
+    input[type=submit] {
+        border: 0 none;
+        height: 0;
+        width: 0;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+    }
 }

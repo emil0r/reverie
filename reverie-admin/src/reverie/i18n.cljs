@@ -41,6 +41,9 @@
 
         :auth/login "Login"
         :auth/logout "Logout"
+
+        :profile/logged-in-as "You are logged in as {1}"
+        :profile "Profile"
         
         :form/cancel "Cancel"
         :form/save "Save"

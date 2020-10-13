@@ -1,0 +1,21 @@
+@use "../constants/colors" as *;
+
+.reverie-sidebar {
+    position: relative;
+    .profile {
+        width: 100%;
+        &:hover {
+            cursor: pointer;
+        }
+        position: absolute;
+        bottom: 2rem;
+        .anticon-user {
+            font-size: 2rem;
+            color: $primary;
+        }
+    }
+    .ant-btn {
+        background-color: $blue-1;
+        color: $white;
+    }
+}

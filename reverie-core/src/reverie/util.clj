@@ -59,7 +59,7 @@
 
 (defn kw->str [x]
   (if (keyword? x)
-    (str/replace (str x) #":" "")
+    (subs (str x) 1)
     x))
 
 (defn str->kw [x]

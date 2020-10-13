@@ -10,8 +10,8 @@
                    [ez-wire.form.validation :refer [defvalidation]]))
 
 (defn logout []
-  [:a
-   {:href "#"
+  [:> Button
+   {:type "primary"
     :on-click #(rf/dispatch [:auth/logout])}
    (t :auth/logout)])
 
@@ -25,7 +25,7 @@
          :password password}
         (fn [data]
           (if (success? data)
-            (rf/dispatch [:user/profile (:payload data)])
+            (rf/dispatch [:auth/profile (:payload data)])
             (add-external-error form :password :response (t (:payload data)) true)))
         (handle-faulty-login-response form)))
 
@@ -45,17 +45,19 @@
 (defn login []
   (let [form (loginform {:username ""
                          :password ""})
-        valid-form (rf/subscribe [::form/on-valid (:id form)])]
+        valid-form (rf/subscribe [::form/on-valid (:id form)])
+        on-submit #(when (valid? valid-form)
+                     (let [data @valid-form]
+                       (login! form (:username data) (:password data))))]
     (fn []
       [:div.login-splash
-       [:form.login
+       [:form.login {:on-submit on-submit}
         [:div
          [:img {:src "/img/reveriecms.png"}]
+         [:input {:type :submit :tabindex -1}]
          [form/as-table {} form]
          [:> Button {:type "primary"
                      :disabled (not (valid? valid-form))
-                     :on-click #(when (valid? valid-form)
-                                  (let [data @valid-form]
-                                    (login! form (:username data) (:password data))))}
+                     :on-click on-submit}
           (t :auth/login)]]]])))
 

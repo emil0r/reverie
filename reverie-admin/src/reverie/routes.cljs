@@ -1,6 +1,7 @@
 (ns reverie.routes
   (:require [reitit.frontend :as r.frontend]
             [reitit.coercion.spec :as coercion.spec]
+            [reverie.views.profile]
             [reverie.views.root]))
 
 
@@ -8,6 +9,9 @@
   [["/"
     {:name :root/index
      :view reverie.views.root/index}]
+   ["/profile"
+    {:name :profile/index
+     :view reverie.views.profile/index}]
    
    ])
 

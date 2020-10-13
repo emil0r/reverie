@@ -1,11 +1,15 @@
 (ns reverie.views
-  (:require ["antd" :refer [Layout Layout.Header Layout.Sider Layout.Content]]
+  (:require ["antd" :refer [Layout Layout.Header Layout.Sider Layout.Content
+                            Menu Menu.Item
+                            Tabs Tabs.TabPane]]
             [re-frame.core :as rf]
             [reitit.frontend.easy :as rfe]
             [reagent.core :as r]
             [reverie.routes :refer [routes router]]
             [reverie.views.auth :as views.auth]
-            [reverie.views.root]))
+            [reverie.views.profile :as views.profile]
+            [reverie.views.root]
+            [reverie.views.sidebar :as views.sidebar]))
 
 (defonce matched-data (r/atom nil))
 
@@ -22,10 +26,14 @@
    {:use-fragment true}))
 
 (defn menu []
-  [:div "Menu"])
+  [:> Menu
+   {:theme "light"
+    :mode "horizontal"}
+   [:> Menu.Item
+    [views.auth/logout]]])
 
 (defn index []
-  (let [logged-in? (rf/subscribe [:user/logged-in?])]
+  (let [logged-in? (rf/subscribe [:auth/logged-in?])]
     (fn []
       (init!)
       (if-not @logged-in?
@@ -33,23 +41,13 @@
         [:> Layout
          {:theme "light"
           :style {:min-height "100vh"}}
-         [:> Layout.Header
-          [menu]]
          [:> Layout
           [:> Layout.Sider
-           {:theme "light"}
-           "Sider"]
+           {:theme "light"
+            :class "reverie-sidebar"}
+           [:img.logo {:src "/img/reveriecms-logo.png"
+                       :on-click #(rfe/push-state :root/index)}]
+           [views.sidebar/index]
+           [views.profile/sidebar-details]]
           [:> Layout.Content
-           [content]]]]
-        #_[:> ant/Layout
-         {:theme "light"
-          :style {:minHeight "100vh"}}
-         [:> ant/Layout.Header
-          {:theme "light"}
-          [menu]]
-         [:> ant/Layout
-          [:> ant/Layout.Content
-           {:style {:padding "20px"}}
-           [breadcrumbs router (-> @matched-data :path)]
-           [:div.modules
-            [content]]]]]))))
+           [content]]]]))))

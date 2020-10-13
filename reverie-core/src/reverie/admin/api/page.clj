@@ -1,13 +1,14 @@
 (ns reverie.admin.api.page
-  (:require [clojure.core.match :refer [match]]
-            [clojure.edn :as edn]
-            [reverie.database :as reverie.db]
-            [reverie.page :as page]))
+  (:require [reverie.admin.model.page :as model.page]))
 
 
-(defn get-pages [{{db :database} :reverie} page {:keys [id]}]
-  (let [root (reverie.db/get-page db (or id 1) false)
-        result (assoc root :children (page/children root db))]
+
+(defn get-pages [{{db :database} :reverie} page params]
+  (let [pages (db/query db
+                        ^:opts {:post [:page :reverie/page]}
+                        {:select [:*]
+                         :from [:view_reverie_page]
+                         :where [:= :version 0]})]
     {:status 200
      :body {:result :success
-            :payload result}}))
+            :payload pages}}))

@@ -2,12 +2,12 @@
   (:require [re-frame.core :as rf]))
 
 (rf/reg-sub
- :user/logged-in?
+ :auth/logged-in?
  (fn [db _]
-   (some? (:user/profile db))))
+   (some? (:auth/profile db))))
 
 
 (rf/reg-sub
- :user/profile
+ :auth/profile
  (fn [db _]
-   (:user/profile db)))
+   (:auth/profile db)))
