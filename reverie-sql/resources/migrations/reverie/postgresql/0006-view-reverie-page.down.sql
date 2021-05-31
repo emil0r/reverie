@@ -1,1 +1,1 @@
-DROP TABLE view_reverie_page;
+DROP VIEW reverie_page_view;
