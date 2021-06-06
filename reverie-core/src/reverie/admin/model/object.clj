@@ -2,6 +2,11 @@
   (:require [clojure.walk :as walk]
             [ez-database.core :as db]
             [honeysql.core :as sql]
+            [reverie.auth :as auth]
+            [reverie.database :as reverie.db]
+            [reverie.object :as object]
+            [reverie.page :as page]
+            [reverie.publish :as publish]
             [reverie.system :as sys]
             [reverie.util :refer [kw->str str->kw]]))
 
@@ -90,6 +95,57 @@
   (if-let [ds (get-in @sys/storage [:objects object-name :options :fields object-field datasource-name])]
     (if (fn? ds)
       (ds {:database db}))))
+
+(defn- object-belongs? [page object-id]
+  (some #(= object-id (object/id %)) (page/objects page)))
+
+(defn delete-object
+  "Delete an object from a page. Does not immediately delete it from the database."
+  [db user {:keys [object-id page-serial] :as _data}]
+  (let [page (reverie.db/get-page db page-serial false)]
+    (if (and (auth/authorize? page user db "edit")
+             (object-belongs? page object-id))
+      (do (publish/trash-object! db object-id)
+          {:status :success})
+      {:status :failure
+       :error :reverie.page/no-edit-rights})))
+
+
+(defn add-object
+  "Add an object to a page"
+  [db user {:keys [page-serial area object-name properties]
+            :or {properties {}} :as _data}]
+  (let [page (reverie.db/get-page db page-serial false)]
+    (if (auth/authorize? page user db "edit")
+      (do (reverie.db/add-object! db {:page_id (page/id page)
+                                      :area area
+                                      :route ""
+                                      :name object-name
+                                      :properties properties})
+          {:status :success})
+      {:status :failure
+       :error :reverie.page/no-edit-rights})))
+
+
+(defn move-object
+  "Move an object in a page or to a new page"
+  [db user {:keys [page-serial object-id direction] :as _data}]
+  (let [page (reverie.db/get-page db page-serial false)]
+    (if (and (auth/authorize? page user db "edit")
+             (object-belongs? page object-id))
+      (do (reverie.db/move-object! db object-id direction)
+          {:status :success})
+      {:status :failure
+       :error :reverie.page/no-edit-rights})))
+
+(defn move-object-to-area [db user {:keys [page-serial area object-id] :as _data}]
+  (let [page (reverie.db/get-page db page-serial false)]
+    (if (and (auth/authorize? page user db "edit")
+             (object-belongs? page object-id))
+      (do (reverie.db/move-object! db object-id (page/id page) area)
+          {:status :success})
+      {:status :failure
+       :error :reverie.page/no-edit-rights})))
 
 
 (comment
