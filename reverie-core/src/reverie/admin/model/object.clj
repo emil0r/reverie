@@ -2,6 +2,7 @@
   (:require [clojure.walk :as walk]
             [ez-database.core :as db]
             [honeysql.core :as sql]
+            [reverie.admin.http-responses :as http]
             [reverie.auth :as auth]
             [reverie.database :as reverie.db]
             [reverie.object :as object]
@@ -106,9 +107,8 @@
     (if (and (auth/authorize? page user db "edit")
              (object-belongs? page object-id))
       (do (publish/trash-object! db object-id)
-          {:status :success})
-      {:status :failure
-       :error :reverie.page/no-edit-rights})))
+          http/success)
+      http/no-page-rights)))
 
 
 (defn add-object
@@ -122,9 +122,8 @@
                                       :route ""
                                       :name object-name
                                       :properties properties})
-          {:status :success})
-      {:status :failure
-       :error :reverie.page/no-edit-rights})))
+          http/success)
+      http/no-page-rights)))
 
 
 (defn move-object
@@ -134,18 +133,16 @@
     (if (and (auth/authorize? page user db "edit")
              (object-belongs? page object-id))
       (do (reverie.db/move-object! db object-id direction)
-          {:status :success})
-      {:status :failure
-       :error :reverie.page/no-edit-rights})))
+          http/success)
+      http/no-page-rights)))
 
 (defn move-object-to-area [db user {:keys [page-serial area object-id] :as _data}]
   (let [page (reverie.db/get-page db page-serial false)]
     (if (and (auth/authorize? page user db "edit")
              (object-belongs? page object-id))
       (do (reverie.db/move-object! db object-id (page/id page) area)
-          {:status :success})
-      {:status :failure
-       :error :reverie.page/no-edit-rights})))
+          http/success)
+      http/no-page-rights)))
 
 
 (comment

@@ -4,7 +4,7 @@
 
 
 (defn get-pages [{{db :database} :reverie} page params]
-  (let [pages (db/query db
+  #_(let [pages (db/query db
                         ^:opts {:post [:page :reverie/page]}
                         {:select [:*]
                          :from [:view_reverie_page]
