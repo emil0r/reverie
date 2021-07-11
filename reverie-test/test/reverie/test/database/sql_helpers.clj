@@ -4,6 +4,7 @@
             [com.stuartsierra.component :as component]
             [ez-database.core :as db]
             [migratus.core :as migratus]
+            [reverie.auth :as auth]
             [reverie.modules.auth]
             [reverie.batteries.objects.text]
             [reverie.batteries.objects.image]
@@ -63,6 +64,7 @@
                         {:store :database
                          :migration-dir path
                          :migration-table-name table
+                         :ezdb db
                          :db db-spec})
                       (array-map
                        "migrations_auth" "migrations/modules/auth/"
@@ -85,6 +87,8 @@
            (log/error e)))))))
 
 
+(defn get-admin-user [db]
+  (auth/get-user db "admin@admin.com"))
 
 (comment
   ;; re-seed!

@@ -116,7 +116,7 @@
   [db user {:keys [page-serial area object-name properties]
             :or {properties {}} :as _data}]
   (let [page (reverie.db/get-page db page-serial false)]
-    (if (auth/authorize? page user db "edit")
+    #_(if (auth/authorize? page user db "edit")
       (do (reverie.db/add-object! db {:page_id (page/id page)
                                       :area area
                                       :route ""
