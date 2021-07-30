@@ -5,7 +5,12 @@
 
 (defprotocol IMigrator
   (migrate [migrator] [migrator mmap])
-  (rollback [migrator mmap]))
+  (rollback [migrator mmap])
+  (migration-maps [migrator])
+  (list-migrations [migrator mmap])
+  (list-completed-ids [migrator mmap])
+  (list-completed-migrations [migrator mmap])
+  (list-pending-migrations [migrator mmap]))
 
 (defn- check-type! [type]
   (let [types [:pre :module :raw-page :app :object :unknown :post]]
