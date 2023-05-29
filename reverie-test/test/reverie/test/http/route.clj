@@ -14,8 +14,8 @@
        match3 (route/match?
                (route/route ["/foo/:bar"]) (request :get "/foo/1234"))
        match4 (route/match?
-               (route/route ["/:bar"]) (assoc (request :get "/foo/1234")
-                                         :shortened-uri "/1234"))]
+               (route/route "/foo" ["/:bar"]) (assoc (request :get "/foo/1234")
+                                                     :shortened-uri "/1234"))]
    (fact "match1: hit"
          (nil? match1) => false)
    (fact "match1: bar has been casted to an integer"
