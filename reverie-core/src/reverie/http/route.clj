@@ -10,7 +10,8 @@
   (match? [component request])
   (get-route [component]))
 
-(s/defrecord Route [parent-path path options compiled roles matching casting methods]
+(s/defrecord Route [parent-path path options compiled permissions match methods
+                    parameters]
   IRouting
   (match? [this request]
     (let [temp-request (if parent-path
@@ -20,59 +21,24 @@
         (let [method (if methods
                        (or (get methods (:request-method request))
                            (:any methods)))]
-          {:request (if casting
-                      (assoc request
-                        :params
-                        (reduce (fn [params [key cast-to]]
-                                  (if (get params key)
-                                    (assoc params key (cast/cast cast-to (get params key)))
-                                    params))
-                                (merge (:params request) matched) casting))
-                      (assoc request :params (merge (:params request) matched)))
-           :matched matched
+          {:matched matched
            :method method}))))
   (get-route [this] this))
 
-(defn- casting? [x]
-  (= (type x) java.lang.Class))
 
-(defn- method? [x]
-  (fn? x))
-
-(defn- get-data [route]
-  (let [raw-data (reduce (fn [out arg]
-                           (cond
-                             (string? arg)
-                             (assoc out :path (if (str/blank? arg)
-                                                "/"
-                                                arg))
-
-                             (set? arg)
-                             (assoc out :roles arg)
-
-                             (and (map? arg) (some regex? (vals arg)))
-                             (assoc out :matching arg)
-
-                             (and (map? arg) (true? (:meta (meta arg))))
-                             (assoc out :options arg)
-
-                             (and (map? arg) (some casting? (vals arg)))
-                             (assoc out :casting arg)
-
-                             (and (map? arg) (some method? (vals arg)))
-                             (assoc out :methods arg)
-
-                             :else out))
-                         {:path nil
-                          :options nil
-                          :roles nil
-                          :matching nil
-                          :casting nil
-                          :methods nil} route)]
-    (assoc raw-data :compiled
-           (if (:matching raw-data)
-             (clout/route-compile (:path raw-data) (:matching raw-data))
-             (clout/route-compile (:path raw-data))))))
+(defn- get-data [[path data]]
+  (let [path (if (str/blank? path)
+               "/"
+               path)
+        options (dissoc data :get :post :options :any :put :delete :permissions)]
+    (assoc
+     (select-keys data [:parameters :match :permissions])
+     :path path
+     :methods (select-keys data [:get :post :options :any :put :delete])
+     :options options
+     :compiled (if (:match data)
+                 (clout/route-compile path (:match data))
+                 (clout/route-compile path)))))
 
 (defn route
   ([-route]
